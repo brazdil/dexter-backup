@@ -1,0 +1,44 @@
+Subject: Phase 1 - Brazdil: Taint-Based Flow Tracing through Bytecode Instrumentation on Android
+
+Phase 1 Project Selection Status Report
+
+Name:                      David Brazdil
+
+College:                   Trinity Hall
+
+User Identifier:           db538
+
+Director of Studies:       Dr Simon Moore
+
+Please complete 1, 2 and 3 below.
+
+1. Please write 100 words on your current project ideas.
+
+Given Android's growing popularity and openness, it became 
+a frequent target of malware, which encourages researchers 
+to propose different approaches to increasing the platform's 
+protection mechanisms. Borrowing the idea of dynamic taint-
+based information-flow analysis from TaintDroid, my project 
+will trace sensitive data during runtime and pinpoint places 
+where they leave the application, allowing users to check 
+how their data are used. This will be done by automatic 
+instrumentation of the executable code, which is different 
+from the virtual-machine modification approach taken in the 
+original paper. Based on other work done in this area, I 
+will experiment with implicit-flow tracing and performance 
+optimisation.
+
+2. Please list names of potential project supervisors.
+
+Dr Alastair Beresford
+
+3. Is there any chance that your project will involve any
+computing resources other than the Computing Service's PWF and
+software that is already installed there, for example: your own
+machine, machines in College, special peripherals, imported
+software packages, special hardware, network access, substantial
+extra disc space on the PWF.
+If so indicate below what, and what it is needed for.
+
+Own computer with Android SDK
+Own Android smartphone for testing
