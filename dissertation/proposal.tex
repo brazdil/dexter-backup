@@ -92,11 +92,24 @@ other competing mobile operating systems. These methods range from
 lightweight static analysis of the executable code, all the way to 
 enforcing sandboxing by virtualization. 
 
-Following the work conducted by a group of researchers from 
-The Pennsylvania State University, Duke University and Intel Labs, 
+One such approach is shown in TaintDroid \cite{www.appanalysis.org}, 
+project developed by a group of researchers from The Pennsylvania State
+University, Duke University and Intel Labs. TaintDroid modifies several
+core parts of the Android platform, such as the Dalvik VM, the
+Android shared library, or even the file-system, adding support for
+runtime labelling (tainting) of sensitive data like phone number, contact 
+list or GPS location, and tracing the flow of such data through the 
+system. By checking the labels of data that are leaving the system, 
+e.g. via the network connection, TaintDroid can warn the users about the
+possibility of their data being misused. It is therefore an analytical 
+tool providing greater insight into the behaviour of third-party 
+applications.
+
+
 my project will implement an analytical tool capable of tracing the flow
-of information through applications running on top of the Dalvik Virtual
-Machine. 
+of information inside applications running on top of the Dalvik Virtual
+Machine, providing the users with means of checking how third-party 
+applications are handling 
 
 
 
