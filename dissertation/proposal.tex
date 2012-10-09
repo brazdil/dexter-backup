@@ -1,14 +1,523 @@
-% This is a LaTeX driving document to produce a standalone copy
-% of the project proposal held in propbody.tex.  Notice that
-% propbody can be used in this context as well as being incorporated
-% in the dissertation (see diss.tex).
+%%%%%%%%%%%%%%% Updated by MR March 2007 %%%%%%%%%%%%%%%%
+\documentclass[12pt]{article}
+\usepackage{a4wide}
+\usepackage[UKenglish]{babel}
+\usepackage[UKenglish]{isodate}
+\usepackage[style=footnote-dw]{biblatex}
+% Package biblatex: '\bibliography' must be given in preamble.
+\bibliography{memoire-bb}
 
-\documentstyle[12pt,a4]{article}
+\newcommand{\al}{$<$}
+\newcommand{\ar}{$>$}
+
+\parindent 0pt
+\parskip 6pt
+
 \begin{document}
 
-\include{propbody}
+\thispagestyle{empty}
 
+\rightline{\large\emph{David Brazdil}}
+\medskip
+\rightline{\large\emph{Trinity Hall}}
+\medskip
+\rightline{\large\emph{db538}}
+
+\vfil
+
+\centerline{\large Computer Science Tripos Part II Project Proposal}
+\vspace{0.4in}
+\centerline{\Large\bf Taint-Based Flow Tracing through}
+\centerline{\Large\bf Bytecode Instrumentation on Android}
+\vspace{0.3in}
+\cleanlookdateon
+\centerline{\large \emph \today}
+
+\vfil
+
+{\bf Project Originator:} Dr A. R. Beresford
+
+\vspace{0.1in}
+
+{\bf Resources Required:} See attached Project Resource Form
+
+\vspace{0.5in}
+
+{\bf Project Supervisor:} \emph{Dr A. R. Beresford}
+
+\vspace{0.2in}
+
+{\bf Signature:}
+
+\vspace{0.5in}
+
+{\bf Director of Studies:}  \emph{Dr S. W. Moore}
+
+\vspace{0.2in}
+
+{\bf Signature:}
+
+\vspace{0.5in}
+
+{\bf Overseers:} \emph{Prof J. M. Bacon}\ and \emph{Prof R. J. Anderson}
+
+\vspace{0.2in}
+
+{\bf Signatures:} 
+
+\vfil
+\eject
+
+\section*{Introduction and Description of the Work}
+
+Android is a popular, open-source Linux-based platform for touchscreen
+mobile devices, such as smartphones and tablets. Ever since its unveiling 
+in 2007, it has been increasing its market share, running on 68.1\% of 
+smartphones sold in the second quarter of 2012 according to a report by 
+IDC. \cite{www.idc.com/getdoc.jsp?containerId=prUS23638712}
+
+Unfortunately, with its growing popularity, the platform became a frequent
+target of increasingly sophisticated malware, masquerading as legitimate
+software, while leaking sensitive data about the users'. More complex
+malicious applications even try to hide their activity by exploiting 
+security holes of the underlying operating-system level to bypass the 
+protection mechanisms of the platform.
+
+Researchers have been coming up with different approaches to solving
+this problem, mostly focusing on porting well-established methods from
+the desktop environment to resource-limited devices running Android and
+other competing mobile operating systems. These methods range from 
+lightweight static or dynamic analysis of the executable code, all the way
+to enforcing sandboxing by virtualization. 
+
+Following the work conducted by a group of researchers from 
+The Pennsylvania State University, Duke University and Intel Labs, 
+my project will implement an analytical tool capable of tracing the flow
+of information through applications running on top of the Dalvik Virtual
+Machine. 
+
+
+
+Ladder Logic is a simple notation used by engineers for controlling
+industrial processes. It can be used describe simple programmable
+controllers such as those used in traffic lights, lifts or fire safety
+systems. Full details of ladder logic can be found in Part 3 of
+standard IEC 1131 (available in the library as V111-26).  This project
+is however concerned with a cut down variant of the language and a
+detailed understanding of the standard will not be necessary.
+
+The concept of Ladder Logic is drawn from conventional relay-based
+logic, where relay \& switch contacts are connected in series/parallel
+combinations to control the energisation of further relay coils,
+indicator lamps, solenoids etc. The relays may have built-in functions
+such as time delay, threshold detection etc., so the resulting circuit
+can achieve a reasonable degree of sophistication.
+
+Ladder Logic is so called because the two \emph{uprights\/} of the
+ladder are effectively the power supply and ground bus-bars, and each
+\emph{rung\/} is (in the simplest form) a sequence of contacts in
+series/parallel which will energise a given coil. An example of a
+Ladder Diagram:
+
+\begin{verbatim}
+    | AUTO_MODE      AUTO_CMD            CMD    |
+    +---| |-------------| |------+-------( )----+
+    |                            |              |
+    | AUTO_MODE      MAN_CMD     |              |
+    +---|/|-------------| |------+              |
+    |                                           |
+\end{verbatim}
+
+Where {\tt --| |--} is a normally-open contact, {\tt --|/|--} is a
+normally closed contact, and {\tt --(~)--} is a relay coil.
+
+The above diagram translated into (un-optimised) C language would be:
+
+\begin{verbatim}
+    CMD = (AUTO_MODE && AUTO_CMD) || (!AUTO_MODE && MAN_CMD);
+\end{verbatim}
+
+or into pseudo assembly language it might be:
+
+\begin{verbatim}
+    LOAD    AUTO_MODE
+    LOAD    AUTO_CMD
+    SYS     $AND
+    LOAD    AUTO_MODE
+    SYS     $NOT
+    LOAD    MAN_CMD
+    SYS     $AND
+    SYS     $OR
+    STORE   CMD
+\end{verbatim}
+
+In the full Ladder Logic language, elements are not constrained to
+simple boolean operations, but can contain sophisticated arithmetic
+functions (e.g.\ auto-tuning PID control loops). The size of the
+project can be varied as the project progresses by adding more
+elements to the language but this should be done only if time permits.
+
+It is tempting for computer professionals to dismiss Ladder Logic as a
+crude language, but it is a salutory thought that that almost every
+automated industrial process has one or more programmed logic
+controller running Ladder Logic, so we are unknowingly relying on
+Ladder Logic to provide many of the mass-produced items we use in our
+daily lives!
+
+In conventional programming languages, the separation of the source
+text into source lines is simply an aid to human-readability. In a
+ladder diagram the vertical and horizontal orientation of the text
+elements is crucial, and directly effects the meaning of those
+elements. Hence the source code is effectively two-dimensional, as
+opposed to the one-dimensional (linear) source code of conventional
+languages. One key part of the project is to create a compiler that
+can handle such two-dimensional source code in a clean,
+well-structured fashion, which allows extra graphical elements to be
+added with minimal effort.
+
+
+\section*{Resources Required}
+
+\al\emph{The most suitable language may turn out to be non-standard and
+  its availability needs to be established.  The project can also be
+  undertaken (with permission) on a privately owned PC.}\ar
+
+
+\section*{Starting Point}
+
+\al\emph{This is the place to declare any prior knowledge relevant to
+  the project.  For example any relevant courses taken prior to the
+  start of the Diploma year.}\ar
+
+
+\section*{Substance and Structure of the Project}
+
+The objective of the project is to design a ladder-logic style
+language and implement its compiler and interpreter/simulator so that
+the behaviour of a controller specified in the language can be
+simulated.  The input of the compiler should be ASCII text to
+represent the two-dimensional logic diagram.
+ 
+Notations for wire joining and crossing should be chosen, and also a
+method of entering relays with delayed action should be designed. The
+exact rules governing how names can be associated with relays and
+coils must be specified. The chosen ladder logic notation should then
+be tried out by specifying some simple control circuits. Some of these
+will be used later when the system is being tested.
+
+Once the language details have been clarified, work can start on the
+compiler.  This could consist of a syntax analyser that constructs an
+internal representation of logic diagram, followed by a translator
+that converts this into a form suitable for interpretation.
+
+One possible representation of the circuit might be a list of relay
+nodes, a list of coil nodes and a list of wire nodes with suitable
+inter-node references to represent the circuit. For instance, a relay
+node could contain pointers to the activating coil and the two wires
+attached to its terminals. The syntax analyser will need some form of
+lexical analyser to handle low level input and deal with symbolic
+identifiers.
+
+The compiler will contain a translation phase that converts this
+internal representation of the circuit into a form that is suitable
+for efficient interpretation.  This might consist of a combination of
+interpretive code and pre-computed tables.
+
+The interpreter must be capable of simulating the execution of the
+specified controller.  It is likely that it should be written in the
+style of a discrete event simulator with a time queue of events to be
+processed in time order. A typically event might be the opening or
+closing of a relay at some specified time in the future. If this is
+the next event to happen, time will advance to that moment and the
+action will be performed.  This may affect the signals on some wires
+which in turn may activate or deactivate some relay coils. This may
+result in a cascade of new events being sent to the time queue. During
+simulation user readable output should be generated so that the
+behaviour of the controller can be clearly understood.
+
+Some ingenuity will be required to find a good way of determining
+which coils activations change when a given relay changes state.  If
+there are fewer than about 16 relays this can be precomputed in the
+form of a table, but for larger circuits other strategies should be
+considered. A possible approach might be based on dynamic programming.
+
+
+\section*{Variants}
+ 
+The entire project can be implemented in Java, C or C++ but other
+implementation languages could be considered.
+
+Rather than using an ASCII representation of the logic, it would be
+possible to use a graphical representation constructed by a specially
+written graphical editor. This may, however, make the project
+too large for most candidates.
+
+It may turn out to be a better idea for the simulator to run to
+completion generating an internal representation of the behaviour that
+can be inspected later by an interactive viewer. The viewer program
+should allow the user to decide what parts of the circuit and/or time
+period to view.  If this scheme were adopted it would be necessary to
+design a good internal representation of the behaviour. Ease of
+generation, ease of use and compactness would be the main conflicting
+issues affecting the design.  The viewer could generate its output in
+simple ASCII text, or it could generate simple pictures in ASCII using
+the ``curses'' library package under Unix, or it could generate more
+attractive graphical output using, for example, the graphical
+facilities of Java.
+
+
+\section*{Success Criterion}
+
+For the project to be deemed a success the following items must be
+successfully completed.
+
+\begin{enumerate}
+
+\item A notation in the style of ladder logic needs to be designed and
+  specified in detail.
+
+\item An internal representation of the ladder logic program must be
+  designed.
+
+\item Program/programs must be designed and implemented to convert
+  this notation into a form suitable for interpretation/simulation.
+
+\item The data structures and algorithms used by the discrete event simulator
+must be designed and implemented.
+
+\item Details of what output the system should generate and how it
+  should be controlled (by the user) must be specified.
+
+\item Demonstration test programs should be written and run to
+  demonstrate the the project works.
+
+\item Some indication of the efficiency of the implementation in terms
+  of space and time should be given.
+
+\item The dissertation must be planned and written.
+
+\end{enumerate}
+
+\al\emph{The sketches above are to be taken as starting points for
+  investigation of the literature and discussion with your Supervisor.
+  A look at the 1996 Diploma Dissertation, {\rm A Ladder Logic
+    Compiler and Interpreter}, by Johnson Adesanya, is likely to prove
+  useful since it provides some pointers into the literature, and
+  shows in detail one way of solving the problem}.\ar
+
+\medskip \al\emph{It would also be possible to adjust the style and
+  emphasis of the project either towards the best possible
+  computational capability for your code, or in the direction of
+  better human/machine interaction, particularly for the visualisation
+  of the behaviour of given circuit designs}.\ar
+
+
+
+\section*{Timetable and Milestones}
+
+\al\emph{In the following scheme, weeks are numbered so that the week
+  starting on the day on which Project Proposals are handed in is
+  Week~1.  The year's timetable means that the deadline for submitting
+  dissertations is in Week~34.}\ar
+
+\al\emph{In the Project Proposal that you hand in, {\rm actual dates}
+  should be used instead of week numbers and you should show how these
+  dates relate to the periods in which lectures take place. Week~1
+  starts immediately after submission of the Project Proposal.}\ar
+
+\al\emph{The timetable and milestones given below refer to just one
+  particular interpretation of this document.  Even if you select
+  exactly this interpretation you will need to review the suggested
+  timetable and adjust the dates to allow as precisely as you can for
+  the amount of programming and other related experience that you have
+  at the start of the year.  Take account of the dates you and your
+  Supervisor will be working in Cambridge outside Lecture Term.  Note
+  that some candidates write the Introduction and Preparation chapters
+  of their dissertations quite early in the year, while others will do
+  all their writing in one burst near the end}.\ar
+
+
+\subsection*{Before Proposal submission}
+
+\al\emph{This section will not appear in your Project Proposal.}\ar
+ 
+Submission of Phase~1 Report Form. Discussion with Overseers and
+Director of Studies.  Allocation of and discussion with Project
+Supervisor, preliminary reading, choice of the variant on the project
+and language \al\emph{Java in this example\/}\ar, writing Project
+Proposal.  Discussion with Supervisor to arrange a schedule of regular
+meetings for obtaining support during the course of the year.
+
+Milestones: Phase~1 Report Form (on the Monday immediately following
+the main Briefing Lecture), then a Project Proposal complete with as
+realistic a timetable as possible, approval from Overseers and
+confirmed availability of any special resources needed. Signatures
+from Supervisor and Director of Studies.
+
+
+\subsection*{Weeks 1 to 5}
+
+\al\emph{Real work on the project starts here (as distinct from just
+  work on the proposal).  A significant problem for Diploma candidates
+  is that this critical period largely coincides with the Christmas
+  vacation.  There is no guarantee that supervisors will be available
+  outside Lecture Term, but Diploma students take much less of a
+  Christmas break than undergraduates do, and so have some opportunity
+  for uninterrupted reading and initial practical work at this stage.
+  It is important to have completed some serious work on the project
+  before the pressures of the Lent Term become all too apparent.}\ar
+
+Study C and the particular implementation of it to be used.  Practise
+writing various small programs, including key fragments of the compiler
+and interpreter.
+
+Milestones: Some working example C programs including code to deal
+with symbol tables in the lexical analyser, and part implementation of
+the time queue to be used in the interpreter/simulator.
+
+
+\subsection*{Weeks 6 and 7}
+
+Further literature study and discussion with Supervisor to ensure that
+the chosen data structures are satisfactory.  Implementation of the
+syntax analyser and debugging code to help test it.  This is likely to
+be code that can be used to display the data structures in
+human-readable form so that it is possible to check that they are as
+expected.
+
+Milestones: Ability to construct and display data structures that
+represent simple ladder logic programs such as:
+
+\begin{verbatim}
+    |    A               B                C     |
+    +---| |-------------| |--------------( )----+
+\end{verbatim}
+
+
+\subsection*{Weeks 8 to 10}
+
+Implementation of the translation phase of the compiler. This will of
+a decision to be made on what target code to generate. The obvious contnders
+are: an interpretive code, Java or C.
+
+Start to plan the Dissertation, thinking ahead especially to the
+collection of examples and tests that will be used to demonstrate that
+the project has been a success. 
+
+Milestones: Ability to compile some very simple ladder logic programs,
+and print out some human readable version of the target code produced.
+
+
+\subsection*{Weeks 11 and 12}
+
+Complete code for the interpreter/simulator, or the environment in
+which to run the generated Java or C target code.
+
+Prepare further test cases.  Review timetable for the remainder of the
+project and adjust in the light of experience thus far.  Write the
+Progress Report drawing attention to the code already written,
+incorporating some examples, and recording any augmentations which at
+this stage seem reasonably likely to be incorporated.
+
+Milestones: Simple ladder logic programs should now compile and run
+correctly, but probably with some serious inefficiencies in the code.
+Progress Report submitted and entire project reviewed both personally
+and with Overseers.
+
+
+\subsection*{Weeks 13 to 19 (including Easter vacation)}
+
+Rework the entire implementation to enhance the
+richness of the language it can deal with. \al\emph{It is possible that
+the initial implementation has severe restrictions on the number of
+relays or coils that can be handled. Such restrictions can be freed at
+this stage.}\ar\  Write initial chapters of the Dissertation.
+
+\al\emph{The Easter break from lectures can provide a time to work on a
+substantial challenge such as the computation of logarithms, where an
+uninterrupted week can allow you to get to grips with a fairly
+complicated algorithm.  This is a good time to put in some quiet work
+(while your Supervisor is busy on other things) writing the
+Preparation and Implementation chapters of the Dissertation.  By this
+stage the form of the final implementation should be sufficiently
+clear that most of that chapter can be written, even if the code is
+incomplete.  Describing clearly what the code will do can often be a
+way of sharpening your own understanding of how to implement it.}\ar
+
+Milestones: Preparation chapter of Dissertation complete,
+Implementation chapter at least half complete, code can perform a
+variety of interesting tasks and should be in a state that in the
+worst case it would satisfy the examiners with at most cosmetic
+adjustment.
+
+
+\subsection*{Weeks 20 to 26}
+
+\al\emph{Since your project is, by now, in fairly good shape there is
+a chance to use the immediate run-up to exams to attend to small
+rationalisations and to implement things that are useful but fairly
+straightforward.  It is generally not a good idea to drop all project
+work over the revision season; if you do, the code will feel amazingly
+unfamiliar when you return to it.  Equally, first priority has to go
+to the exams, so do not schedule anything too demanding on the project
+front here.  The fact that the Implementation chapter of the
+Dissertation is in draft will mean that you should have a very clear
+view of the work that remains, and so can schedule it rationally.}\ar
+
+Work on the project will be kept ticking over during this period but
+undoubtedly the Easter Term lectures and examination revision will
+take priority.
+
+
+\subsection*{Weeks 27 to 31}
+
+\al\emph{Getting back to work after the examinations and May Week
+  calls for discipline.  Setting a timetable can help stiffen your
+  resolve!}\ar
+
+Testing and evaluation.  Finish off otherwise ragged parts of the
+code.  Write the Introduction chapter and draft the Evaluation and
+Conclusions chapters of the Dissertation, complete the Implementation
+chapter.
+
+Milestones: Examples and test cases run and results collected,
+Dissertation essentially complete, with large sections of it
+proof-read by Supervisor and possibly friends and/or Director of
+Studies.
+
+
+\subsection*{Weeks 32 to 33}
+
+Finish Dissertation, preparing diagrams for insertion.  Review whole
+project, check the Dissertation, and spend a final few days on
+whatever is in greatest need of attention.
+
+\al\emph{In many cases, once a Dissertation is complete (but not
+  before) it will become clear where the biggest weakness in the
+  entire work is.  In some cases this will be that some feature of the
+  code has not been completed or debugged, in other cases it will be
+  that more sample output is needed to show the project's capabilities
+  on larger test cases.  In yet other cases it will be that the
+  Dissertation is not as neatly laid out or well written as would be
+  ideal.  There is much to be said for reserving a small amount of
+  time right at the end of the project (when your skills are most
+  developed) to put in a short but intense burst of work to try to
+  improve matters.  Doing this when the Dissertation is already
+  complete is good: you have a clearly limited amount of time to work,
+  and if your efforts fail you still have something to hand in!  If
+  you succeed you may be able to replace that paragraph where you
+  apologise for not getting feature X working into a brief note
+  observing that you can indeed do X as well as all the other things
+  you have talked about.}\ar
+
+
+\subsection*{Week 34}
+
+\al\emph{Aim to submit the dissertation at least a week before the
+  deadline. Be ready to check whether you will be needed for a\/ {\rm
+    viva voce} examination}.\ar
+
+Milestone: Submission of Dissertation. 
+
+\printbibliography
 \end{document}
-
-
-
