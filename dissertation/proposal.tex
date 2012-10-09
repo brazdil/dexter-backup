@@ -4,7 +4,6 @@
 \usepackage[UKenglish]{babel}
 \usepackage[UKenglish]{isodate}
 \usepackage[style=footnote-dw]{biblatex}
-% Package biblatex: '\bibliography' must be given in preamble.
 \bibliography{memoire-bb}
 
 \newcommand{\al}{$<$}
@@ -94,104 +93,43 @@ enforcing sandboxing by virtualization.
 
 One such approach is shown in TaintDroid \cite{www.appanalysis.org}, 
 project developed by a group of researchers from The Pennsylvania State
-University, Duke University and Intel Labs. TaintDroid modifies several
-core parts of the Android platform, such as the Dalvik VM, the
-Android shared library, or even the file-system, adding support for
-runtime labelling (tainting) of sensitive data like phone number, contact 
-list or GPS location, and tracing the flow of such data through the 
-system. By checking the labels of data that are leaving the system, 
-e.g. via the network connection, TaintDroid can warn the users about the
-possibility of their data being misused. It is therefore an analytical 
-tool providing greater insight into the behaviour of third-party 
-applications.
+University, Duke University and Intel Labs. They point out that the
+access control in Android is rather coarse-grained, with all-or-nothing
+policy. This means that once an application gets an access to a resource,
+it can do whatever it wants with it. In the case of malware, this happens
+not only without the user's consent, but even without their knowledge.
 
+TaintDroid modifies several core parts of the Android platform, such as 
+the Dalvik VM, the Android shared library, and even the file-system, 
+adding support for runtime labelling (tainting) of sensitive data like 
+phone number, contact list or GPS location, and tracing the flow of such 
+data through the system. By checking the labels of data that are leaving 
+the system, e.g. via the network connection, TaintDroid can warn the 
+users about the possibility of their data being misused. It is therefore 
+an analytical tool providing insight into the behaviour of third-party
+applications, giving the users a better picture of what happens with
+the data they entrust to their applications.
 
-my project will implement an analytical tool capable of tracing the flow
-of information inside applications running on top of the Dalvik Virtual
-Machine, providing the users with means of checking how third-party 
-applications are handling 
+Following the work conducted on TaintDroid, the outcome of this project 
+will be a tool with similar goals, but taking a different approach to 
+achieving them. TaintDroid integrates into the lower levels of the 
+operating system, altering Dalvik's memory management and instructions 
+to store and propagate the taint transparently to the applications 
+running on top of it. The same will be accomplished by extracting the
+executable code from the application's package and instrumenting it
+to carry out the information-flow analysis itself, without any
+modifications to the platform being necessary.
 
+limitations of both solutions
 
-
-Ladder Logic is a simple notation used by engineers for controlling
-industrial processes. It can be used describe simple programmable
-controllers such as those used in traffic lights, lifts or fire safety
-systems. Full details of ladder logic can be found in Part 3 of
-standard IEC 1131 (available in the library as V111-26).  This project
-is however concerned with a cut down variant of the language and a
-detailed understanding of the standard will not be necessary.
-
-The concept of Ladder Logic is drawn from conventional relay-based
-logic, where relay \& switch contacts are connected in series/parallel
-combinations to control the energisation of further relay coils,
-indicator lamps, solenoids etc. The relays may have built-in functions
-such as time delay, threshold detection etc., so the resulting circuit
-can achieve a reasonable degree of sophistication.
-
-Ladder Logic is so called because the two \emph{uprights\/} of the
-ladder are effectively the power supply and ground bus-bars, and each
-\emph{rung\/} is (in the simplest form) a sequence of contacts in
-series/parallel which will energise a given coil. An example of a
-Ladder Diagram:
-
-\begin{verbatim}
-    | AUTO_MODE      AUTO_CMD            CMD    |
-    +---| |-------------| |------+-------( )----+
-    |                            |              |
-    | AUTO_MODE      MAN_CMD     |              |
-    +---|/|-------------| |------+              |
-    |                                           |
-\end{verbatim}
-
-Where {\tt --| |--} is a normally-open contact, {\tt --|/|--} is a
-normally closed contact, and {\tt --(~)--} is a relay coil.
-
-The above diagram translated into (un-optimised) C language would be:
-
-\begin{verbatim}
-    CMD = (AUTO_MODE && AUTO_CMD) || (!AUTO_MODE && MAN_CMD);
-\end{verbatim}
-
-or into pseudo assembly language it might be:
-
-\begin{verbatim}
-    LOAD    AUTO_MODE
-    LOAD    AUTO_CMD
-    SYS     $AND
-    LOAD    AUTO_MODE
-    SYS     $NOT
-    LOAD    MAN_CMD
-    SYS     $AND
-    SYS     $OR
-    STORE   CMD
-\end{verbatim}
-
-In the full Ladder Logic language, elements are not constrained to
-simple boolean operations, but can contain sophisticated arithmetic
-functions (e.g.\ auto-tuning PID control loops). The size of the
-project can be varied as the project progresses by adding more
-elements to the language but this should be done only if time permits.
-
-It is tempting for computer professionals to dismiss Ladder Logic as a
-crude language, but it is a salutory thought that that almost every
-automated industrial process has one or more programmed logic
-controller running Ladder Logic, so we are unknowingly relying on
-Ladder Logic to provide many of the mass-produced items we use in our
-daily lives!
-
-In conventional programming languages, the separation of the source
-text into source lines is simply an aid to human-readability. In a
-ladder diagram the vertical and horizontal orientation of the text
-elements is crucial, and directly effects the meaning of those
-elements. Hence the source code is effectively two-dimensional, as
-opposed to the one-dimensional (linear) source code of conventional
-languages. One key part of the project is to create a compiler that
-can handle such two-dimensional source code in a clean,
-well-structured fashion, which allows extra graphical elements to be
-added with minimal effort.
 
 
 \section*{Resources Required}
+
+own computer or PWF, android sdk, drivers
+android phone or emulator
+access to android genome
+appropriate storage on PWF
 
 \al\emph{The most suitable language may turn out to be non-standard and
   its availability needs to be established.  The project can also be
@@ -257,28 +195,15 @@ form of a table, but for larger circuits other strategies should be
 considered. A possible approach might be based on dynamic programming.
 
 
-\section*{Variants}
+\section*{Extensions}
+
+\subsection*{Implicit flow}
+
+\subsection*{Causality analysis}
  
-The entire project can be implemented in Java, C or C++ but other
-implementation languages could be considered.
+\subsection*{Reflection}
 
-Rather than using an ASCII representation of the logic, it would be
-possible to use a graphical representation constructed by a specially
-written graphical editor. This may, however, make the project
-too large for most candidates.
-
-It may turn out to be a better idea for the simulator to run to
-completion generating an internal representation of the behaviour that
-can be inspected later by an interactive viewer. The viewer program
-should allow the user to decide what parts of the circuit and/or time
-period to view.  If this scheme were adopted it would be necessary to
-design a good internal representation of the behaviour. Ease of
-generation, ease of use and compactness would be the main conflicting
-issues affecting the design.  The viewer could generate its output in
-simple ASCII text, or it could generate simple pictures in ASCII using
-the ``curses'' library package under Unix, or it could generate more
-attractive graphical output using, for example, the graphical
-facilities of Java.
+\subsection*{}
 
 
 \section*{Success Criterion}
