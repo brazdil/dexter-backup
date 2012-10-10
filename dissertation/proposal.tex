@@ -111,24 +111,23 @@ third-party applications, giving the users a better picture of what
 happens with the data they entrust to their applications.
 
 Following the work conducted on TaintDroid, the outcome of this project 
-will be a desktop application with similar goals, but achieving them in 
-a different manner. TaintDroid integrates into the lower levels of the
-operating system, altering Dalvik's memory management and instructions 
-to store and propagate the taint transparently to the applications 
-running on top of it. However, similar result can be accomplished by 
-extracting the executable code from the application's package and 
-instrumenting it to carry out the information-flow analysis itself, 
-without any modification to the platform needed, which is what this 
-project will try to attain.
+will be a tool with similar goals, but achieving them in a different 
+manner. TaintDroid integrates into the lower levels of the operating 
+system, altering Dalvik's memory management and instructions to store and
+propagate the taint transparently to the applications running on top of 
+it. However, similar result can be accomplished by extracting the 
+executable code from the application's package and instrumenting it to 
+carry out the information-flow analysis itself, without any modification 
+to the platform needed, which is what this project will try to attain.
 
-Even though the resulting desktop application will be intended mostly for
-use by professionals, the configuration of the privacy policies should be
-intuitive enough even for users without deep understanding of taint-based
-analysis. Typical user will:
+Despite being intended mostly for use by professionals, the configuration 
+of monitored privacy policies should be intuitive enough even for users 
+without deep understanding of taint-based analysis. Typical user will:
 \begin{itemize}
 \item{connect their Android device to the computer}
 \item{choose an installed application which should be instrumented}
-\item{select sources of information and output channels to be monitored}
+\item{select sources of information and output channels (sinks) to be
+      monitored}
 \item{wait for the application to get instrumented, repackaged and sent
       back to the device}
 \item{run the application and wait for notifications about privacy policy
@@ -167,17 +166,54 @@ a snapshot of the repository.
 
 \section*{Substance and Structure of the Project}
 
-Dynamic data-flow analysis will form the core of the project.
+The main outcome of this project will be a console application written 
+in Java, capable of instrumenting given Dalvik executables, known as DEX
+files, according to options specified via command-line arguments. It will
+use the ASMDEX \cite{asm.ow2.org/asmdex-index.html} library to parse, 
+modify and reconstruct Dalvik bytecode. 
 
-, but based
-on other work done in this area, there are several ways of extending it.
+Data sources and sinks will be specified as an XML file containing a list
+of classes and/or methods inside the Android library, accessing which
+should trigger the tainting mechanism. Specifications of commonly used 
+sources and sinks will be part of the distribution.
+
+The application will be accompanied by a set of UNIX shell scripts, which 
+will extract executable code from an application on a connected device 
+by using tools present in the Android SDK and \emph{apktool} 
+\cite{code.google.com/p/android-apktool}, the Swiss army-knife of
+Android reverse-engineering. After letting the instrumenting application
+process the code, scripts will repackage the modified application, and 
+upload it back to the device. Since all packages need to be signed, and
+it is not possible to sign them with the same key as the original author,
+packages will be signed by a private key of user's choice.
+
+Core part of the project will be the development of a dependable code 
+instrumentation, which will reliably identify the sources and sinks and
+propagate the taint throughout the application. This requires detailed
+analysis of the effects of each instruction of the Dalvik VM, and through
+testing. Special attention will need to be given to correct 
+instrumentation of the exception mechanism, which will require static 
+analysis of the location of exception-throwing instructions and 
+corresponding try/catch blocks.
+
+In the minimal version of the project, the desktop application consisting of
+Java instrumenting application and shell scripts) will interact with the user
+strictly through command-line interface. Similarly, the code injected into 
+the analysed application will print its warnings into the system log. 
+Graphical user interface for both of these will be a possible low-priority 
+extension.
+
+\subsection*{Extensions}
+
+Here they are, sorted according to priority.
 
 \begin{description}
-\item{Implicit-flow analysis} \\
-TaintDroid focuses strictly on tracing the explicit flows of information,
+\item [Implicit-flow analysis:] \ \\
+TaintDroid focuses strictly on tracing the explicit flows of information, 
 by propagating the taint when data-handling CPU instructions are used. 
-But information can be leaked via implicit flows (branching instructions)
+But information can be leaked via implicit flows (branching instructions) 
 as well. Consider the following example:
+
 \begin{verbatim}
 int sensitiveData = getSensitiveData(); // tainted variable
 int leakedData = 0; // untainted variable
@@ -204,18 +240,24 @@ solution. Since this project will instrument applications separately,
 the user will be given the choice of instrumentation including or 
 excluding implicit-flow analysis.
 
-\item{Causality analysis} \\
+\item [Causality analysis:] \ \\
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
 
-\item{Mocking} \\
+\item [Performance optimization:] \ \\
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
+
+\item [Mocking:] \ \\
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
  
-\item{Performance optimization} \\
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
-
-\item{Reflection} \\
+\item [Reflection:] \ \\
 One major limitation of analysis by bytecode instrumentation is that it 
 cannot easily deal with reflection. 
+
+\item [Graphical user interface:] \ \\
+Neither the desktop application (and scripts), nor the code injected 
+into the analysed mobile application will have a graphical user interface
+in the minimal version of the project. 
+
 
 \end{description}
 
