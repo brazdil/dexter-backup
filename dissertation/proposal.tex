@@ -166,6 +166,8 @@ a snapshot of the repository.
 
 \section*{Substance and Structure of the Project}
 
+\subsection*{Minimal deliverable}
+
 The main outcome of this project will be a console application written 
 in Java, capable of instrumenting given Dalvik executables, known as DEX
 files, according to options specified via command-line arguments. 
@@ -200,10 +202,12 @@ Compilers course.
 The development process will follow the philosophy of Test Driven 
 Development. Thus a significant amount of time will be spent on building 
 a robust set of unit tests to ensure high quality of code. JUnit will be 
-used to test the internal of the instrumenting application, and shell 
-scripts will be created that will try to execute small snippets of 
-instrumented code on an actual Dalvik virtual machine, be it on a proper 
-device or in the provided emulator.
+used to test the internal of the instrumenting application. Another set of 
+shell scripts will be created to automatically try to execute a collection
+of small, tailored snippets of code on an actual Dalvik virtual machine, 
+first in its original form and then instrumented, comparing the outcome
+to make sure that the instrumentation doesn't affect the behaviour of 
+the instrumented applications.
 
 In the minimal version of the project, the desktop application consisting of
 Java instrumenting application and shell scripts) will interact with the user
