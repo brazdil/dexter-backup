@@ -25,8 +25,8 @@ help:
 	@echo "make pr       print the dissertation"
 	@echo
 
-prop:	proposal.dvi
-	xdvi proposal.dvi
+prop:	proposal.pdf
+	xdg-open proposal.pdf
 
 diss.ps:	$(DISS)
 	latex diss
@@ -47,6 +47,9 @@ count:
 
 proposal.dvi: $(PROP)
 	latex proposal
+
+proposal.pdf: $(PROP)
+	pdflatex proposal
 
 all:	proposal.dvi diss.ps
 
