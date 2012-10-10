@@ -68,7 +68,7 @@
 \vfil
 \eject
 
-\section*{Introduction and Description of the Work}
+\section*{Introduction}
 
 Android is a popular, open-source Linux-based platform for touchscreen
 mobile devices, such as smartphones and tablets. Ever since its unveiling 
@@ -110,17 +110,76 @@ an analytical tool providing insight into the behaviour of third-party
 applications, giving the users a better picture of what happens with
 the data they entrust to their applications.
 
-Following the work conducted on TaintDroid, the outcome of this project 
-will be a tool with similar goals, but taking a different approach to 
-achieving them. TaintDroid integrates into the lower levels of the 
-operating system, altering Dalvik's memory management and instructions 
-to store and propagate the taint transparently to the applications 
-running on top of it. The same will be accomplished by extracting the
-executable code from the application's package and instrumenting it
-to carry out the information-flow analysis itself, without any
-modifications to the platform needed.
+\section*{Description of the Work}
 
-limitations of both solutions
+Following the work conducted on TaintDroid, the outcome of this project 
+will be a tool with similar goals, but achieving them in a different
+way. TaintDroid integrates into the lower levels of the operating 
+system, altering Dalvik's memory management and instructions to store 
+and propagate the taint transparently to the applications running on top
+of it. However, similar result can be accomplished by extracting the 
+executable code from the application's package and instrumenting it to 
+carry out the information-flow analysis itself, without any 
+modifications to the platform needed, which is what this project will try 
+to attain.
+
+Limitations and advantages of both solutions will be thoroughly 
+compared in the evaluation section of the dissertation. Obviously, 
+the low-level method makes it possible to trace taint throughout 
+the system by patching the IPC kernel module, or to store taint within 
+attributes of files. This can't be done by per-application bytecode 
+instrumentation, but the fact that each application is processed before 
+it is loaded back into the device and executed leaves room for static 
+analysis of the code, possibly even alteration of its behaviour. 
+
+Dynamic data-flow analysis will form the core of the project, but based
+on other work done in this area, there are several ways of extending it.
+
+\begin{description}
+\item{Implicit-flow analysis} \\
+TaintDroid focuses strictly on tracing the explicit flows of information,
+by propagating the taint when data-handling CPU instructions are used. 
+But information can be leaked via implicit flows (branching instructions)
+as well. Consider the following example:
+\begin{verbatim}
+int sensitiveData = getSensitiveData(); // tainted variable
+int leakedData = 0; // untainted variable
+
+while (sensitiveData--)
+    leakedData++;
+
+output(leakedData); // leakedData still not tainted
+\end{verbatim}
+
+In this case, \verb|leakedData| has not been tainted, because there is 
+no explicit information flow from \verb|sensitiveData|. Instead, 
+\verb|sensitiveData| effects the control flow of the program, leaking
+the information into \verb|leakedData| implicitly. 
+
+Leakage via implicit flow is best identified by static analysis of the 
+source code of the program, often used to analyse scripting languages. 
+Since the source code is not available for third-party applications on 
+Android, it needs to be analysed dynamically on the instruction level.
+Downside of this solution is that the taint-propagation rules need to
+be rather conservative, leading to false positives. This is the reason
+why TaintDroid developers decided not to include it into their 
+system-wide solution. Since this project will instrument applications
+separately, the user will be given the choice of instrumentation
+including or excluding implicit-flow analysis.
+
+\item{Causality analysis} \\
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
+
+\item{Mocking} \\
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
+ 
+\item{Reflection} \\
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
+
+\item{Performance optimization} \\
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
+
+\end{description}
 
 
 
@@ -193,17 +252,6 @@ which coils activations change when a given relay changes state.  If
 there are fewer than about 16 relays this can be precomputed in the
 form of a table, but for larger circuits other strategies should be
 considered. A possible approach might be based on dynamic programming.
-
-
-\section*{Extensions}
-
-\subsection*{Implicit flow}
-
-\subsection*{Causality analysis}
- 
-\subsection*{Reflection}
-
-\subsection*{}
 
 
 \section*{Success Criterion}
