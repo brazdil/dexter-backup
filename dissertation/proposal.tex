@@ -168,9 +168,9 @@ a snapshot of the repository.
 
 The main outcome of this project will be a console application written 
 in Java, capable of instrumenting given Dalvik executables, known as DEX
-files, according to options specified via command-line arguments. It will
-use the ASMDEX \cite{asm.ow2.org/asmdex-index.html} library to parse, 
-modify and reconstruct Dalvik bytecode. 
+files, according to options specified via command-line arguments. 
+%It will use the ASMDEX \cite{asm.ow2.org/asmdex-index.html} library to 
+%parse, modify and reconstruct Dalvik bytecode. 
 
 Data sources and sinks will be specified as an XML file containing a list
 of classes and/or methods inside the Android library, accessing which
@@ -179,7 +179,7 @@ sources and sinks will be part of the distribution.
 
 The application will be accompanied by a set of UNIX shell scripts, which 
 will extract executable code from an application on a connected device 
-by using tools present in the Android SDK and \emph{apktool} 
+by using tools present in the Android SDK and apktool 
 \cite{code.google.com/p/android-apktool}, the Swiss army-knife of
 Android reverse-engineering. After letting the instrumenting application
 process the code, scripts will repackage the modified application, and 
@@ -190,14 +190,20 @@ key of user's choice.
 Core part of the project will be the development of a dependable code 
 instrumentation, which will reliably identify the sources and sinks and
 propagate the taint throughout the application. This requires detailed
-analysis of the effects of each instruction of the Dalvik VM, and through
-testing. Special attention will need to be given to correct 
+analysis of the effects of each instruction of the Dalvik VM, and 
+thorough testing. Special attention will need to be given to correct 
 instrumentation of the exception mechanism, which will require static 
 analysis of the location of exception-throwing instructions and 
 corresponding try/catch blocks, utilising knowledge from the Optimising
 Compilers course.
 
-TEST BED
+The development process will follow the philosophy of Test Driven 
+Development. Thus a significant amount of time will be spent on building 
+a robust set of unit tests to ensure high quality of code. JUnit will be 
+used to test the internal of the instrumenting application, and shell 
+scripts will be created that will try to execute small snippets of 
+instrumented code on an actual Dalvik virtual machine, be it on a proper 
+device or in the provided emulator.
 
 In the minimal version of the project, the desktop application consisting of
 Java instrumenting application and shell scripts) will interact with the user
