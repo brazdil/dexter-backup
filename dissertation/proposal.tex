@@ -68,7 +68,7 @@
 \vfil
 \eject
 
-\section*{Introduction}
+\section*{Introduction and Description of the Work}
 
 Android is a popular, open-source Linux-based platform for touchscreen
 mobile devices, such as smartphones and tablets. Ever since its unveiling 
@@ -110,8 +110,6 @@ an analytical tool providing insight into the behaviour of third-party
 applications, giving the users a better picture of what happens with
 the data they entrust to their applications.
 
-\section*{Description of the Work}
-
 Following the work conducted on TaintDroid, the outcome of this project 
 will be a tool with similar goals, but achieving them in a different
 way. TaintDroid integrates into the lower levels of the operating 
@@ -131,6 +129,29 @@ attributes of files. This can't be done by per-application bytecode
 instrumentation, but the fact that each application is processed before 
 it is loaded back into the device and executed leaves room for static 
 analysis of the code, possibly even alteration of its behaviour. 
+
+\section*{Resources Required}
+
+Development will require a computer with the Android SDK 
+\cite{developer.android.com} installed. Most of the work will be done
+on my personal computer, but testing on a large sample of applications
+will need to be executed on a PWF machine. 
+
+\emph{PHONE}
+
+Large collection of infected applications have been obtained from the
+Android Malware Genome Project \cite{www.malgenomeproject.org}. 
+Sufficient disc allocation of 3GB will be needed on the PWF to store
+a snapshot of the repository. 
+
+\section*{Starting Point}
+
+\al\emph{This is the place to declare any prior knowledge relevant to
+  the project.  For example any relevant courses taken prior to the
+  start of the Diploma year.}\ar
+
+
+\section*{Substance and Structure of the Project}
 
 Dynamic data-flow analysis will form the core of the project, but based
 on other work done in this area, there are several ways of extending it.
@@ -173,85 +194,17 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisi
 \item{Mocking} \\
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
  
-\item{Reflection} \\
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
-
 \item{Performance optimization} \\
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
+
+\item{Reflection} \\
+One major limitation of analysis by bytecode instrumentation is that it 
+cannot easily deal with reflection. 
 
 \end{description}
 
 
 
-\section*{Resources Required}
-
-own computer or PWF, android sdk, drivers
-android phone or emulator
-access to android genome
-appropriate storage on PWF
-
-\al\emph{The most suitable language may turn out to be non-standard and
-  its availability needs to be established.  The project can also be
-  undertaken (with permission) on a privately owned PC.}\ar
-
-
-\section*{Starting Point}
-
-\al\emph{This is the place to declare any prior knowledge relevant to
-  the project.  For example any relevant courses taken prior to the
-  start of the Diploma year.}\ar
-
-
-\section*{Substance and Structure of the Project}
-
-The objective of the project is to design a ladder-logic style
-language and implement its compiler and interpreter/simulator so that
-the behaviour of a controller specified in the language can be
-simulated.  The input of the compiler should be ASCII text to
-represent the two-dimensional logic diagram.
- 
-Notations for wire joining and crossing should be chosen, and also a
-method of entering relays with delayed action should be designed. The
-exact rules governing how names can be associated with relays and
-coils must be specified. The chosen ladder logic notation should then
-be tried out by specifying some simple control circuits. Some of these
-will be used later when the system is being tested.
-
-Once the language details have been clarified, work can start on the
-compiler.  This could consist of a syntax analyser that constructs an
-internal representation of logic diagram, followed by a translator
-that converts this into a form suitable for interpretation.
-
-One possible representation of the circuit might be a list of relay
-nodes, a list of coil nodes and a list of wire nodes with suitable
-inter-node references to represent the circuit. For instance, a relay
-node could contain pointers to the activating coil and the two wires
-attached to its terminals. The syntax analyser will need some form of
-lexical analyser to handle low level input and deal with symbolic
-identifiers.
-
-The compiler will contain a translation phase that converts this
-internal representation of the circuit into a form that is suitable
-for efficient interpretation.  This might consist of a combination of
-interpretive code and pre-computed tables.
-
-The interpreter must be capable of simulating the execution of the
-specified controller.  It is likely that it should be written in the
-style of a discrete event simulator with a time queue of events to be
-processed in time order. A typically event might be the opening or
-closing of a relay at some specified time in the future. If this is
-the next event to happen, time will advance to that moment and the
-action will be performed.  This may affect the signals on some wires
-which in turn may activate or deactivate some relay coils. This may
-result in a cascade of new events being sent to the time queue. During
-simulation user readable output should be generated so that the
-behaviour of the controller can be clearly understood.
-
-Some ingenuity will be required to find a good way of determining
-which coils activations change when a given relay changes state.  If
-there are fewer than about 16 relays this can be precomputed in the
-form of a table, but for larger circuits other strategies should be
-considered. A possible approach might be based on dynamic programming.
 
 
 \section*{Success Criterion}
