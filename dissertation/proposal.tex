@@ -184,8 +184,8 @@ by using tools present in the Android SDK and \emph{apktool}
 Android reverse-engineering. After letting the instrumenting application
 process the code, scripts will repackage the modified application, and 
 upload it back to the device. Since all packages need to be signed, and
-it is not possible to sign them with the same key as the original author,
-packages will be signed by a private key of user's choice.
+there's no access to the original key, packages will be signed by a 
+key of user's choice.
 
 Core part of the project will be the development of a dependable code 
 instrumentation, which will reliably identify the sources and sinks and
@@ -196,6 +196,8 @@ instrumentation of the exception mechanism, which will require static
 analysis of the location of exception-throwing instructions and 
 corresponding try/catch blocks, utilising knowledge from the Optimising
 Compilers course.
+
+TEST BED
 
 In the minimal version of the project, the desktop application consisting of
 Java instrumenting application and shell scripts) will interact with the user
