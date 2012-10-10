@@ -79,7 +79,7 @@ the International Data Corporation.
 
 Unfortunately, with its growing popularity, the platform became a frequent
 target of increasingly sophisticated malware, masquerading as legitimate
-software, while leaking sensitive data about the users'. More complex
+software, while leaking sensitive data about the users. More complex
 malicious applications even try to hide their activity by exploiting 
 security holes of the underlying operating-system level to bypass the 
 protection mechanisms of the platform.
@@ -96,30 +96,44 @@ project developed by a group of researchers from The Pennsylvania State
 University, Duke University and Intel Labs. They point out that the
 access control in Android is rather coarse-grained, with all-or-nothing
 policy. This means that once an application gets an access to a resource,
-it can do whatever it wants with it. In the case of malware, this happens
-not only without the user's consent, but even without their knowledge.
+it can do whatever it wants with it, sometimes not only without the 
+user's consent, but also without his or her knowledge.
 
 TaintDroid modifies several core parts of the Android platform, such as 
-the Dalvik VM, the Android shared library, and even the file-system, 
-adding support for runtime labelling (tainting) of sensitive data like 
-phone number, contact list or GPS location, and tracing the flow of such 
-data through the system. By checking the labels of data that are leaving 
-the system, e.g. via the network connection, TaintDroid can warn the 
-users about the possibility of their data being misused. It is therefore 
-an analytical tool providing insight into the behaviour of third-party
-applications, giving the users a better picture of what happens with
-the data they entrust to their applications.
+the Dalvik VM, the Android shared library, and even the file-system. 
+Id adds support for runtime labelling (tainting) of sensitive data like 
+the phone number, the contact list or GPS location, and tracing the flow 
+of such data through the system. By checking the labels of data that are
+leaving the system, e.g. via the network connection, TaintDroid can warn 
+the users about the possibility of their data being misused. It is 
+therefore an analytical tool providing insight into the behaviour of 
+third-party applications, giving the users a better picture of what 
+happens with the data they entrust to their applications.
 
 Following the work conducted on TaintDroid, the outcome of this project 
-will be a tool with similar goals, but achieving them in a different
-way. TaintDroid integrates into the lower levels of the operating 
-system, altering Dalvik's memory management and instructions to store 
-and propagate the taint transparently to the applications running on top
-of it. However, similar result can be accomplished by extracting the 
-executable code from the application's package and instrumenting it to 
-carry out the information-flow analysis itself, without any 
-modifications to the platform needed, which is what this project will try 
-to attain.
+will be a desktop application with similar goals, but achieving them in 
+a different manner. TaintDroid integrates into the lower levels of the
+operating system, altering Dalvik's memory management and instructions 
+to store and propagate the taint transparently to the applications 
+running on top of it. However, similar result can be accomplished by 
+extracting the executable code from the application's package and 
+instrumenting it to carry out the information-flow analysis itself, 
+without any modification to the platform needed, which is what this 
+project will try to attain.
+
+Even though the resulting desktop application will be intended mostly for
+use by professionals, the configuration of the privacy policies should be
+intuitive enough even for users without deep understanding of taint-based
+analysis. Typical user will:
+\begin{itemize}
+\item{connect their Android device to the computer}
+\item{choose an installed application which should be instrumented}
+\item{select sources of information and output channels to be monitored}
+\item{wait for the application to get instrumented, repackaged and sent
+      back to the device}
+\item{run the application and wait for notifications about privacy policy
+      violations}
+\end{itemize}
 
 Limitations and advantages of both solutions will be thoroughly 
 compared in the evaluation section of the dissertation. Obviously, 
@@ -137,12 +151,12 @@ Development will require a computer with the Android SDK
 on my personal computer, but testing on a large sample of applications
 will need to be executed on a PWF machine. 
 
-\emph{PHONE}
-
 Large collection of infected applications have been obtained from the
 Android Malware Genome Project \cite{www.malgenomeproject.org}. 
 Sufficient disc allocation of 3GB will be needed on the PWF to store
 a snapshot of the repository. 
+
+\emph{PHONE}
 
 \section*{Starting Point}
 
@@ -153,7 +167,9 @@ a snapshot of the repository.
 
 \section*{Substance and Structure of the Project}
 
-Dynamic data-flow analysis will form the core of the project, but based
+Dynamic data-flow analysis will form the core of the project.
+
+, but based
 on other work done in this area, there are several ways of extending it.
 
 \begin{description}
@@ -181,12 +197,12 @@ Leakage via implicit flow is best identified by static analysis of the
 source code of the program, often used to analyse scripting languages. 
 Since the source code is not available for third-party applications on 
 Android, it needs to be analysed dynamically on the instruction level.
-Downside of this solution is that the taint-propagation rules need to
-be rather conservative, leading to false positives. This is the reason
-why TaintDroid developers decided not to include it into their 
-system-wide solution. Since this project will instrument applications
-separately, the user will be given the choice of instrumentation
-including or excluding implicit-flow analysis.
+Downside of this solution is that the taint-propagation rules must be
+rather conservative, leading to false positives. This is the reason why
+TaintDroid developers decided not to include it into their system-wide
+solution. Since this project will instrument applications separately, 
+the user will be given the choice of instrumentation including or 
+excluding implicit-flow analysis.
 
 \item{Causality analysis} \\
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
