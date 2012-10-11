@@ -154,14 +154,26 @@ Android Malware Genome Project \cite{www.malgenomeproject.org}.
 Sufficient disc allocation of 3GB will be needed on the PWF to store
 a snapshot of the repository. 
 
-\emph{PHONE}
+An Android smartphone will be supplied by the Department to test 
+the project on. In case of problems, the emulator can be used instead.
 
 \section*{Starting Point}
 
-\al\emph{This is the place to declare any prior knowledge relevant to
-  the project.  For example any relevant courses taken prior to the
-  start of the Diploma year.}\ar
+My previous experience includes a UROP internship at the Computer Lab
+in the summer of 2011. Students worked on security-related projects on
+the Android platform, an application for encrypted text-messaging in my
+case.
 
+In my other internship, I worked on a software-verification tool for JVM 
+developed by NASA. My plugin dynamically verifies correct usage of 
+physical units in scientific computation by assigning attributes with
+unit information to numerical values in the memory, and propagating
+it during arithmetic operations, which is a very similar idea to 
+taint-based flow tracing. I also learned a lot about the internals of
+JVM.
+
+In this project I hope to combine my prior skills and apply them in a 
+slightly different environment of the Dalvik VM and Android framework.
 
 \section*{Substance and Structure of the Project}
 
@@ -338,210 +350,19 @@ must be designed and implemented.
   better human/machine interaction, particularly for the visualisation
   of the behaviour of given circuit designs}.\ar
 
-\section*{Timetable and Milestones}
+\section*{Plan of work}
 
-\al\emph{In the following scheme, weeks are numbered so that the week
-  starting on the day on which Project Proposals are handed in is
-  Week~1.  The year's timetable means that the deadline for submitting
-  dissertations is in Week~34.}\ar
-
-\al\emph{In the Project Proposal that you hand in, {\rm actual dates}
-  should be used instead of week numbers and you should show how these
-  dates relate to the periods in which lectures take place. Week~1
-  starts immediately after submission of the Project Proposal.}\ar
-
-\al\emph{The timetable and milestones given below refer to just one
-  particular interpretation of this document.  Even if you select
-  exactly this interpretation you will need to review the suggested
-  timetable and adjust the dates to allow as precisely as you can for
-  the amount of programming and other related experience that you have
-  at the start of the year.  Take account of the dates you and your
-  Supervisor will be working in Cambridge outside Lecture Term.  Note
-  that some candidates write the Introduction and Preparation chapters
-  of their dissertations quite early in the year, while others will do
-  all their writing in one burst near the end}.\ar
-
-
-\subsection*{Before Proposal submission}
-
-\al\emph{This section will not appear in your Project Proposal.}\ar
- 
-Submission of Phase~1 Report Form. Discussion with Overseers and
-Director of Studies.  Allocation of and discussion with Project
-Supervisor, preliminary reading, choice of the variant on the project
-and language \al\emph{Java in this example\/}\ar, writing Project
-Proposal.  Discussion with Supervisor to arrange a schedule of regular
-meetings for obtaining support during the course of the year.
-
-Milestones: Phase~1 Report Form (on the Monday immediately following
-the main Briefing Lecture), then a Project Proposal complete with as
-realistic a timetable as possible, approval from Overseers and
-confirmed availability of any special resources needed. Signatures
-from Supervisor and Director of Studies.
-
-\subsection*{Weeks 1 to 5}
-
-\al\emph{Real work on the project starts here (as distinct from just
-  work on the proposal).  A significant problem for Diploma candidates
-  is that this critical period largely coincides with the Christmas
-  vacation.  There is no guarantee that supervisors will be available
-  outside Lecture Term, but Diploma students take much less of a
-  Christmas break than undergraduates do, and so have some opportunity
-  for uninterrupted reading and initial practical work at this stage.
-  It is important to have completed some serious work on the project
-  before the pressures of the Lent Term become all too apparent.}\ar
-
-Study C and the particular implementation of it to be used.  Practise
-writing various small programs, including key fragments of the compiler
-and interpreter.
-
-Milestones: Some working example C programs including code to deal
-with symbol tables in the lexical analyser, and part implementation of
-the time queue to be used in the interpreter/simulator.
-
-
-\subsection*{Weeks 6 and 7}
-
-Further literature study and discussion with Supervisor to ensure that
-the chosen data structures are satisfactory.  Implementation of the
-syntax analyser and debugging code to help test it.  This is likely to
-be code that can be used to display the data structures in
-human-readable form so that it is possible to check that they are as
-expected.
-
-Milestones: Ability to construct and display data structures that
-represent simple ladder logic programs such as:
-
-\begin{verbatim}
-    |    A               B                C     |
-    +---| |-------------| |--------------( )----+
-\end{verbatim}
-
-
-\subsection*{Weeks 8 to 10}
-
-Implementation of the translation phase of the compiler. This will of
-a decision to be made on what target code to generate. The obvious contnders
-are: an interpretive code, Java or C.
-
-Start to plan the Dissertation, thinking ahead especially to the
-collection of examples and tests that will be used to demonstrate that
-the project has been a success. 
-
-Milestones: Ability to compile some very simple ladder logic programs,
-and print out some human readable version of the target code produced.
-
-
-\subsection*{Weeks 11 and 12}
-
-Complete code for the interpreter/simulator, or the environment in
-which to run the generated Java or C target code.
-
-Prepare further test cases.  Review timetable for the remainder of the
-project and adjust in the light of experience thus far.  Write the
-Progress Report drawing attention to the code already written,
-incorporating some examples, and recording any augmentations which at
-this stage seem reasonably likely to be incorporated.
-
-Milestones: Simple ladder logic programs should now compile and run
-correctly, but probably with some serious inefficiencies in the code.
-Progress Report submitted and entire project reviewed both personally
-and with Overseers.
-
-
-\subsection*{Weeks 13 to 19 (including Easter vacation)}
-
-Rework the entire implementation to enhance the
-richness of the language it can deal with. \al\emph{It is possible that
-the initial implementation has severe restrictions on the number of
-relays or coils that can be handled. Such restrictions can be freed at
-this stage.}\ar\  Write initial chapters of the Dissertation.
-
-\al\emph{The Easter break from lectures can provide a time to work on a
-substantial challenge such as the computation of logarithms, where an
-uninterrupted week can allow you to get to grips with a fairly
-complicated algorithm.  This is a good time to put in some quiet work
-(while your Supervisor is busy on other things) writing the
-Preparation and Implementation chapters of the Dissertation.  By this
-stage the form of the final implementation should be sufficiently
-clear that most of that chapter can be written, even if the code is
-incomplete.  Describing clearly what the code will do can often be a
-way of sharpening your own understanding of how to implement it.}\ar
-
-Milestones: Preparation chapter of Dissertation complete,
-Implementation chapter at least half complete, code can perform a
-variety of interesting tasks and should be in a state that in the
-worst case it would satisfy the examiners with at most cosmetic
-adjustment.
-
-
-\subsection*{Weeks 20 to 26}
-
-\al\emph{Since your project is, by now, in fairly good shape there is
-a chance to use the immediate run-up to exams to attend to small
-rationalisations and to implement things that are useful but fairly
-straightforward.  It is generally not a good idea to drop all project
-work over the revision season; if you do, the code will feel amazingly
-unfamiliar when you return to it.  Equally, first priority has to go
-to the exams, so do not schedule anything too demanding on the project
-front here.  The fact that the Implementation chapter of the
-Dissertation is in draft will mean that you should have a very clear
-view of the work that remains, and so can schedule it rationally.}\ar
-
-Work on the project will be kept ticking over during this period but
-undoubtedly the Easter Term lectures and examination revision will
-take priority.
-
-
-\subsection*{Weeks 27 to 31}
-
-\al\emph{Getting back to work after the examinations and May Week
-  calls for discipline.  Setting a timetable can help stiffen your
-  resolve!}\ar
-
-Testing and evaluation.  Finish off otherwise ragged parts of the
-code.  Write the Introduction chapter and draft the Evaluation and
-Conclusions chapters of the Dissertation, complete the Implementation
-chapter.
-
-Milestones: Examples and test cases run and results collected,
-Dissertation essentially complete, with large sections of it
-proof-read by Supervisor and possibly friends and/or Director of
-Studies.
-
-
-\subsection*{Weeks 32 to 33}
-
-Finish Dissertation, preparing diagrams for insertion.  Review whole
-project, check the Dissertation, and spend a final few days on
-whatever is in greatest need of attention.
-
-\al\emph{In many cases, once a Dissertation is complete (but not
-  before) it will become clear where the biggest weakness in the
-  entire work is.  In some cases this will be that some feature of the
-  code has not been completed or debugged, in other cases it will be
-  that more sample output is needed to show the project's capabilities
-  on larger test cases.  In yet other cases it will be that the
-  Dissertation is not as neatly laid out or well written as would be
-  ideal.  There is much to be said for reserving a small amount of
-  time right at the end of the project (when your skills are most
-  developed) to put in a short but intense burst of work to try to
-  improve matters.  Doing this when the Dissertation is already
-  complete is good: you have a clearly limited amount of time to work,
-  and if your efforts fail you still have something to hand in!  If
-  you succeed you may be able to replace that paragraph where you
-  apologise for not getting feature X working into a brief note
-  observing that you can indeed do X as well as all the other things
-  you have talked about.}\ar
-
-
-\subsection*{Week 34}
-
-\al\emph{Aim to submit the dissertation at least a week before the
-  deadline. Be ready to check whether you will be needed for a\/ {\rm
-    viva voce} examination}.\ar
-
-Milestone: Submission of Dissertation. 
+\begin{itemize}
+	\item{\textbf{Fortnight 1:} Set up the instrumenting application; 
+	      create application-extraction and repackaging scripts; process 
+	      a DEX file, be able to copy its content into a new DEX file}
+	\item{\textbf{Fortnight 2:} Instrumentation of trivial instructions;
+	      specification and identification of sources and sinks}
+	\item{\textbf{Fortnight 3:} Static analysis of exceptions and their 
+	      instrumentation; extra time for testing}
+	\item{\textbf{Fortnight 4:} Implicit-flow instrumentation; assess 
+	      the impact of implicit-flow analysis}
+\end{itemize}
 
 \printbibliography
 \end{document}
