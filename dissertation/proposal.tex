@@ -204,9 +204,7 @@ a robust set of unit tests to ensure high quality of code. JUnit will be
 used to test the internal of the instrumenting application. Another set of 
 shell scripts will be created to automatically try to execute a collection
 of small, tailored snippets of code on an actual Dalvik virtual machine, 
-first in its original form and then instrumented, comparing the outcome
-to make sure that the instrumentation doesn't affect the behaviour of 
-the instrumented applications.
+comparing the output of original and instrumented versions.
 
 \subsection*{Extensions}
 
@@ -266,8 +264,8 @@ decides which will be called based on the presence of taint in its
 arguments. Authors of the paper argued that only 2\% of typical function
 calls were tainted, which is why this optimisation had such an impact
 on performance. Whether this is true in the context of Android mobile
-applications as well is not clear. Before implementing it, a short study
-of the number of taint-less method calls should be conducted.
+applications as well is not clear. Before implementing FastPath, a short 
+study of the number of taint-less method calls should be conducted.
 
 \subsubsection*{Causality analysis}
 
@@ -294,10 +292,6 @@ cannot easily deal with reflection or dynamically loaded code. The core
 project will simply warn the user that these are present in the processed
 code, but a possible extension could further explore methods of dealing 
 with such calls.
-
-\subsubsection*{Mocking}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
 
 \section*{Success Criterion}
 
@@ -344,8 +338,6 @@ must be designed and implemented.
   better human/machine interaction, particularly for the visualisation
   of the behaviour of given circuit designs}.\ar
 
-
-
 \section*{Timetable and Milestones}
 
 \al\emph{In the following scheme, weeks are numbered so that the week
@@ -386,7 +378,6 @@ the main Briefing Lecture), then a Project Proposal complete with as
 realistic a timetable as possible, approval from Overseers and
 confirmed availability of any special resources needed. Signatures
 from Supervisor and Director of Studies.
-
 
 \subsection*{Weeks 1 to 5}
 
