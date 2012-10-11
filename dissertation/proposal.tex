@@ -145,10 +145,9 @@ analysis of the code, possibly even alteration of its behaviour.
 
 \section*{Resources Required}
 
-Development will require a computer with the Android SDK 
-\cite{developer.android.com} installed. Most of the work will be done
-on my personal computer, but testing on a large sample of applications
-will need to be executed on a PWF machine. 
+Development will require a computer with the Android SDK installed. Most 
+of the work will be done on my personal computer, but testing on a large 
+sample of applications will need to be executed on a PWF machine. 
 
 Large collection of infected applications have been obtained from the
 Android Malware Genome Project \cite{www.malgenomeproject.org}. 
@@ -216,8 +215,8 @@ extra effort will be put into extending the list of supported features. Each
 of the following extensions can be implemented separately and they are 
 sorted according to the added benefit to the users in descending order.
 
-\begin{description}
-\item [Implicit-flow analysis:] \ \\
+\subsubsection*{Implicit-flow analysis}
+
 TaintDroid focuses strictly on tracing the explicit flows of information, 
 by propagating the taint when data-handling CPU instructions are used. 
 But information can be leaked via implicit flows (branching instructions) 
@@ -249,7 +248,8 @@ solution. Since this project will instrument applications separately,
 the user will be given the choice of instrumentation including or 
 excluding implicit-flow analysis.
 
-\item [Performance optimization:] \ \\
+\subsubsection*{Performance optimization}
+
 Typical overhead of dynamic data-flow analysis by instruction-level 
 varies between 3 and 35 times of the original speed. While there is
 very limited room for making the instrumentation itself more efficient,
@@ -269,7 +269,8 @@ on performance. Whether this is true in the context of Android mobile
 applications as well is not clear. Before implementing it, a short study
 of the number of taint-less method calls should be conducted.
 
-\item [Causality analysis:] \ \\
+\subsubsection*{Causality analysis}
+
 While TaintDroid quite reliably identifies privacy policy violations,
 it fails to provide the action of the user which led to it. The user 
 might therefore have trouble distinguishing whether the violation 
@@ -277,7 +278,8 @@ happened in a background-running thread or as a result of interaction
 with the UI. By instrumenting the message loop of Android Activity class
 (equivalent of windows), this information could be provided.
 
-\item [Graphical user interface:] \ \\
+\subsubsection*{Graphical user interface}
+
 In the minimal version of the project, the desktop application consisting of
 Java instrumenting application and shell scripts) will interact with the user
 strictly through command-line interface. Similarly, the code injected into 
@@ -285,18 +287,16 @@ the analysed application will print its warnings into the system log.
 Graphical user interface for both of these would be a possible low-priority 
 extension.
 
-\item [Reflection:] \ \\
+\subsubsection*{Reflection}
+
 One major limitation of analysis by bytecode instrumentation is that it 
-cannot easily deal with reflection. 
+cannot easily deal with reflection or dynamically loaded code. The core
+project will simply warn the user that these are present, but a possible
+extension could further explore methods of dealing with such calls.
 
-\item [Mocking:] \ \\
+\subsubsection*{Mocking}
+
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
- 
-\end{description}
-
-
-
-
 
 \section*{Success Criterion}
 
