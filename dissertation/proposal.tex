@@ -166,7 +166,7 @@ a snapshot of the repository.
 
 \section*{Substance and Structure of the Project}
 
-\subsection*{Minimal deliverable}
+\subsection*{Project Core}
 
 The main outcome of this project will be a console application written 
 in Java, capable of instrumenting given Dalvik executables, known as DEX
@@ -209,16 +209,12 @@ first in its original form and then instrumented, comparing the outcome
 to make sure that the instrumentation doesn't affect the behaviour of 
 the instrumented applications.
 
-In the minimal version of the project, the desktop application consisting of
-Java instrumenting application and shell scripts) will interact with the user
-strictly through command-line interface. Similarly, the code injected into 
-the analysed application will print its warnings into the system log. 
-Graphical user interface for both of these will be a possible low-priority 
-extension.
-
 \subsection*{Extensions}
 
-Here they are, sorted according to priority.
+Depending on the amount of time necessary to finish the core of the project,
+extra effort will be put into extending the list of supported features. Each 
+of the following extensions can be implemented separately and they are 
+sorted according to the added benefit to the users in descending order.
 
 \begin{description}
 \item [Implicit-flow analysis:] \ \\
@@ -253,25 +249,44 @@ solution. Since this project will instrument applications separately,
 the user will be given the choice of instrumentation including or 
 excluding implicit-flow analysis.
 
+\item [Performance optimization:] \ \\
+Typical overhead of dynamic data-flow analysis by instruction-level 
+varies between 3 and 35 times of the original speed. While there is
+very limited room for making the instrumentation itself more efficient,
+time can easily be invested into static analysis of the code which would
+identify the parts of the code that need to be instrumented, i.e. the 
+possible paths between sources and sinks. 
+
+The "A Low-Overhead Practical Information Flow Tracking System for 
+Detecting Security Attacks" paper, which studied taint-based flow tracing 
+in the context of x86 server applications suggests a form of dynamic 
+optimization called FastPath. It includes both the original and 
+instrumented version of each method in the resulting executable, and
+decides which will be called based on the presence of taint in its 
+arguments. Authors of the paper argued that only 2\% of typical function
+calls were tainted, which is why this optimisation had such an impact
+on performance. Whether this is true in the context of Android mobile
+applications as well is not clear. Before implementing it, a short study
+of the number of taint-less method calls should be conducted.
+
 \item [Causality analysis:] \ \\
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
 
-\item [Performance optimization:] \ \\
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
+\item [Graphical user interface:] \ \\
+In the minimal version of the project, the desktop application consisting of
+Java instrumenting application and shell scripts) will interact with the user
+strictly through command-line interface. Similarly, the code injected into 
+the analysed application will print its warnings into the system log. 
+Graphical user interface for both of these will be a possible low-priority 
+extension.
 
-\item [Mocking:] \ \\
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
- 
 \item [Reflection:] \ \\
 One major limitation of analysis by bytecode instrumentation is that it 
 cannot easily deal with reflection. 
 
-\item [Graphical user interface:] \ \\
-Neither the desktop application (and scripts), nor the code injected 
-into the analysed mobile application will have a graphical user interface
-in the minimal version of the project. 
-
-
+\item [Mocking:] \ \\
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
+ 
 \end{description}
 
 
