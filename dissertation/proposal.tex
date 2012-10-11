@@ -270,14 +270,19 @@ applications as well is not clear. Before implementing it, a short study
 of the number of taint-less method calls should be conducted.
 
 \item [Causality analysis:] \ \\
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fringilla facilisis rutrum. Ut fringilla, erat sit amet tincidunt scelerisque, dolor magna semper orci, eu blandit mi tellus quis nisi. Maecenas massa purus, elementum vel scelerisque luctus, convallis eget est. Cras vestibulum turpis ac lorem euismod vel rhoncus nulla imperdiet. Praesent molestie dolor eget mauris mollis sit amet adipiscing ligula consequat. Ut nibh risus, pulvinar sed viverra ac, consequat ut ipsum. Sed lacinia, libero id egestas consequat, erat purus hendrerit eros, nec adipiscing mi magna ut felis.
+While TaintDroid quite reliably identifies privacy policy violations,
+it fails to provide the action of the user which led to it. The user 
+might therefore have trouble distinguishing whether the violation 
+happened in a background-running thread or as a result of interaction
+with the UI. By instrumenting the message loop of Android Activity class
+(equivalent of windows), this information could be provided.
 
 \item [Graphical user interface:] \ \\
 In the minimal version of the project, the desktop application consisting of
 Java instrumenting application and shell scripts) will interact with the user
 strictly through command-line interface. Similarly, the code injected into 
 the analysed application will print its warnings into the system log. 
-Graphical user interface for both of these will be a possible low-priority 
+Graphical user interface for both of these would be a possible low-priority 
 extension.
 
 \item [Reflection:] \ \\
