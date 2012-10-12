@@ -22,8 +22,7 @@
 \medskip
 \rightline{\large\emph{db538}}
 
-\vfil
-
+\vspace{0.3in}
 \centerline{\large Computer Science Tripos Part II Project Proposal}
 \vspace{0.4in}
 \centerline{\Large\bf Taint-Based Flow Tracing by}
@@ -32,41 +31,7 @@
 \vspace{0.3in}
 \cleanlookdateon
 \centerline{\large \emph \today}
-
-\vfil
-
-{\bf Project Originator:} \emph{Dr A. R. Beresford}
-
-%\vspace{0.1in}
-%
-%{\bf Resources Required:} See attached Project Resource Form
-
 \vspace{0.5in}
-
-{\bf Project Supervisor:} \emph{Dr A. R. Beresford}
-
-\vspace{0.2in}
-
-{\bf Signature:}
-
-\vspace{0.5in}
-
-{\bf Director of Studies:}  \emph{Dr S. W. Moore}
-
-\vspace{0.2in}
-
-{\bf Signature:}
-
-\vspace{0.5in}
-
-{\bf Overseers:} \emph{Prof J. M. Bacon}\ and \emph{Prof R. J. Anderson}
-
-\vspace{0.2in}
-
-{\bf Signatures:} 
-
-\vfil
-\eject
 
 \section*{Introduction and Description of the Work}
 
@@ -141,7 +106,7 @@ the system by patching the IPC kernel module, or to store taint within
 attributes of files. This can't be done by per-application bytecode 
 instrumentation, but the fact that each application is processed before 
 it is loaded back into the device and executed leaves room for static 
-analysis of the code, possibly even alteration of its behaviour. 
+analysis of the code, perhaps even alteration of its behaviour. 
 
 \section*{Resources Required}
 
@@ -312,43 +277,28 @@ successfully completed.
 
 \begin{enumerate}
 
-\item A notation in the style of ladder logic needs to be designed and
-  specified in detail.
+\item Correct way of instrumenting the code needs to be designed and shown
+       to propagate taint correctly, with extra attention paid to correct
+       exception-handling.
 
-\item An internal representation of the ladder logic program must be
-  designed.
+\item Method of source/sink specification has to be designed and commonly
+       used specifications distributed with the project.
 
-\item Program/programs must be designed and implemented to convert
-  this notation into a form suitable for interpretation/simulation.
-
-\item The data structures and algorithms used by the discrete event simulator
-must be designed and implemented.
+\item Instrumenting application and accompanying repackaging shell scripts
+       must be implemented.
 
 \item Details of what output the system should generate and how it
-  should be controlled (by the user) must be specified.
+       should be controlled (by the user) must be specified.
 
-\item Demonstration test programs should be written and run to
-  demonstrate the the project works.
+\item Capabilities of the information-flow analysis must be demonstrated
+       on examples of real applications.
 
-\item Some indication of the efficiency of the implementation in terms
-  of space and time should be given.
+\item Performance should be compared to uninstrumented application and to
+       TaintDroid.
 
 \item The dissertation must be planned and written.
 
 \end{enumerate}
-
-\al\emph{The sketches above are to be taken as starting points for
-  investigation of the literature and discussion with your Supervisor.
-  A look at the 1996 Diploma Dissertation, {\rm A Ladder Logic
-    Compiler and Interpreter}, by Johnson Adesanya, is likely to prove
-  useful since it provides some pointers into the literature, and
-  shows in detail one way of solving the problem}.\ar
-
-\medskip \al\emph{It would also be possible to adjust the style and
-  emphasis of the project either towards the best possible
-  computational capability for your code, or in the direction of
-  better human/machine interaction, particularly for the visualisation
-  of the behaviour of given circuit designs}.\ar
 
 \section*{Plan of work}
 
