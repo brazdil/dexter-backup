@@ -44,30 +44,30 @@ the International Data Corporation.
 
 Unfortunately, with its growing popularity, the platform became a frequent
 target of increasingly sophisticated malware, masquerading as legitimate
-software, while leaking sensitive data about the users. More complex
+software, while leaking sensitive data about users. More complex
 malicious applications even try to hide their activity by exploiting 
-security holes of the underlying operating-system level to bypass the 
+security holes of the underlying operating system to bypass the 
 protection mechanisms of the platform.
 
 Researchers have been coming up with different approaches to solving
 this problem, mostly focusing on porting well-established methods from
 the desktop environment to resource-limited devices running Android and
 other competing mobile operating systems. These methods range from 
-lightweight static analysis of the executable code, all the way to 
+static analysis of the executable code, all the way to 
 enforcing sandboxing by virtualization. 
 
 One such approach is shown in TaintDroid \cite{www.appanalysis.org}, 
-project developed by a group of researchers from The Pennsylvania State
+a project developed by a group of researchers from The Pennsylvania State
 University, Duke University and Intel Labs. They point out that the
 access control in Android is rather coarse-grained, with all-or-nothing
-policy. This means that once an application gets an access to a resource,
-it can do whatever it wants with it, sometimes not only without the 
-user's consent, but also without his or her knowledge.
+policy. This means that once an application is given access to a resource,
+it can do whatever it wants with it, not needing any further consent from 
+the user.
 
 TaintDroid modifies several core parts of the Android platform, such as 
 the Dalvik VM, the Android shared library, and even the file-system. 
-Id adds support for runtime labelling (tainting) of sensitive data like 
-the phone number, the contact list or GPS location, and tracing the flow 
+It adds support for runtime labelling (tainting) of sensitive data like 
+the phone number, the contact list or GPS location, and traces the flow 
 of such data through the system. By checking the labels of data that are
 leaving the system, e.g. via the network connection, TaintDroid can warn 
 the users about the possibility of their data being misused. It is 
@@ -90,9 +90,8 @@ of monitored privacy policies should be intuitive enough even for users
 without deep understanding of taint-based analysis. Typical user will:
 \begin{itemize}
 \item{connect their Android device to the computer}
-\item{choose an installed application which should be instrumented}
-\item{select sources of information and output channels (sinks) to be
-      monitored}
+\item{choose an installed application that should be instrumented}
+\item{select data sources and output channels (sinks) to be monitored}
 \item{wait for the application to get instrumented, repackaged and sent
       back to the device}
 \item{run the application and wait for notifications about privacy policy
@@ -102,7 +101,7 @@ without deep understanding of taint-based analysis. Typical user will:
 Limitations and advantages of both solutions will be thoroughly 
 compared in the evaluation section of the dissertation. Obviously, 
 the low-level method makes it possible to trace taint throughout 
-the system by patching the IPC kernel module, or to store taint within 
+the system by patching the IPC kernel module, or storing taint within 
 attributes of files. This can't be done by per-application bytecode 
 instrumentation, but the fact that each application is processed before 
 it is loaded back into the device and executed leaves room for static 
@@ -129,16 +128,17 @@ in the summer of 2011. Students worked on security-related projects on
 the Android platform, an application for encrypted text-messaging in my
 case.
 
-In my other internship, I worked on a software-verification tool for JVM 
-developed by NASA. My plugin dynamically verifies correct usage of 
-physical units in scientific computation by assigning attributes with
-unit information to numerical values in the memory, and propagating
-it during arithmetic operations, which is a very similar idea to 
-taint-based flow tracing. I also learned a lot about the internals of
-JVM.
+During my other internship in the summer of 2012, I worked on Java PathFinder,
+a software-verification tool for JVM developed by NASA. My plugin dynamically 
+verifies correct usage of physical units in scientific computation by 
+runtime assignment of attributes with unit information to numerical values 
+in the memory, and their propagation during arithmetic operations, which is 
+an idea very similar to taint-based flow tracing. 
 
 In this project I hope to combine my prior skills and apply them in a 
-slightly different environment of the Dalvik VM and Android framework.
+slightly different environment of the Dalvik VM and Android framework,
+learning more about the possibilities of static and dynamic analysis
+of bytecode.
 
 \section*{Substance and Structure of the Project}
 
@@ -180,8 +180,8 @@ Development. Thus a significant amount of time will be spent on building
 a robust set of unit tests to ensure high quality of code. JUnit will be 
 used to test the internal of the instrumenting application. Another set of 
 shell scripts will be created to automatically try to execute a collection
-of small, tailored snippets of code on an actual Dalvik virtual machine, 
-comparing the output of original and instrumented versions.
+of tailored snippets of code on an actual Dalvik virtual machine, 
+comparing the output of the original and the instrumented version.
 
 \subsection*{Extensions}
 
@@ -247,16 +247,16 @@ study of the number of taint-less method calls should be conducted.
 \subsubsection*{Causality analysis}
 
 While TaintDroid quite reliably identifies privacy policy violations,
-it fails to provide the action of the user which led to it. The user 
+it fails to provide the user's action which caused it. The user 
 might therefore have trouble distinguishing whether the violation 
 happened in a background-running thread or as a result of interaction
 with the UI. By instrumenting the message loop of Android Activity class
-(equivalent of windows), this information could be provided.
+(equivalent of a window), this information could be provided.
 
 \subsubsection*{Graphical user interface}
 
 In the minimal version of the project, the desktop application consisting of
-Java instrumenting application and shell scripts) will interact with the user
+Java instrumenting application and shell scripts will interact with the user
 strictly through command-line interface. Similarly, the code injected into 
 the analysed application will print its warnings into the system log. 
 Graphical user interface for both of these would be a possible low-priority 
@@ -281,19 +281,18 @@ successfully completed.
        to propagate taint correctly, with extra attention paid to correct
        exception-handling.
 
-\item Method of source/sink specification has to be designed and commonly
-       used specifications distributed with the project.
+\item Method of source/sink specification has to be designed.
 
 \item Instrumenting application and accompanying repackaging shell scripts
        must be implemented.
 
 \item Details of what output the system should generate and how it
-       should be controlled (by the user) must be specified.
+       should be controlled by the user must be specified.
 
 \item Capabilities of the information-flow analysis must be demonstrated
        on examples of real applications.
 
-\item Performance should be compared to uninstrumented application and to
+\item Performance should be compared to the original application and to
        TaintDroid.
 
 \item The dissertation must be planned and written.
@@ -303,19 +302,19 @@ successfully completed.
 \section*{Plan of work}
 
 \begin{itemize}
-	\item{\textbf{Fortnight 1:} Set up the instrumenting application; 
-	      create application-extraction and repackaging scripts; process 
-	      a DEX file, be able to copy its content into a new DEX file}
+	\item{\textbf{Fortnight 1:} Instrumenting application set-up; 
+	      application-extraction and repackaging scripts; DEX processing, 
+	      copying DEX content into a new file}
 	\item{\textbf{Fortnight 2:} Instrumentation of trivial instructions;
 	      specification and identification of sources and sinks}
 	\item{\textbf{Fortnight 3:} Static analysis and instrumentation of 
 	      exceptions; time for testing}
-	\item{\textbf{Fortnight 4:} Implicit-flow instrumentation; assess 
-	      its impact}
+	\item{\textbf{Fortnight 4:} Implicit-flow instrumentation; assessment 
+	      of its impact}
 	\item{\textbf{Fortnight 5:} Performance optimisations}
 	\item{\textbf{Fortnight 6:} Causality analysis}
 	\item{\textbf{Fortnight 7:} Graphical user interface}
-	\item{\textbf{Fortnight 8:} Large-scale testing and evaluation}
+	\item{\textbf{Fortnight 8:} Large-sample testing and evaluation}
 	\item{\textbf{Rest:} Dissertation}
 \end{itemize}
 
