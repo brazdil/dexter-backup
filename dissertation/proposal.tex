@@ -53,33 +53,33 @@ Researchers have been coming up with different approaches to solving
 this problem, mostly focusing on porting well-established methods from
 the desktop environment to resource-limited devices running Android and
 other competing mobile operating systems. These methods range from 
-static analysis of the executable code, all the way to 
-enforcing sandboxing by virtualization. 
+static analysis of the executable code, all the way to enforcing sandboxing 
+by virtualization. 
 
 One such approach is shown in TaintDroid \cite{www.appanalysis.org}, 
 a project developed by a group of researchers from The Pennsylvania State
 University, Duke University and Intel Labs. They point out that the
 access control in Android is rather coarse-grained, with all-or-nothing
 policy. This means that once an application is given access to a resource,
-it can do whatever it wants with it, not needing any further consent from 
-the user.
+it can do whatever it wants with it, and doesn't need any further consent 
+from the user.
 
 TaintDroid modifies several core parts of the Android platform, such as 
-the Dalvik VM, the Android shared library, and even the file-system. 
-It adds support for runtime labelling (tainting) of sensitive data like 
-the phone number, the contact list or GPS location, and traces the flow 
-of such data through the system. By checking the labels of data that are
-leaving the system, e.g. via the network connection, TaintDroid can warn 
-the users about the possibility of their data being misused. It is 
-therefore an analytical tool providing insight into the behaviour of 
-third-party applications, giving the users a better picture of what 
-happens with the data they entrust to their applications.
+the Dalvik VM, the Android shared library, and even the file-system, 
+adding support for runtime labelling of sensitive data like the phone number, 
+the contact list or GPS location, and tracing the flow of such data through 
+the system. By checking the labels of data that are leaving the system, e.g. 
+via the network connection, TaintDroid can warn the users about the 
+possibility of their data being misused. It is therefore an analytical tool 
+providing insight into the behaviour of third-party applications, giving the 
+users a better picture of what happens with the data they entrust to their 
+applications.
 
 Following the work conducted on TaintDroid, the outcome of this project 
 will be a tool with similar goals, but achieving them in a different 
 manner. TaintDroid integrates into the lower levels of the operating 
 system, altering Dalvik's memory management and instructions to store and
-propagate the taint transparently to the applications running on top of 
+propagate the tags transparently to the applications running on top of 
 it. However, similar result can be accomplished by extracting the 
 executable code from the application's package and instrumenting it to 
 carry out the information-flow analysis itself, without any modification 
@@ -100,8 +100,8 @@ without deep understanding of taint-based analysis. Typical user will:
 
 Limitations and advantages of both solutions will be thoroughly 
 compared in the evaluation section of the dissertation. Obviously, 
-the low-level method makes it possible to trace taint throughout 
-the system by patching the IPC kernel module, or storing taint within 
+the low-level method makes it possible to trace the tags throughout 
+the system by patching the IPC kernel module, or storing them within 
 attributes of files. This can't be done by per-application bytecode 
 instrumentation, but the fact that each application is processed before 
 it is loaded back into the device and executed leaves room for static 
@@ -119,7 +119,8 @@ Sufficient disc allocation of 3GB will be needed on the PWF to store
 a snapshot of the repository. 
 
 An Android smartphone will be supplied by the Department to test 
-the project on. In case of problems, the emulator can be used instead.
+the project on. In case of problems, the Android emulator can be used 
+instead.
 
 \section*{Starting Point}
 
@@ -129,41 +130,37 @@ the Android platform, an application for encrypted text-messaging in my
 case.
 
 During my other internship in the summer of 2012, I worked on Java PathFinder,
-a software-verification tool for JVM developed by NASA. My plugin dynamically 
-verifies correct usage of physical units in scientific computation by 
-runtime assignment of attributes with unit information to numerical values 
-in the memory, and their propagation during arithmetic operations, which is 
-an idea very similar to taint-based flow tracing. 
+a software-verification tool for JVM. My plugin verified correct usage of 
+physical units in scientific computation by runtime assignment of attributes 
+with unit information to numerical values in the memory, and their propagation 
+during arithmetic operations, which is an idea very similar to flow tracing. 
 
 In this project I hope to combine my prior skills and apply them in a 
 slightly different environment of the Dalvik VM and Android framework,
-learning more about the possibilities of static and dynamic analysis
+while learning more about the possibilities of static and dynamic analysis
 of bytecode.
 
 \section*{Substance and Structure of the Project}
 
-\subsection*{Project Core}
-
-The main outcome of this project will be a console application written 
+The main outcome of this project will be a desktop application written 
 in Java, capable of instrumenting given Dalvik executables, known as DEX
-files, according to options specified via command-line arguments. 
+files, according to options specified via command-line arguments or 
+a graphical user interface.
 %It will use the ASMDEX \cite{asm.ow2.org/asmdex-index.html} library to 
 %parse, modify and reconstruct Dalvik bytecode. 
 
 Data sources and sinks will be specified as an XML file containing a list
 of classes and/or methods inside the Android library, accessing which
-should trigger the tainting mechanism. Specifications of commonly used 
+should trigger the tagging mechanism. Specifications of commonly used 
 sources and sinks will be part of the distribution.
 
-The application will be accompanied by a set of UNIX shell scripts, which 
-will extract executable code from an application on a connected device 
-by using tools present in the Android SDK and apktool 
-\cite{code.google.com/p/android-apktool}, the Swiss army-knife of
-Android reverse-engineering. After letting the instrumenting application
-process the code, scripts will repackage the modified application, and 
-upload it back to the device. Since all packages need to be signed, and
-there's no access to the original key, packages will be signed by a 
-key of user's choice.
+The application will also be able to extract executable code from 
+applications on a connected device by executing tools from the Android SDK
+and calling apktool \cite{code.google.com/p/android-apktool}, the Swiss 
+army-knife of Android reverse-engineering. After the instumentation, 
+the modified application will be repackaged and uploaded back to the device. 
+Since all packages need to be signed and there's no access to the original key, 
+packages will be signed by a key of user's choice.
 
 Core part of the project will be the development of a dependable code 
 instrumentation, which will reliably identify the sources and sinks and
@@ -175,6 +172,13 @@ analysis of the location of exception-throwing instructions and
 corresponding try/catch blocks, utilising knowledge from the Optimising
 Compilers course.
 
+Typical overhead of dynamic data-flow analysis by instruction-level 
+varies between 3 and 35 times of the original speed. While there is
+very limited room for making the instrumentation itself more efficient,
+time can easily be invested into static analysis of the code which would
+identify the parts of the code that need to be instrumented, i.e. the 
+possible paths between sources and sinks. 
+
 The development process will follow the philosophy of Test Driven 
 Development. Thus a significant amount of time will be spent on building 
 a robust set of unit tests to ensure high quality of code. JUnit will be 
@@ -182,13 +186,6 @@ used to test the internal of the instrumenting application. Another set of
 shell scripts will be created to automatically try to execute a collection
 of tailored snippets of code on an actual Dalvik virtual machine, 
 comparing the output of the original and the instrumented version.
-
-\subsection*{Extensions}
-
-Depending on the amount of time necessary to finish the core of the project,
-extra effort will be put into extending the list of supported features. Each 
-of the following extensions can be implemented separately and they are 
-sorted according to the added benefit to the users in descending order.
 
 \subsubsection*{Implicit-flow analysis}
 
@@ -223,26 +220,26 @@ solution. Since this project will instrument applications separately,
 the user will be given the choice of instrumentation including or 
 excluding implicit-flow analysis.
 
-\subsubsection*{Performance optimization}
+%\subsubsection*{Performance optimization}
+%
+%The "A Low-Overhead Practical Information Flow Tracking System for 
+%Detecting Security Attacks" paper, which studied taint-based flow tracing 
+%in the context of x86 server applications suggests a form of dynamic 
+%optimization called FastPath. It includes both the original and 
+%instrumented version of each method in the resulting executable, and
+%decides which will be called based on the presence of taint in its 
+%arguments. Authors of the paper argued that only 2\% of typical function
+%calls were tainted, which is why this optimisation had such an impact
+%on performance. Whether this is true in the context of Android mobile
+%applications as well is not clear. Before implementing FastPath, a short 
+%study of the number of taint-less method calls should be conducted.
 
-Typical overhead of dynamic data-flow analysis by instruction-level 
-varies between 3 and 35 times of the original speed. While there is
-very limited room for making the instrumentation itself more efficient,
-time can easily be invested into static analysis of the code which would
-identify the parts of the code that need to be instrumented, i.e. the 
-possible paths between sources and sinks. 
+\subsection*{Extensions}
 
-The "A Low-Overhead Practical Information Flow Tracking System for 
-Detecting Security Attacks" paper, which studied taint-based flow tracing 
-in the context of x86 server applications suggests a form of dynamic 
-optimization called FastPath. It includes both the original and 
-instrumented version of each method in the resulting executable, and
-decides which will be called based on the presence of taint in its 
-arguments. Authors of the paper argued that only 2\% of typical function
-calls were tainted, which is why this optimisation had such an impact
-on performance. Whether this is true in the context of Android mobile
-applications as well is not clear. Before implementing FastPath, a short 
-study of the number of taint-less method calls should be conducted.
+Depending on the amount of time necessary to finish the core of the project,
+extra effort will be put into extending the list of supported features. Each 
+of the following extensions can be implemented separately and they are 
+sorted according to the added benefit to the users in descending order.
 
 \subsubsection*{Causality analysis}
 
@@ -252,15 +249,6 @@ might therefore have trouble distinguishing whether the violation
 happened in a background-running thread or as a result of interaction
 with the UI. By instrumenting the message loop of Android Activity class
 (equivalent of a window), this information could be provided.
-
-\subsubsection*{Graphical user interface}
-
-In the minimal version of the project, the desktop application consisting of
-Java instrumenting application and shell scripts will interact with the user
-strictly through command-line interface. Similarly, the code injected into 
-the analysed application will print its warnings into the system log. 
-Graphical user interface for both of these would be a possible low-priority 
-extension.
 
 \subsubsection*{Reflection}
 
