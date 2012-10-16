@@ -220,20 +220,6 @@ solution. Since this project will instrument applications separately,
 the user will be given the choice of instrumentation including or 
 excluding implicit-flow analysis.
 
-%\subsubsection*{Performance optimization}
-%
-%The "A Low-Overhead Practical Information Flow Tracking System for 
-%Detecting Security Attacks" paper, which studied taint-based flow tracing 
-%in the context of x86 server applications suggests a form of dynamic 
-%optimization called FastPath. It includes both the original and 
-%instrumented version of each method in the resulting executable, and
-%decides which will be called based on the presence of taint in its 
-%arguments. Authors of the paper argued that only 2\% of typical function
-%calls were tainted, which is why this optimisation had such an impact
-%on performance. Whether this is true in the context of Android mobile
-%applications as well is not clear. Before implementing FastPath, a short 
-%study of the number of taint-less method calls should be conducted.
-
 \subsection*{Extensions}
 
 Depending on the amount of time necessary to finish the core of the project,
@@ -257,6 +243,20 @@ cannot easily deal with reflection or dynamically loaded code. The core
 project will simply warn the user that these are present in the processed
 code, but a possible extension could further explore methods of dealing 
 with such calls.
+
+\subsubsection*{FastPath optimization}
+
+The "A Low-Overhead Practical Information Flow Tracking System for 
+Detecting Security Attacks" paper, which studied taint-based flow tracing 
+in the context of x86 server applications suggests a form of dynamic 
+optimization called FastPath. It includes both the original and 
+instrumented version of each method in the resulting executable, and
+dynamically decides which will be called based on the presence of non-empty 
+tags in its arguments. Authors of the paper argued that only 2\% of typical 
+function calls were labelled, which is why this optimisation had such an 
+impact on performance. Whether this is true in the context of Android mobile
+applications as well is not clear. Before implementing FastPath, a short 
+study of the number of unlabelled method calls should be conducted.
 
 \section*{Success Criterion}
 
