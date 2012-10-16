@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%% Updated by MR March 2007 %%%%%%%%%%%%%%%%
 \documentclass[12pt]{article}
 \usepackage{a4wide}
+\usepackage{units}
 \usepackage[UKenglish]{babel}
 \usepackage[UKenglish]{isodate}
 \usepackage[style=footnote-dw]{biblatex}
@@ -168,8 +169,8 @@ Typical overhead of dynamic data-flow analysis by instruction-level
 instrumentation varies between 3 and 35 times of the original speed. While 
 there is very limited room for making the instrumentation itself more 
 efficient, time can easily be invested into static analysis of the code which 
-will identify the parts of the code that need to be instrumented, i.e. the 
-possible paths between sources and sinks. 
+will identify the parts of the code that do not need to be instrumented, 
+i.e. code outside paths between sources and sinks. 
 
 The application will also be able to extract executable code from 
 applications on a connected device by executing tools from the Android SDK
@@ -264,23 +265,31 @@ successfully completed.
 
 \begin{enumerate}
 
-\item Correct way of instrumenting the code needs to be designed and shown
-       to propagate taint correctly, with extra attention paid to correct
-       exception-handling.
+\item Application must communicate with Android devices and be able to
+      download/upload application packages (APKs).
 
-\item Method of source/sink specification has to be designed.
+\item Application must pass APKs to apktool in order to extract its
+      content, and to repackage them after instrumentation.
 
-\item Instrumenting application and accompanying repackaging shell scripts
-       must be implemented.
+\item Specification of sources, sinks and sanitizers has to be designed
+      and these properly identified by the instrumenting application.
 
-\item Details of what output the system should generate and how it
-       should be controlled by the user must be specified.
+\item Instrumentation of DEX files for both explicit and implicit flow 
+      analysis needs to be designed, implemented and shown to propagate 
+      labels correctly.
+
+\item Static analysis of execution paths between sources and sinks 
+      must be used to optimise performance.
 
 \item Capabilities of the information-flow analysis must be demonstrated
-       on examples of real applications.
+      on examples of real applications.
+      
+\item Advantages and limitations of system-level integration versus 
+      per-application bytecode instrumentation for the purpose of 
+      taint-based flow analysis must be appraised.
 
-\item Performance should be compared to the original application and to
-       TaintDroid.
+\item Performance must be compared to TaintDroid and overhead measured
+      against the original code.
 
 \item The dissertation must be planned and written.
 
@@ -289,20 +298,51 @@ successfully completed.
 \section*{Plan of work}
 
 \begin{itemize}
-	\item{\textbf{Fortnight 1:} Instrumenting application set-up; 
-	      application-extraction and repackaging scripts; DEX processing, 
-	      copying DEX content into a new file}
-	\item{\textbf{Fortnight 2:} Instrumentation of trivial instructions;
-	      specification and identification of sources and sinks}
-	\item{\textbf{Fortnight 3:} Static analysis and instrumentation of 
-	      exceptions; time for testing}
-	\item{\textbf{Fortnight 4:} Implicit-flow instrumentation; assessment 
-	      of its impact}
-	\item{\textbf{Fortnight 5:} Performance optimisations}
-	\item{\textbf{Fortnight 6:} Causality analysis}
-	\item{\textbf{Fortnight 7:} Graphical user interface}
-	\item{\textbf{Fortnight 8:} Large-sample testing and evaluation}
-	\item{\textbf{Rest:} Dissertation}
+
+    \item{\textbf{Fortnight 1 (\nicefrac{2}{2} October 2012)}: \\
+          Process a DEX file, analyse its content, save the content to another
+          file.}
+    \item{\textbf{Fortnight 2 (\nicefrac{1}{2} November 2012)}: \\
+          Instrumentation of trivial instructions for explicit-flow analysis,
+          identification of sources, sinks and sanitizers.}
+    \item{\textbf{Fortnight 3 (\nicefrac{2}{2} November 2012)}: \\
+          Communication with Android devices, APK repackaging, user interface.}
+    \item{\textbf{Fortnights 4 \& 5 (December 2012)}: \\
+          Instrumentation of more complex instructions for explicit-flow
+          analysis, testing on real applications.}
+    \item{\textbf{Fortnight 7 (\nicefrac{1}{2} January 2013)}: \\
+          Implicit-flow analysis instrumentation, assessment of its impact.}
+    \item{\textbf{Fortnight 8 (\nicefrac{2}{2} January 2013)}: \\
+          Performance optimisation, benchmarking.}
+    \item{\textbf{Fortnight 9 (\nicefrac{1}{2} February 2013)}: \\
+          Automated testing on a large sample of applications.}
+    \item{\textbf{Fortnights 10 \& 11 (\nicefrac{2}{2} February 2013, 
+                                       \nicefrac{1}{2} March 2013)}: \\
+          Extra time in case of development delay, work on extensions
+          otherwise.}
+    \item{\textbf{Fortnights 12 \& 13 (\nicefrac{2}{2} March 2013, 
+                                       \nicefrac{1}{2} April 2013)}: \\
+          Dissertation writing up, first draft ready by the beginning of
+          Easter term.}
+    \item{\textbf{Fortnights 14 \& 15 (\nicefrac{2}{2} April 2013, 
+                                       \nicefrac{1}{2} May 2013)}: \\
+          Finishing dissertation.}
+    
+    
+%    \item{\textbf{Fortnight 1:} Instrumenting application set-up; 
+%          application-extraction and repackaging scripts; DEX processing, 
+%          copying DEX content into a new file}
+%   \item{\textbf{Fortnight 2:} Instrumentation of trivial instructions;
+%         specification and identification of sources and sinks}
+%   \item{\textbf{Fortnight 3:} Static analysis and instrumentation of 
+%         exceptions; time for testing}
+%   \item{\textbf{Fortnight 4:} Implicit-flow instrumentation; assessment 
+%         of its impact}
+%   \item{\textbf{Fortnight 5:} Performance optimisations}
+%   \item{\textbf{Fortnight 6:} Causality analysis}
+%   \item{\textbf{Fortnight 7:} Graphical user interface}
+%   \item{\textbf{Fortnight 8:} Large-sample testing and evaluation}
+%   \item{\textbf{Rest:} Dissertation}
 \end{itemize}
 
 \printbibliography
