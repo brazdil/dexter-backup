@@ -36,7 +36,7 @@
 
 \section*{Introduction and Description of the Work}
 
-Android is a popular, open-source Linux-based platform for touchscreen
+Android is a popular open-source platform for touchscreen
 mobile devices, such as smartphones and tablets. Ever since its unveiling 
 in 2007, it has been increasing its market share, running on 68.1\% of 
 smartphones sold in the second quarter of 2012 according to a report by 
@@ -88,7 +88,7 @@ to the platform needed, which is what this project will try to attain.
 
 Despite being intended mostly for use by professionals, the configuration 
 of monitored privacy policies should be intuitive enough even for users 
-without deep understanding of taint-based flow analysis. Typical user will:
+without deep understanding of dynamic taint analysis. Typical user will:
 \begin{itemize}
 \item{connect their Android device to the computer}
 \item{choose an installed application that should be instrumented}
@@ -136,7 +136,7 @@ physical units in scientific computation by runtime assignment of attributes
 with unit information to numerical values in the memory, and their propagation 
 during arithmetic operations, which can be regarded as a form of flow tracing. 
 
-In this project I hope to combine my prior skills and apply them in a 
+In this project I hope to combine my prior skills and to apply them in a 
 slightly different environment of the Dalvik VM and Android framework,
 while learning more about the possibilities of static and dynamic analysis
 of bytecode.
@@ -152,17 +152,17 @@ graphical user interface.
 %parse, modify and reconstruct Dalvik bytecode. 
 
 The development of a dependable code instrumentation, which will reliably 
-identify sources and sinks, and which will propagate the tags throughout 
+identify sources and sinks, and which will propagate the taint throughout 
 the application will form essential part of the project. This requires 
-detailed analysis of the effects of each instruction of the Dalvik VM, and 
-thorough testing. Special attention will need to be given to correct 
-instrumentation of the exception mechanism.
+detailed analysis of the effects of each instruction supported by the 
+Dalvik VM, and thorough testing. Special attention will need to be given 
+to correct instrumentation of the exception mechanism.
 
 Data sources and sinks will be specified as an XML file containing a list
 of classes and/or methods inside the Android library, accessing which
 should trigger the tainting mechanism. The same will apply to so-called 
-sanitizing methods, calling which should not propagate taint. Among these
-are for example the hashing functions. Specifications of commonly used 
+sanitizing methods, calling which should not propagate taint. These
+are, for example, the hashing functions. Specifications of commonly used 
 sources, sinks and sanitizers will be part of the distribution.
 
 Typical overhead of dynamic data-flow analysis by instruction-level 
@@ -170,7 +170,7 @@ instrumentation varies between 3 and 35 times of the original speed. While
 there is very limited room for making the instrumentation itself more 
 efficient, time can easily be invested into static analysis of the code which 
 will identify the parts of the code that do not need to be instrumented, 
-i.e. code outside paths between sources and sinks. 
+i.e. code outside all paths from sources to sinks. 
 
 The application will also be able to extract executable code from 
 applications on a connected device by executing tools from the Android SDK
@@ -182,10 +182,10 @@ the original key, packages will be signed by a key of user's choice.
 The development process will follow the philosophy of Test Driven 
 Development. Thus a significant amount of time will be spent on building 
 a robust set of unit tests to ensure high quality of code. JUnit will be 
-used to test the internal of the instrumenting application. A set of 
+used to test the internals of the instrumenting application, and a set of 
 shell scripts will be created to automatically execute a collection
 of tailored snippets of code on an actual Dalvik virtual machine, 
-comparing its output with the output its instrumented counterpart.
+comparing their output with the output their instrumented counterparts.
 
 \subsubsection*{Implicit-flow analysis}
 
@@ -204,21 +204,21 @@ while (sensitiveData--)
 output(leakedData); // leakedData still not tainted
 \end{verbatim}
 
-In this case, \verb|leakedData| has not been tainted, because there is 
+In this case, \verb|leakedData| has not been tainted because there is 
 no explicit information flow from \verb|sensitiveData| into it. Instead, 
 \verb|sensitiveData| effects the control flow of the program, leaking
 the information into \verb|leakedData| implicitly. 
 
 Leakage via implicit flow is best identified by static analysis of the 
-source code of the program, often used to analyse scripting languages. 
-Since the source code is not available for third-party applications on 
-Android, it needs to be analysed dynamically on the instruction level.
-The downside of this solution is that the propagation rules must be
-rather conservative, leading to false positives. This is the reason why
-TaintDroid developers decided not to include it into their system-wide
-solution. Since this project will instrument applications separately, 
-the user will be given the choice of instrumentation including or 
-excluding implicit-flow analysis.
+source code of the program, a technique often used to analyse scripting
+languages. Since the source code is not available for third-party 
+applications on Android, it needs to be analysed dynamically on the 
+instruction level. The downside of this solution is that the propagation 
+rules must be rather conservative, leading to false positives. This is 
+why TaintDroid developers decided not to include it into their
+system-wide solution. Since this project will instrument applications
+individually, the user will be given the choice of instrumentation 
+including or excluding implicit-flow analysis.
 
 \subsection*{Extensions}
 
@@ -230,25 +230,25 @@ sorted according to the added benefit to the users in descending order.
 \subsubsection*{Causality analysis}
 
 While TaintDroid quite reliably identifies privacy policy violations,
-it fails to provide information about its origin. The user might therefore 
-have trouble distinguishing whether the violation happened in a 
+it fails to provide information about their origin. The user might therefore 
+have trouble distinguishing whether a violation happened in a 
 background-running thread or as a result of interaction with the UI. 
-By instrumenting the message loop of Android Activity class (equivalent of 
-a window), this information could be provided.
+By instrumenting the message loop of classes inheriting from the Android 
+Activity class (equivalent of a window), this information could be provided.
 
 \subsubsection*{Reflection}
 
 One major limitation of analysis by bytecode instrumentation is that it 
 cannot easily deal with reflection or dynamically loaded code. The core
 project will simply warn the user when these are present in the processed
-code, but a possible extension could further explore methods of dealing 
-with such calls.
+code, but a possible extension could further explore methods of handling 
+with these.
 
 \subsubsection*{FastPath optimization}
 
 The "A Low-Overhead Practical Information Flow Tracking System for 
 Detecting Security Attacks" paper, which studied taint-based flow tracing 
-in the context of x86 server applications suggests a form of dynamic 
+in the context of x86 server applications, suggests a form of dynamic 
 optimization called FastPath. It includes both the original and 
 instrumented version of each method in the resulting executable, and
 dynamically decides which will be called based on the presence of tainted 
@@ -298,8 +298,8 @@ successfully completed.
 \begin{itemize}
 
     \item{\textbf{Fortnight 1 (\nicefrac{2}{2} October 2012)}: \\
-          Process a DEX file, analyse its content, save the content to another
-          file.}
+          Processing of a DEX file, analysis of its content, saving the 
+          content to another file.}
     \item{\textbf{Fortnight 2 (\nicefrac{1}{2} November 2012)}: \\
           Instrumentation of trivial instructions for explicit-flow analysis,
           identification of sources, sinks and sanitizers.}
@@ -324,7 +324,7 @@ successfully completed.
           Easter term.}
     \item{\textbf{Fortnights 13 \& 14 (\nicefrac{2}{2} April 2013, 
                                        \nicefrac{1}{2} May 2013)}: \\
-          Finishing dissertation.}
+          Finishing touches to dissertation.}
     
 %    \item{\textbf{Fortnight 1:} Instrumenting application set-up; 
 %          application-extraction and repackaging scripts; DEX processing, 
