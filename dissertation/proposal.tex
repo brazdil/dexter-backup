@@ -133,7 +133,7 @@ During my other internship in the summer of 2012, I worked on Java PathFinder,
 a software-verification tool for JVM. My plugin verified correct usage of 
 physical units in scientific computation by runtime assignment of attributes 
 with unit information to numerical values in the memory, and their propagation 
-during arithmetic operations, which is an idea very similar to flow tracing. 
+during arithmetic operations, which is a form of flow tracing. 
 
 In this project I hope to combine my prior skills and apply them in a 
 slightly different environment of the Dalvik VM and Android framework,
@@ -145,26 +145,28 @@ of bytecode.
 The main outcome of this project will be a desktop application written 
 in Java, capable of instrumenting given Dalvik executables, known as DEX
 files, according to options specified via command-line arguments or 
-a graphical user interface.
+graphical user interface.
+
 %It will use the ASMDEX \cite{asm.ow2.org/asmdex-index.html} library to 
 %parse, modify and reconstruct Dalvik bytecode. 
 
 Data sources and sinks will be specified as an XML file containing a list
 of classes and/or methods inside the Android library, accessing which
-should trigger the tagging mechanism. Specifications of commonly used 
-sources and sinks will be part of the distribution.
+should trigger the tagging mechanism. The same will apply to so-called 
+sanitizers, methods that remove any present tags, for example the hashing 
+functions. Specifications of commonly used sources, sinks and sanitizers 
+will be part of the distribution.
 
 The application will also be able to extract executable code from 
 applications on a connected device by executing tools from the Android SDK
-and calling apktool \cite{code.google.com/p/android-apktool}, the Swiss 
-army-knife of Android reverse-engineering. After the instumentation, 
-the modified application will be repackaged and uploaded back to the device. 
-Since all packages need to be signed and there's no access to the original key, 
-packages will be signed by a key of user's choice.
+and calling apktool \cite{code.google.com/p/android-apktool}. After the 
+instumentation, the modified application will be repackaged and uploaded back 
+to the device. Since all packages need to be signed and there's no access to 
+the original key, packages will be signed by a key of user's choice.
 
-Core part of the project will be the development of a dependable code 
+Essential part of the project will form the development of a dependable code 
 instrumentation, which will reliably identify the sources and sinks and
-propagate the taint throughout the application. This requires detailed
+propagate the tags throughout the application. This requires detailed
 analysis of the effects of each instruction of the Dalvik VM, and 
 thorough testing. Special attention will need to be given to correct 
 instrumentation of the exception mechanism, which will require static 
@@ -175,37 +177,38 @@ Compilers course.
 Typical overhead of dynamic data-flow analysis by instruction-level 
 varies between 3 and 35 times of the original speed. While there is
 very limited room for making the instrumentation itself more efficient,
-time can easily be invested into static analysis of the code which would
+time can easily be invested into static analysis of the code which will
 identify the parts of the code that need to be instrumented, i.e. the 
 possible paths between sources and sinks. 
 
 The development process will follow the philosophy of Test Driven 
 Development. Thus a significant amount of time will be spent on building 
 a robust set of unit tests to ensure high quality of code. JUnit will be 
-used to test the internal of the instrumenting application. Another set of 
+used to test the internal of the instrumenting application. A set of 
 shell scripts will be created to automatically try to execute a collection
 of tailored snippets of code on an actual Dalvik virtual machine, 
-comparing the output of the original and the instrumented version.
+comparing the output of the original and the instrumented version to ensure
+that the instrumentation doesn't affect the behaviour.
 
 \subsubsection*{Implicit-flow analysis}
 
 TaintDroid focuses strictly on tracing the explicit flows of information, 
-by propagating the taint when data-handling CPU instructions are used. 
+by propagating the tags when data-handling CPU instructions are used. 
 But information can be leaked via implicit flows (branching instructions) 
 as well. Consider the following example:
 
 \begin{verbatim}
-int sensitiveData = getSensitiveData(); // tainted variable
-int leakedData = 0; // untainted variable
+int sensitiveData = getSensitiveData(); // tagged variable
+int leakedData = 0; // tag-free variable
 
 while (sensitiveData--)
     leakedData++;
 
-output(leakedData); // leakedData still not tainted
+output(leakedData); // leakedData still not tagged
 \end{verbatim}
 
-In this case, \verb|leakedData| has not been tainted, because there is 
-no explicit information flow from \verb|sensitiveData|. Instead, 
+In this case, \verb|leakedData| has not been tagged, because there is 
+no explicit information flow from \verb|sensitiveData| into it. Instead, 
 \verb|sensitiveData| effects the control flow of the program, leaking
 the information into \verb|leakedData| implicitly. 
 
@@ -213,7 +216,7 @@ Leakage via implicit flow is best identified by static analysis of the
 source code of the program, often used to analyse scripting languages. 
 Since the source code is not available for third-party applications on 
 Android, it needs to be analysed dynamically on the instruction level.
-Downside of this solution is that the taint-propagation rules must be
+Downside of this solution is that the propagation rules must be
 rather conservative, leading to false positives. This is the reason why
 TaintDroid developers decided not to include it into their system-wide
 solution. Since this project will instrument applications separately, 
@@ -253,7 +256,7 @@ optimization called FastPath. It includes both the original and
 instrumented version of each method in the resulting executable, and
 dynamically decides which will be called based on the presence of non-empty 
 tags in its arguments. Authors of the paper argued that only 2\% of typical 
-function calls were labelled, which is why this optimisation had such an 
+function calls were tagged, which is why this optimisation had such  
 impact on performance. Whether this is true in the context of Android mobile
 applications as well is not clear. Before implementing FastPath, a short 
 study of the number of unlabelled method calls should be conducted.
