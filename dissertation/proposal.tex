@@ -67,20 +67,20 @@ from the user.
 
 TaintDroid modifies several core parts of the Android platform, such as 
 the Dalvik VM, the Android shared library, and even the file-system, 
-adding support for runtime labelling of sensitive data like the phone number, 
-the contact list or GPS location, and tracing the flow of such data through 
-the system. By checking the labels of data that are leaving the system, e.g. 
-via the network connection, TaintDroid can warn the users about the 
-possibility of their data being misused. It is therefore an analytical tool 
-providing insight into the behaviour of third-party applications, giving the 
-users a better picture of what happens with the data they entrust to their 
-applications.
+adding support for runtime labelling (tainting) of sensitive data like the 
+phone number, the contact list or GPS location, and tracing the flow of such 
+data through the system. By checking the labels of data that are leaving the 
+system, e.g. via the network connection, TaintDroid can warn the users about 
+the possibility of their data being misused. It is therefore an analytical 
+tool providing insight into the behaviour of third-party applications, giving 
+the users a better picture of what happens with the data they entrust to 
+their applications.
 
 Following the work conducted on TaintDroid, the outcome of this project 
 will be a tool with similar goals, but achieving them in a different 
 manner. TaintDroid integrates into the lower levels of the operating 
 system, altering Dalvik's memory management and instructions to store and
-propagate the labels transparently to the applications running on top of 
+propagate the taint transparently to the applications running on top of 
 it. However, similar result can be accomplished by extracting the 
 executable code from the application's package and instrumenting it to 
 carry out the information-flow analysis itself, without any modification 
@@ -99,9 +99,9 @@ without deep understanding of taint-based flow analysis. Typical user will:
       violations}
 \end{itemize}
 
-Obviously, the low-level method makes it possible to trace the labelled data 
+Obviously, the low-level method makes it possible to trace the tainted data 
 throughout the system by patching the IPC kernel module, or by storing the 
-labels within attributes of files. This cannot be done by per-application 
+taint within attributes of files. This cannot be done by per-application 
 bytecode instrumentation, but the fact that each application is processed 
 before it is loaded back into the device and executed leaves room for static 
 analysis of the code, perhaps even modification of its behaviour. Limitations 
@@ -160,8 +160,8 @@ instrumentation of the exception mechanism.
 
 Data sources and sinks will be specified as an XML file containing a list
 of classes and/or methods inside the Android library, accessing which
-should trigger the labelling mechanism. The same will apply to so-called 
-sanitizing methods, calling which should not propagate labels. Among these
+should trigger the tainting mechanism. The same will apply to so-called 
+sanitizing methods, calling which should not propagate taint. Among these
 are for example the hashing functions. Specifications of commonly used 
 sources, sinks and sanitizers will be part of the distribution.
 
@@ -190,21 +190,21 @@ comparing its output with the output its instrumented counterpart.
 \subsubsection*{Implicit-flow analysis}
 
 TaintDroid focuses strictly on tracing the explicit flow of information, 
-by propagating the labels when data-handling CPU instructions are used. 
+by propagating the taint when data-handling CPU instructions are used. 
 But information can leak via implicit flow (conditional branching 
 instructions) as well. Consider the following example:
 
 \begin{verbatim}
-int sensitiveData = getSensitiveData(); // labelled variable
-int leakedData = 0; // label-free variable
+int sensitiveData = getSensitiveData(); // tainted variable
+int leakedData = 0; // taintless variable
 
 while (sensitiveData--)
     leakedData++;
 
-output(leakedData); // leakedData still not labelled
+output(leakedData); // leakedData still not tainted
 \end{verbatim}
 
-In this case, \verb|leakedData| has not been labelled, because there is 
+In this case, \verb|leakedData| has not been tainted, because there is 
 no explicit information flow from \verb|sensitiveData| into it. Instead, 
 \verb|sensitiveData| effects the control flow of the program, leaking
 the information into \verb|leakedData| implicitly. 
@@ -251,12 +251,12 @@ Detecting Security Attacks" paper, which studied taint-based flow tracing
 in the context of x86 server applications suggests a form of dynamic 
 optimization called FastPath. It includes both the original and 
 instrumented version of each method in the resulting executable, and
-dynamically decides which will be called based on the presence of labelled 
+dynamically decides which will be called based on the presence of tainted 
 arguments. Authors of the paper argued that only 2\% of typical 
-function calls were labelled, which is why this optimisation had such  
+function calls were tainted, which is why this optimisation had such  
 impact on performance. Whether this is true in the context of Android mobile
 applications as well is not clear. Before implementing FastPath, a short 
-study of the number of labelled method calls should be conducted.
+study of the number of tainted method calls should be conducted.
 
 \section*{Success Criterion}
 
@@ -276,7 +276,7 @@ successfully completed.
 
 \item Instrumentation of DEX files for both explicit and implicit flow 
       analysis needs to be designed, implemented and shown to propagate 
-      labels correctly.
+      taint correctly.
 
 \item Static analysis of execution paths between sources and sinks 
       must be used to optimise performance.
@@ -325,7 +325,6 @@ successfully completed.
     \item{\textbf{Fortnights 13 \& 14 (\nicefrac{2}{2} April 2013, 
                                        \nicefrac{1}{2} May 2013)}: \\
           Finishing dissertation.}
-    
     
 %    \item{\textbf{Fortnight 1:} Instrumenting application set-up; 
 %          application-extraction and repackaging scripts; DEX processing, 
