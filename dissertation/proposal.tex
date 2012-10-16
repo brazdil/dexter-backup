@@ -188,9 +188,9 @@ comparing its output with the output its instrumented counterpart.
 
 \subsubsection*{Implicit-flow analysis}
 
-TaintDroid focuses strictly on tracing the explicit flows of information, 
+TaintDroid focuses strictly on tracing the explicit flow of information, 
 by propagating the labels when data-handling CPU instructions are used. 
-But information can be leaked via implicit flows (conditional branching 
+But information can leak via implicit flow (conditional branching 
 instructions) as well. Consider the following example:
 
 \begin{verbatim}
@@ -229,17 +229,17 @@ sorted according to the added benefit to the users in descending order.
 \subsubsection*{Causality analysis}
 
 While TaintDroid quite reliably identifies privacy policy violations,
-it fails to provide the user's action which caused it. The user 
-might therefore have trouble distinguishing whether the violation 
-happened in a background-running thread or as a result of interaction
-with the UI. By instrumenting the message loop of Android Activity class
-(equivalent of a window), this information could be provided.
+it fails to provide information about its origin. The user might therefore 
+have trouble distinguishing whether the violation happened in a 
+background-running thread or as a result of interaction with the UI. 
+By instrumenting the message loop of Android Activity class (equivalent of 
+a window), this information could be provided.
 
 \subsubsection*{Reflection}
 
 One major limitation of analysis by bytecode instrumentation is that it 
 cannot easily deal with reflection or dynamically loaded code. The core
-project will simply warn the user that these are present in the processed
+project will simply warn the user when these are present in the processed
 code, but a possible extension could further explore methods of dealing 
 with such calls.
 
