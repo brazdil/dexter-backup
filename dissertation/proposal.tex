@@ -213,7 +213,7 @@ Leakage via implicit flow is best identified by static analysis of the
 source code of the program, often used to analyse scripting languages. 
 Since the source code is not available for third-party applications on 
 Android, it needs to be analysed dynamically on the instruction level.
-Downside of this solution is that the propagation rules must be
+The downside of this solution is that the propagation rules must be
 rather conservative, leading to false positives. This is the reason why
 TaintDroid developers decided not to include it into their system-wide
 solution. Since this project will instrument applications separately, 
@@ -290,8 +290,6 @@ successfully completed.
 
 \item Performance must be compared to TaintDroid and overhead measured
       against the original code.
-
-\item The dissertation must be planned and written.
 
 \end{enumerate}
 
