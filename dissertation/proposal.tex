@@ -173,11 +173,12 @@ will identify the parts of the code that do not need to be instrumented,
 i.e. code outside all paths from sources to sinks. 
 
 The application will also be able to extract executable code from 
-applications on a connected device by executing tools from the Android SDK
-and by calling apktool \cite{code.google.com/p/android-apktool}. After the 
-instrumentation, the modified application will be repackaged and uploaded back 
-to the device. Since all packages need to be signed and there is no access to 
-the original key, packages will be signed by a key of user's choice.
+applications on a connected device by executing tools from the Android SDK.
+%and by calling apktool \cite{code.google.com/p/android-apktool}. 
+After the instrumentation, the modified application will be repackaged and
+uploaded back to the device. Since all packages need to be signed and there
+is no access to the original key, packages will be signed by a key of user's
+choice.
 
 The development process will follow the philosophy of Test Driven 
 Development. Thus a significant amount of time will be spent on building 
@@ -268,8 +269,8 @@ successfully completed.
 \item Application must communicate with Android devices and be able to
       download/upload application packages (APKs).
 
-\item Application must pass APKs to apktool in order to extract its
-      content, and to repackage them after instrumentation.
+\item Application must be able to extract content of APK files
+      and to repackage them after instrumentation.
 
 \item Specification of sources, sinks and sanitizers has to be designed
       and these properly identified by the instrumenting application.
