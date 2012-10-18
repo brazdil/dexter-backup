@@ -43,8 +43,8 @@ Android is a popular open-source platform for touchscreen
 mobile devices, such as smartphones and tablets. Ever since its unveiling 
 in 2007, it has been increasing its market share, running on 68.1\% of 
 smartphones sold in the second quarter of 2012 according to a report by 
-the International Data Corporation. 
-\footnote[1]{www.idc.com/getdoc.jsp?containerId=prUS23638712}
+the International Data Corporation\footnote
+{www.idc.com/getdoc.jsp?containerId=prUS23638712}.
 
 Unfortunately, with its growing popularity, the platform became a frequent
 target of increasingly sophisticated malware, masquerading as legitimate
@@ -60,7 +60,7 @@ other competing mobile operating systems. These methods range from
 static analysis of the executable code, all the way to enforcing sandboxing 
 by virtualization. 
 
-One such approach is shown in TaintDroid \footnote[2]{www.appanalysis.org}, 
+One such approach is shown in TaintDroid\footnote{www.appanalysis.org}, 
 a project developed by a group of researchers from The Pennsylvania State
 University, Duke University and Intel Labs. They point out that the
 access control in Android is rather coarse-grained, with an all-or-nothing
@@ -247,7 +247,7 @@ impact on performance. Whether this is true in the context of Android mobile
 applications as well is not clear. Before implementing FastPath, a short 
 study of the number of tainted method calls should be conducted.
 
-\section*{Success Criterion}
+\section*{Success Criteria}
 
 For the project to be deemed a success the following items must be
 successfully completed.
@@ -335,24 +335,26 @@ successfully completed.
 
 \section*{Resources Declaration}
 
-Development will require a computer with the Android SDK installed. Most 
-of the work will be done on my personal computer (Asus UL20A laptop, 
-Intel Core 2 Duo 1.3GHz CPU, 4GB RAM, 320GB HDD). I accept full 
-responsibility for this machine and I have made contingency 
-plans to protect myself against hardware and/or software failure.
+Development will require computers with the Android SDK installed. 
 Testing on a large sample of applications will be executed on a 
-PWF machine. 
+PWF machine, but most of the work will be done on my personal computer 
+(Asus UL20A laptop, Intel Core 2 Duo 1.3GHz CPU, 4GB RAM, 320GB HDD). 
+I accept full responsibility for this machine and I have made contingency 
+plans to protect myself against hardware and/or software failure.
 
-GITHUB
+Source code will be managed by the Git revision control system, with
+the repository being hosted on GitHub. Storing the source code in the
+cloud, together with the distributed nature of Git should provide
+good protection against data loss.
 
 Large collection of infected applications have been obtained from the
-Android Malware Genome Project \footnote[3]{www.malgenomeproject.org}. 
+Android Malware Genome Project\footnote{www.malgenomeproject.org}. 
 Sufficient disc allocation of 3GB will be needed on the PWF to store
 a snapshot of the repository. 
 
-An Android smartphone will be supplied by Dr Alastair Beresford 
-(arb33@cam.ac.uk) to test the project on. In case of problems, the Android 
-emulator can be used instead.
+An Android smartphone will be supplied by the supervisor\footnote
+{Dr Alastair Beresford, arb33@cam.ac.uk} to test the project on. In case 
+of problems, the Android emulator can be used instead.
 
 %\printbibliography
 \end{document}
