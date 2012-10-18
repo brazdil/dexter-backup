@@ -59,7 +59,7 @@ pub:	diss.pdf
 	(cd ..; tar cfv /homes/mr/public_html/demodiss.tar demodiss)
 
 clean:
-	rm -f diss.ps *.dvi *.aux *.log *.err
+	rm -f diss.ps *.dvi *.aux *.log *.err *.pdf
 	rm -f core *~ *.lof *.toc *.blg *.bbl
 	rm -f makefile.txt
 
