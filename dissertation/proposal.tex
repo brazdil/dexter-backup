@@ -93,7 +93,7 @@ The low-level method makes it possible to trace the tainted data
 throughout the system by patching the IPC kernel module, or by storing the 
 taint within attributes of files. This cannot be done by per-application 
 bytecode instrumentation, but the fact that each application is processed 
-before it is loaded back into the device and executed leaves room for static 
+before it is loaded back into the device and executed, leaves room for static 
 analysis of the code, perhaps even modification of its behaviour. Limitations 
 and advantages of both solutions will be thoroughly compared in the evaluation 
 section of the dissertation.
@@ -113,8 +113,8 @@ without deep understanding of dynamic taint analysis. Typical user will:
 
 \section*{Starting Point}
 
-Even though numerous tools have been developed to help identify malware on 
-Android, they have chosen different strategies of doing so. This project
+Even though numerous tools that help identify malware on Android have been 
+developed, they have chosen different strategies of doing so. This project
 will build on the strategy implemented in TaintDroid, but will also try to 
 combine its dynamic flow tracing approach with static analysis of the 
 inspected applications. To my knowledge, such tool currently does not exist.
@@ -150,7 +150,7 @@ to correct instrumentation of the exception mechanism.
 Data sources and sinks will be specified as an XML file containing a list
 of classes and/or methods inside the Android library, accessing which
 should trigger the tainting mechanism. The same will apply to so-called 
-sanitizing methods, calling which should not propagate taint. These
+sanitizing methods, calling which should not propagate the taint. These
 are, for example, the hashing functions. Specifications of commonly used 
 sources, sinks and sanitizers will be part of the distribution.
 
@@ -161,8 +161,8 @@ efficient, time can easily be invested into static analysis of the code which
 will identify the parts of the code that do not need to be instrumented, 
 i.e. code outside all paths from sources to sinks. 
 
-The application will also be able to extract executable code from 
-applications on a connected device by executing tools from the Android SDK.
+It will also be possible to extract executable code from applications 
+installed on a connected device by executing tools from the Android SDK.
 %and by calling apktool \cite{code.google.com/p/android-apktool}. 
 After the instrumentation, the modified application will be repackaged and
 uploaded back to the device. Since all packages need to be signed and there
@@ -175,7 +175,7 @@ a robust set of unit tests to ensure high quality of code. JUnit will be
 used to test the internals of the instrumenting application, and a set of 
 shell scripts will be created to automatically execute a collection
 of tailored snippets of code on an actual Dalvik virtual machine, 
-comparing their output with the output their instrumented counterparts.
+comparing their output with the output of their instrumented counterparts.
 
 \subsubsection*{Implicit-flow analysis}
 
@@ -232,7 +232,7 @@ One major limitation of analysis by bytecode instrumentation is that it
 cannot easily deal with reflection or dynamically loaded code. The core
 project will simply warn the user when these are present in the processed
 code, but a possible extension could further explore methods of handling 
-with these.
+these.
 
 \subsubsection*{FastPath optimization}
 
@@ -268,8 +268,8 @@ successfully completed.
       analysis needs to be designed, implemented and shown to propagate 
       taint correctly.
 
-\item Static analysis of execution paths between sources and sinks 
-      must be used to optimise performance.
+%\item Static analysis of execution paths between sources and sinks 
+%      must be used to optimise performance.
 
 \item Capabilities of the information-flow analysis must be demonstrated
       on examples of real applications.
@@ -294,7 +294,7 @@ successfully completed.
           Instrumentation of trivial instructions for explicit-flow analysis,
           identification of sources, sinks and sanitizers.}
     \item{\textbf{Fortnight 3 (\nicefrac{2}{2} November 2012)}: \\
-          Communication with Android devices, APK repackaging, user interface.}
+          Communication with Android devices, APK repackaging.}
     \item{\textbf{Fortnight 4 (\nicefrac{1}{2} December 2012)}: \\
           Instrumentation of more complex instructions for explicit-flow
           analysis, testing on real applications.}
