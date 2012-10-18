@@ -17,22 +17,22 @@
 
 \thispagestyle{empty}
 
-\rightline{\large\emph{David Brazdil}}
-\medskip
-\rightline{\large\emph{Trinity Hall}}
-\medskip
-\rightline{\large\emph{db538}}
-
-\vspace{0.3in}
-\centerline{\large Computer Science Tripos Part II Project Proposal}
-\vspace{0.4in}
-\centerline{\Large\bf Taint-Based Flow Tracing by}
-\vspace{0.1in}
-\centerline{\Large\bf Bytecode Instrumentation on Android}
-\vspace{0.3in}
-\cleanlookdateon
-\centerline{\large \emph \today}
-\vspace{0.5in}
+%\rightline{\large\emph{David Brazdil}}
+%\medskip
+%\rightline{\large\emph{Trinity Hall}}
+%\medskip
+%\rightline{\large\emph{db538}}
+%
+%\vspace{0.3in}
+%\centerline{\large Computer Science Tripos Part II Project Proposal}
+%\vspace{0.4in}
+%\centerline{\Large\bf Taint-Based Flow Tracing by}
+%\vspace{0.1in}
+%\centerline{\Large\bf Bytecode Instrumentation on Android}
+%\vspace{0.3in}
+%\cleanlookdateon
+%\centerline{\large \emph \today}
+%\vspace{0.5in}
 
 \section*{Introduction and Description of the Work}
 
@@ -60,7 +60,7 @@ by virtualization.
 One such approach is shown in TaintDroid \footnote[2]{www.appanalysis.org}, 
 a project developed by a group of researchers from The Pennsylvania State
 University, Duke University and Intel Labs. They point out that the
-access control in Android is rather coarse-grained, with all-or-nothing
+access control in Android is rather coarse-grained, with an all-or-nothing
 policy. This means that once an application is given access to a resource,
 it can do whatever it wants with it, and does not need any further consent 
 from the user.
@@ -81,7 +81,7 @@ will be a tool with similar goals, but achieving them in a different
 manner. TaintDroid integrates into the lower levels of the operating 
 system, altering Dalvik's memory management and instructions to store and
 propagate the taint transparently to the applications running on top of 
-it. However, similar result can be accomplished by extracting the 
+it. However, a similar result can be accomplished by extracting the 
 executable code from the application's package and instrumenting it to 
 carry out the information-flow analysis itself, without any modification 
 to the platform needed, which is what this project will try to attain.
@@ -306,9 +306,11 @@ successfully completed.
           identification of sources, sinks and sanitizers.}
     \item{\textbf{Fortnight 3 (\nicefrac{2}{2} November 2012)}: \\
           Communication with Android devices, APK repackaging, user interface.}
-    \item{\textbf{Fortnights 4 \& 5 (December 2012)}: \\
+    \item{\textbf{Fortnight 4 (\nicefrac{1}{2} December 2012)}: \\
           Instrumentation of more complex instructions for explicit-flow
           analysis, testing on real applications.}
+    \item{\textbf{Fortnight 5 (\nicefrac{2}{2} December 2012)}: \\
+          Progress report, time for course revision.}
     \item{\textbf{Fortnight 6 (\nicefrac{1}{2} January 2013)}: \\
           Implicit-flow analysis instrumentation, assessment of its impact.}
     \item{\textbf{Fortnight 7 (\nicefrac{2}{2} January 2013)}: \\
@@ -321,11 +323,11 @@ successfully completed.
           otherwise.}
     \item{\textbf{Fortnights 11 \& 12 (\nicefrac{2}{2} March 2013, 
                                        \nicefrac{1}{2} April 2013)}: \\
-          Dissertation writing up, first draft ready by the beginning of
-          Easter term.}
+          Dissertation writing up, first draft given to the supervisor and
+          the Director of Studies by the beginning of Easter term.}
     \item{\textbf{Fortnights 13 \& 14 (\nicefrac{2}{2} April 2013, 
                                        \nicefrac{1}{2} May 2013)}: \\
-          Finishing touches to dissertation.}
+         Incorporating feedback into the dissertation.}
     
 %    \item{\textbf{Fortnight 1:} Instrumenting application set-up; 
 %          application-extraction and repackaging scripts; DEX processing, 
