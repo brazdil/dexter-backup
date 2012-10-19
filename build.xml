@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="dexter" basedir="." default="compile">
+<project name="dexter" basedir="." default="clean-build">
 
 	<property name="src.dir"           value="src"/>
 	<property name="src_test.dir"      value="test"/>
@@ -8,7 +8,7 @@
 	<property name="classes_test.dir"  value="${build.dir}/tests"/>
 	<property name="jar.dir"           value="${build.dir}/jar"/>
 	<property name="lib.dir"           value="lib"/>
-	<property name="main-class"        value="uk.ac.cam.db538.dexter.gui.MainWindow"/>
+	<property name="main-class"        value="uk.ac.cam.db538.dexter.App"/>
 	
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar"/>
