@@ -113,22 +113,21 @@ without deep understanding of dynamic taint analysis. Typical user will:
 
 \section*{Starting Point}
 
-Even though numerous tools that help identify malware on Android have been 
-developed, they have chosen different strategies of doing so. This project
-will build on the strategy implemented in TaintDroid, but will also try to 
-combine its dynamic flow tracing approach with static analysis of the 
-inspected applications. To my knowledge, such tool currently does not exist.
-However, the Androguard\footnote{code.google.com/p/androguard} project provides
-means of decompilation and static analysis of Android applications.
-
 My previous experience includes a UROP internship at the Computer Lab
 in the summer of 2011. Students worked on security-related projects on
 the Android platform, an application for encrypted text-messaging in my
-case. During my other internship in the summer of 2012, I worked on Java PathFinder,
+case.
+
+During my other internship in the summer of 2012, I worked on Java PathFinder,
 a software-verification tool for JVM. My plugin verified correct usage of 
 physical units in scientific computation by runtime assignment of attributes 
 with unit information to numerical values in the memory, and their propagation 
 during arithmetic operations, which can be regarded as a form of flow tracing. 
+
+In this project I hope to combine my prior skills and to apply them in a 
+slightly different environment of the Dalvik VM and Android framework,
+while learning more about the possibilities of static and dynamic analysis
+of bytecode.
 
 \section*{Substance and Structure of the Project}
 
