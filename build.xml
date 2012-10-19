@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="dexter" basedir="." default="main">
+<project name="dexter" basedir="." default="compile">
 
 	<property name="src.dir"           value="src"/>
 	<property name="src_test.dir"      value="test"/>
@@ -8,7 +8,7 @@
 	<property name="classes_test.dir"  value="${build.dir}/tests"/>
 	<property name="jar.dir"           value="${build.dir}/jar"/>
 	<property name="lib.dir"           value="lib"/>
-	<property name="main-class"        value="uk.ac.cam.db538.dexter.App"/>
+	<property name="main-class"        value="uk.ac.cam.db538.dexter.gui.MainWindow"/>
 	
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar"/>
@@ -52,7 +52,7 @@
 		</java>
 	</target>
 
-	<target name="junit" depends="compile-test">
+	<target name="test" depends="compile-test">
 		<junit printsummary="yes" showoutput="yes">
 			<classpath>
 				<path refid="classpath"/>
@@ -69,7 +69,5 @@
 	</target>
 	
 	<target name="clean-build" depends="clean,jar"/>
-
-	<target name="main" depends="clean,run,junit"/>
 
 </project>
