@@ -11,8 +11,11 @@ public class DexClass {
 	@Getter	private final String ShortName;
 	@Getter	private final String PackageName;
 	
-	public DexClass(ClassDefItem cls) {
-		FullName = cls.getClassType().getTypeDescriptor();
+	public DexClass(String fullname) {
+		assert(fullname.startsWith("L"));
+		assert(fullname.endsWith(";"));
+		
+		FullName = fullname;
 		PrettyName = FullName.substring(1, FullName.length() - 1).replace('/', '.');
 		
 		int lastDot = PrettyName.lastIndexOf('.');
@@ -24,7 +27,11 @@ public class DexClass {
 			PackageName = PrettyName.substring(0, lastDot);
 		}
 	}
-
+	
+	public DexClass(ClassDefItem cls) {
+		this(cls.getClassType().getTypeDescriptor());
+	}
+	
 	@Override
 	public String toString() {
 		return this.getPrettyName();

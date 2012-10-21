@@ -64,13 +64,18 @@ public class MainWindow {
 		openFile(new File("classes.dex"));
 	}
 	
+	/*
+	 * Renderer that changes icons for class tree, and the text of leaves
+	 */
 	private static class ClassTreeRenderer extends DefaultTreeCellRenderer {
+		private static final long serialVersionUID = 1L;
+		
 		private static final ImageIcon pkgfolderIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("img/packagefolder.gif"));
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/packagefolder.gif"));
 		private static final ImageIcon pkgIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("img/package.gif"));
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/package.gif"));
 		private static final ImageIcon clsIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("img/class.gif"));
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/class.gif"));
 
 		@Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -123,27 +128,20 @@ public class MainWindow {
 		splitPane.setLeftComponent(new WebScrollPane(classTree));
 	}
 	
-	private static DefaultMutableTreeNode getFirstChild(DefaultMutableTreeNode node) {
-		if (!node.getAllowsChildren() || node.getChildCount() == 0)
-			return null;
-		else
-			return (DefaultMutableTreeNode) node.getFirstChild();
-	}
-	
 	private static void addClassesToTree(DefaultMutableTreeNode root, List<DexClass> classes) {
-		val packages = new HashMap<String, DefaultMutableTreeNode>();
+		val pkgNodes = new HashMap<String, DefaultMutableTreeNode>();
 		
 		for (val cls : classes) {
 			String pkgName = cls.getPackageName();
 			if (pkgName == null)
 				pkgName = "(default package)";
 			
-			DefaultMutableTreeNode pkgNode = packages.get(pkgName);
+			DefaultMutableTreeNode pkgNode = pkgNodes.get(pkgName);
 			if (pkgNode == null) {
 				pkgNode = new DefaultMutableTreeNode(pkgName);
 				pkgNode.setAllowsChildren(true);
 				root.add(pkgNode);
-				packages.put(pkgName, pkgNode);
+				pkgNodes.put(pkgName, pkgNode);
 			}
 			
 			val clsLeaf = new DefaultMutableTreeNode(cls);
