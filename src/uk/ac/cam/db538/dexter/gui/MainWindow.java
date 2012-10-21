@@ -128,6 +128,19 @@ public class MainWindow {
 		splitPane.setLeftComponent(new WebScrollPane(classTree));
 	}
 	
+	private static void insertNodeAlphabetically(DefaultMutableTreeNode parent, DefaultMutableTreeNode newChild) {
+		String strNewChild = newChild.toString();
+		
+		int insertAt = 0;
+		int parentChildren = parent.getChildCount();
+		while (insertAt < parentChildren) {
+			if (strNewChild.compareToIgnoreCase(parent.getChildAt(insertAt).toString()) < 0)
+				break;
+			++insertAt;
+		}
+		parent.insert(newChild, insertAt);		
+	}
+	
 	private static void addClassesToTree(DefaultMutableTreeNode root, List<DexClass> classes) {
 		val pkgNodes = new HashMap<String, DefaultMutableTreeNode>();
 		
@@ -140,13 +153,13 @@ public class MainWindow {
 			if (pkgNode == null) {
 				pkgNode = new DefaultMutableTreeNode(pkgName);
 				pkgNode.setAllowsChildren(true);
-				root.add(pkgNode);
+				insertNodeAlphabetically(root, pkgNode);
 				pkgNodes.put(pkgName, pkgNode);
 			}
 			
 			val clsLeaf = new DefaultMutableTreeNode(cls);
 			clsLeaf.setAllowsChildren(false);
-			pkgNode.add(clsLeaf);
+			insertNodeAlphabetically(pkgNode, clsLeaf);
 		}
 	}
 

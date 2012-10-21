@@ -97,5 +97,68 @@ public class MainWindowTest {
 		assertEquals(true, leaf.isLeaf());
 		assertEquals(cls, leaf.getUserObject());
 	}
+	
+	private static void execInsertNodeAlphabetically(DefaultMutableTreeNode parent, DefaultMutableTreeNode newChild) {
+		try {
+			Method m = MainWindow.class.getDeclaredMethod("insertNodeAlphabetically", DefaultMutableTreeNode.class, DefaultMutableTreeNode.class);
+			m.setAccessible(true);
+			m.invoke(null, parent, newChild);
+		} catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
+			fail("Couldn't execute method: " + e.getClass().getSimpleName());
+		}
+	}
+	
+	@Test
+	public void testInsertNodeAlphabetically_Empty() {
+		val parent = new DefaultMutableTreeNode();
+		val newChild = new DefaultMutableTreeNode("a");
+		
+		execInsertNodeAlphabetically(parent, newChild);
+		
+		assertEquals(1, parent.getChildCount());
+		assertEquals(newChild, parent.getChildAt(0));
+	}
+	
+	@Test
+	public void testInsertNodeAlphabetically_CorrectOrder() {
+		val parent = new DefaultMutableTreeNode();
+		val newChild1 = new DefaultMutableTreeNode("a");
+		val newChild2 = new DefaultMutableTreeNode("b");
+		
+		execInsertNodeAlphabetically(parent, newChild1);
+		execInsertNodeAlphabetically(parent, newChild2);
+		
+		assertEquals(2, parent.getChildCount());
+		assertEquals(newChild1, parent.getChildAt(0));
+		assertEquals(newChild2, parent.getChildAt(1));
+	}
+
+	@Test
+	public void testInsertNodeAlphabetically_WrongOrder() {
+		val parent = new DefaultMutableTreeNode();
+		val newChild1 = new DefaultMutableTreeNode("a");
+		val newChild2 = new DefaultMutableTreeNode("b");
+		
+		execInsertNodeAlphabetically(parent, newChild2);
+		execInsertNodeAlphabetically(parent, newChild1);
+		
+		assertEquals(2, parent.getChildCount());
+		assertEquals(newChild1, parent.getChildAt(0));
+		assertEquals(newChild2, parent.getChildAt(1));
+	}
+
+	@Test
+	public void testInsertNodeAlphabetically_CaseIgnored() {
+		val parent = new DefaultMutableTreeNode();
+		val newChild1 = new DefaultMutableTreeNode("a");
+		val newChild2 = new DefaultMutableTreeNode("B");
+		
+		execInsertNodeAlphabetically(parent, newChild1);
+		execInsertNodeAlphabetically(parent, newChild2);
+		
+		assertEquals(2, parent.getChildCount());
+		assertEquals(newChild1, parent.getChildAt(0));
+		assertEquals(newChild2, parent.getChildAt(1));
+	}
 }
 
