@@ -40,9 +40,9 @@ public class MainWindowTest {
 		val root = new DefaultMutableTreeNode("root");
 		val classes = new LinkedList<DexClass>();
 		
-		val cls11 = new DexClass("Lcom.example1.a;");
-		val cls12 = new DexClass("Lcom.example1.b;");
-		val cls21 = new DexClass("Lcom.example2.a;");
+		val cls11 = new DexClass(null, "Lcom.example1.a;", null, null);
+		val cls12 = new DexClass(null, "Lcom.example1.b;", null, null);
+		val cls21 = new DexClass(null, "Lcom.example2.a;", null, null);
 		
 		classes.add(cls11);
 		classes.add(cls12);
@@ -81,7 +81,7 @@ public class MainWindowTest {
 		val root = new DefaultMutableTreeNode("root");
 		val classes = new LinkedList<DexClass>();
 
-		val cls = new DexClass("LTestClass;");
+		val cls = new DexClass(null, "LTestClass;", null, null);
 		classes.add(cls);
 
 		execAddClassesToTree(root, classes);

@@ -20,17 +20,11 @@ public class Dex {
 	
 	public Dex(File filename) throws IOException {
 		OriginalFile = new DexFile(filename);
-		Classes = getClasses(OriginalFile);
-	}
-	
-	private static List<DexClass> getClasses(DexFile file) {
-		val classes = new LinkedList<DexClass>();
 		
-		val dexClsInfos = file.ClassDefsSection.getItems();
+		Classes = new LinkedList<DexClass>();
+		val dexClsInfos = OriginalFile.ClassDefsSection.getItems();
 		for (val dexClsInfo : dexClsInfos)
-			classes.add(new DexClass(dexClsInfo));
-		
-		return classes;
+			Classes.add(new DexClass(this, dexClsInfo));
 	}
 	
 }

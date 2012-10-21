@@ -118,7 +118,7 @@ public class MainWindow {
 		dockable.add(splitPane);
 
 		// create class tree
-		val classTreeRoot = new DefaultMutableTreeNode("Classes");
+		val classTreeRoot = new DefaultMutableTreeNode("classes.dex");
 		addClassesToTree(classTreeRoot, dex.getClasses());
 		
 		// create list of classes
