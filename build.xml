@@ -3,12 +3,13 @@
 
 	<property name="src.dir"           value="src"/>
 	<property name="src_test.dir"      value="test"/>
+	<property name="res.dir"           value="res"/>
 	<property name="build.dir"         value="build"/>
 	<property name="classes.dir"       value="${build.dir}/classes"/>
 	<property name="classes_test.dir"  value="${build.dir}/tests"/>
 	<property name="jar.dir"           value="${build.dir}/jar"/>
 	<property name="lib.dir"           value="lib"/>
-	<property name="main-class"        value="uk.ac.cam.db538.dexter.App"/>
+	<property name="main-class"        value="uk.ac.cam.db538.dexter.gui.MainWindow"/>
 	
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar"/>
@@ -21,7 +22,10 @@
 
 	<target name="compile">
 		<mkdir dir="${classes.dir}"/>
-		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" includeantruntime="false"/>
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="yes" includeantruntime="false"/>
+		<copy todir="${classes.dir}">
+			<fileset dir="${res.dir}"/>
+		</copy>
 	</target>
 
 	<target name="compile-test" depends="compile">

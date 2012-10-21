@@ -1,19 +1,16 @@
 package uk.ac.cam.db538.dexter;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.IOException;
 
-import uk.ac.cam.db538.dexter.dex.DexParser;
-import uk.ac.cam.db538.dexter.dex.DexParsingException;
+import uk.ac.cam.db538.dexter.dex.Dex;
 
 import lombok.val;
 
 public class App {
 	
-    public static void main(String[] args) throws FileNotFoundException, DexParsingException {
-		val dex = new FileInputStream("classes.dex");
-		val parser = new DexParser(dex);
-		parser.parse();
+    public static void main(String[] args) throws IOException {
+		val dex = new Dex(new File("classes.dex"));
     }
     
 }
