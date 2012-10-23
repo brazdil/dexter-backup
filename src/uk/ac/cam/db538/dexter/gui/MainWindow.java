@@ -3,28 +3,19 @@ package uk.ac.cam.db538.dexter.gui;
 import java.awt.Component;
 import java.awt.EventQueue;
 
-import javax.swing.DefaultListModel;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JTree;
-import javax.swing.ListModel;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeNode;
 
-import com.alee.extended.filechooser.FileListModel;
-import com.alee.extended.filechooser.FilesView;
-import com.alee.extended.filechooser.WebFileList;
-import com.alee.laf.list.WebList;
 import com.alee.laf.scroll.WebScrollPane;
 import com.alee.laf.splitpane.WebSplitPane;
 import com.alee.laf.tree.WebTree;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.DisplayName;
 
 import bibliothek.extension.gui.dock.theme.EclipseTheme;
 import bibliothek.gui.DockController;
@@ -76,6 +67,8 @@ public class MainWindow {
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/package.gif"));
 		private static final ImageIcon clsIcon  = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/class.gif"));
+		private static final ImageIcon fieldIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_public.gif"));
 
 		@Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -84,14 +77,21 @@ public class MainWindow {
 			 super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 			 
 			 val node = (DefaultMutableTreeNode) value;
-			 if (node.isLeaf()) {
-				 val cls = (DexClass) node.getUserObject();
-				 setIcon(clsIcon);
-				 setText(cls.getShortName());
-			 } else if (node.isRoot())
+			 setText(getDisplayName(node));
+			 
+			 switch (node.getLevel()) {
+			 case 0:
 				 setIcon(pkgfolderIcon);
-			 else
+				 break;
+			 case 1:
 				 setIcon(pkgIcon);
+				 break;
+			 case 2:
+				 setIcon(clsIcon);
+				 break;
+			 case 3:
+				 setIcon(fieldIcon);
+			 }
 			 
 			 return this;
 		}
@@ -123,18 +123,26 @@ public class MainWindow {
 		
 		// create list of classes
 		val classTree = new WebTree(classTreeRoot);
-		// classTree.setRootVisible(false);
 		classTree.setCellRenderer(new ClassTreeRenderer());
 		splitPane.setLeftComponent(new WebScrollPane(classTree));
 	}
 	
+	private static String getDisplayName(DefaultMutableTreeNode node) {
+		Object obj = node.getUserObject();
+		if (obj instanceof DisplayName)
+			return ((DisplayName) obj).getDisplayName();
+		else
+			return obj.toString();
+	}
+	
 	private static void insertNodeAlphabetically(DefaultMutableTreeNode parent, DefaultMutableTreeNode newChild) {
-		String strNewChild = newChild.toString();
+		String strNewChild = getDisplayName(newChild);
 		
 		int insertAt = 0;
 		int parentChildren = parent.getChildCount();
 		while (insertAt < parentChildren) {
-			if (strNewChild.compareToIgnoreCase(parent.getChildAt(insertAt).toString()) < 0)
+			String strParentsChild = getDisplayName((DefaultMutableTreeNode) parent.getChildAt(insertAt));
+			if (strNewChild.compareToIgnoreCase(strParentsChild) < 0)
 				break;
 			++insertAt;
 		}
@@ -152,14 +160,22 @@ public class MainWindow {
 			DefaultMutableTreeNode pkgNode = pkgNodes.get(pkgName);
 			if (pkgNode == null) {
 				pkgNode = new DefaultMutableTreeNode(pkgName);
-				pkgNode.setAllowsChildren(true);
 				insertNodeAlphabetically(root, pkgNode);
 				pkgNodes.put(pkgName, pkgNode);
 			}
 			
-			val clsLeaf = new DefaultMutableTreeNode(cls);
-			clsLeaf.setAllowsChildren(false);
-			insertNodeAlphabetically(pkgNode, clsLeaf);
+			val clsNode = new DefaultMutableTreeNode(cls);
+			insertNodeAlphabetically(pkgNode, clsNode);
+			
+			// insert fields
+			for (val field : cls.getStaticFields()) {
+				val fieldNode = new DefaultMutableTreeNode(field);
+				insertNodeAlphabetically(clsNode, fieldNode);
+			}
+			for (val field : cls.getInstanceFields()) {
+				val fieldNode = new DefaultMutableTreeNode(field);
+				insertNodeAlphabetically(clsNode, fieldNode);
+			}
 		}
 	}
 

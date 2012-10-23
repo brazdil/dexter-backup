@@ -8,7 +8,7 @@ import org.jf.dexlib.ClassDefItem;
 import lombok.Getter;
 import lombok.val;
 
-public class DexClass {
+public class DexClass implements DisplayName {
 
 	@Getter private final Dex ParentFile;
 	
@@ -58,7 +58,7 @@ public class DexClass {
 	}
 	
 	@Override
-	public String toString() {
-		return this.getPrettyName();
+	public String getDisplayName() {
+		return ShortName;
 	}
 }
