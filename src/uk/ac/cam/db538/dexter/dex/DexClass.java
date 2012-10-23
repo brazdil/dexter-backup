@@ -56,4 +56,20 @@ public class DexClass {
 				InstanceFields.add(new DexField(this, instanceFieldInfo));
 		}
 	}
+	
+	public void addField(DexField f) {
+		if (f.getParentClass() != null)
+			f.getParentClass().removeField(f);
+		
+		List<DexField> list = (f.isStatic()) ? StaticFields : InstanceFields;
+		list.add(f);
+	}
+	
+	public void removeField(DexField f) {
+		if (f.getParentClass() == this) {
+			List<DexField> list = (f.isStatic()) ? StaticFields : InstanceFields;
+			list.remove(f);
+			f.setParentClass(null);
+		}
+	}
 }

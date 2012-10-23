@@ -14,6 +14,7 @@ import lombok.val;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.DexField;
 
 public class MainWindowTest {
 
@@ -88,14 +89,48 @@ public class MainWindowTest {
 		
 		assertEquals(1, root.getChildCount());
 		
-		val child = (DefaultMutableTreeNode) root.getChildAt(0);
-		assertEquals("(default package)", (String) child.getUserObject());
-		assertEquals(false, child.isLeaf());
-		assertEquals(1, child.getChildCount());
+		val pkgNode = (DefaultMutableTreeNode) root.getChildAt(0);
+		assertEquals("(default package)", (String) pkgNode.getUserObject());
+		assertEquals(1, pkgNode.getChildCount());
 		
-		val leaf = (DefaultMutableTreeNode) child.getChildAt(0);
-		assertEquals(true, leaf.isLeaf());
-		assertEquals(cls, leaf.getUserObject());
+		val clsNode = (DefaultMutableTreeNode) pkgNode.getChildAt(0);
+		assertEquals(0, clsNode.getChildCount());
+		assertEquals(cls, clsNode.getUserObject());
+	}
+	
+	@Test
+	public void testAddClassesToTree_StaticFields() {
+		val root = new DefaultMutableTreeNode("root");
+		val classes = new LinkedList<DexClass>();
+
+		val staticField1 = new DexField(null, "a", true);
+		val staticField2 = new DexField(null, "c", true);
+		val instanceField1 = new DexField(null, "d", false);
+		val instanceField2 = new DexField(null, "b", false);
+		
+		val cls = new DexClass(null, "LTestClass;", null, null);
+		cls.addField(staticField1);
+		cls.addField(staticField2);
+		cls.addField(instanceField1);
+		cls.addField(instanceField2);
+		classes.add(cls);
+		
+		execAddClassesToTree(root, classes);
+		
+		val pkgNode = (DefaultMutableTreeNode) root.getChildAt(0);
+		val clsNode = (DefaultMutableTreeNode) pkgNode.getChildAt(0);
+		assertEquals(4, clsNode.getChildCount());
+		
+		val fieldNode1 = (DefaultMutableTreeNode) clsNode.getChildAt(0);
+		val fieldNode2 = (DefaultMutableTreeNode) clsNode.getChildAt(1);
+		val fieldNode3 = (DefaultMutableTreeNode) clsNode.getChildAt(2);
+		val fieldNode4 = (DefaultMutableTreeNode) clsNode.getChildAt(3);
+		
+		assertEquals(staticField1, fieldNode1.getUserObject());
+		assertEquals(instanceField2, fieldNode2.getUserObject());
+		assertEquals(staticField2, fieldNode3.getUserObject());
+		assertEquals(instanceField1, fieldNode4.getUserObject());
+		
 	}
 	
 	private static void execInsertNodeAlphabetically(DefaultMutableTreeNode parent, DefaultMutableTreeNode newChild) {

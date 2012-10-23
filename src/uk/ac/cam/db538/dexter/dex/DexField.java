@@ -4,10 +4,11 @@ import org.jf.dexlib.ClassDataItem.EncodedField;
 import org.jf.dexlib.StringIdItem;
 
 import lombok.Getter;
+import lombok.Setter;
 
 public class DexField {
 	
-	@Getter private final DexClass ParentClass;
+	@Getter @Setter private DexClass ParentClass;
 	@Getter private final String Name;
 	@Getter private final boolean Static;
 	
