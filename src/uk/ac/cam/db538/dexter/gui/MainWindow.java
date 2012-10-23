@@ -9,6 +9,8 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
+import org.jf.dexlib.Util.AccessFlags;
+
 import com.alee.laf.scroll.WebScrollPane;
 import com.alee.laf.splitpane.WebSplitPane;
 import com.alee.laf.tree.WebTree;
@@ -67,8 +69,14 @@ public class MainWindow {
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/package.gif"));
 		private static final ImageIcon clsIcon  = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/class.gif"));
-		private static final ImageIcon fieldIcon  = 
+		private static final ImageIcon fieldDefaultIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_default.gif"));
+		private static final ImageIcon fieldPublicIcon  = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_public.gif"));
+		private static final ImageIcon fieldPrivateIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_private.gif"));
+		private static final ImageIcon fieldProtectedIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_protected.gif"));
 
 		@Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -90,7 +98,22 @@ public class MainWindow {
 				 setIcon(clsIcon);
 				 break;
 			 case 3:
-				 setIcon(fieldIcon);
+				 val field = (DexField) node.getUserObject();
+				 
+				 val fieldAccess = field.getAccessFlagSet();
+				 if (fieldAccess.contains(AccessFlags.PUBLIC))
+					 setIcon(fieldPublicIcon);
+				 else if (fieldAccess.contains(AccessFlags.PRIVATE))
+					 setIcon(fieldPrivateIcon);
+				 else if (fieldAccess.contains(AccessFlags.PROTECTED))
+					 setIcon(fieldProtectedIcon);
+				 else
+					 setIcon(fieldDefaultIcon);
+				 
+				 if (field.isStatic())
+					 setToolTipText("Static field");
+				 else
+					 setToolTipText("Instance field");
 			 }
 			 
 			 return this;
@@ -124,6 +147,7 @@ public class MainWindow {
 		// create list of classes
 		val classTree = new WebTree(classTreeRoot);
 		classTree.setCellRenderer(new ClassTreeRenderer());
+		javax.swing.ToolTipManager.sharedInstance().registerComponent(classTree);
 		splitPane.setLeftComponent(new WebScrollPane(classTree));
 	}
 	

@@ -1,7 +1,7 @@
 package uk.ac.cam.db538.dexter.dex;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jf.dexlib.ClassDefItem;
 
@@ -17,10 +17,10 @@ public class DexClass {
 	@Getter	private final String ShortName;
 	@Getter	private final String PackageName;
 	
-	@Getter private final List<DexField> StaticFields;
-	@Getter private final List<DexField> InstanceFields;
+	@Getter private final Set<DexField> StaticFields;
+	@Getter private final Set<DexField> InstanceFields;
 	
-	public DexClass(Dex parent, String fullname, List<DexField> staticFields, List<DexField> instanceFields) {
+	public DexClass(Dex parent, String fullname, Set<DexField> staticFields, Set<DexField> instanceFields) {
 		assert(fullname.startsWith("L"));
 		assert(fullname.endsWith(";"));
 		
@@ -38,8 +38,8 @@ public class DexClass {
 			PackageName = PrettyName.substring(0, lastDot);
 		}
 		
-		StaticFields = (staticFields == null) ? new LinkedList<DexField>() : staticFields;
-		InstanceFields = (instanceFields == null) ? new LinkedList<DexField>() : instanceFields;
+		StaticFields = (staticFields == null) ? new HashSet<DexField>() : staticFields;
+		InstanceFields = (instanceFields == null) ? new HashSet<DexField>() : instanceFields;
 	}
 	
 	public DexClass(Dex parent, ClassDefItem clsInfo) {
@@ -61,14 +61,14 @@ public class DexClass {
 		if (f.getParentClass() != null)
 			f.getParentClass().removeField(f);
 		
-		List<DexField> list = (f.isStatic()) ? StaticFields : InstanceFields;
-		list.add(f);
+		Set<DexField> set = (f.isStatic()) ? StaticFields : InstanceFields;
+		set.add(f);
 	}
 	
 	public void removeField(DexField f) {
 		if (f.getParentClass() == this) {
-			List<DexField> list = (f.isStatic()) ? StaticFields : InstanceFields;
-			list.remove(f);
+			Set<DexField> set = (f.isStatic()) ? StaticFields : InstanceFields;
+			set.remove(f);
 			f.setParentClass(null);
 		}
 	}

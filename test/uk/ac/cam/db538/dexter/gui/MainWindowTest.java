@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import lombok.val;
 
+import org.jf.dexlib.Util.AccessFlags;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -103,10 +105,10 @@ public class MainWindowTest {
 		val root = new DefaultMutableTreeNode("root");
 		val classes = new LinkedList<DexClass>();
 
-		val staticField1 = new DexField(null, "a", true);
-		val staticField2 = new DexField(null, "c", true);
-		val instanceField1 = new DexField(null, "d", false);
-		val instanceField2 = new DexField(null, "b", false);
+		val staticField1 = new DexField(null, "a", EnumSet.of(AccessFlags.STATIC));
+		val staticField2 = new DexField(null, "c", EnumSet.of(AccessFlags.STATIC));
+		val instanceField1 = new DexField(null, "d", null);
+		val instanceField2 = new DexField(null, "b", null);
 		
 		val cls = new DexClass(null, "LTestClass;", null, null);
 		cls.addField(staticField1);
