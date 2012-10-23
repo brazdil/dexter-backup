@@ -15,7 +15,7 @@ import com.alee.laf.tree.WebTree;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
-import uk.ac.cam.db538.dexter.dex.DisplayName;
+import uk.ac.cam.db538.dexter.dex.DexField;
 
 import bibliothek.extension.gui.dock.theme.EclipseTheme;
 import bibliothek.gui.DockController;
@@ -129,8 +129,10 @@ public class MainWindow {
 	
 	private static String getDisplayName(DefaultMutableTreeNode node) {
 		Object obj = node.getUserObject();
-		if (obj instanceof DisplayName)
-			return ((DisplayName) obj).getDisplayName();
+		if (obj instanceof DexClass)
+			return ((DexClass) obj).getShortName();
+		else if (obj instanceof DexField)
+			return ((DexField) obj).getName();
 		else
 			return obj.toString();
 	}

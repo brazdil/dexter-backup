@@ -8,7 +8,7 @@ import org.jf.dexlib.ClassDefItem;
 import lombok.Getter;
 import lombok.val;
 
-public class DexClass implements DisplayName {
+public class DexClass {
 
 	@Getter private final Dex ParentFile;
 	
@@ -55,10 +55,5 @@ public class DexClass implements DisplayName {
 			for (val instanceFieldInfo : clsData.getInstanceFields())
 				InstanceFields.add(new DexField(this, instanceFieldInfo));
 		}
-	}
-	
-	@Override
-	public String getDisplayName() {
-		return ShortName;
 	}
 }

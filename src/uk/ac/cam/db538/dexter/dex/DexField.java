@@ -5,7 +5,7 @@ import org.jf.dexlib.StringIdItem;
 
 import lombok.Getter;
 
-public class DexField implements DisplayName {
+public class DexField {
 	
 	@Getter private final DexClass ParentClass;
 	@Getter private final String Name;
@@ -21,10 +21,5 @@ public class DexField implements DisplayName {
 		this(parent, 
 		     StringIdItem.getStringValue(fieldInfo.field.getFieldName()),
 		     fieldInfo.isStatic());
-	}
-
-	@Override
-	public String getDisplayName() {
-		return Name;
 	}
 }
