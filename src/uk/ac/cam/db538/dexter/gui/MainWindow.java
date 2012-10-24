@@ -18,6 +18,7 @@ import com.alee.laf.tree.WebTree;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexField;
+import uk.ac.cam.db538.dexter.dex.DexMethod;
 
 import bibliothek.extension.gui.dock.theme.EclipseTheme;
 import bibliothek.gui.DockController;
@@ -105,20 +106,24 @@ public class MainWindow {
 			 case 2:
 				 setIcon(clsIcon);
 				 break;
-			 case 3:
-				 val field = (DexField) node.getUserObject();
-				 
-				 val fieldAccess = field.getAccessFlagSet();
-				 val fieldStatic = field.isStatic();
-				 
-				 if (fieldAccess.contains(AccessFlags.PUBLIC))
-					 setIcon(fieldStatic ? fieldStaticPublicIcon : fieldInstancePublicIcon);
-				 else if (fieldAccess.contains(AccessFlags.PROTECTED))
-					 setIcon(fieldStatic ? fieldStaticProtectedIcon : fieldInstanceProtectedIcon);
-				 else if (fieldAccess.contains(AccessFlags.PRIVATE))
-					 setIcon(fieldStatic ? fieldStaticPrivateIcon : fieldInstancePrivateIcon);
-				 else
-					 setIcon(fieldStatic ? fieldStaticDefaultIcon : fieldInstanceDefaultIcon);
+			 case 4:
+				 val obj = node.getUserObject();
+				 if (obj instanceof DexField) {
+					 val field = (DexField) obj;
+					 val fieldAccess = field.getAccessFlagSet();
+					 val fieldStatic = field.isStatic();
+					 
+					 if (fieldAccess.contains(AccessFlags.PUBLIC))
+						 setIcon(fieldStatic ? fieldStaticPublicIcon : fieldInstancePublicIcon);
+					 else if (fieldAccess.contains(AccessFlags.PROTECTED))
+						 setIcon(fieldStatic ? fieldStaticProtectedIcon : fieldInstanceProtectedIcon);
+					 else if (fieldAccess.contains(AccessFlags.PRIVATE))
+						 setIcon(fieldStatic ? fieldStaticPrivateIcon : fieldInstancePrivateIcon);
+					 else
+						 setIcon(fieldStatic ? fieldStaticDefaultIcon : fieldInstanceDefaultIcon);
+				 } else if (obj instanceof DexMethod) {
+					 
+				 }
 			 }
 			 
 			 return this;
@@ -163,6 +168,26 @@ public class MainWindow {
 		else if (obj instanceof DexField) {
 			val f = (DexField) obj;
 			return f.getName() + " : " + f.getType().getPrettyName();
+		} else if (obj instanceof DexMethod) {
+				val f = (DexMethod) obj;
+				
+				val str = new StringBuilder();
+				str.append(f.getName());
+				str.append("(");
+				
+				boolean first = true;
+				for (val type : f.getParameterTypes()) {
+					if (first)
+						first = false;
+					else
+						str.append(", ");
+					str.append(type.getPrettyName());
+				}
+				
+				str.append(") : ");
+				str.append(f.getReturnType().getPrettyName());
+				
+				return str.toString();
 		} else
 			return obj.toString();
 	}
@@ -199,13 +224,28 @@ public class MainWindow {
 			val clsNode = new DefaultMutableTreeNode(cls);
 			insertNodeAlphabetically(pkgNode, clsNode);
 			
-			// insert fields
-			for (val field : cls.getFields()) {
-				val fieldNode = new DefaultMutableTreeNode(field);
-				insertNodeAlphabetically(clsNode, fieldNode);
+			if (!cls.getFields().isEmpty()) {
+				val fieldsNode = new DefaultMutableTreeNode(StrFields);
+				insertNodeAlphabetically(clsNode, fieldsNode);
+				for (val field : cls.getFields()) {
+					val fieldNode = new DefaultMutableTreeNode(field);
+					insertNodeAlphabetically(fieldsNode, fieldNode);
+				}
+			}
+
+			if (!cls.getMethods().isEmpty()) {
+				val methodsNode = new DefaultMutableTreeNode(StrMethods);
+				insertNodeAlphabetically(clsNode, methodsNode);
+				for (val method : cls.getMethods()) {
+					val methodNode = new DefaultMutableTreeNode(method);
+					insertNodeAlphabetically(methodsNode, methodNode);
+				}
 			}
 		}
 	}
+	
+	private static final String StrFields = "Fields";
+	private static final String StrMethods = "Methods";
 
 	// MAIN FUNCTION
 	
