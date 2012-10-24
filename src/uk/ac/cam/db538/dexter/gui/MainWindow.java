@@ -194,11 +194,7 @@ public class MainWindow {
 			insertNodeAlphabetically(pkgNode, clsNode);
 			
 			// insert fields
-			for (val field : cls.getStaticFields()) {
-				val fieldNode = new DefaultMutableTreeNode(field);
-				insertNodeAlphabetically(clsNode, fieldNode);
-			}
-			for (val field : cls.getInstanceFields()) {
+			for (val field : cls.getFields()) {
 				val fieldNode = new DefaultMutableTreeNode(field);
 				insertNodeAlphabetically(clsNode, fieldNode);
 			}
