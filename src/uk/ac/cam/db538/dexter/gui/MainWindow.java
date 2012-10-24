@@ -69,14 +69,22 @@ public class MainWindow {
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/package.gif"));
 		private static final ImageIcon clsIcon  = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/class.gif"));
-		private static final ImageIcon fieldDefaultIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_default.gif"));
-		private static final ImageIcon fieldPublicIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_public.gif"));
-		private static final ImageIcon fieldPrivateIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_private.gif"));
-		private static final ImageIcon fieldProtectedIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_protected.gif"));
+		private static final ImageIcon fieldInstanceDefaultIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_instance_default.png"));
+		private static final ImageIcon fieldInstancePublicIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_instance_public.png"));
+		private static final ImageIcon fieldInstancePrivateIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_instance_private.png"));
+		private static final ImageIcon fieldInstanceProtectedIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_instance_protected.png"));
+		private static final ImageIcon fieldStaticDefaultIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_static_default.png"));
+		private static final ImageIcon fieldStaticPublicIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_static_public.png"));
+		private static final ImageIcon fieldStaticPrivateIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_static_private.png"));
+		private static final ImageIcon fieldStaticProtectedIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_static_protected.png"));
 
 		@Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -101,14 +109,16 @@ public class MainWindow {
 				 val field = (DexField) node.getUserObject();
 				 
 				 val fieldAccess = field.getAccessFlagSet();
+				 val fieldStatic = field.isStatic();
+				 
 				 if (fieldAccess.contains(AccessFlags.PUBLIC))
-					 setIcon(fieldPublicIcon);
-				 else if (fieldAccess.contains(AccessFlags.PRIVATE))
-					 setIcon(fieldPrivateIcon);
+					 setIcon(fieldStatic ? fieldStaticPublicIcon : fieldInstancePublicIcon);
 				 else if (fieldAccess.contains(AccessFlags.PROTECTED))
-					 setIcon(fieldProtectedIcon);
+					 setIcon(fieldStatic ? fieldStaticProtectedIcon : fieldInstanceProtectedIcon);
+				 else if (fieldAccess.contains(AccessFlags.PRIVATE))
+					 setIcon(fieldStatic ? fieldStaticPrivateIcon : fieldInstancePrivateIcon);
 				 else
-					 setIcon(fieldDefaultIcon);
+					 setIcon(fieldStatic ? fieldStaticDefaultIcon : fieldInstanceDefaultIcon);
 			 }
 			 
 			 return this;
