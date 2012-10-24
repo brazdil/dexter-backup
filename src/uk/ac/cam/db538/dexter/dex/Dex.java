@@ -7,19 +7,22 @@ import java.util.LinkedList;
 
 import org.jf.dexlib.DexFile;
 
+import uk.ac.cam.db538.dexter.dex.type.TypeCache;
+
 import lombok.Getter;
 import lombok.val;
 
 public class Dex {
 
-	@Getter
-	private DexFile OriginalFile;
+	@Getter private DexFile OriginalFile;
 	
-	@Getter
-	private List<DexClass> Classes;
+	@Getter	private List<DexClass> Classes;
+	@Getter private TypeCache KnownTypes;
 	
 	public Dex(File filename) throws IOException {
 		OriginalFile = new DexFile(filename);
+		
+		KnownTypes = new TypeCache();
 		
 		Classes = new LinkedList<DexClass>();
 		val dexClsInfos = OriginalFile.ClassDefsSection.getItems();

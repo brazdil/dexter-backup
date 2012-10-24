@@ -109,11 +109,8 @@ public class MainWindow {
 					 setIcon(fieldProtectedIcon);
 				 else
 					 setIcon(fieldDefaultIcon);
-				 
-				 if (field.isStatic())
-					 setToolTipText("Static field");
-				 else
-					 setToolTipText("Instance field");
+
+				 setToolTipText(field.getType().getPrettyName());
 			 }
 			 
 			 return this;
@@ -154,7 +151,7 @@ public class MainWindow {
 	private static String getDisplayName(DefaultMutableTreeNode node) {
 		Object obj = node.getUserObject();
 		if (obj instanceof DexClass)
-			return ((DexClass) obj).getShortName();
+			return ((DexClass) obj).getType().getShortName();
 		else if (obj instanceof DexField)
 			return ((DexField) obj).getName();
 		else
@@ -179,7 +176,7 @@ public class MainWindow {
 		val pkgNodes = new HashMap<String, DefaultMutableTreeNode>();
 		
 		for (val cls : classes) {
-			String pkgName = cls.getPackageName();
+			String pkgName = cls.getType().getPackageName();
 			if (pkgName == null)
 				pkgName = "(default package)";
 			
