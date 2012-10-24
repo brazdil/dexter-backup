@@ -109,8 +109,6 @@ public class MainWindow {
 					 setIcon(fieldProtectedIcon);
 				 else
 					 setIcon(fieldDefaultIcon);
-
-				 setToolTipText(field.getType().getPrettyName());
 			 }
 			 
 			 return this;
@@ -152,9 +150,10 @@ public class MainWindow {
 		Object obj = node.getUserObject();
 		if (obj instanceof DexClass)
 			return ((DexClass) obj).getType().getShortName();
-		else if (obj instanceof DexField)
-			return ((DexField) obj).getName();
-		else
+		else if (obj instanceof DexField) {
+			val f = (DexField) obj;
+			return f.getName() + " : " + f.getType().getPrettyName();
+		} else
 			return obj.toString();
 	}
 	

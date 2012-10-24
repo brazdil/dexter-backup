@@ -59,7 +59,7 @@ public abstract class DexPrimitive extends DexRegisterType {
 
 	public static class DexInteger extends DexPrimitive {
 		public DexInteger() {
-			super("I", "integer", 1);
+			super("I", "int", 1);
 		}
 	}
 
