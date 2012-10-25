@@ -5,6 +5,8 @@ import java.awt.EventQueue;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -13,7 +15,11 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import com.alee.laf.scroll.WebScrollPane;
 import com.alee.laf.splitpane.WebSplitPane;
+import com.alee.laf.tabbedpane.WebTabbedPane;
 import com.alee.laf.tree.WebTree;
+import com.alee.laf.tree.WebTreeCellRenderer;
+import com.alee.managers.tooltip.TooltipManager;
+import com.alee.managers.tooltip.TooltipWay;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -36,26 +42,20 @@ import lombok.val;
 
 public class MainWindow {
 
-	private JFrame frame;
-	private DockController dockController;
-	private SplitDockStation dockStation;
+	private JFrame Frame;
+	private JTabbedPane TabbedPane;  
 	
 	public MainWindow() {
 		initialize();
 	}
 
 	private void initialize() {
-		frame = new JFrame("Dexter");
-		frame.setBounds(100, 100, 800, 600);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		Frame = new JFrame("Dexter");
+		Frame.setBounds(100, 100, 800, 600);
+		Frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		dockController = new DockController();
-		dockController.setRootWindow(frame);
-		dockController.setTheme(new EclipseTheme());
-		
-		dockStation = new SplitDockStation();
-		dockController.add(dockStation);
-		frame.add(dockStation);
+		TabbedPane = new WebTabbedPane();
+		Frame.add(TabbedPane);
 		
 		openFile(new File("classes.dex"));
 	}
@@ -63,7 +63,7 @@ public class MainWindow {
 	/*
 	 * Renderer that changes icons for class tree, and the text of leaves
 	 */
-	private static class ClassTreeRenderer extends DefaultTreeCellRenderer {
+	private static class ClassTreeRenderer extends WebTreeCellRenderer {
 		private static final long serialVersionUID = 1L;
 		
 		private static final ImageIcon pkgfolderIcon  = 
@@ -131,6 +131,8 @@ public class MainWindow {
 					 setIcon(isStatic ? staticPrivateIcon : instancePrivateIcon);
 				 else
 					 setIcon(isStatic ? staticDefaultIcon : instanceDefaultIcon);
+				 
+				 TooltipManager.setTooltip(this, "You have waited 500ms to see this", TooltipWay.down);
 			 }
 			 
 			 return this;
@@ -147,15 +149,13 @@ public class MainWindow {
 			return;
 		}
 		
-		// create dockable for the file
-		val dockable = new DefaultDockable();
-		dockable.setTitleText(filename.getName());
-		dockStation.drop(dockable);
-
 		// create split pane
 		val splitPane = new WebSplitPane();
 		splitPane.setDividerLocation(300);
-		dockable.add(splitPane);
+		splitPane.setContinuousLayout (true);
+		
+		// create tab
+		TabbedPane.addTab(filename.getName(), splitPane);
 
 		// create class tree
 		val classTreeRoot = new DefaultMutableTreeNode("classes.dex");
@@ -163,9 +163,24 @@ public class MainWindow {
 		
 		// create list of classes
 		val classTree = new WebTree(classTreeRoot);
+		classTree.setShowsRootHandles(true);
+		classTree.setVisibleRowCount(4);
 		classTree.setCellRenderer(new ClassTreeRenderer());
 		javax.swing.ToolTipManager.sharedInstance().registerComponent(classTree);
 		splitPane.setLeftComponent(new WebScrollPane(classTree));
+		
+		// create right panel
+		val detailsPane = new WebTabbedPane() {
+			private static final long serialVersionUID = 5866957665552637833L;
+
+			{
+				this.setTabPlacement(WebTabbedPane.BOTTOM);
+				
+				this.addTab("Methods", new JPanel());
+			}			
+		};
+		splitPane.setRightComponent(detailsPane);
+		
 	}
 	
 	private static String getDisplayName(DefaultMutableTreeNode node) {
@@ -261,7 +276,7 @@ public class MainWindow {
 			public void run() {
 				try {
 					MainWindow window = new MainWindow();
-					window.frame.setVisible(true);
+					window.Frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

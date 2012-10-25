@@ -6,7 +6,6 @@
 	<classpathentry kind="lib" path="lib/lombok.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.10.jar"/>
 	<classpathentry kind="lib" path="lib/smali-1.4.1-dev.jar"/>
-	<classpathentry kind="lib" path="lib/docking-frames-core.jar"/>
 	<classpathentry kind="lib" path="lib/WebLookAndFeel.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
