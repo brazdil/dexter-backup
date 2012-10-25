@@ -23,14 +23,17 @@ public class DexMethod {
 	@Getter private final Set<AccessFlags> AccessFlagSet; 
 	@Getter private final DexType ReturnType;
 	@Getter private final List<DexRegisterType> ParameterTypes;
+	@Getter private final boolean Direct;
 
 	public DexMethod(DexClass parent, String name, Set<AccessFlags> accessFlags, 
-			DexType returnType, List<DexRegisterType> parameterTypes) {
+			DexType returnType, List<DexRegisterType> parameterTypes,
+			boolean direct) {
 		ParentClass = parent;
 		Name = name;
 		AccessFlagSet = Utils.getNonNullAccessFlagSet(accessFlags);
 		ReturnType = returnType;
 		ParameterTypes = parameterTypes;
+		Direct = direct;
 	}
 	
 	private static List<DexRegisterType> parseParameterTypes(TypeListItem params, TypeCache cache) {
@@ -47,19 +50,8 @@ public class DexMethod {
 		     methodInfo.method.getMethodName().getStringValue(),
 		     Utils.getAccessFlagSet(methodInfo.accessFlags),
 		     DexType.parse(methodInfo.method.getPrototype().getReturnType().getTypeDescriptor(), parent.getParentFile().getKnownTypes()),
-		     parseParameterTypes(methodInfo.method.getPrototype().getParameters(), parent.getParentFile().getKnownTypes()));
-		
-//		System.out.println(ParentClass.getPrettyName() + "." + Name);
-//		System.out.println(methodInfo.method.getMethodString());
-//		System.out.println(methodInfo.method.getShortMethodString());
-//		
-//		val prototype = methodInfo.method.getPrototype();
-//		val params = prototype.getParameters();
-//		if (params != null)
-//			for (val type : params.getTypes())
-//				System.out.println(type.getTypeDescriptor());
-//		val returnType = prototype.getReturnType();
-//		returnType.
+		     parseParameterTypes(methodInfo.method.getPrototype().getParameters(), parent.getParentFile().getKnownTypes()),
+		     methodInfo.isDirect());
 	}
 	
 	public boolean isStatic() {

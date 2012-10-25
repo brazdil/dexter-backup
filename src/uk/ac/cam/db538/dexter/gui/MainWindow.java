@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 
 import org.jf.dexlib.Util.AccessFlags;
 
@@ -17,8 +18,6 @@ import com.alee.laf.splitpane.WebSplitPane;
 import com.alee.laf.tabbedpane.WebTabbedPane;
 import com.alee.laf.tree.WebTree;
 import com.alee.laf.tree.WebTreeCellRenderer;
-import com.alee.managers.tooltip.TooltipManager;
-import com.alee.managers.tooltip.TooltipWay;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -51,7 +50,8 @@ public class MainWindow {
 		TabbedPane = new WebTabbedPane();
 		Frame.add(TabbedPane);
 		
-		openFile(new File("classes.dex"));
+		openFile(new File("metronome.dex"));
+		openFile(new File("endomondo.dex"));
 	}
 	
 	/*
@@ -60,28 +60,42 @@ public class MainWindow {
 	private static class ClassTreeRenderer extends WebTreeCellRenderer {
 		private static final long serialVersionUID = 1L;
 		
-		private static final ImageIcon pkgfolderIcon  = 
+		private static final ImageIcon pkgfolderIcon = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/packagefolder.gif"));
-		private static final ImageIcon pkgIcon  = 
+		private static final ImageIcon pkgIcon = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/package.gif"));
-		private static final ImageIcon clsIcon  = 
+		private static final ImageIcon classIcon = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/class.gif"));
-		private static final ImageIcon instanceDefaultIcon  = 
+		private static final ImageIcon interfaceIcon = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/interface.gif"));
+		private static final ImageIcon enumIcon = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/enum.gif"));
+		private static final ImageIcon annotationIcon = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/annotation.gif"));
+		private static final ImageIcon instanceDefaultIcon = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/instance_default.png"));
-		private static final ImageIcon instancePublicIcon  = 
+		private static final ImageIcon instancePublicIcon = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/instance_public.png"));
-		private static final ImageIcon instancePrivateIcon  = 
+		private static final ImageIcon instancePrivateIcon = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/instance_private.png"));
-		private static final ImageIcon instanceProtectedIcon  = 
+		private static final ImageIcon instanceProtectedIcon = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/instance_protected.png"));
-		private static final ImageIcon staticDefaultIcon  = 
+		private static final ImageIcon staticDefaultIcon = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/static_default.png"));
-		private static final ImageIcon staticPublicIcon  = 
+		private static final ImageIcon staticPublicIcon = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/static_public.png"));
-		private static final ImageIcon staticPrivateIcon  = 
+		private static final ImageIcon staticPrivateIcon = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/static_private.png"));
-		private static final ImageIcon staticProtectedIcon  = 
+		private static final ImageIcon staticProtectedIcon = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/static_protected.png"));
+		private static final ImageIcon virtualDefaultIcon = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/virtual_default.png"));
+		private static final ImageIcon virtualPublicIcon = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/virtual_public.png"));
+		private static final ImageIcon virtualPrivateIcon = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/virtual_private.png"));
+		private static final ImageIcon virtualProtectedIcon = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/virtual_protected.png"));
 
 		@Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -98,14 +112,24 @@ public class MainWindow {
 				 break;
 			 case 1:
 				 setIcon(pkgIcon);
+				 tree.expandPath(new TreePath(node.getPath()));
 				 break;
 			 case 2:
-				 setIcon(clsIcon);
+				 val cls = (DexClass) node.getUserObject();
+				 if (cls.isAnnotation())
+					 setIcon(annotationIcon);
+				 if (cls.isEnum())
+					 setIcon(enumIcon);
+				 else if (cls.isInterface())
+					 setIcon(interfaceIcon);
+				 else
+					 setIcon(classIcon);
 				 break;
 			 case 4:
 				 val obj = node.getUserObject();
 				 Set<AccessFlags> access = EnumSet.noneOf(AccessFlags.class);
 				 boolean isStatic = false;
+				 boolean isVirtual = false;
 				 
 				 if (obj instanceof DexField) {
 					 val field = (DexField) obj;
@@ -115,18 +139,17 @@ public class MainWindow {
 					 val method = (DexMethod) obj;
 					 access = method.getAccessFlagSet();
 					 isStatic = method.isStatic();
+					 isVirtual = !method.isDirect();
 				 }
 
 				 if (access.contains(AccessFlags.PUBLIC))
-					 setIcon(isStatic ? staticPublicIcon : instancePublicIcon);
+					 setIcon(isStatic ? staticPublicIcon : isVirtual ? virtualPublicIcon : instancePublicIcon);
 				 else if (access.contains(AccessFlags.PROTECTED))
-					 setIcon(isStatic ? staticProtectedIcon : instanceProtectedIcon);
+					 setIcon(isStatic ? staticProtectedIcon : isVirtual ? virtualProtectedIcon : instanceProtectedIcon);
 				 else if (access.contains(AccessFlags.PRIVATE))
-					 setIcon(isStatic ? staticPrivateIcon : instancePrivateIcon);
+					 setIcon(isStatic ? staticPrivateIcon : isVirtual ? virtualPrivateIcon : instancePrivateIcon);
 				 else
-					 setIcon(isStatic ? staticDefaultIcon : instanceDefaultIcon);
-				 
-				 TooltipManager.setTooltip(this, "You have waited 500ms to see this", TooltipWay.down);
+					 setIcon(isStatic ? staticDefaultIcon : isVirtual ? virtualDefaultIcon : instanceDefaultIcon);
 			 }
 			 
 			 return this;
