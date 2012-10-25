@@ -125,12 +125,14 @@ public class MainWindowTest {
 		
 		val pkgNode = (DefaultMutableTreeNode) root.getChildAt(0);
 		val clsNode = (DefaultMutableTreeNode) pkgNode.getChildAt(0);
-		assertEquals(4, clsNode.getChildCount());
 		
-		val fieldNode1 = (DefaultMutableTreeNode) clsNode.getChildAt(0);
-		val fieldNode2 = (DefaultMutableTreeNode) clsNode.getChildAt(1);
-		val fieldNode3 = (DefaultMutableTreeNode) clsNode.getChildAt(2);
-		val fieldNode4 = (DefaultMutableTreeNode) clsNode.getChildAt(3);
+		val fieldNode = (DefaultMutableTreeNode) clsNode.getChildAt(0);
+		assertEquals(4, fieldNode.getChildCount());
+		
+		val fieldNode1 = (DefaultMutableTreeNode) fieldNode.getChildAt(0);
+		val fieldNode2 = (DefaultMutableTreeNode) fieldNode.getChildAt(1);
+		val fieldNode3 = (DefaultMutableTreeNode) fieldNode.getChildAt(2);
+		val fieldNode4 = (DefaultMutableTreeNode) fieldNode.getChildAt(3);
 		
 		assertEquals(staticField1, fieldNode1.getUserObject());
 		assertEquals(instanceField2, fieldNode2.getUserObject());
