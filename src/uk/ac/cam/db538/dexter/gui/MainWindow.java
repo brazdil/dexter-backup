@@ -27,8 +27,10 @@ import bibliothek.gui.dock.SplitDockStation;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import lombok.val;
 
@@ -70,22 +72,22 @@ public class MainWindow {
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/package.gif"));
 		private static final ImageIcon clsIcon  = 
 				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/class.gif"));
-		private static final ImageIcon fieldInstanceDefaultIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_instance_default.png"));
-		private static final ImageIcon fieldInstancePublicIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_instance_public.png"));
-		private static final ImageIcon fieldInstancePrivateIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_instance_private.png"));
-		private static final ImageIcon fieldInstanceProtectedIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_instance_protected.png"));
-		private static final ImageIcon fieldStaticDefaultIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_static_default.png"));
-		private static final ImageIcon fieldStaticPublicIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_static_public.png"));
-		private static final ImageIcon fieldStaticPrivateIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_static_private.png"));
-		private static final ImageIcon fieldStaticProtectedIcon  = 
-				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/field_static_protected.png"));
+		private static final ImageIcon instanceDefaultIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/instance_default.png"));
+		private static final ImageIcon instancePublicIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/instance_public.png"));
+		private static final ImageIcon instancePrivateIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/instance_private.png"));
+		private static final ImageIcon instanceProtectedIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/instance_protected.png"));
+		private static final ImageIcon staticDefaultIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/static_default.png"));
+		private static final ImageIcon staticPublicIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/static_public.png"));
+		private static final ImageIcon staticPrivateIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/static_private.png"));
+		private static final ImageIcon staticProtectedIcon  = 
+				new ImageIcon(ClassLoader.getSystemResource("uk/ac/cam/db538/dexter/gui/img/static_protected.png"));
 
 		@Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -108,22 +110,27 @@ public class MainWindow {
 				 break;
 			 case 4:
 				 val obj = node.getUserObject();
+				 Set<AccessFlags> access = EnumSet.noneOf(AccessFlags.class);
+				 boolean isStatic = false;
+				 
 				 if (obj instanceof DexField) {
 					 val field = (DexField) obj;
-					 val fieldAccess = field.getAccessFlagSet();
-					 val fieldStatic = field.isStatic();
-					 
-					 if (fieldAccess.contains(AccessFlags.PUBLIC))
-						 setIcon(fieldStatic ? fieldStaticPublicIcon : fieldInstancePublicIcon);
-					 else if (fieldAccess.contains(AccessFlags.PROTECTED))
-						 setIcon(fieldStatic ? fieldStaticProtectedIcon : fieldInstanceProtectedIcon);
-					 else if (fieldAccess.contains(AccessFlags.PRIVATE))
-						 setIcon(fieldStatic ? fieldStaticPrivateIcon : fieldInstancePrivateIcon);
-					 else
-						 setIcon(fieldStatic ? fieldStaticDefaultIcon : fieldInstanceDefaultIcon);
+					 access = field.getAccessFlagSet();
+					 isStatic = field.isStatic();
 				 } else if (obj instanceof DexMethod) {
-					 
+					 val method = (DexMethod) obj;
+					 access = method.getAccessFlagSet();
+					 isStatic = method.isStatic();
 				 }
+
+				 if (access.contains(AccessFlags.PUBLIC))
+					 setIcon(isStatic ? staticPublicIcon : instancePublicIcon);
+				 else if (access.contains(AccessFlags.PROTECTED))
+					 setIcon(isStatic ? staticProtectedIcon : instanceProtectedIcon);
+				 else if (access.contains(AccessFlags.PRIVATE))
+					 setIcon(isStatic ? staticPrivateIcon : instancePrivateIcon);
+				 else
+					 setIcon(isStatic ? staticDefaultIcon : instanceDefaultIcon);
 			 }
 			 
 			 return this;

@@ -1,11 +1,9 @@
 package uk.ac.cam.db538.dexter.dex;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.Util.AccessFlags;
@@ -62,5 +60,9 @@ public class DexMethod {
 //				System.out.println(type.getTypeDescriptor());
 //		val returnType = prototype.getReturnType();
 //		returnType.
+	}
+	
+	public boolean isStatic() {
+		return AccessFlagSet.contains(AccessFlags.STATIC);
 	}
 }
