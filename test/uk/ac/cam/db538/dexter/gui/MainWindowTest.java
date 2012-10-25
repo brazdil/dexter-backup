@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexField;
+import uk.ac.cam.db538.dexter.dex.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
@@ -28,6 +30,7 @@ public class MainWindowTest {
 			m.setAccessible(true);
 			m.invoke(null, root, classes);
 		} catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace(System.err);
 			fail("Couldn't execute method: " + e.getClass().getSimpleName());
 		}
 	}
@@ -114,11 +117,14 @@ public class MainWindowTest {
 		val instanceField1 = new DexField(null, "d", typeInt, null);
 		val instanceField2 = new DexField(null, "b", typeInt, null);
 		
+		val method1 = new DexMethod(null, "a", null, typeInt, Arrays.asList(new DexRegisterType[] { typeInt, typeInt }), true);
+		
 		val cls = new DexClass(null, new DexClassType("LTestClass;"), null, null, null);
 		cls.addField(staticField1);
 		cls.addField(staticField2);
 		cls.addField(instanceField1);
 		cls.addField(instanceField2);
+		cls.addMethod(method1);
 		classes.add(cls);
 		
 		execAddClassesToTree(root, classes);
@@ -139,6 +145,11 @@ public class MainWindowTest {
 		assertEquals(staticField2, fieldNode3.getUserObject());
 		assertEquals(instanceField1, fieldNode4.getUserObject());
 		
+		val methodNode = (DefaultMutableTreeNode) clsNode.getChildAt(1);
+		assertEquals(1, methodNode.getChildCount());
+		
+		val methodNode1 = (DefaultMutableTreeNode) methodNode.getChildAt(0);
+		assertEquals(method1, methodNode1.getUserObject());
 	}
 	
 	private static void execInsertNodeAlphabetically(DefaultMutableTreeNode parent, DefaultMutableTreeNode newChild) {

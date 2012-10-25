@@ -75,4 +75,18 @@ public class DexClass {
 			f.setParentClass(null);
 		}
 	}
+
+	public void addMethod(DexMethod m) {
+		if (m.getParentClass() != null)
+			m.getParentClass().removeMethod(m);
+		
+		Methods.add(m);
+	}
+	
+	public void removeMethod(DexMethod m) {
+		if (m.getParentClass() == this) {
+			Methods.remove(m);
+			m.setParentClass(null);
+		}
+	}
 }

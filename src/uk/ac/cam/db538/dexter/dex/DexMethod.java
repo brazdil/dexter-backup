@@ -32,7 +32,7 @@ public class DexMethod {
 		Name = name;
 		AccessFlagSet = Utils.getNonNullAccessFlagSet(accessFlags);
 		ReturnType = returnType;
-		ParameterTypes = parameterTypes;
+		ParameterTypes = (parameterTypes == null) ? new LinkedList<DexRegisterType>() : parameterTypes;
 		Direct = direct;
 	}
 	
