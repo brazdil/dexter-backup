@@ -23,6 +23,9 @@ public class DexClassType extends DexRegisterType {
 	}
 	
 	public static DexClassType parse(String typeDescriptor, TypeCache cache) {
+		if (!typeDescriptor.startsWith("L") || !typeDescriptor.endsWith(";"))
+			return null;
+		
 		if (cache != null) {
 			val res = cache.getClassTypes().get(typeDescriptor);
 			if (res != null)
@@ -30,7 +33,8 @@ public class DexClassType extends DexRegisterType {
 		}
 		
 		val newType = new DexClassType(typeDescriptor);
-		cache.getClassTypes().put(typeDescriptor, newType);
+		if (cache != null)
+			cache.getClassTypes().put(typeDescriptor, newType);
 		return newType;
 	}
 	

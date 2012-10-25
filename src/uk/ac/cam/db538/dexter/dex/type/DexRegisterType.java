@@ -13,10 +13,18 @@ public abstract class DexRegisterType extends DexType {
 	}
 	
 	public static DexRegisterType parse(String typeDescriptor, TypeCache cache) {
-		val res = DexPrimitive.parse(typeDescriptor);
-		if (res != null)
-			return res;
-		else
-			return DexClassType.parse(typeDescriptor, cache);
+		val primitive = DexPrimitive.parse(typeDescriptor);
+		if (primitive != null)
+			return primitive;
+
+		val classtype = DexClassType.parse(typeDescriptor, cache);
+		if (classtype != null)
+			return classtype;
+		
+		val array = DexArrayType.parse(typeDescriptor, cache);
+		if (array != null)
+			return array;
+		
+		return null;
 	}
 }

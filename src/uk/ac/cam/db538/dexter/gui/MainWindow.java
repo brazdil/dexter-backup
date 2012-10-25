@@ -9,7 +9,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
 
 import org.jf.dexlib.Util.AccessFlags;
 
@@ -25,11 +24,6 @@ import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.DexMethod;
-
-import bibliothek.extension.gui.dock.theme.EclipseTheme;
-import bibliothek.gui.DockController;
-import bibliothek.gui.dock.DefaultDockable;
-import bibliothek.gui.dock.SplitDockStation;
 
 import java.io.File;
 import java.io.IOException;
