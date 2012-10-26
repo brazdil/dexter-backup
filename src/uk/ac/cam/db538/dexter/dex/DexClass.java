@@ -30,7 +30,7 @@ public class DexClass {
   public DexClass(Dex parent, ClassDefItem clsInfo) {
     this(parent,
          DexClassType.parse(clsInfo.getClassType().getTypeDescriptor() , parent.getKnownTypes()),
-         Utils.getAccessFlagSet(clsInfo.getAccessFlags()),
+         Utils.getAccessFlagSet(AccessFlags.getAccessFlagsForClass(clsInfo.getAccessFlags())),
          null,
          null);
 

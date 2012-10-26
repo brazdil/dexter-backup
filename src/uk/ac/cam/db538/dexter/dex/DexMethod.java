@@ -49,10 +49,14 @@ public class DexMethod {
   public DexMethod(DexClass parent, EncodedMethod methodInfo) {
     this(parent,
          methodInfo.method.getMethodName().getStringValue(),
-         Utils.getAccessFlagSet(methodInfo.accessFlags),
+         Utils.getAccessFlagSet(AccessFlags.getAccessFlagsForMethod(methodInfo.accessFlags)),
          DexType.parse(methodInfo.method.getPrototype().getReturnType().getTypeDescriptor(), parent.getParentFile().getKnownTypes()),
          parseParameterTypes(methodInfo.method.getPrototype().getParameters(), parent.getParentFile().getKnownTypes()),
          methodInfo.isDirect());
+
+//    for (val t : methodInfo.codeItem.getInstructions()) {
+//    	t.opcode.
+//    }
   }
 
   public boolean isStatic() {

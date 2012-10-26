@@ -29,7 +29,7 @@ public class DexField {
     this(parent,
          StringIdItem.getStringValue(fieldInfo.field.getFieldName()),
          DexRegisterType.parse(fieldInfo.field.getFieldType().getTypeDescriptor(), parent.getParentFile().getKnownTypes()),
-         Utils.getAccessFlagSet(fieldInfo.accessFlags));
+         Utils.getAccessFlagSet(AccessFlags.getAccessFlagsForField(fieldInfo.accessFlags)));
   }
 
   public boolean isStatic() {

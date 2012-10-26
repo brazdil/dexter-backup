@@ -14,8 +14,8 @@ public class Utils {
     return (accessFlags == null) ? EnumSet.noneOf(AccessFlags.class) : accessFlags;
   }
 
-  public static Set<AccessFlags> getAccessFlagSet(int accessFlags) {
-    val list = Arrays.asList(AccessFlags.getAccessFlagsForField(accessFlags));
+  public static Set<AccessFlags> getAccessFlagSet(AccessFlags[] flags) {
+    val list = Arrays.asList(flags);
     if (list.isEmpty())
       return EnumSet.noneOf(AccessFlags.class);
     else
