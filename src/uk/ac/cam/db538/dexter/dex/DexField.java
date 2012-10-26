@@ -12,27 +12,27 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class DexField {
-	
-	@Getter @Setter private DexClass ParentClass;
-	@Getter private final String Name;
-	@Getter private final DexRegisterType Type; 
-	@Getter private final Set<AccessFlags> AccessFlagSet; 
-	
-	public DexField(DexClass parent, String name, DexRegisterType type, Set<AccessFlags> accessFlags) {
-		ParentClass = parent;
-		Name = name;
-		Type = type;
-		AccessFlagSet = Utils.getNonNullAccessFlagSet(accessFlags);
-	}
-	
-	public DexField(DexClass parent, EncodedField fieldInfo) {
-		this(parent, 
-		     StringIdItem.getStringValue(fieldInfo.field.getFieldName()),
-		     DexRegisterType.parse(fieldInfo.field.getFieldType().getTypeDescriptor(), parent.getParentFile().getKnownTypes()),
-		     Utils.getAccessFlagSet(fieldInfo.accessFlags));
-	}
-	
-	public boolean isStatic() {
-		return AccessFlagSet.contains(AccessFlags.STATIC);
-	}
+
+  @Getter @Setter private DexClass ParentClass;
+  @Getter private final String Name;
+  @Getter private final DexRegisterType Type;
+  @Getter private final Set<AccessFlags> AccessFlagSet;
+
+  public DexField(DexClass parent, String name, DexRegisterType type, Set<AccessFlags> accessFlags) {
+    ParentClass = parent;
+    Name = name;
+    Type = type;
+    AccessFlagSet = Utils.getNonNullAccessFlagSet(accessFlags);
+  }
+
+  public DexField(DexClass parent, EncodedField fieldInfo) {
+    this(parent,
+         StringIdItem.getStringValue(fieldInfo.field.getFieldName()),
+         DexRegisterType.parse(fieldInfo.field.getFieldType().getTypeDescriptor(), parent.getParentFile().getKnownTypes()),
+         Utils.getAccessFlagSet(fieldInfo.accessFlags));
+  }
+
+  public boolean isStatic() {
+    return AccessFlagSet.contains(AccessFlags.STATIC);
+  }
 }

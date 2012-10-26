@@ -14,20 +14,20 @@ import lombok.val;
 
 public class Dex {
 
-	@Getter private DexFile OriginalFile;
-	
-	@Getter	private List<DexClass> Classes;
-	@Getter private TypeCache KnownTypes;
-	
-	public Dex(File filename) throws IOException {
-		OriginalFile = new DexFile(filename);
-		
-		KnownTypes = new TypeCache();
-		
-		Classes = new LinkedList<DexClass>();
-		val dexClsInfos = OriginalFile.ClassDefsSection.getItems();
-		for (val dexClsInfo : dexClsInfos)
-			Classes.add(new DexClass(this, dexClsInfo));
-	}
-	
+  @Getter private DexFile OriginalFile;
+
+  @Getter	private List<DexClass> Classes;
+  @Getter private TypeCache KnownTypes;
+
+  public Dex(File filename) throws IOException {
+    OriginalFile = new DexFile(filename);
+
+    KnownTypes = new TypeCache();
+
+    Classes = new LinkedList<DexClass>();
+    val dexClsInfos = OriginalFile.ClassDefsSection.getItems();
+    for (val dexClsInfo : dexClsInfos)
+      Classes.add(new DexClass(this, dexClsInfo));
+  }
+
 }
