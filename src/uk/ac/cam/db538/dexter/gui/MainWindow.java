@@ -207,15 +207,15 @@ public class MainWindow {
         val tree = (JTree) e.getSource();
         val node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
         if (node != null) {
-	        val obj = node.getUserObject();
-	
-	        if (obj instanceof DexClass) {
-	          splitPane.setRightComponent(SelectedClassPanel);
-	          SelectedClassPanel.changeClass((DexClass) obj);
-	        } else if (obj instanceof DexMethod) {
-	          splitPane.setRightComponent(SelectedMethodPanel);
-	          SelectedMethodPanel.changeMethod((DexMethod) obj);
-	        }
+          val obj = node.getUserObject();
+
+          if (obj instanceof DexClass) {
+            splitPane.setRightComponent(SelectedClassPanel);
+            SelectedClassPanel.changeClass((DexClass) obj);
+          } else if (obj instanceof DexMethod) {
+            splitPane.setRightComponent(SelectedMethodPanel);
+            SelectedMethodPanel.changeMethod((DexMethod) obj);
+          }
         }
       }
     });

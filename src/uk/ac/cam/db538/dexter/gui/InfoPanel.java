@@ -63,11 +63,11 @@ public abstract class InfoPanel extends WebPanel {
   }
 
   protected void addRow(Component both) {
-	mainPane.add(both, getBothColumnConstraint(getRow()));
+    mainPane.add(both, getBothColumnConstraint(getRow()));
   }
 
   public InfoPanel() {
-	mainPane = new WebPanel();
+    mainPane = new WebPanel();
     scrollPane = new WebScrollPane(mainPane);
     scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
