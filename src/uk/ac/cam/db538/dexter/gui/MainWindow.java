@@ -169,9 +169,9 @@ public class MainWindow {
       // TODO: handle
       return;
     } catch (UnknownTypeException e) {
-		// TODO Auto-generated catch block
-    	return;
-	}
+      // TODO Auto-generated catch block
+      return;
+    }
 
     // create split pane
     val splitPane = new WebSplitPane();
@@ -194,7 +194,7 @@ public class MainWindow {
     val classTreeScroll = new WebScrollPane(classTree);
     classTreeScroll.setMinimumSize(new Dimension(300, 200));
     splitPane.setLeftComponent(classTreeScroll);
-    
+
     // create selection panels
     SelectedClassPanel = new ClassPanel();
     SelectedMethodPanel = new MethodPanel();
@@ -202,21 +202,21 @@ public class MainWindow {
     // set selection listener
     classTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     classTree.addTreeSelectionListener(new TreeSelectionListener() {
-		@Override
-		public void valueChanged(TreeSelectionEvent e) {
-			val tree = (JTree) e.getSource();
-			val node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
-			val obj = node.getUserObject();
-			
-			if (obj instanceof DexClass) {
-				splitPane.setRightComponent(SelectedClassPanel);
-				SelectedClassPanel.changeClass((DexClass) obj);
-			} else if (obj instanceof DexMethod) {
-				splitPane.setRightComponent(SelectedMethodPanel);
-				SelectedMethodPanel.changeMethod((DexMethod) obj);
-			}
-		}
-	});
+      @Override
+      public void valueChanged(TreeSelectionEvent e) {
+        val tree = (JTree) e.getSource();
+        val node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+        val obj = node.getUserObject();
+
+        if (obj instanceof DexClass) {
+          splitPane.setRightComponent(SelectedClassPanel);
+          SelectedClassPanel.changeClass((DexClass) obj);
+        } else if (obj instanceof DexMethod) {
+          splitPane.setRightComponent(SelectedMethodPanel);
+          SelectedMethodPanel.changeMethod((DexMethod) obj);
+        }
+      }
+    });
   }
 
   private static String getDisplayName(DefaultMutableTreeNode node) {

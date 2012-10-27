@@ -12,20 +12,20 @@ public abstract class DexRegisterType extends DexType {
   }
 
   public static DexRegisterType parse(String typeDescriptor, TypeCache cache) throws UnknownTypeException {
-	  try {
-		  return DexPrimitive.parse(typeDescriptor);
-	  } catch (UnknownTypeException e) {
-	  }
-	  
-	try {
-		return DexClassType.parse(typeDescriptor, cache);
-	} catch (UnknownTypeException e) {
-	}
+    try {
+      return DexPrimitive.parse(typeDescriptor);
+    } catch (UnknownTypeException e) {
+    }
 
-	try {
-		return DexArrayType.parse(typeDescriptor, cache);
-	} catch (UnknownTypeException e) {
-	}
+    try {
+      return DexClassType.parse(typeDescriptor, cache);
+    } catch (UnknownTypeException e) {
+    }
+
+    try {
+      return DexArrayType.parse(typeDescriptor, cache);
+    } catch (UnknownTypeException e) {
+    }
 
     throw new UnknownTypeException(typeDescriptor);
   }
