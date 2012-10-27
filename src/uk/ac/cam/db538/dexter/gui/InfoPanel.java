@@ -7,6 +7,8 @@ import java.util.Set;
 
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -20,11 +22,14 @@ import com.alee.extended.breadcrumb.WebBreadcrumbLabel;
 import com.alee.extended.panel.GroupPanel;
 import com.alee.laf.checkbox.WebCheckBox;
 import com.alee.laf.panel.WebPanel;
+import com.alee.laf.scroll.WebScrollPane;
 
 public abstract class InfoPanel extends WebPanel {
 
   private static final long serialVersionUID = 1106819823568775169L;
 
+  private JScrollPane scrollPane;
+  private JPanel mainPane;
   private TableLayout layout;
   private WebBreadcrumb breadcrumbs;
   private Map<AccessFlags, JCheckBox> checkboxesAccessField;
@@ -49,8 +54,8 @@ public abstract class InfoPanel extends WebPanel {
 
   protected void addRow(Component left, Component right, boolean topLeft) {
     int row = getRow();
-    this.add(left, getLeftColumnConstraint(row, topLeft));
-    this.add(right, getRightColumnConstraint(row));
+    mainPane.add(left, getLeftColumnConstraint(row, topLeft));
+    mainPane.add(right, getRightColumnConstraint(row));
   }
 
   protected void addRow(Component left, Component right) {
@@ -58,14 +63,20 @@ public abstract class InfoPanel extends WebPanel {
   }
 
   protected void addRow(Component both) {
-    this.add(both, getBothColumnConstraint(getRow()));
+	mainPane.add(both, getBothColumnConstraint(getRow()));
   }
 
   public InfoPanel() {
+	mainPane = new WebPanel();
+    scrollPane = new WebScrollPane(mainPane);
+    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+    this.add(scrollPane);
+
     layout = new TableLayout(new double[][] { {TableLayout.PREFERRED, TableLayout.FILL}, {} });
     layout.setHGap(5);
     layout.setVGap(5);
-    this.setLayout(layout);
+    mainPane.setLayout(layout);
 
     // create breadcrumbs
     breadcrumbs = new WebBreadcrumb(true);

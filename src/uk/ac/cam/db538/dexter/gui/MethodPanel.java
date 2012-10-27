@@ -13,6 +13,7 @@ import com.alee.extended.label.WebHotkeyLabel;
 import com.alee.extended.panel.GroupPanel;
 import com.alee.laf.checkbox.WebCheckBox;
 import com.alee.laf.label.WebLabel;
+import com.alee.laf.scroll.WebScrollPane;
 import com.alee.laf.text.WebTextField;
 
 public class MethodPanel extends InfoPanel {
@@ -82,7 +83,6 @@ public class MethodPanel extends InfoPanel {
 
     // put instructions
     panelInstructions.removeAll();
-    panelInstructions.add(new WebHotkeyLabel("nop"));
     for (val insn : method.getCode())
       panelInstructions.add(new WebHotkeyLabel(insn.getOriginalInstruction()));
   }

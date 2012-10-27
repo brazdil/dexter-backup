@@ -34,8 +34,6 @@ public abstract class DexInstruction {
     val registers = new HashMap<Integer, DexRegister>();
 
     for (val insn : instructions) {
-      System.out.println(insn.opcode);
-
       switch (insn.opcode) {
       case NOP:
         list.add(new DexNopInstruction());
