@@ -28,25 +28,17 @@ public class ClassPanel extends InfoPanel {
 	private Map<AccessFlags, JCheckBox> checkboxesAccessField;
 	
 	public ClassPanel() {
-		int row;
-		
 		// create class field
-		row = getRow();
-		this.add(new WebLabel("Class:"), getLeftColumnConstraint(row));
 		fieldName = new WebTextField();
 		fieldName.setEditable(false);
-		this.add(fieldName, getRightColumnConstraint(row));
+		this.addRow(new WebLabel("Class:"), fieldName);
 		
 		// create superclass field
-		row = getRow();
-		this.add(new WebLabel("Super class:"), getLeftColumnConstraint(row));
 		fieldSuperClass = new WebTextField();
 		fieldSuperClass.setEditable(false);
-		this.add(fieldSuperClass, getRightColumnConstraint(row));
+		this.addRow(new WebLabel("Super class:"), fieldSuperClass);
 
 		// create access flag checkboxes
-		row = getRow();
-		this.add(new WebLabel("Access flags:"), getLeftColumnConstraint(row));
 		checkboxesAccessField = new HashMap<AccessFlags, JCheckBox>();
 		val group = new GroupPanel(4, false);
 		group.setLayout(new BoxLayout(group, BoxLayout.Y_AXIS));
@@ -56,7 +48,7 @@ public class ClassPanel extends InfoPanel {
 			checkboxesAccessField.put(flag, checkbox);
 			group.add(checkbox);
 		}
-		this.add(group, getRightColumnConstraint(row));
+		this.addRow(new WebLabel("Access flags:"), group);
 	}
 	
 	private ChangeListener AccessFlagCheckboxChangeListener_True = new ChangeListener() {

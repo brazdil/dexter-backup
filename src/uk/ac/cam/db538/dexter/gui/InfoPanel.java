@@ -1,5 +1,7 @@
 package uk.ac.cam.db538.dexter.gui;
 
+import java.awt.Component;
+
 import info.clearthought.layout.TableLayout;
 import lombok.val;
 
@@ -31,6 +33,16 @@ public abstract class InfoPanel extends WebPanel {
 	protected String getBothColumnConstraint(int row) {
 		return "0," + row + ",1," + row;
 	}
+	
+	protected void addRow(Component left, Component right) {
+		int row = getRow();
+		this.add(left, getLeftColumnConstraint(row));
+		this.add(right, getRightColumnConstraint(row));
+	}
+
+	protected void addRow(Component both) {
+		this.add(both, getBothColumnConstraint(getRow()));
+	}
 
 	public InfoPanel() {
 		layout = new TableLayout(new double[][] { {TableLayout.PREFERRED, TableLayout.FILL}, {} });
@@ -40,7 +52,7 @@ public abstract class InfoPanel extends WebPanel {
 		
 		// create breadcrumbs
 		breadcrumbs = new WebBreadcrumb(true);
-		this.add(breadcrumbs, getBothColumnConstraint(getRow()));
+		this.addRow(breadcrumbs);
 	}
 	
 	protected void setBreadcrumbs(String dotSeparatedName) {
