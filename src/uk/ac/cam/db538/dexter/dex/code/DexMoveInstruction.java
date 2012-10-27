@@ -7,6 +7,8 @@ public class DexMoveInstruction extends DexInstruction {
   @Getter private final DexRegister RegTo;
   @Getter private final DexRegister RegFrom;
   @Getter private final boolean ObjectMoving;
+  
+  // CAREFUL: registers can only be allocated to 0-15 regular move !!!
 
   public DexMoveInstruction(DexRegister to, DexRegister from, boolean objectMoving) {
     RegTo = to;
@@ -17,6 +19,6 @@ public class DexMoveInstruction extends DexInstruction {
   @Override
   public String getOriginalInstruction() {
     return "move" + (ObjectMoving ? "-object" : "") +
-           " r" + RegTo.getOriginalId() + ", r" + RegFrom.getOriginalId();
+           " v" + RegTo.getOriginalId() + ", v" + RegFrom.getOriginalId();
   }
 }

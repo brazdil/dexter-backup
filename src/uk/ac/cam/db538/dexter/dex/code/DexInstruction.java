@@ -18,7 +18,7 @@ public abstract class DexInstruction {
 
   public abstract String getOriginalInstruction();
 
-  public static DexRegister getRegister(int id, Map<Integer, DexRegister> map) {
+  private static DexRegister getRegister(int id, Map<Integer, DexRegister> map) {
     val objId = new Integer(id);
     val register = map.get(objId);
     if (register == null) {
