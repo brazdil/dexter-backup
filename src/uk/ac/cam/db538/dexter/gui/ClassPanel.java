@@ -11,55 +11,24 @@ import javax.swing.event.ChangeListener;
 
 import org.jf.dexlib.Util.AccessFlags;
 
-import info.clearthought.layout.TableLayout;
-import info.clearthought.layout.TableLayoutConstraints;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 
-import com.alee.extended.breadcrumb.WebBreadcrumb;
-import com.alee.extended.breadcrumb.WebBreadcrumbLabel;
 import com.alee.extended.panel.GroupPanel;
 import com.alee.laf.checkbox.WebCheckBox;
 import com.alee.laf.label.WebLabel;
-import com.alee.laf.panel.WebPanel;
 import com.alee.laf.text.WebTextField;
 
-public class ClassPanel extends WebPanel {
+public class ClassPanel extends InfoPanel {
 
-	private static final long serialVersionUID = 1106819823568775169L;
+	private static final long serialVersionUID = -5520873485656895013L;
 	
-	private TableLayout layout;
-	private WebBreadcrumb breadcrumbs;
 	private JTextField fieldName;
 	private JTextField fieldSuperClass;
 	private Map<AccessFlags, JCheckBox> checkboxesAccessField;
 	
-	private int getRow() {
-		int row = layout.getNumRow();
-		layout.insertRow(row, TableLayout.PREFERRED);
-		return row;
-	}
-	
-	private String getLeftColumnConstraint(int row) {
-		return "0," + row + ",r,t";
-	}
-	
-	private String getRightColumnConstraint(int row) {
-		return "1," + row;
-	}
-
 	public ClassPanel() {
-		layout = new TableLayout(new double[][] { {TableLayout.PREFERRED, TableLayout.FILL}, {} });
-		layout.setHGap(5);
-		layout.setVGap(5);
-		this.setLayout(layout);
-		
 		int row;
-		
-		// create breadcrumbs
-		row = getRow();
-		breadcrumbs = new WebBreadcrumb(true);
-		this.add(breadcrumbs, new TableLayoutConstraints(0, row, 1, row));
 		
 		// create class field
 		row = getRow();
@@ -104,11 +73,7 @@ public class ClassPanel extends WebPanel {
 	};
 	
 	public void changeClass(DexClass cls) {
-		breadcrumbs.removeAll();
-		String[] fullname = cls.getType().getPrettyName().split("\\.");
-		for (val partname : fullname)
-			breadcrumbs.add(new WebBreadcrumbLabel(partname));
-		
+		this.setBreadcrumbs(cls.getType().getPrettyName());
 		fieldName.setText(cls.getType().getPrettyName());
 		fieldSuperClass.setText(cls.getSuperType().getPrettyName());
 		
