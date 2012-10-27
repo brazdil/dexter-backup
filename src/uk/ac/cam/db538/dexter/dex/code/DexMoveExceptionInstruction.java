@@ -12,6 +12,6 @@ public class DexMoveExceptionInstruction extends DexInstruction {
 
   @Override
   public String getOriginalInstruction() {
-    return "move-exception r" + RegTo.getOriginalId();
+    return "move-exception v" + RegTo.getOriginalId();
   }
 }

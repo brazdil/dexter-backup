@@ -7,7 +7,7 @@ public class DexMoveInstruction extends DexInstruction {
   @Getter private final DexRegister RegTo;
   @Getter private final DexRegister RegFrom;
   @Getter private final boolean ObjectMoving;
-  
+
   // CAREFUL: registers can only be allocated to 0-15 regular move !!!
 
   public DexMoveInstruction(DexRegister to, DexRegister from, boolean objectMoving) {

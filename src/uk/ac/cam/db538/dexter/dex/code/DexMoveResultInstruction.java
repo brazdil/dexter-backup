@@ -15,6 +15,6 @@ public class DexMoveResultInstruction extends DexInstruction {
   @Override
   public String getOriginalInstruction() {
     return "move-result" + (ObjectMoving ? "-object" : "") +
-           " r" + RegTo.getOriginalId();
+           " v" + RegTo.getOriginalId();
   }
 }

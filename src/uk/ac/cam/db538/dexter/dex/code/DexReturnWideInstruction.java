@@ -14,6 +14,6 @@ public class DexReturnWideInstruction extends DexInstruction {
 
   @Override
   public String getOriginalInstruction() {
-    return "return-wise r" + RegFrom1.getOriginalId();
+    return "return-wide v" + RegFrom1.getOriginalId();
   }
 }

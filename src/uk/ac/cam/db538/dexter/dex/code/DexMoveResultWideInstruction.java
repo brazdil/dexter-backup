@@ -14,6 +14,6 @@ public class DexMoveResultWideInstruction extends DexInstruction {
 
   @Override
   public String getOriginalInstruction() {
-    return "move-result-wide r" + RegTo1.getOriginalId();
+    return "move-result-wide v" + RegTo1.getOriginalId();
   }
 }

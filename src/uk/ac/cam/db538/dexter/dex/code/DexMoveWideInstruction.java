@@ -18,6 +18,6 @@ public class DexMoveWideInstruction extends DexInstruction {
 
   @Override
   public String getOriginalInstruction() {
-    return "move-wide r" + RegTo1.getOriginalId() + ", r" + RegFrom1.getOriginalId();
+    return "move-wide v" + RegTo1.getOriginalId() + ", v" + RegFrom1.getOriginalId();
   }
 }
