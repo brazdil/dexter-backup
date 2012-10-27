@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import org.jf.dexlib.DexFile;
 
 import uk.ac.cam.db538.dexter.dex.type.TypeCache;
+import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 import lombok.Getter;
 import lombok.val;
@@ -19,7 +20,7 @@ public class Dex {
   @Getter	private List<DexClass> Classes;
   @Getter private TypeCache KnownTypes;
 
-  public Dex(File filename) throws IOException {
+  public Dex(File filename) throws IOException, UnknownTypeException {
     OriginalFile = new DexFile(filename);
 
     KnownTypes = new TypeCache();

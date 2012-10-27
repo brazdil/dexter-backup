@@ -13,7 +13,7 @@ public abstract class DexType {
     PrettyName = prettyName;
   }
 
-  public static DexType parse(String typeDescriptor, TypeCache cache) {
+  public static DexType parse(String typeDescriptor, TypeCache cache) throws UnknownTypeException {
     val res = DexVoid.parse(typeDescriptor);
     if (res != null)
       return res;

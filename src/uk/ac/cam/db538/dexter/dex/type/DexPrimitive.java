@@ -3,6 +3,8 @@ package uk.ac.cam.db538.dexter.dex.type;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.val;
+
 public abstract class DexPrimitive extends DexRegisterType {
 
   public DexPrimitive(String descriptor, String prettyName, int registers) {
@@ -29,8 +31,11 @@ public abstract class DexPrimitive extends DexRegisterType {
     addToPrimitivesCache(new DexDouble());
   }
 
-  public static DexPrimitive parse(String descriptor) {
-    return PrimitivesCache.get(descriptor);
+  public static DexPrimitive parse(String typeDescriptor) throws UnknownTypeException {
+    val primitive = PrimitivesCache.get(typeDescriptor);
+    if (primitive == null)
+    	throw new UnknownTypeException(typeDescriptor);
+    return primitive;
   }
 
   public static class DexByte extends DexPrimitive {

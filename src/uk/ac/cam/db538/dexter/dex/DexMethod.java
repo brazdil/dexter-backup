@@ -12,6 +12,7 @@ import org.jf.dexlib.Util.AccessFlags;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.TypeCache;
+import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -37,7 +38,7 @@ public class DexMethod {
     Direct = direct;
   }
 
-  private static List<DexRegisterType> parseParameterTypes(TypeListItem params, TypeCache cache) {
+  private static List<DexRegisterType> parseParameterTypes(TypeListItem params, TypeCache cache) throws UnknownTypeException {
     val list = new LinkedList<DexRegisterType>();
     if (params != null) {
       for (val type : params.getTypes())
@@ -46,7 +47,7 @@ public class DexMethod {
     return list;
   }
 
-  public DexMethod(DexClass parent, EncodedMethod methodInfo) {
+  public DexMethod(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException {
     this(parent,
          methodInfo.method.getMethodName().getStringValue(),
          Utils.getAccessFlagSet(AccessFlags.getAccessFlagsForMethod(methodInfo.accessFlags)),

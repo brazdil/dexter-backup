@@ -1,7 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
 import lombok.Getter;
-import lombok.val;
 
 public abstract class DexRegisterType extends DexType {
 
@@ -12,19 +11,22 @@ public abstract class DexRegisterType extends DexType {
     Registers = registers;
   }
 
-  public static DexRegisterType parse(String typeDescriptor, TypeCache cache) {
-    val primitive = DexPrimitive.parse(typeDescriptor);
-    if (primitive != null)
-      return primitive;
+  public static DexRegisterType parse(String typeDescriptor, TypeCache cache) throws UnknownTypeException {
+	  try {
+		  return DexPrimitive.parse(typeDescriptor);
+	  } catch (UnknownTypeException e) {
+	  }
+	  
+	try {
+		return DexClassType.parse(typeDescriptor, cache);
+	} catch (UnknownTypeException e) {
+	}
 
-    val classtype = DexClassType.parse(typeDescriptor, cache);
-    if (classtype != null)
-      return classtype;
+	try {
+		return DexArrayType.parse(typeDescriptor, cache);
+	} catch (UnknownTypeException e) {
+	}
 
-    val array = DexArrayType.parse(typeDescriptor, cache);
-    if (array != null)
-      return array;
-
-    return null;
+    throw new UnknownTypeException(typeDescriptor);
   }
 }

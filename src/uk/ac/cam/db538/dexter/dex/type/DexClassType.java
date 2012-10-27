@@ -22,9 +22,9 @@ public class DexClassType extends DexRegisterType {
     }
   }
 
-  public static DexClassType parse(String typeDescriptor, TypeCache cache) {
+  public static DexClassType parse(String typeDescriptor, TypeCache cache) throws UnknownTypeException {
     if (!typeDescriptor.startsWith("L") || !typeDescriptor.endsWith(";"))
-      return null;
+      throw new UnknownTypeException(typeDescriptor);
 
     if (cache != null) {
       val res = cache.getClassTypes().get(typeDescriptor);

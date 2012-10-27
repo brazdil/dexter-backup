@@ -14,9 +14,9 @@ public class DexArrayType extends DexRegisterType {
     ElementType = elementType;
   }
 
-  public static DexArrayType parse(String typeDescriptor, TypeCache cache) {
+  public static DexArrayType parse(String typeDescriptor, TypeCache cache) throws UnknownTypeException {
     if (!typeDescriptor.startsWith("["))
-      return null;
+      throw new UnknownTypeException(typeDescriptor);
 
     if (cache != null) {
       val res = cache.getArrayTypes().get(typeDescriptor);
@@ -25,9 +25,6 @@ public class DexArrayType extends DexRegisterType {
     }
 
     val elementType = DexRegisterType.parse(typeDescriptor.substring(1), cache);
-    if (elementType == null)
-      return null;
-
     val newType = new DexArrayType(elementType);
     if (cache != null)
       cache.getArrayTypes().put(typeDescriptor, newType);

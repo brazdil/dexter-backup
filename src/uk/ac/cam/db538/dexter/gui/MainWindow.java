@@ -5,11 +5,12 @@ import java.awt.EventQueue;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.jf.dexlib.Util.AccessFlags;
 
@@ -23,6 +24,7 @@ import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.DexMethod;
+import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +39,7 @@ public class MainWindow {
 
   private JFrame Frame;
   private JTabbedPane TabbedPane;
+  private ClassPanel SelectedClassPanel;
 
   public MainWindow() {
     initialize();
@@ -112,7 +115,6 @@ public class MainWindow {
         break;
       case 1:
         setIcon(pkgIcon);
-        tree.expandPath(new TreePath(node.getPath()));
         break;
       case 2:
         val cls = (DexClass) node.getUserObject();
@@ -164,7 +166,10 @@ public class MainWindow {
     } catch (IOException ex) {
       // TODO: handle
       return;
-    }
+    } catch (UnknownTypeException e) {
+		// TODO Auto-generated catch block
+    	return;
+	}
 
     // create split pane
     val splitPane = new WebSplitPane();
@@ -185,19 +190,37 @@ public class MainWindow {
     classTree.setCellRenderer(new ClassTreeRenderer());
     javax.swing.ToolTipManager.sharedInstance().registerComponent(classTree);
     splitPane.setLeftComponent(new WebScrollPane(classTree));
+    
+    // create selection panels
+    SelectedClassPanel = new ClassPanel();
 
-    // create right panel
-    val detailsPane = new WebTabbedPane() {
-      private static final long serialVersionUID = 5866957665552637833L;
-
-      {
-        this.setTabPlacement(WebTabbedPane.BOTTOM);
-
-        this.addTab("Methods", new JPanel());
-      }
-    };
-    splitPane.setRightComponent(detailsPane);
-
+    // set selection listener
+    classTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+    classTree.addTreeSelectionListener(new TreeSelectionListener() {
+		@Override
+		public void valueChanged(TreeSelectionEvent e) {
+			val tree = (JTree) e.getSource();
+			val node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+			val obj = node.getUserObject();
+			
+			if (obj instanceof DexClass) {
+				splitPane.setRightComponent(SelectedClassPanel);
+				SelectedClassPanel.changeClass((DexClass) obj);
+			}			
+		}
+	});
+    
+//    // create right panel
+//    val detailsPane = new WebTabbedPane() {
+//      private static final long serialVersionUID = 5866957665552637833L;
+//
+//      {
+//        this.setTabPlacement(WebTabbedPane.BOTTOM);
+//
+//        this.addTab("Methods", new JPanel());
+//      }
+//    };
+//    splitPane.setRightComponent(detailsPane);
   }
 
   private static String getDisplayName(DefaultMutableTreeNode node) {

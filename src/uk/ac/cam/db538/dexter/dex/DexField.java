@@ -7,6 +7,7 @@ import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +26,7 @@ public class DexField {
     AccessFlagSet = Utils.getNonNullAccessFlagSet(accessFlags);
   }
 
-  public DexField(DexClass parent, EncodedField fieldInfo) {
+  public DexField(DexClass parent, EncodedField fieldInfo) throws UnknownTypeException {
     this(parent,
          StringIdItem.getStringValue(fieldInfo.field.getFieldName()),
          DexRegisterType.parse(fieldInfo.field.getFieldType().getTypeDescriptor(), parent.getParentFile().getKnownTypes()),

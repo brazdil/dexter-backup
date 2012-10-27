@@ -21,6 +21,7 @@ import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class MainWindowTest {
 
@@ -48,9 +49,9 @@ public class MainWindowTest {
     val root = new DefaultMutableTreeNode("root");
     val classes = new LinkedList<DexClass>();
 
-    val cls11 = new DexClass(null, new DexClassType("Lcom.example1.a;"), null, null, null);
-    val cls12 = new DexClass(null, new DexClassType("Lcom.example1.b;"), null, null, null);
-    val cls21 = new DexClass(null, new DexClassType("Lcom.example2.a;"), null, null, null);
+    val cls11 = new DexClass(null, new DexClassType("Lcom.example1.a;"), null, null, null, null);
+    val cls12 = new DexClass(null, new DexClassType("Lcom.example1.b;"), null, null, null, null);
+    val cls21 = new DexClass(null, new DexClassType("Lcom.example2.a;"), null, null, null, null);
 
     classes.add(cls11);
     classes.add(cls12);
@@ -89,7 +90,7 @@ public class MainWindowTest {
     val root = new DefaultMutableTreeNode("root");
     val classes = new LinkedList<DexClass>();
 
-    val cls = new DexClass(null, new DexClassType("LTestClass;"), null, null, null);
+    val cls = new DexClass(null, new DexClassType("LTestClass;"), null, null, null, null);
     classes.add(cls);
 
     execAddClassesToTree(root, classes);
@@ -106,7 +107,7 @@ public class MainWindowTest {
   }
 
   @Test
-  public void testAddClassesToTree_StaticFields() {
+  public void testAddClassesToTree_StaticFields() throws UnknownTypeException {
     val root = new DefaultMutableTreeNode("root");
     val classes = new LinkedList<DexClass>();
 
@@ -119,7 +120,7 @@ public class MainWindowTest {
 
     val method1 = new DexMethod(null, "a", null, typeInt, Arrays.asList(new DexRegisterType[] { typeInt, typeInt }), true);
 
-    val cls = new DexClass(null, new DexClassType("LTestClass;"), null, null, null);
+    val cls = new DexClass(null, new DexClassType("LTestClass;"), null, null, null, null);
     cls.addField(staticField1);
     cls.addField(staticField2);
     cls.addField(instanceField1);
