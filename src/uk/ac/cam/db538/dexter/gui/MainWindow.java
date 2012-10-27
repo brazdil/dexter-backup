@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.gui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 
 import javax.swing.ImageIcon;
@@ -189,7 +190,9 @@ public class MainWindow {
     classTree.setVisibleRowCount(4);
     classTree.setCellRenderer(new ClassTreeRenderer());
     javax.swing.ToolTipManager.sharedInstance().registerComponent(classTree);
-    splitPane.setLeftComponent(new WebScrollPane(classTree));
+    val classTreeScroll = new WebScrollPane(classTree);
+    classTreeScroll.setMinimumSize(new Dimension(300, 200));
+    splitPane.setLeftComponent(classTreeScroll);
     
     // create selection panels
     SelectedClassPanel = new ClassPanel();
@@ -206,21 +209,9 @@ public class MainWindow {
 			if (obj instanceof DexClass) {
 				splitPane.setRightComponent(SelectedClassPanel);
 				SelectedClassPanel.changeClass((DexClass) obj);
-			}			
+			}
 		}
 	});
-    
-//    // create right panel
-//    val detailsPane = new WebTabbedPane() {
-//      private static final long serialVersionUID = 5866957665552637833L;
-//
-//      {
-//        this.setTabPlacement(WebTabbedPane.BOTTOM);
-//
-//        this.addTab("Methods", new JPanel());
-//      }
-//    };
-//    splitPane.setRightComponent(detailsPane);
   }
 
   private static String getDisplayName(DefaultMutableTreeNode node) {

@@ -1,7 +1,5 @@
 package uk.ac.cam.db538.dexter.gui;
 
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,13 +13,11 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstraints;
-import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 
-import com.alee.extended.breadcrumb.BreadcrumbElementType;
 import com.alee.extended.breadcrumb.WebBreadcrumb;
-import com.alee.extended.breadcrumb.WebBreadcrumbButton;
+import com.alee.extended.breadcrumb.WebBreadcrumbLabel;
 import com.alee.extended.panel.GroupPanel;
 import com.alee.laf.checkbox.WebCheckBox;
 import com.alee.laf.label.WebLabel;
@@ -111,7 +107,7 @@ public class ClassPanel extends WebPanel {
 		breadcrumbs.removeAll();
 		String[] fullname = cls.getType().getPrettyName().split("\\.");
 		for (val partname : fullname)
-			breadcrumbs.add(new WebBreadcrumbButton(partname));
+			breadcrumbs.add(new WebBreadcrumbLabel(partname));
 		
 		fieldName.setText(cls.getType().getPrettyName());
 		fieldSuperClass.setText(cls.getSuperType().getPrettyName());
