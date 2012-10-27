@@ -41,6 +41,7 @@ public class MainWindow {
   private JFrame Frame;
   private JTabbedPane TabbedPane;
   private ClassPanel SelectedClassPanel;
+  private MethodPanel SelectedMethodPanel;
 
   public MainWindow() {
     initialize();
@@ -196,6 +197,7 @@ public class MainWindow {
     
     // create selection panels
     SelectedClassPanel = new ClassPanel();
+    SelectedMethodPanel = new MethodPanel();
 
     // set selection listener
     classTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -209,6 +211,9 @@ public class MainWindow {
 			if (obj instanceof DexClass) {
 				splitPane.setRightComponent(SelectedClassPanel);
 				SelectedClassPanel.changeClass((DexClass) obj);
+			} else if (obj instanceof DexMethod) {
+				splitPane.setRightComponent(SelectedMethodPanel);
+				SelectedMethodPanel.changeMethod((DexMethod) obj);
 			}
 		}
 	});
