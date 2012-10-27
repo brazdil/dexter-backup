@@ -109,6 +109,19 @@ public abstract class DexInstruction {
       case RETURN_VOID:
         list.add(new DexReturnVoidInstruction());
         break;
+      case RETURN:
+      case RETURN_OBJECT:
+        val insnReturn = (Instruction11x) insn;
+        list.add(new DexReturnInstruction(
+                   getRegister(insnReturn.getRegisterA(), registers),
+                   insn.opcode == Opcode.RETURN_OBJECT));
+        break;
+      case RETURN_WIDE:
+        val insnReturnWide = (Instruction11x) insn;
+        list.add(new DexReturnWideInstruction(
+                   getRegister(insnReturnWide.getRegisterA(), registers),
+                   getRegister(insnReturnWide.getRegisterA() + 1, registers)));
+        break;
       }
     }
 
