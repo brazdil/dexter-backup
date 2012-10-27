@@ -9,6 +9,7 @@ import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.code.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.TypeCache;
@@ -26,16 +27,18 @@ public class DexMethod {
   @Getter private final DexType ReturnType;
   @Getter private final List<DexRegisterType> ParameterTypes;
   @Getter private final boolean Direct;
+  @Getter private final List<DexInstruction> Code;
 
   public DexMethod(DexClass parent, String name, Set<AccessFlags> accessFlags,
                    DexType returnType, List<DexRegisterType> parameterTypes,
-                   boolean direct) {
+                   boolean direct, List<DexInstruction> code) {
     ParentClass = parent;
     Name = name;
     AccessFlagSet = Utils.getNonNullAccessFlagSet(accessFlags);
     ReturnType = returnType;
     ParameterTypes = (parameterTypes == null) ? new LinkedList<DexRegisterType>() : parameterTypes;
     Direct = direct;
+    Code = code;
   }
 
   private static List<DexRegisterType> parseParameterTypes(TypeListItem params, TypeCache cache) throws UnknownTypeException {
@@ -53,11 +56,8 @@ public class DexMethod {
          Utils.getAccessFlagSet(AccessFlags.getAccessFlagsForMethod(methodInfo.accessFlags)),
          DexType.parse(methodInfo.method.getPrototype().getReturnType().getTypeDescriptor(), parent.getParentFile().getKnownTypes()),
          parseParameterTypes(methodInfo.method.getPrototype().getParameters(), parent.getParentFile().getKnownTypes()),
-         methodInfo.isDirect());
-
-//    for (val t : methodInfo.codeItem.getInstructions()) {
-//    	t.opcode.
-//    }
+         methodInfo.isDirect(),
+         DexInstruction.parse(methodInfo.codeItem.getInstructions()));
   }
 
   public boolean isStatic() {

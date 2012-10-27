@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.gui;
 
+import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 
@@ -8,6 +9,8 @@ import org.jf.dexlib.Util.AccessFlags;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexMethod;
 
+import com.alee.extended.label.WebHotkeyLabel;
+import com.alee.extended.panel.GroupPanel;
 import com.alee.laf.checkbox.WebCheckBox;
 import com.alee.laf.label.WebLabel;
 import com.alee.laf.text.WebTextField;
@@ -21,6 +24,7 @@ public class MethodPanel extends InfoPanel {
   private JTextField fieldReturnType;
   private JTextField fieldParameters;
   private JCheckBox checkboxVirtual;
+  private GroupPanel panelInstructions;
 
   public MethodPanel() {
     // create class field
@@ -49,6 +53,11 @@ public class MethodPanel extends InfoPanel {
 
     // create access flag checkboxes
     this.addRow(new WebLabel("Access flags:"), createAccessFlagCheckboxes(AccessFlags.getAccessFlagsForMethod(-1)), true);
+
+    // create group panel for method code
+    panelInstructions = new GroupPanel();
+    panelInstructions.setLayout(new BoxLayout(panelInstructions, BoxLayout.Y_AXIS));
+    this.addRow(new WebLabel("Method code:"), panelInstructions, true);
   }
 
   public void changeMethod(DexMethod method) {
@@ -70,5 +79,11 @@ public class MethodPanel extends InfoPanel {
 
     this.setCheckboxValueUneditable(checkboxVirtual, !method.isDirect());
     this.setAccessFlagCheckboxes(method.getAccessFlagSet());
+
+    // put instructions
+    panelInstructions.removeAll();
+    panelInstructions.add(new WebHotkeyLabel("nop"));
+    for (val insn : method.getCode())
+      panelInstructions.add(new WebHotkeyLabel(insn.getOriginalInstruction()));
   }
 }
