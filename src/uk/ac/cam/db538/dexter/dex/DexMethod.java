@@ -56,7 +56,7 @@ public class DexMethod {
          DexType.parse(methodInfo.method.getPrototype().getReturnType().getTypeDescriptor(), parent.getParentFile().getKnownTypes()),
          parseParameterTypes(methodInfo.method.getPrototype().getParameters(), parent.getParentFile().getKnownTypes()),
          methodInfo.isDirect(),
-         DexInstruction.parse(methodInfo.codeItem.getInstructions()));
+         DexInstruction.parse(methodInfo.codeItem.getInstructions(), parent.getParentFile().getKnownTypes()));
   }
 
   public boolean isStatic() {

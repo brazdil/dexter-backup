@@ -1,10 +1,14 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import static org.junit.Assert.*;
+
+import java.util.List;
+
 import lombok.val;
 
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.StringIdItem;
+import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10x;
@@ -21,10 +25,18 @@ import org.jf.dexlib.Code.Format.Instruction32x;
 import org.jf.dexlib.Code.Format.Instruction51l;
 import org.junit.Test;
 
+import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
+
 public class DexInstructionTest {
 
   private static DexInstruction compare(Instruction insn, String output) {
-    val insnList = DexInstruction.parse(new Instruction[] { insn });
+    List<DexInstruction> insnList;
+    try {
+      insnList = DexInstruction.parse(new Instruction[] { insn }, null);
+    } catch (UnknownTypeException e) {
+      fail(e.getClass().getName() + ": " + e.getMessage());
+      return null;
+    }
     assertEquals(1, insnList.size());
     val insnInsn = insnList.get(0);
     assertEquals(output, insnInsn.getOriginalAssembly());
@@ -274,5 +286,15 @@ public class DexInstructionTest {
   public void testConstStringJumbo() {
     compare(new Instruction31c(Opcode.CONST_STRING_JUMBO, (byte) 236, getStringItem("Hello, world!")),
             "const-string v236, \"Hello, world!\"");
+  }
+
+  private static TypeIdItem getTypeItem(String desc) {
+    return TypeIdItem.internTypeIdItem(new DexFile(), desc);
+  }
+
+  @Test
+  public void testConstClass() {
+    compare(new Instruction21c(Opcode.CONST_CLASS, (byte) 236, getTypeItem("Ljava.lang.String;")),
+            "const-class v236, Ljava.lang.String;");
   }
 }

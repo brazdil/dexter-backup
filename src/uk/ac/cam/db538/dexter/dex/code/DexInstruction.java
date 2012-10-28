@@ -8,6 +8,7 @@ import java.util.Map;
 import lombok.val;
 
 import org.jf.dexlib.StringIdItem;
+import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11n;
@@ -21,6 +22,10 @@ import org.jf.dexlib.Code.Format.Instruction31c;
 import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction32x;
 import org.jf.dexlib.Code.Format.Instruction51l;
+
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.TypeCache;
+import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public abstract class DexInstruction {
 
@@ -37,7 +42,7 @@ public abstract class DexInstruction {
       return register;
   }
 
-  public static List<DexInstruction> parse(Instruction[] instructions) {
+  public static List<DexInstruction> parse(Instruction[] instructions, TypeCache cache) throws UnknownTypeException {
     val list = new LinkedList<DexInstruction>();
     val registers = new HashMap<Integer, DexRegister>();
 
@@ -193,6 +198,14 @@ public abstract class DexInstruction {
         list.add(new DexInstruction_ConstString(
                    getRegister(insnConstStringJumbo.getRegisterA(), registers),
                    ((StringIdItem) insnConstStringJumbo.getReferencedItem()).getStringValue()));
+        break;
+      case CONST_CLASS:
+        val insnConstClass = (Instruction21c) insn;
+        list.add(new DexInstruction_ConstClass(
+                   getRegister(insnConstClass.getRegisterA(), registers),
+                   DexClassType.parse(
+                     ((TypeIdItem) insnConstClass.getReferencedItem()).getTypeDescriptor(),
+                     cache)));
         break;
       }
     }
