@@ -8,12 +8,15 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexMethod;
+import uk.ac.cam.db538.dexter.dex.code.DexInstruction_Const;
 
 import com.alee.extended.label.WebHotkeyLabel;
 import com.alee.extended.panel.GroupPanel;
 import com.alee.laf.checkbox.WebCheckBox;
 import com.alee.laf.label.WebLabel;
 import com.alee.laf.text.WebTextField;
+import com.alee.managers.tooltip.TooltipManager;
+import com.alee.managers.tooltip.TooltipWay;
 
 public class MethodPanel extends InfoPanel {
 
@@ -82,7 +85,12 @@ public class MethodPanel extends InfoPanel {
 
     // put instructions
     panelInstructions.removeAll();
-    for (val insn : method.getCode())
-      panelInstructions.add(new WebHotkeyLabel(insn.getOriginalAssembly()));
+    for (val insn : method.getCode()) {
+    	val label = new WebHotkeyLabel(insn.getOriginalAssembly());
+    	if (insn instanceof DexInstruction_Const)
+    		// for const instructions, show the hex value in tooltip
+            TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_Const) insn).getValue()), TooltipWay.trailing, 0);    		
+      panelInstructions.add(label);
+    }
   }
 }

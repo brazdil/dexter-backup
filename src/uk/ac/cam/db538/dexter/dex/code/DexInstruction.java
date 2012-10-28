@@ -9,9 +9,13 @@ import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
+import org.jf.dexlib.Code.Format.Instruction11n;
 import org.jf.dexlib.Code.Format.Instruction11x;
 import org.jf.dexlib.Code.Format.Instruction12x;
+import org.jf.dexlib.Code.Format.Instruction21h;
+import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction22x;
+import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction32x;
 
 public abstract class DexInstruction {
@@ -120,6 +124,32 @@ public abstract class DexInstruction {
                    getRegister(insnReturnWide.getRegisterA(), registers),
                    getRegister(insnReturnWide.getRegisterA() + 1, registers)));
         break;
+      case CONST_4:
+          val insnConst4 = (Instruction11n) insn;
+          list.add(new DexInstruction_Const(
+                     getRegister(insnConst4.getRegisterA(), registers),
+                     insnConst4.getLiteral()));
+          break;
+      case CONST_16:
+          val insnConst16 = (Instruction21s) insn;
+          list.add(new DexInstruction_Const(
+                     getRegister(insnConst16.getRegisterA(), registers),
+                     insnConst16.getLiteral()));
+          break;
+      case CONST:
+          val insnConst = (Instruction31i) insn;
+          list.add(new DexInstruction_Const(
+                     getRegister(insnConst.getRegisterA(), registers),
+                     insnConst.getLiteral()));
+          break;
+      case CONST_HIGH16:
+    	  // we store const/high16 exactly the same as other const instructions,
+    	  // it gets converted back automatically
+          val insnConstHigh16 = (Instruction21h) insn;
+          list.add(new DexInstruction_Const(
+                     getRegister(insnConstHigh16.getRegisterA(), registers),
+                     insnConstHigh16.getLiteral() << 16));
+          break;
       }
     }
 

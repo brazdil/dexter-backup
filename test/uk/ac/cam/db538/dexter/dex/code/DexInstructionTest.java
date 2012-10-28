@@ -6,9 +6,13 @@ import lombok.val;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10x;
+import org.jf.dexlib.Code.Format.Instruction11n;
 import org.jf.dexlib.Code.Format.Instruction11x;
 import org.jf.dexlib.Code.Format.Instruction12x;
+import org.jf.dexlib.Code.Format.Instruction21h;
+import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction22x;
+import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction32x;
 import org.junit.Test;
 
@@ -20,6 +24,14 @@ public class DexInstructionTest {
     val parsedInsn = parsedList.get(0);
     assertEquals(output, parsedInsn.getOriginalAssembly());
     return parsedInsn;
+  }
+
+  @Test
+  public void testGetRegister_ReuseRegisters() {
+    val parsed = (DexInstruction_Move) (compare(
+                                         new Instruction12x(Opcode.MOVE, (byte) 3, (byte) 3),
+                                         "move v3, v3"));
+    assertTrue(parsed.getRegTo() == parsed.getRegFrom());
   }
 
   @Test
@@ -150,12 +162,36 @@ public class DexInstructionTest {
     assertEquals(235, parsed.getRegFrom1().getOriginalId());
     assertEquals(236, parsed.getRegFrom2().getOriginalId());
   }
+  
+  @Test
+  public void testConst4() {
+	  compare(new Instruction11n(Opcode.CONST_4, (byte) 13, (byte) 7),
+			  "const v13, #7");
+	  compare(new Instruction11n(Opcode.CONST_4, (byte) 13, (byte) -8),
+			  "const v13, #-8");
+  }
 
   @Test
-  public void testGetRegister_Reuse() {
-    val parsed = (DexInstruction_Move) (compare(
-                                         new Instruction12x(Opcode.MOVE, (byte) 3, (byte) 3),
-                                         "move v3, v3"));
-    assertTrue(parsed.getRegTo() == parsed.getRegFrom());
+  public void testConst16() {
+	  compare(new Instruction21s(Opcode.CONST_16, (byte) 236, (short) 32082),
+			  "const v236, #32082");
+	  compare(new Instruction21s(Opcode.CONST_16, (byte) 236, (short) -32082),
+			  "const v236, #-32082");
+  }
+
+  @Test
+  public void testConst() {
+	  compare(new Instruction31i(Opcode.CONST, (byte) 237, 0x01ABCDEF),
+			  "const v237, #28036591");
+	  compare(new Instruction31i(Opcode.CONST, (byte) 237, 0xABCDEF01),
+			  "const v237, #-1412567295");
+  }
+
+  @Test
+  public void testConstHigh16() {
+	  compare(new Instruction21h(Opcode.CONST_HIGH16, (byte) 238, (short)0x1234),
+			  "const v238, #305397760");
+	  compare(new Instruction21h(Opcode.CONST_HIGH16, (byte) 238, (short)0xABCD),
+			  "const v238, #-1412628480");
   }
 }
