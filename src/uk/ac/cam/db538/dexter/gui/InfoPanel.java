@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.gui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -67,6 +68,8 @@ public abstract class InfoPanel extends WebPanel {
   }
 
   public InfoPanel() {
+    this.setMinimumSize(new Dimension(400, 200));
+
     mainPane = new WebPanel();
     scrollPane = new WebScrollPane(mainPane);
     scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
