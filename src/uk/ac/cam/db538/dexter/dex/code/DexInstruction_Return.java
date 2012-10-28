@@ -2,12 +2,12 @@ package uk.ac.cam.db538.dexter.dex.code;
 
 import lombok.Getter;
 
-public class DexReturnInstruction extends DexInstruction {
+public class DexInstruction_Return extends DexInstruction {
 
   @Getter private final DexRegister RegFrom;
   @Getter private final boolean ObjectMoving;
 
-  public DexReturnInstruction(DexRegister from, boolean objectMoving) {
+  public DexInstruction_Return(DexRegister from, boolean objectMoving) {
     RegFrom = from;
     ObjectMoving = objectMoving;
   }

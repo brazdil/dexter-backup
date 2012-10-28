@@ -66,7 +66,7 @@ public class DexInstructionTest {
 
   @Test
   public void testMoveWide() {
-    val parsed = (DexMoveWideInstruction) (compare(
+    val parsed = (DexInstruction_MoveWide) (compare(
         new Instruction12x(Opcode.MOVE_WIDE, (byte) 8, (byte) 5),
         "move-wide v8, v5"));
     assertEquals(8, parsed.getRegTo1().getOriginalId());
@@ -77,7 +77,7 @@ public class DexInstructionTest {
 
   @Test
   public void testMoveWideFrom16() {
-    val parsed = (DexMoveWideInstruction) (compare(
+    val parsed = (DexInstruction_MoveWide) (compare(
         new Instruction22x(Opcode.MOVE_WIDE_FROM16, (short) 253, 62435),
         "move-wide v253, v62435"));
     assertEquals(253, parsed.getRegTo1().getOriginalId());
@@ -88,7 +88,7 @@ public class DexInstructionTest {
 
   @Test
   public void testMoveWide16() {
-    val parsed = (DexMoveWideInstruction) (compare(
+    val parsed = (DexInstruction_MoveWide) (compare(
         new Instruction32x(Opcode.MOVE_WIDE_16, 60123, 62435),
         "move-wide v60123, v62435"));
     assertEquals(60123, parsed.getRegTo1().getOriginalId());
@@ -111,7 +111,7 @@ public class DexInstructionTest {
 
   @Test
   public void testMoveResultWide() {
-    val parsed = (DexMoveResultWideInstruction) (compare(
+    val parsed = (DexInstruction_MoveResultWide) (compare(
                    new Instruction11x(Opcode.MOVE_RESULT_WIDE, (byte) 233),
                    "move-result-wide v233"));
     assertEquals(233, parsed.getRegTo1().getOriginalId());
@@ -144,7 +144,7 @@ public class DexInstructionTest {
 
   @Test
   public void testReturnWide() {
-    val parsed = (DexReturnWideInstruction) (compare(
+    val parsed = (DexInstruction_ReturnWide) (compare(
                    new Instruction11x(Opcode.RETURN_WIDE, (byte) 235),
                    "return-wide v235"));
     assertEquals(235, parsed.getRegFrom1().getOriginalId());
@@ -153,7 +153,7 @@ public class DexInstructionTest {
 
   @Test
   public void testGetRegister_Reuse() {
-    val parsed = (DexMoveInstruction) (compare(
+    val parsed = (DexInstruction_Move) (compare(
                                          new Instruction12x(Opcode.MOVE, (byte) 3, (byte) 3),
                                          "move v3, v3"));
     assertTrue(parsed.getRegTo() == parsed.getRegFrom());

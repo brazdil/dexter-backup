@@ -2,12 +2,12 @@ package uk.ac.cam.db538.dexter.dex.code;
 
 import lombok.Getter;
 
-public class DexMoveResultWideInstruction extends DexInstruction {
+public class DexInstruction_MoveResultWide extends DexInstruction {
 
   @Getter private final DexRegister RegTo1;
   @Getter private final DexRegister RegTo2;
 
-  public DexMoveResultWideInstruction(DexRegister to1, DexRegister to2) {
+  public DexInstruction_MoveResultWide(DexRegister to1, DexRegister to2) {
     RegTo1 = to1;
     RegTo2 = to2;
   }

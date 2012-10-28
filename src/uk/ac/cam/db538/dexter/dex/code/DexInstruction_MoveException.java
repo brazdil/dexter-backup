@@ -2,11 +2,11 @@ package uk.ac.cam.db538.dexter.dex.code;
 
 import lombok.Getter;
 
-public class DexMoveExceptionInstruction extends DexInstruction {
+public class DexInstruction_MoveException extends DexInstruction {
 
   @Getter private final DexRegister RegTo;
 
-  public DexMoveExceptionInstruction(DexRegister to) {
+  public DexInstruction_MoveException(DexRegister to) {
     RegTo = to;
   }
 

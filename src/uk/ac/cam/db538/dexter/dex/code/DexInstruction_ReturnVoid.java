@@ -1,6 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
-public class DexReturnVoidInstruction extends DexInstruction {
+public class DexInstruction_ReturnVoid extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
