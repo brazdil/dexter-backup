@@ -13,7 +13,7 @@ public class DexReturnInstruction extends DexInstruction {
   }
 
   @Override
-  public String getOriginalInstruction() {
+  public String getOriginalAssembly() {
     return "return" + (ObjectMoving ? "-object" : "") +
            " v" + RegFrom.getOriginalId();
   }

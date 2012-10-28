@@ -83,6 +83,6 @@ public class MethodPanel extends InfoPanel {
     // put instructions
     panelInstructions.removeAll();
     for (val insn : method.getCode())
-      panelInstructions.add(new WebHotkeyLabel(insn.getOriginalInstruction()));
+      panelInstructions.add(new WebHotkeyLabel(insn.getOriginalAssembly()));
   }
 }

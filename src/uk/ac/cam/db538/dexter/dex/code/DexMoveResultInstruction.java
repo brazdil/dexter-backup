@@ -13,7 +13,7 @@ public class DexMoveResultInstruction extends DexInstruction {
   }
 
   @Override
-  public String getOriginalInstruction() {
+  public String getOriginalAssembly() {
     return "move-result" + (ObjectMoving ? "-object" : "") +
            " v" + RegTo.getOriginalId();
   }

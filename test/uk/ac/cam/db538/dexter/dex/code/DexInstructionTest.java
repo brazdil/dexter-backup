@@ -18,7 +18,7 @@ public class DexInstructionTest {
     val parsedList = DexInstruction.parse(new Instruction[] { insn });
     assertEquals(1, parsedList.size());
     val parsedInsn = parsedList.get(0);
-    assertEquals(output, parsedInsn.getOriginalInstruction());
+    assertEquals(output, parsedInsn.getOriginalAssembly());
     return parsedInsn;
   }
 

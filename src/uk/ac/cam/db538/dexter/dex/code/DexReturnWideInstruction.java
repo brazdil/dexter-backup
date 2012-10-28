@@ -13,7 +13,7 @@ public class DexReturnWideInstruction extends DexInstruction {
   }
 
   @Override
-  public String getOriginalInstruction() {
+  public String getOriginalAssembly() {
     return "return-wide v" + RegFrom1.getOriginalId();
   }
 }

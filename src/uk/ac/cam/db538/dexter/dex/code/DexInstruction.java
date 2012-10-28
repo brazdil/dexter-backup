@@ -16,7 +16,7 @@ import org.jf.dexlib.Code.Format.Instruction32x;
 
 public abstract class DexInstruction {
 
-  public abstract String getOriginalInstruction();
+  public abstract String getOriginalAssembly();
 
   private static DexRegister getRegister(int id, Map<Integer, DexRegister> map) {
     val objId = new Integer(id);

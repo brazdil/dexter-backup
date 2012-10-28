@@ -17,7 +17,7 @@ public class DexMoveWideInstruction extends DexInstruction {
   }
 
   @Override
-  public String getOriginalInstruction() {
+  public String getOriginalAssembly() {
     return "move-wide v" + RegTo1.getOriginalId() + ", v" + RegFrom1.getOriginalId();
   }
 }
