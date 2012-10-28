@@ -328,4 +328,10 @@ public class DexInstructionTest {
     compare(new Instruction22c(Opcode.INSTANCE_OF, (byte) 4, (byte) 5, getTypeItem("[Ljava.lang.String;")),
             "instance-of v4, v5, [Ljava.lang.String;");
   }
+
+  @Test
+  public void testNewInstance() {
+    compare(new Instruction21c(Opcode.NEW_INSTANCE, (byte) 236, getTypeItem("Ljava.lang.String;")),
+            "new-instance v236, Ljava.lang.String;");
+  }
 }

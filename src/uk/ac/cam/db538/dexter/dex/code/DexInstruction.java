@@ -24,6 +24,7 @@ import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction32x;
 import org.jf.dexlib.Code.Format.Instruction51l;
 
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.TypeCache;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -230,6 +231,14 @@ public abstract class DexInstruction {
                    getRegister(insnInstanceOf.getRegisterB(), registers),
                    DexReferenceType.parse(
                      ((TypeIdItem) insnInstanceOf.getReferencedItem()).getTypeDescriptor(),
+                     cache)));
+        break;
+      case NEW_INSTANCE:
+        val insnNewInstance = (Instruction21c) insn;
+        list.add(new DexInstruction_NewInstance(
+                   getRegister(insnNewInstance.getRegisterA(), registers),
+                   DexClassType.parse(
+                     ((TypeIdItem) insnNewInstance.getReferencedItem()).getTypeDescriptor(),
                      cache)));
         break;
       }
