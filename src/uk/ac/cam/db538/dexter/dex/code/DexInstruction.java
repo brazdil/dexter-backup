@@ -17,6 +17,7 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
+import org.jf.dexlib.Code.Format.Instruction22c;
 import org.jf.dexlib.Code.Format.Instruction22x;
 import org.jf.dexlib.Code.Format.Instruction31c;
 import org.jf.dexlib.Code.Format.Instruction31i;
@@ -220,6 +221,15 @@ public abstract class DexInstruction {
                    getRegister(insnCheckCast.getRegisterA(), registers),
                    DexReferenceType.parse(
                      ((TypeIdItem) insnCheckCast.getReferencedItem()).getTypeDescriptor(),
+                     cache)));
+        break;
+      case INSTANCE_OF:
+        val insnInstanceOf = (Instruction22c) insn;
+        list.add(new DexInstruction_InstanceOf(
+                   getRegister(insnInstanceOf.getRegisterA(), registers),
+                   getRegister(insnInstanceOf.getRegisterB(), registers),
+                   DexReferenceType.parse(
+                     ((TypeIdItem) insnInstanceOf.getReferencedItem()).getTypeDescriptor(),
                      cache)));
         break;
       }

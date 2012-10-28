@@ -18,6 +18,7 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
+import org.jf.dexlib.Code.Format.Instruction22c;
 import org.jf.dexlib.Code.Format.Instruction22x;
 import org.jf.dexlib.Code.Format.Instruction31c;
 import org.jf.dexlib.Code.Format.Instruction31i;
@@ -318,5 +319,13 @@ public class DexInstructionTest {
             "check-cast v236, Ljava.lang.String;");
     compare(new Instruction21c(Opcode.CHECK_CAST, (byte) 236, getTypeItem("[Ljava.lang.String;")),
             "check-cast v236, [Ljava.lang.String;");
+  }
+
+  @Test
+  public void testInstanceOf() {
+    compare(new Instruction22c(Opcode.INSTANCE_OF, (byte) 4, (byte) 5, getTypeItem("Ljava.lang.String;")),
+            "instance-of v4, v5, Ljava.lang.String;");
+    compare(new Instruction22c(Opcode.INSTANCE_OF, (byte) 4, (byte) 5, getTypeItem("[Ljava.lang.String;")),
+            "instance-of v4, v5, [Ljava.lang.String;");
   }
 }
