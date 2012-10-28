@@ -17,6 +17,7 @@ import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction22x;
 import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction32x;
+import org.jf.dexlib.Code.Format.Instruction51l;
 
 public abstract class DexInstruction {
 
@@ -125,31 +126,59 @@ public abstract class DexInstruction {
                    getRegister(insnReturnWide.getRegisterA() + 1, registers)));
         break;
       case CONST_4:
-          val insnConst4 = (Instruction11n) insn;
-          list.add(new DexInstruction_Const(
-                     getRegister(insnConst4.getRegisterA(), registers),
-                     insnConst4.getLiteral()));
-          break;
+        val insnConst4 = (Instruction11n) insn;
+        list.add(new DexInstruction_Const(
+                   getRegister(insnConst4.getRegisterA(), registers),
+                   insnConst4.getLiteral()));
+        break;
       case CONST_16:
-          val insnConst16 = (Instruction21s) insn;
-          list.add(new DexInstruction_Const(
-                     getRegister(insnConst16.getRegisterA(), registers),
-                     insnConst16.getLiteral()));
-          break;
+        val insnConst16 = (Instruction21s) insn;
+        list.add(new DexInstruction_Const(
+                   getRegister(insnConst16.getRegisterA(), registers),
+                   insnConst16.getLiteral()));
+        break;
       case CONST:
-          val insnConst = (Instruction31i) insn;
-          list.add(new DexInstruction_Const(
-                     getRegister(insnConst.getRegisterA(), registers),
-                     insnConst.getLiteral()));
-          break;
+        val insnConst = (Instruction31i) insn;
+        list.add(new DexInstruction_Const(
+                   getRegister(insnConst.getRegisterA(), registers),
+                   insnConst.getLiteral()));
+        break;
       case CONST_HIGH16:
-    	  // we store const/high16 exactly the same as other const instructions,
-    	  // it gets converted back automatically
-          val insnConstHigh16 = (Instruction21h) insn;
-          list.add(new DexInstruction_Const(
-                     getRegister(insnConstHigh16.getRegisterA(), registers),
-                     insnConstHigh16.getLiteral() << 16));
-          break;
+        // we store const/high16 exactly the same as other const instructions,
+        // it gets converted back automatically
+        val insnConstHigh16 = (Instruction21h) insn;
+        list.add(new DexInstruction_Const(
+                   getRegister(insnConstHigh16.getRegisterA(), registers),
+                   insnConstHigh16.getLiteral() << 16));
+        break;
+      case CONST_WIDE_16:
+        val insnConstWide16 = (Instruction21s) insn;
+        list.add(new DexInstruction_ConstWide(
+                   getRegister(insnConstWide16.getRegisterA(), registers),
+                   getRegister(insnConstWide16.getRegisterA() + 1, registers),
+                   insnConstWide16.getLiteral()));
+        break;
+      case CONST_WIDE_32:
+        val insnConstWide32 = (Instruction31i) insn;
+        list.add(new DexInstruction_ConstWide(
+                   getRegister(insnConstWide32.getRegisterA(), registers),
+                   getRegister(insnConstWide32.getRegisterA() + 1, registers),
+                   insnConstWide32.getLiteral()));
+        break;
+      case CONST_WIDE:
+        val insnConstWide = (Instruction51l) insn;
+        list.add(new DexInstruction_ConstWide(
+                   getRegister(insnConstWide.getRegisterA(), registers),
+                   getRegister(insnConstWide.getRegisterA() + 1, registers),
+                   insnConstWide.getLiteral()));
+        break;
+      case CONST_WIDE_HIGH16:
+        val insnConstWideHigh16 = (Instruction21h) insn;
+        list.add(new DexInstruction_ConstWide(
+                   getRegister(insnConstWideHigh16.getRegisterA(), registers),
+                   getRegister(insnConstWideHigh16.getRegisterA() + 1, registers),
+                   insnConstWideHigh16.getLiteral() << 48));
+        break;
       }
     }
 

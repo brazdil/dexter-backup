@@ -8,8 +8,8 @@ public class DexInstruction_Const extends DexInstruction {
   @Getter private final long Value;
 
   // CAREFUL: if Value is 32-bit and bottom 16-bits are zero,
-  //          turn it into const/high16 instruction 
-  
+  //          turn it into const/high16 instruction
+
   public DexInstruction_Const(DexRegister to, long value) {
     RegTo = to;
     Value = value;

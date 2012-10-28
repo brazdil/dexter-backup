@@ -9,6 +9,7 @@ import org.jf.dexlib.Util.AccessFlags;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexMethod;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction_Const;
+import uk.ac.cam.db538.dexter.dex.code.DexInstruction_ConstWide;
 
 import com.alee.extended.label.WebHotkeyLabel;
 import com.alee.extended.panel.GroupPanel;
@@ -86,10 +87,14 @@ public class MethodPanel extends InfoPanel {
     // put instructions
     panelInstructions.removeAll();
     for (val insn : method.getCode()) {
-    	val label = new WebHotkeyLabel(insn.getOriginalAssembly());
-    	if (insn instanceof DexInstruction_Const)
-    		// for const instructions, show the hex value in tooltip
-            TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_Const) insn).getValue()), TooltipWay.trailing, 0);    		
+      val label = new WebHotkeyLabel(insn.getOriginalAssembly());
+
+      // for const instructions, show the hex value in tooltip
+      if (insn instanceof DexInstruction_Const)
+        TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_Const) insn).getValue()), TooltipWay.trailing, 0);
+      else if (insn instanceof DexInstruction_ConstWide)
+        TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_ConstWide) insn).getValue()), TooltipWay.trailing, 0);
+
       panelInstructions.add(label);
     }
   }
