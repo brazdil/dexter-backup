@@ -3,15 +3,19 @@ package uk.ac.cam.db538.dexter.dex.code;
 import static org.junit.Assert.*;
 import lombok.val;
 
+import org.jf.dexlib.DexFile;
+import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10x;
 import org.jf.dexlib.Code.Format.Instruction11n;
 import org.jf.dexlib.Code.Format.Instruction11x;
 import org.jf.dexlib.Code.Format.Instruction12x;
+import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction22x;
+import org.jf.dexlib.Code.Format.Instruction31c;
 import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction32x;
 import org.jf.dexlib.Code.Format.Instruction51l;
@@ -244,5 +248,31 @@ public class DexInstructionTest {
                        "const-wide v236, #-82190693199511552");
     assertEquals(236, insn.getRegTo1().getOriginalId());
     assertEquals(237, insn.getRegTo2().getOriginalId());
+  }
+
+  private static StringIdItem getStringItem(String str) {
+    return StringIdItem.internStringIdItem(new DexFile(), str);
+  }
+
+  @Test
+  public void testConstString() {
+    compare(new Instruction21c(Opcode.CONST_STRING, (byte) 236, getStringItem("Hello, world!")),
+            "const-string v236, \"Hello, world!\"");
+    // escaping characters
+    compare(new Instruction21c(Opcode.CONST_STRING, (byte) 236, getStringItem("Hello, \"world!")),
+            "const-string v236, \"Hello, \\\"world!\"");
+    // cutting off after 15 characters
+    compare(new Instruction21c(Opcode.CONST_STRING, (byte) 236, getStringItem("123456789012345")),
+            "const-string v236, \"123456789012345\"");
+    compare(new Instruction21c(Opcode.CONST_STRING, (byte) 236, getStringItem("1234567890123456")),
+            "const-string v236, \"123456789012345...\"");
+    compare(new Instruction21c(Opcode.CONST_STRING, (byte) 236, getStringItem("12345678901234\"")),
+            "const-string v236, \"12345678901234\\...\"");
+  }
+
+  @Test
+  public void testConstStringJumbo() {
+    compare(new Instruction31c(Opcode.CONST_STRING_JUMBO, (byte) 236, getStringItem("Hello, world!")),
+            "const-string v236, \"Hello, world!\"");
   }
 }

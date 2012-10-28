@@ -7,14 +7,17 @@ import java.util.Map;
 
 import lombok.val;
 
+import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11n;
 import org.jf.dexlib.Code.Format.Instruction11x;
 import org.jf.dexlib.Code.Format.Instruction12x;
+import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction22x;
+import org.jf.dexlib.Code.Format.Instruction31c;
 import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction32x;
 import org.jf.dexlib.Code.Format.Instruction51l;
@@ -178,6 +181,18 @@ public abstract class DexInstruction {
                    getRegister(insnConstWideHigh16.getRegisterA(), registers),
                    getRegister(insnConstWideHigh16.getRegisterA() + 1, registers),
                    insnConstWideHigh16.getLiteral() << 48));
+        break;
+      case CONST_STRING:
+        val insnConstString = (Instruction21c) insn;
+        list.add(new DexInstruction_ConstString(
+                   getRegister(insnConstString.getRegisterA(), registers),
+                   ((StringIdItem) insnConstString.getReferencedItem()).getStringValue()));
+        break;
+      case CONST_STRING_JUMBO:
+        val insnConstStringJumbo = (Instruction31c) insn;
+        list.add(new DexInstruction_ConstString(
+                   getRegister(insnConstStringJumbo.getRegisterA(), registers),
+                   ((StringIdItem) insnConstStringJumbo.getReferencedItem()).getStringValue()));
         break;
       }
     }
