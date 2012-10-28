@@ -5,14 +5,14 @@ import lombok.val;
 
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitive.DexBoolean;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitive.DexByte;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitive.DexChar;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitive.DexDouble;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitive.DexFloat;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitive.DexInteger;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitive.DexLong;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitive.DexShort;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexBoolean;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexByte;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexChar;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexDouble;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexFloat;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexInteger;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexLong;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexShort;
 
 public class DexTypeTest {
 

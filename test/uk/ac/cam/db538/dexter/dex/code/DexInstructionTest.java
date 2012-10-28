@@ -296,6 +296,8 @@ public class DexInstructionTest {
   public void testConstClass() {
     compare(new Instruction21c(Opcode.CONST_CLASS, (byte) 236, getTypeItem("Ljava.lang.String;")),
             "const-class v236, Ljava.lang.String;");
+    compare(new Instruction21c(Opcode.CONST_CLASS, (byte) 236, getTypeItem("[Ljava.lang.String;")),
+            "const-class v236, [Ljava.lang.String;");
   }
 
   @Test
@@ -308,5 +310,13 @@ public class DexInstructionTest {
   public void testMonitorExit() {
     compare(new Instruction11x(Opcode.MONITOR_EXIT, (byte) 245),
             "monitor-exit v245");
+  }
+
+  @Test
+  public void testCheckCast() {
+    compare(new Instruction21c(Opcode.CHECK_CAST, (byte) 236, getTypeItem("Ljava.lang.String;")),
+            "check-cast v236, Ljava.lang.String;");
+    compare(new Instruction21c(Opcode.CHECK_CAST, (byte) 236, getTypeItem("[Ljava.lang.String;")),
+            "check-cast v236, [Ljava.lang.String;");
   }
 }

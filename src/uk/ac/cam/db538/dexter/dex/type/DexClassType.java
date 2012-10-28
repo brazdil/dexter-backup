@@ -3,7 +3,7 @@ package uk.ac.cam.db538.dexter.dex.type;
 import lombok.Getter;
 import lombok.val;
 
-public class DexClassType extends DexRegisterType {
+public class DexClassType extends DexReferenceType {
 
   @Getter	private final String ShortName;
   @Getter	private final String PackageName;

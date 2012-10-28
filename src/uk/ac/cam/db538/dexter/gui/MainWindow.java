@@ -170,6 +170,7 @@ public class MainWindow {
       return;
     } catch (UnknownTypeException e) {
       // TODO Auto-generated catch block
+      e.printStackTrace();
       return;
     }
 

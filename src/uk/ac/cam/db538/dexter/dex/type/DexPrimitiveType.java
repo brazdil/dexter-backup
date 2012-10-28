@@ -5,9 +5,9 @@ import java.util.Map;
 
 import lombok.val;
 
-public abstract class DexPrimitive extends DexRegisterType {
+public abstract class DexPrimitiveType extends DexRegisterType {
 
-  public DexPrimitive(String descriptor, String prettyName, int registers) {
+  public DexPrimitiveType(String descriptor, String prettyName, int registers) {
     super(descriptor, prettyName, registers);
   }
 
@@ -15,12 +15,12 @@ public abstract class DexPrimitive extends DexRegisterType {
    * Create cache of primitive types and later
    * always return the same instance.
    */
-  private static final Map<String, DexPrimitive> PrimitivesCache;
-  private static void addToPrimitivesCache(DexPrimitive instance) {
+  private static final Map<String, DexPrimitiveType> PrimitivesCache;
+  private static void addToPrimitivesCache(DexPrimitiveType instance) {
     PrimitivesCache.put(instance.getDescriptor(), instance);
   }
   static {
-    PrimitivesCache = new HashMap<String, DexPrimitive>();
+    PrimitivesCache = new HashMap<String, DexPrimitiveType>();
     addToPrimitivesCache(new DexByte());
     addToPrimitivesCache(new DexBoolean());
     addToPrimitivesCache(new DexShort());
@@ -31,56 +31,56 @@ public abstract class DexPrimitive extends DexRegisterType {
     addToPrimitivesCache(new DexDouble());
   }
 
-  public static DexPrimitive parse(String typeDescriptor) throws UnknownTypeException {
+  public static DexPrimitiveType parse(String typeDescriptor) throws UnknownTypeException {
     val primitive = PrimitivesCache.get(typeDescriptor);
     if (primitive == null)
       throw new UnknownTypeException(typeDescriptor);
     return primitive;
   }
 
-  public static class DexByte extends DexPrimitive {
+  public static class DexByte extends DexPrimitiveType {
     public DexByte() {
       super("B", "byte", 1);
     }
   }
 
-  public static class DexBoolean extends DexPrimitive {
+  public static class DexBoolean extends DexPrimitiveType {
     public DexBoolean() {
       super("Z", "boolean", 1);
     }
   }
 
-  public static class DexShort extends DexPrimitive {
+  public static class DexShort extends DexPrimitiveType {
     public DexShort() {
       super("S", "short", 1);
     }
   }
 
-  public static class DexChar extends DexPrimitive {
+  public static class DexChar extends DexPrimitiveType {
     public DexChar() {
       super("C", "char", 1);
     }
   }
 
-  public static class DexInteger extends DexPrimitive {
+  public static class DexInteger extends DexPrimitiveType {
     public DexInteger() {
       super("I", "int", 1);
     }
   }
 
-  public static class DexLong extends DexPrimitive {
+  public static class DexLong extends DexPrimitiveType {
     public DexLong() {
       super("J", "long", 2);
     }
   }
 
-  public static class DexFloat extends DexPrimitive {
+  public static class DexFloat extends DexPrimitiveType {
     public DexFloat() {
       super("F", "float", 1);
     }
   }
 
-  public static class DexDouble extends DexPrimitive {
+  public static class DexDouble extends DexPrimitiveType {
     public DexDouble() {
       super("D", "double", 2);
     }

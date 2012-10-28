@@ -23,7 +23,7 @@ import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction32x;
 import org.jf.dexlib.Code.Format.Instruction51l;
 
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.TypeCache;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -203,7 +203,7 @@ public abstract class DexInstruction {
         val insnConstClass = (Instruction21c) insn;
         list.add(new DexInstruction_ConstClass(
                    getRegister(insnConstClass.getRegisterA(), registers),
-                   DexClassType.parse(
+                   DexReferenceType.parse(
                      ((TypeIdItem) insnConstClass.getReferencedItem()).getTypeDescriptor(),
                      cache)));
         break;
@@ -213,6 +213,14 @@ public abstract class DexInstruction {
         list.add(new DexInstruction_Monitor(
                    getRegister(insnMonitor.getRegisterA(), registers),
                    insn.opcode == Opcode.MONITOR_ENTER));
+        break;
+      case CHECK_CAST:
+        val insnCheckCast = (Instruction21c) insn;
+        list.add(new DexInstruction_CheckCast(
+                   getRegister(insnCheckCast.getRegisterA(), registers),
+                   DexReferenceType.parse(
+                     ((TypeIdItem) insnCheckCast.getReferencedItem()).getTypeDescriptor(),
+                     cache)));
         break;
       }
     }
