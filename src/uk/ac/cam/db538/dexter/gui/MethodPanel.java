@@ -9,6 +9,7 @@ import org.jf.dexlib.Util.AccessFlags;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexMethod;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction_Const;
+import uk.ac.cam.db538.dexter.dex.code.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction_ConstWide;
 
 import com.alee.extended.label.WebHotkeyLabel;
@@ -94,6 +95,8 @@ public class MethodPanel extends InfoPanel {
         TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_Const) insn).getValue()), TooltipWay.trailing, 0);
       else if (insn instanceof DexInstruction_ConstWide)
         TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_ConstWide) insn).getValue()), TooltipWay.trailing, 0);
+      else if (insn instanceof DexInstruction_ConstString)
+        TooltipManager.setTooltip(label, ((DexInstruction_ConstString) insn).getValue(), TooltipWay.down, 0);
 
       panelInstructions.add(label);
     }
