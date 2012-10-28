@@ -334,4 +334,14 @@ public class DexInstructionTest {
     compare(new Instruction21c(Opcode.NEW_INSTANCE, (byte) 236, getTypeItem("Ljava.lang.String;")),
             "new-instance v236, Ljava.lang.String;");
   }
+
+  @Test
+  public void testNewArray() {
+    compare(new Instruction22c(Opcode.NEW_ARRAY, (byte) 4, (byte) 5, getTypeItem("[Ljava.lang.String;")),
+            "new-array v4, v5, [Ljava.lang.String;");
+    compare(new Instruction22c(Opcode.NEW_ARRAY, (byte) 4, (byte) 5, getTypeItem("[I")),
+            "new-array v4, v5, [I");
+    compare(new Instruction22c(Opcode.NEW_ARRAY, (byte) 4, (byte) 12, getTypeItem("[[[I")),
+            "new-array v4, v12, [[[I");
+  }
 }

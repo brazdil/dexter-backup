@@ -24,6 +24,7 @@ import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction32x;
 import org.jf.dexlib.Code.Format.Instruction51l;
 
+import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.TypeCache;
@@ -239,6 +240,15 @@ public abstract class DexInstruction {
                    getRegister(insnNewInstance.getRegisterA(), registers),
                    DexClassType.parse(
                      ((TypeIdItem) insnNewInstance.getReferencedItem()).getTypeDescriptor(),
+                     cache)));
+        break;
+      case NEW_ARRAY:
+        val insnNewArray = (Instruction22c) insn;
+        list.add(new DexInstruction_NewArray(
+                   getRegister(insnNewArray.getRegisterA(), registers),
+                   getRegister(insnNewArray.getRegisterB(), registers),
+                   DexArrayType.parse(
+                     ((TypeIdItem) insnNewArray.getReferencedItem()).getTypeDescriptor(),
                      cache)));
         break;
       }
