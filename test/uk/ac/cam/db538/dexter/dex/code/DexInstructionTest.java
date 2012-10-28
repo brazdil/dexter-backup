@@ -297,4 +297,16 @@ public class DexInstructionTest {
     compare(new Instruction21c(Opcode.CONST_CLASS, (byte) 236, getTypeItem("Ljava.lang.String;")),
             "const-class v236, Ljava.lang.String;");
   }
+
+  @Test
+  public void testMonitorEnter() {
+    compare(new Instruction11x(Opcode.MONITOR_ENTER, (byte) 244),
+            "monitor-enter v244");
+  }
+
+  @Test
+  public void testMonitorExit() {
+    compare(new Instruction11x(Opcode.MONITOR_EXIT, (byte) 245),
+            "monitor-exit v245");
+  }
 }

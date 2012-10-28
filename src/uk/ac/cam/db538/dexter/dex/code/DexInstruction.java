@@ -207,6 +207,13 @@ public abstract class DexInstruction {
                      ((TypeIdItem) insnConstClass.getReferencedItem()).getTypeDescriptor(),
                      cache)));
         break;
+      case MONITOR_ENTER:
+      case MONITOR_EXIT:
+        val insnMonitor = (Instruction11x) insn;
+        list.add(new DexInstruction_Monitor(
+                   getRegister(insnMonitor.getRegisterA(), registers),
+                   insn.opcode == Opcode.MONITOR_ENTER));
+        break;
       }
     }
 
