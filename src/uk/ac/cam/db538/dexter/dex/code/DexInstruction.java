@@ -252,10 +252,10 @@ public abstract class DexInstruction {
                      cache)));
         break;
       case THROW:
-          val insnThrow = (Instruction11x) insn;
-          list.add(new DexInstruction_Throw(
-                     getRegister(insnThrow.getRegisterA(), registers)));
-          break;
+        val insnThrow = (Instruction11x) insn;
+        list.add(new DexInstruction_Throw(
+                   getRegister(insnThrow.getRegisterA(), registers)));
+        break;
       }
     }
 

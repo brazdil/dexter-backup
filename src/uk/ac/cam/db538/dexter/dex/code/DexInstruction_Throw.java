@@ -5,7 +5,7 @@ import lombok.Getter;
 public class DexInstruction_Throw extends DexInstruction {
 
   @Getter private final DexRegister RegFrom;
-  
+
   public DexInstruction_Throw(DexRegister from) {
     RegFrom = from;
   }
