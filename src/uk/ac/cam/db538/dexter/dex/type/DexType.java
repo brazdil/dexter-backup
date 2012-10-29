@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import lombok.Getter;
 import lombok.val;
 
@@ -13,7 +14,7 @@ public abstract class DexType {
     PrettyName = prettyName;
   }
 
-  public static DexType parse(String typeDescriptor, TypeCache cache) throws UnknownTypeException {
+  public static DexType parse(String typeDescriptor, DexParsingCache cache) throws UnknownTypeException {
     val res = DexVoid.parse(typeDescriptor);
     if (res != null)
       return res;

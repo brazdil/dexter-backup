@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import lombok.Getter;
 import lombok.val;
 
@@ -22,7 +23,7 @@ public class DexClassType extends DexReferenceType {
     }
   }
 
-  public static DexClassType parse(String typeDescriptor, TypeCache cache) throws UnknownTypeException {
+  public static DexClassType parse(String typeDescriptor, DexParsingCache cache) throws UnknownTypeException {
     if (!typeDescriptor.startsWith("L") || !typeDescriptor.endsWith(";"))
       throw new UnknownTypeException(typeDescriptor);
 

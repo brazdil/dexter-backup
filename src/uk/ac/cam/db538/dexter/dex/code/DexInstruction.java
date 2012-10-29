@@ -24,10 +24,10 @@ import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction32x;
 import org.jf.dexlib.Code.Format.Instruction51l;
 
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
-import uk.ac.cam.db538.dexter.dex.type.TypeCache;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public abstract class DexInstruction {
@@ -45,7 +45,7 @@ public abstract class DexInstruction {
       return register;
   }
 
-  public static List<DexInstruction> parse(Instruction[] instructions, TypeCache cache) throws UnknownTypeException {
+  public static List<DexInstruction> parse(Instruction[] instructions, DexParsingCache cache) throws UnknownTypeException {
     val list = new LinkedList<DexInstruction>();
     val registers = new HashMap<Integer, DexRegister>();
 
@@ -194,13 +194,13 @@ public abstract class DexInstruction {
         val insnConstString = (Instruction21c) insn;
         list.add(new DexInstruction_ConstString(
                    getRegister(insnConstString.getRegisterA(), registers),
-                   ((StringIdItem) insnConstString.getReferencedItem()).getStringValue()));
+                   DexStringConstant.create(((StringIdItem) insnConstString.getReferencedItem()), cache)));
         break;
       case CONST_STRING_JUMBO:
         val insnConstStringJumbo = (Instruction31c) insn;
         list.add(new DexInstruction_ConstString(
                    getRegister(insnConstStringJumbo.getRegisterA(), registers),
-                   ((StringIdItem) insnConstStringJumbo.getReferencedItem()).getStringValue()));
+                   DexStringConstant.create(((StringIdItem) insnConstStringJumbo.getReferencedItem()), cache)));
         break;
       case CONST_CLASS:
         val insnConstClass = (Instruction21c) insn;

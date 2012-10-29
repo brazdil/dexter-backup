@@ -5,6 +5,7 @@ import lombok.val;
 
 import org.junit.Test;
 
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexBoolean;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexByte;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexChar;
@@ -120,7 +121,7 @@ public class DexTypeTest {
 
   @Test
   public void testClassType_WithCache() throws UnknownTypeException {
-    TypeCache cache = new TypeCache();
+    DexParsingCache cache = new DexParsingCache();
     val type1 = DexType.parse("Ljava.lang.String;", cache);
     val type2 = DexType.parse("Ljava.lang.String;", cache);
     assertTrue(type1 == type2);
@@ -143,7 +144,7 @@ public class DexTypeTest {
 
   @Test
   public void testArrayType_WithCache() throws UnknownTypeException {
-    TypeCache cache = new TypeCache();
+    DexParsingCache cache = new DexParsingCache();
     val type1 = DexType.parse("[I", cache);
     val type2 = DexType.parse("[I", cache);
     assertTrue(type1 == type2);

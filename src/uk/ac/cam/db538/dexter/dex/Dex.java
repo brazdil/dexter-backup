@@ -7,7 +7,6 @@ import java.util.LinkedList;
 
 import org.jf.dexlib.DexFile;
 
-import uk.ac.cam.db538.dexter.dex.type.TypeCache;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 import lombok.Getter;
@@ -17,13 +16,13 @@ public class Dex {
 
   @Getter private DexFile OriginalFile;
 
-  @Getter	private List<DexClass> Classes;
-  @Getter private TypeCache KnownTypes;
+  @Getter private List<DexClass> Classes;
+  @Getter private DexParsingCache KnownTypes;
 
   public Dex(File filename) throws IOException, UnknownTypeException {
     OriginalFile = new DexFile(filename);
 
-    KnownTypes = new TypeCache();
+    KnownTypes = new DexParsingCache();
 
     Classes = new LinkedList<DexClass>();
     val dexClsInfos = OriginalFile.ClassDefsSection.getItems();

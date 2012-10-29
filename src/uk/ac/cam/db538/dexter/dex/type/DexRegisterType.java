@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import lombok.Getter;
 
 public abstract class DexRegisterType extends DexType {
@@ -11,7 +12,7 @@ public abstract class DexRegisterType extends DexType {
     Registers = registers;
   }
 
-  public static DexRegisterType parse(String typeDescriptor, TypeCache cache) throws UnknownTypeException {
+  public static DexRegisterType parse(String typeDescriptor, DexParsingCache cache) throws UnknownTypeException {
     try {
       return DexPrimitiveType.parse(typeDescriptor);
     } catch (UnknownTypeException e) {

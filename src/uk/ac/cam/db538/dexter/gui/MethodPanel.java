@@ -96,7 +96,7 @@ public class MethodPanel extends InfoPanel {
       else if (insn instanceof DexInstruction_ConstWide)
         TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_ConstWide) insn).getValue()), TooltipWay.trailing, 0);
       else if (insn instanceof DexInstruction_ConstString)
-        TooltipManager.setTooltip(label, ((DexInstruction_ConstString) insn).getValue(), TooltipWay.up, 0);
+        TooltipManager.setTooltip(label, ((DexInstruction_ConstString) insn).getStringConstant().getValue(), TooltipWay.up, 0);
 
       panelInstructions.add(label);
     }
