@@ -77,9 +77,11 @@ public abstract class DexInstruction extends DexCodeElement {
       DexInstruction parsedInsn = null;
 
       switch (insn.opcode) {
+
       case NOP:
         parsedInsn = new DexInstruction_Nop();
         break;
+
       case MOVE:
       case MOVE_OBJECT:
         val insnMove = (Instruction12x) insn;
@@ -88,6 +90,7 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnMove.getRegisterB(), registers),
           insn.opcode == Opcode.MOVE_OBJECT);
         break;
+
       case MOVE_FROM16:
       case MOVE_OBJECT_FROM16:
         val insnMoveFrom16 = (Instruction22x) insn;
@@ -96,6 +99,7 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnMoveFrom16.getRegisterB(), registers),
           insn.opcode == Opcode.MOVE_OBJECT_FROM16);
         break;
+
       case MOVE_16:
       case MOVE_OBJECT_16:
         val insnMove16 = (Instruction32x) insn;
@@ -104,6 +108,7 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnMove16.getRegisterB(), registers),
           insn.opcode == Opcode.MOVE_OBJECT_16);
         break;
+
       case MOVE_WIDE:
         val insnMoveWide = (Instruction12x) insn;
         parsedInsn = new DexInstruction_MoveWide(
@@ -112,6 +117,7 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnMoveWide.getRegisterB(), registers),
           getRegister(insnMoveWide.getRegisterB() + 1, registers));
         break;
+
       case MOVE_WIDE_FROM16:
         val insnMoveWideFrom16 = (Instruction22x) insn;
         parsedInsn = new DexInstruction_MoveWide(
@@ -120,6 +126,7 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnMoveWideFrom16.getRegisterB(), registers),
           getRegister(insnMoveWideFrom16.getRegisterB() + 1, registers));
         break;
+
       case MOVE_WIDE_16:
         val insnMoveWide16 = (Instruction32x) insn;
         parsedInsn = new DexInstruction_MoveWide(
@@ -128,6 +135,7 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnMoveWide16.getRegisterB(), registers),
           getRegister(insnMoveWide16.getRegisterB() + 1, registers));
         break;
+
       case MOVE_RESULT:
       case MOVE_RESULT_OBJECT:
         val insnMoveResult = (Instruction11x) insn;
@@ -135,20 +143,24 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnMoveResult.getRegisterA(), registers),
           insn.opcode == Opcode.MOVE_RESULT_OBJECT);
         break;
+
       case MOVE_RESULT_WIDE:
         val insnMoveResultWide = (Instruction11x) insn;
         parsedInsn = new DexInstruction_MoveResultWide(
           getRegister(insnMoveResultWide.getRegisterA(), registers),
           getRegister(insnMoveResultWide.getRegisterA() + 1, registers));
         break;
+
       case MOVE_EXCEPTION:
         val insnMoveException = (Instruction11x) insn;
         parsedInsn = new DexInstruction_MoveException(
           getRegister(insnMoveException.getRegisterA(), registers));
         break;
+
       case RETURN_VOID:
         parsedInsn = new DexInstruction_ReturnVoid();
         break;
+
       case RETURN:
       case RETURN_OBJECT:
         val insnReturn = (Instruction11x) insn;
@@ -156,30 +168,35 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnReturn.getRegisterA(), registers),
           insn.opcode == Opcode.RETURN_OBJECT);
         break;
+
       case RETURN_WIDE:
         val insnReturnWide = (Instruction11x) insn;
         parsedInsn = new DexInstruction_ReturnWide(
           getRegister(insnReturnWide.getRegisterA(), registers),
           getRegister(insnReturnWide.getRegisterA() + 1, registers));
         break;
+
       case CONST_4:
         val insnConst4 = (Instruction11n) insn;
         parsedInsn = new DexInstruction_Const(
           getRegister(insnConst4.getRegisterA(), registers),
           insnConst4.getLiteral());
         break;
+
       case CONST_16:
         val insnConst16 = (Instruction21s) insn;
         parsedInsn = new DexInstruction_Const(
           getRegister(insnConst16.getRegisterA(), registers),
           insnConst16.getLiteral());
         break;
+
       case CONST:
         val insnConst = (Instruction31i) insn;
         parsedInsn = new DexInstruction_Const(
           getRegister(insnConst.getRegisterA(), registers),
           insnConst.getLiteral());
         break;
+
       case CONST_HIGH16:
         // we store const/high16 exactly the same as other const instructions,
         // it gets converted back automatically
@@ -188,6 +205,7 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnConstHigh16.getRegisterA(), registers),
           insnConstHigh16.getLiteral() << 16);
         break;
+
       case CONST_WIDE_16:
         val insnConstWide16 = (Instruction21s) insn;
         parsedInsn = new DexInstruction_ConstWide(
@@ -195,6 +213,7 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnConstWide16.getRegisterA() + 1, registers),
           insnConstWide16.getLiteral());
         break;
+
       case CONST_WIDE_32:
         val insnConstWide32 = (Instruction31i) insn;
         parsedInsn = new DexInstruction_ConstWide(
@@ -202,6 +221,7 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnConstWide32.getRegisterA() + 1, registers),
           insnConstWide32.getLiteral());
         break;
+
       case CONST_WIDE:
         val insnConstWide = (Instruction51l) insn;
         parsedInsn = new DexInstruction_ConstWide(
@@ -209,6 +229,7 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnConstWide.getRegisterA() + 1, registers),
           insnConstWide.getLiteral());
         break;
+
       case CONST_WIDE_HIGH16:
         val insnConstWideHigh16 = (Instruction21h) insn;
         parsedInsn = new DexInstruction_ConstWide(
@@ -216,18 +237,21 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnConstWideHigh16.getRegisterA() + 1, registers),
           insnConstWideHigh16.getLiteral() << 48);
         break;
+
       case CONST_STRING:
         val insnConstString = (Instruction21c) insn;
         parsedInsn = new DexInstruction_ConstString(
           getRegister(insnConstString.getRegisterA(), registers),
           DexStringConstant.create(((StringIdItem) insnConstString.getReferencedItem()), cache));
         break;
+
       case CONST_STRING_JUMBO:
         val insnConstStringJumbo = (Instruction31c) insn;
         parsedInsn = new DexInstruction_ConstString(
           getRegister(insnConstStringJumbo.getRegisterA(), registers),
           DexStringConstant.create(((StringIdItem) insnConstStringJumbo.getReferencedItem()), cache));
         break;
+
       case CONST_CLASS:
         val insnConstClass = (Instruction21c) insn;
         parsedInsn = new DexInstruction_ConstClass(
@@ -236,6 +260,7 @@ public abstract class DexInstruction extends DexCodeElement {
             ((TypeIdItem) insnConstClass.getReferencedItem()).getTypeDescriptor(),
             cache));
         break;
+
       case MONITOR_ENTER:
       case MONITOR_EXIT:
         val insnMonitor = (Instruction11x) insn;
@@ -243,6 +268,7 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnMonitor.getRegisterA(), registers),
           insn.opcode == Opcode.MONITOR_ENTER);
         break;
+
       case CHECK_CAST:
         val insnCheckCast = (Instruction21c) insn;
         parsedInsn = new DexInstruction_CheckCast(
@@ -251,6 +277,7 @@ public abstract class DexInstruction extends DexCodeElement {
             ((TypeIdItem) insnCheckCast.getReferencedItem()).getTypeDescriptor(),
             cache));
         break;
+
       case INSTANCE_OF:
         val insnInstanceOf = (Instruction22c) insn;
         parsedInsn = new DexInstruction_InstanceOf(
@@ -260,6 +287,7 @@ public abstract class DexInstruction extends DexCodeElement {
             ((TypeIdItem) insnInstanceOf.getReferencedItem()).getTypeDescriptor(),
             cache));
         break;
+
       case NEW_INSTANCE:
         val insnNewInstance = (Instruction21c) insn;
         parsedInsn = new DexInstruction_NewInstance(
@@ -268,6 +296,7 @@ public abstract class DexInstruction extends DexCodeElement {
             ((TypeIdItem) insnNewInstance.getReferencedItem()).getTypeDescriptor(),
             cache));
         break;
+
       case NEW_ARRAY:
         val insnNewArray = (Instruction22c) insn;
         parsedInsn = new DexInstruction_NewArray(
@@ -277,26 +306,31 @@ public abstract class DexInstruction extends DexCodeElement {
             ((TypeIdItem) insnNewArray.getReferencedItem()).getTypeDescriptor(),
             cache));
         break;
+
       case THROW:
         val insnThrow = (Instruction11x) insn;
         parsedInsn = new DexInstruction_Throw(
           getRegister(insnThrow.getRegisterA(), registers));
         break;
+
       case GOTO:
         val insnGoto = (Instruction10t) insn;
         parsedInsn = new DexInstruction_Goto(
           getLabel(offset + insnGoto.getTargetAddressOffset(), labelOffsetMap));
         break;
+
       case GOTO_16:
         val insnGoto16 = (Instruction20t) insn;
         parsedInsn = new DexInstruction_Goto(
           getLabel(offset + insnGoto16.getTargetAddressOffset(), labelOffsetMap));
         break;
+
       case GOTO_32:
         val insnGoto32 = (Instruction30t) insn;
         parsedInsn = new DexInstruction_Goto(
           getLabel(offset + insnGoto32.getTargetAddressOffset(), labelOffsetMap));
         break;
+
       case IF_EQ:
       case IF_NE:
       case IF_LT:
@@ -304,34 +338,34 @@ public abstract class DexInstruction extends DexCodeElement {
       case IF_GT:
       case IF_LE:
         val insnIfTest = (Instruction22t) insn;
-        DexInstruction_IfTest.TestType insnIfTest_Type = null;
+        DexInstruction_IfTest.Operation insnIfTest_Type = null;
         switch (insn.opcode) {
         case IF_EQ:
-          insnIfTest_Type = DexInstruction_IfTest.TestType.eq;
+          insnIfTest_Type = DexInstruction_IfTest.Operation.eq;
           break;
         case IF_NE:
-          insnIfTest_Type = DexInstruction_IfTest.TestType.ne;
+          insnIfTest_Type = DexInstruction_IfTest.Operation.ne;
           break;
         case IF_LT:
-          insnIfTest_Type = DexInstruction_IfTest.TestType.lt;
+          insnIfTest_Type = DexInstruction_IfTest.Operation.lt;
           break;
         case IF_GE:
-          insnIfTest_Type = DexInstruction_IfTest.TestType.ge;
+          insnIfTest_Type = DexInstruction_IfTest.Operation.ge;
           break;
         case IF_GT:
-          insnIfTest_Type = DexInstruction_IfTest.TestType.gt;
+          insnIfTest_Type = DexInstruction_IfTest.Operation.gt;
           break;
         case IF_LE:
-          insnIfTest_Type = DexInstruction_IfTest.TestType.le;
+          insnIfTest_Type = DexInstruction_IfTest.Operation.le;
           break;
         }
-
         parsedInsn = new DexInstruction_IfTest(
           getRegister(insnIfTest.getRegisterA(), registers),
           getRegister(insnIfTest.getRegisterB(), registers),
           getLabel(offset + insnIfTest.getTargetAddressOffset(), labelOffsetMap),
           insnIfTest_Type);
         break;
+
       case IF_EQZ:
       case IF_NEZ:
       case IF_LTZ:
@@ -339,33 +373,60 @@ public abstract class DexInstruction extends DexCodeElement {
       case IF_GTZ:
       case IF_LEZ:
         val insnIfTestZero = (Instruction21t) insn;
-        DexInstruction_IfTestZero.TestType insnIfTestZero_Type = null;
+        DexInstruction_IfTestZero.Operation insnIfTestZero_Type = null;
         switch (insn.opcode) {
         case IF_EQZ:
-          insnIfTestZero_Type = DexInstruction_IfTestZero.TestType.eqz;
+          insnIfTestZero_Type = DexInstruction_IfTestZero.Operation.eqz;
           break;
         case IF_NEZ:
-          insnIfTestZero_Type = DexInstruction_IfTestZero.TestType.nez;
+          insnIfTestZero_Type = DexInstruction_IfTestZero.Operation.nez;
           break;
         case IF_LTZ:
-          insnIfTestZero_Type = DexInstruction_IfTestZero.TestType.ltz;
+          insnIfTestZero_Type = DexInstruction_IfTestZero.Operation.ltz;
           break;
         case IF_GEZ:
-          insnIfTestZero_Type = DexInstruction_IfTestZero.TestType.gez;
+          insnIfTestZero_Type = DexInstruction_IfTestZero.Operation.gez;
           break;
         case IF_GTZ:
-          insnIfTestZero_Type = DexInstruction_IfTestZero.TestType.gtz;
+          insnIfTestZero_Type = DexInstruction_IfTestZero.Operation.gtz;
           break;
         case IF_LEZ:
-          insnIfTestZero_Type = DexInstruction_IfTestZero.TestType.lez;
+          insnIfTestZero_Type = DexInstruction_IfTestZero.Operation.lez;
           break;
         }
-
         parsedInsn = new DexInstruction_IfTestZero(
           getRegister(insnIfTestZero.getRegisterA(), registers),
           getLabel(offset + insnIfTestZero.getTargetAddressOffset(), labelOffsetMap),
           insnIfTestZero_Type);
         break;
+
+      case NEG_INT:
+      case NOT_INT:
+      case NEG_FLOAT:
+        val insnUnaryOp = (Instruction12x) insn;
+        DexInstruction_UnaryOp.Operation insnUnaryOp_Operation = null;
+        DexInstruction_UnaryOp.Operand insnUnaryOp_Operand = null;
+        switch (insn.opcode) {
+        case NEG_INT:
+          insnUnaryOp_Operation = DexInstruction_UnaryOp.Operation.neg;
+          insnUnaryOp_Operand = DexInstruction_UnaryOp.Operand.Int;
+          break;
+        case NOT_INT:
+          insnUnaryOp_Operation = DexInstruction_UnaryOp.Operation.not;
+          insnUnaryOp_Operand = DexInstruction_UnaryOp.Operand.Int;
+          break;
+        case NEG_FLOAT:
+          insnUnaryOp_Operation = DexInstruction_UnaryOp.Operation.neg;
+          insnUnaryOp_Operand = DexInstruction_UnaryOp.Operand.Float;
+          break;
+        }
+        parsedInsn = new DexInstruction_UnaryOp(
+          getRegister(insnUnaryOp.getRegisterA(), registers),
+          getRegister(insnUnaryOp.getRegisterB(), registers),
+          insnUnaryOp_Operation,
+          insnUnaryOp_Operand);
+        break;
+
       default:
         // TODO: throw exception
         parsedInsn = new DexInstruction_Unknown();

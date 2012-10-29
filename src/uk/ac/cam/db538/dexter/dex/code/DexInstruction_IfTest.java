@@ -4,7 +4,7 @@ import lombok.Getter;
 
 public class DexInstruction_IfTest extends DexInstruction {
 
-  public static enum TestType {
+  public static enum Operation {
     eq,
     ne,
     lt,
@@ -16,9 +16,9 @@ public class DexInstruction_IfTest extends DexInstruction {
   @Getter private final DexRegister RegA;
   @Getter private final DexRegister RegB;
   @Getter private final DexLabel Target;
-  @Getter private final TestType Type;
+  @Getter private final Operation Type;
 
-  public DexInstruction_IfTest(DexRegister regA, DexRegister regB, DexLabel target, TestType type) {
+  public DexInstruction_IfTest(DexRegister regA, DexRegister regB, DexLabel target, Operation type) {
     RegA = regA;
     RegB = regB;
     Target = target;

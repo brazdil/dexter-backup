@@ -1,5 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import org.jf.dexlib.Code.Format.Instruction12x;
+
 import lombok.Getter;
 
 public class DexInstruction_Move extends DexInstruction {

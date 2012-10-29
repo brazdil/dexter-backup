@@ -514,4 +514,18 @@ public class DexInstructionTest {
         "if-lez v180, L1"
       });
   }
+
+  @Test
+  public void testUnaryOp() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction12x(Opcode.NEG_INT, (byte) 0, (byte) 1),
+        new Instruction12x(Opcode.NOT_INT, (byte) 2, (byte) 3),
+        new Instruction12x(Opcode.NEG_FLOAT, (byte) 4, (byte) 5)
+      }, new String[] {
+        "neg-int v0, v1",
+        "not-int v2, v3",
+        "neg-float v4, v5"
+      });
+  }
 }
