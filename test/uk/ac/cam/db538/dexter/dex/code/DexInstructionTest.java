@@ -528,4 +528,33 @@ public class DexInstructionTest {
         "neg-float v4, v5"
       });
   }
+
+  @Test
+  public void testUnaryOpWide() throws DexInstructionParsingException {
+    DexInstruction_UnaryOpWide insn;
+
+    insn = (DexInstruction_UnaryOpWide)
+           compare(new Instruction12x(Opcode.NEG_LONG, (byte) 0, (byte) 2),
+                   "neg-long v0, v2");
+    assertEquals(0, insn.getRegTo1().getOriginalId());
+    assertEquals(1, insn.getRegTo2().getOriginalId());
+    assertEquals(2, insn.getRegFrom1().getOriginalId());
+    assertEquals(3, insn.getRegFrom2().getOriginalId());
+
+    insn = (DexInstruction_UnaryOpWide)
+           compare(new Instruction12x(Opcode.NOT_LONG, (byte) 4, (byte) 6),
+                   "not-long v4, v6");
+    assertEquals(4, insn.getRegTo1().getOriginalId());
+    assertEquals(5, insn.getRegTo2().getOriginalId());
+    assertEquals(6, insn.getRegFrom1().getOriginalId());
+    assertEquals(7, insn.getRegFrom2().getOriginalId());
+
+    insn = (DexInstruction_UnaryOpWide)
+           compare(new Instruction12x(Opcode.NEG_DOUBLE, (byte) 8, (byte) 10),
+                   "neg-double v8, v10");
+    assertEquals(8, insn.getRegTo1().getOriginalId());
+    assertEquals(9, insn.getRegTo2().getOriginalId());
+    assertEquals(10, insn.getRegFrom1().getOriginalId());
+    assertEquals(11, insn.getRegFrom2().getOriginalId());
+  }
 }

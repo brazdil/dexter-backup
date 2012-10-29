@@ -427,6 +427,35 @@ public abstract class DexInstruction extends DexCodeElement {
           insnUnaryOp_Operand);
         break;
 
+      case NEG_LONG:
+      case NOT_LONG:
+      case NEG_DOUBLE:
+        val insnUnaryOpWide = (Instruction12x) insn;
+        DexInstruction_UnaryOpWide.Operation insnUnaryOpWide_Operation = null;
+        DexInstruction_UnaryOpWide.Operand insnUnaryOpWide_Operand = null;
+        switch (insn.opcode) {
+        case NEG_LONG:
+          insnUnaryOpWide_Operation = DexInstruction_UnaryOpWide.Operation.neg;
+          insnUnaryOpWide_Operand = DexInstruction_UnaryOpWide.Operand.Long;
+          break;
+        case NOT_LONG:
+          insnUnaryOpWide_Operation = DexInstruction_UnaryOpWide.Operation.not;
+          insnUnaryOpWide_Operand = DexInstruction_UnaryOpWide.Operand.Long;
+          break;
+        case NEG_DOUBLE:
+          insnUnaryOpWide_Operation = DexInstruction_UnaryOpWide.Operation.neg;
+          insnUnaryOpWide_Operand = DexInstruction_UnaryOpWide.Operand.Double;
+          break;
+        }
+        parsedInsn = new DexInstruction_UnaryOpWide(
+          getRegister(insnUnaryOpWide.getRegisterA(), registers),
+          getRegister(insnUnaryOpWide.getRegisterA() + 1, registers),
+          getRegister(insnUnaryOpWide.getRegisterB(), registers),
+          getRegister(insnUnaryOpWide.getRegisterB() + 1, registers),
+          insnUnaryOpWide_Operation,
+          insnUnaryOpWide_Operand);
+        break;
+
       default:
         // TODO: throw exception
         parsedInsn = new DexInstruction_Unknown();
