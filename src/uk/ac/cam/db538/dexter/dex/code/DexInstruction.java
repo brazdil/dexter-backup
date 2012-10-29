@@ -456,6 +456,18 @@ public abstract class DexInstruction extends DexCodeElement {
           insnUnaryOpWide_Operand);
         break;
 
+      case INT_TO_FLOAT:
+      case FLOAT_TO_INT:
+      case INT_TO_BYTE:
+      case INT_TO_CHAR:
+      case INT_TO_SHORT:
+        val insnConvert = (Instruction12x) insn;
+        parsedInsn = new DexInstruction_Convert(
+          getRegister(insnConvert.getRegisterA(), registers),
+          getRegister(insnConvert.getRegisterB(), registers),
+          DexInstruction_Convert.Opcode.convert(insn.opcode));
+        break;
+
       default:
         // TODO: throw exception
         parsedInsn = new DexInstruction_Unknown();

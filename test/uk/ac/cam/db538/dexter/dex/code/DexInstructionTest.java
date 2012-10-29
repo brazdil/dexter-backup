@@ -557,4 +557,22 @@ public class DexInstructionTest {
     assertEquals(10, insn.getRegFrom1().getOriginalId());
     assertEquals(11, insn.getRegFrom2().getOriginalId());
   }
+
+  @Test
+  public void testConvert() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction12x(Opcode.INT_TO_FLOAT, (byte) 0, (byte) 1),
+        new Instruction12x(Opcode.FLOAT_TO_INT, (byte) 2, (byte) 3),
+        new Instruction12x(Opcode.INT_TO_BYTE, (byte) 4, (byte) 5),
+        new Instruction12x(Opcode.INT_TO_CHAR, (byte) 6, (byte) 7),
+        new Instruction12x(Opcode.INT_TO_SHORT, (byte) 8, (byte) 9)
+      }, new String[] {
+        "int-to-float v0, v1",
+        "float-to-int v2, v3",
+        "int-to-byte v4, v5",
+        "int-to-char v6, v7",
+        "int-to-short v8, v9"
+      });
+  }
 }
