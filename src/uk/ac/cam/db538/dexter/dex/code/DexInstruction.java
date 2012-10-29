@@ -251,6 +251,11 @@ public abstract class DexInstruction {
                      ((TypeIdItem) insnNewArray.getReferencedItem()).getTypeDescriptor(),
                      cache)));
         break;
+      case THROW:
+          val insnThrow = (Instruction11x) insn;
+          list.add(new DexInstruction_Throw(
+                     getRegister(insnThrow.getRegisterA(), registers)));
+          break;
       }
     }
 

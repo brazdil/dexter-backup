@@ -344,4 +344,10 @@ public class DexInstructionTest {
     compare(new Instruction22c(Opcode.NEW_ARRAY, (byte) 4, (byte) 12, getTypeItem("[[[I")),
             "new-array v4, v12, [[[I");
   }
+
+  @Test
+  public void testThrow() {
+    compare(new Instruction11x(Opcode.THROW, (byte) 243),
+            "throw v243");
+  }
 }
