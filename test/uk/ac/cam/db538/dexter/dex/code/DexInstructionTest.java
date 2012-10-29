@@ -20,6 +20,7 @@ import org.jf.dexlib.Code.Format.Instruction20t;
 import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
+import org.jf.dexlib.Code.Format.Instruction21t;
 import org.jf.dexlib.Code.Format.Instruction22c;
 import org.jf.dexlib.Code.Format.Instruction22t;
 import org.jf.dexlib.Code.Format.Instruction22x;
@@ -487,6 +488,30 @@ public class DexInstructionTest {
         "if-ge v6, v7, L0",
         "if-gt v8, v9, L0",
         "if-le v10, v11, L1"
+      });
+  }
+
+  @Test
+  public void testIfTestZero() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction10x(Opcode.NOP),
+        new Instruction21t(Opcode.IF_EQZ, (byte) 130, (short) -1),
+        new Instruction21t(Opcode.IF_NEZ, (byte) 140, (short) -3),
+        new Instruction21t(Opcode.IF_LTZ, (byte) 150, (short) -5),
+        new Instruction21t(Opcode.IF_GEZ, (byte) 160, (short) -7),
+        new Instruction21t(Opcode.IF_GTZ, (byte) 170, (short) -9),
+        new Instruction21t(Opcode.IF_LEZ, (byte) 180, (short) -10)
+      }, new String[] {
+        "L0:",
+        "nop",
+        "L1:",
+        "if-eqz v130, L0",
+        "if-nez v140, L0",
+        "if-ltz v150, L0",
+        "if-gez v160, L0",
+        "if-gtz v170, L0",
+        "if-lez v180, L1"
       });
   }
 }

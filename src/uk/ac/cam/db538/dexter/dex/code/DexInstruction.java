@@ -17,6 +17,7 @@ import org.jf.dexlib.Code.Format.Instruction20t;
 import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
+import org.jf.dexlib.Code.Format.Instruction21t;
 import org.jf.dexlib.Code.Format.Instruction22c;
 import org.jf.dexlib.Code.Format.Instruction22t;
 import org.jf.dexlib.Code.Format.Instruction22x;
@@ -27,7 +28,6 @@ import org.jf.dexlib.Code.Format.Instruction32x;
 import org.jf.dexlib.Code.Format.Instruction51l;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.dex.code.DexInstruction_IfTest.TestType;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
@@ -307,22 +307,22 @@ public abstract class DexInstruction extends DexCodeElement {
         DexInstruction_IfTest.TestType insnIfTest_Type = null;
         switch (insn.opcode) {
         case IF_EQ:
-          insnIfTest_Type = TestType.eq;
+          insnIfTest_Type = DexInstruction_IfTest.TestType.eq;
           break;
         case IF_NE:
-          insnIfTest_Type = TestType.ne;
+          insnIfTest_Type = DexInstruction_IfTest.TestType.ne;
           break;
         case IF_LT:
-          insnIfTest_Type = TestType.lt;
+          insnIfTest_Type = DexInstruction_IfTest.TestType.lt;
           break;
         case IF_GE:
-          insnIfTest_Type = TestType.ge;
+          insnIfTest_Type = DexInstruction_IfTest.TestType.ge;
           break;
         case IF_GT:
-          insnIfTest_Type = TestType.gt;
+          insnIfTest_Type = DexInstruction_IfTest.TestType.gt;
           break;
         case IF_LE:
-          insnIfTest_Type = TestType.le;
+          insnIfTest_Type = DexInstruction_IfTest.TestType.le;
           break;
         }
 
@@ -331,6 +331,40 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnIfTest.getRegisterB(), registers),
           getLabel(offset + insnIfTest.getTargetAddressOffset(), labelOffsetMap),
           insnIfTest_Type);
+        break;
+      case IF_EQZ:
+      case IF_NEZ:
+      case IF_LTZ:
+      case IF_GEZ:
+      case IF_GTZ:
+      case IF_LEZ:
+        val insnIfTestZero = (Instruction21t) insn;
+        DexInstruction_IfTestZero.TestType insnIfTestZero_Type = null;
+        switch (insn.opcode) {
+        case IF_EQZ:
+          insnIfTestZero_Type = DexInstruction_IfTestZero.TestType.eqz;
+          break;
+        case IF_NEZ:
+          insnIfTestZero_Type = DexInstruction_IfTestZero.TestType.nez;
+          break;
+        case IF_LTZ:
+          insnIfTestZero_Type = DexInstruction_IfTestZero.TestType.ltz;
+          break;
+        case IF_GEZ:
+          insnIfTestZero_Type = DexInstruction_IfTestZero.TestType.gez;
+          break;
+        case IF_GTZ:
+          insnIfTestZero_Type = DexInstruction_IfTestZero.TestType.gtz;
+          break;
+        case IF_LEZ:
+          insnIfTestZero_Type = DexInstruction_IfTestZero.TestType.lez;
+          break;
+        }
+
+        parsedInsn = new DexInstruction_IfTestZero(
+          getRegister(insnIfTestZero.getRegisterA(), registers),
+          getLabel(offset + insnIfTestZero.getTargetAddressOffset(), labelOffsetMap),
+          insnIfTestZero_Type);
         break;
       default:
         // TODO: throw exception
