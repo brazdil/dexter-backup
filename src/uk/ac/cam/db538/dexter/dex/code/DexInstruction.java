@@ -295,15 +295,16 @@ public abstract class DexInstruction extends DexCodeElement {
         parsedInsn = new DexInstruction_Goto(
           getLabel(offset + insnGoto32.getTargetAddressOffset(), labelOffsetMap));
         break;
+        
+      default:
+    	  // TODO: throw exception
+    	  parsedInsn = new DexInstruction_Unknown();
+    	  break;
       }
 
-      if (parsedInsn == null) {
-        // TODO: throw exception
-      } else {
-        code.add(parsedInsn);
-        insnOffsetMap.put(offset, parsedInsn);
-        offset += insn.getSize(0); // arg is ignored
-      }
+      code.add(parsedInsn);
+      insnOffsetMap.put(offset, parsedInsn);
+      offset += insn.getSize(0); // arg is ignored
     }
 
     // place the labels
@@ -312,7 +313,7 @@ public abstract class DexInstruction extends DexCodeElement {
       val insnAtOffset = insnOffsetMap.get(labelOffset);
       if (insnAtOffset == null)
         throw new DexInstructionParsingException(
-          "Label could not be placed (unexistent offset " + labelOffset + ")");
+          "Label could not be placed (non-existent offset " + labelOffset + ")");
       else {
         val label = entry.getValue();
         code.insertBefore(label, insnAtOffset);

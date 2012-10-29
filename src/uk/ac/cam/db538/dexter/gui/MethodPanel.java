@@ -1,5 +1,7 @@
 package uk.ac.cam.db538.dexter.gui;
 
+import java.awt.Insets;
+
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JTextField;
@@ -8,6 +10,7 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexMethod;
+import uk.ac.cam.db538.dexter.dex.code.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction_ConstWide;
@@ -89,6 +92,10 @@ public class MethodPanel extends InfoPanel {
     panelInstructions.removeAll();
     for (val insn : method.getCode()) {
       val label = new WebHotkeyLabel(insn.getOriginalAssembly());
+      
+      // indent instructions (not labels)
+      if (insn instanceof DexInstruction)
+    	  label.setMargin(new Insets(0, 20, 0, 0));
 
       // for const instructions, show the hex value in tooltip
       if (insn instanceof DexInstruction_Const)
