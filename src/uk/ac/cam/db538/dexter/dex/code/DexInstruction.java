@@ -18,6 +18,7 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction22c;
+import org.jf.dexlib.Code.Format.Instruction22t;
 import org.jf.dexlib.Code.Format.Instruction22x;
 import org.jf.dexlib.Code.Format.Instruction30t;
 import org.jf.dexlib.Code.Format.Instruction31c;
@@ -26,6 +27,7 @@ import org.jf.dexlib.Code.Format.Instruction32x;
 import org.jf.dexlib.Code.Format.Instruction51l;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.DexInstruction_IfTest.TestType;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
@@ -295,11 +297,45 @@ public abstract class DexInstruction extends DexCodeElement {
         parsedInsn = new DexInstruction_Goto(
           getLabel(offset + insnGoto32.getTargetAddressOffset(), labelOffsetMap));
         break;
-        
+      case IF_EQ:
+      case IF_NE:
+      case IF_LT:
+      case IF_GE:
+      case IF_GT:
+      case IF_LE:
+        val insnIfTest = (Instruction22t) insn;
+        DexInstruction_IfTest.TestType insnIfTest_Type = null;
+        switch (insn.opcode) {
+        case IF_EQ:
+          insnIfTest_Type = TestType.eq;
+          break;
+        case IF_NE:
+          insnIfTest_Type = TestType.ne;
+          break;
+        case IF_LT:
+          insnIfTest_Type = TestType.lt;
+          break;
+        case IF_GE:
+          insnIfTest_Type = TestType.ge;
+          break;
+        case IF_GT:
+          insnIfTest_Type = TestType.gt;
+          break;
+        case IF_LE:
+          insnIfTest_Type = TestType.le;
+          break;
+        }
+
+        parsedInsn = new DexInstruction_IfTest(
+          getRegister(insnIfTest.getRegisterA(), registers),
+          getRegister(insnIfTest.getRegisterB(), registers),
+          getLabel(offset + insnIfTest.getTargetAddressOffset(), labelOffsetMap),
+          insnIfTest_Type);
+        break;
       default:
-    	  // TODO: throw exception
-    	  parsedInsn = new DexInstruction_Unknown();
-    	  break;
+        // TODO: throw exception
+        parsedInsn = new DexInstruction_Unknown();
+        break;
       }
 
       code.add(parsedInsn);

@@ -21,6 +21,7 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction22c;
+import org.jf.dexlib.Code.Format.Instruction22t;
 import org.jf.dexlib.Code.Format.Instruction22x;
 import org.jf.dexlib.Code.Format.Instruction30t;
 import org.jf.dexlib.Code.Format.Instruction31c;
@@ -462,6 +463,30 @@ public class DexInstructionTest {
         "goto L6",
         "L6:",
         "nop"
+      });
+  }
+
+  @Test
+  public void testIfTest() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction10x(Opcode.NOP),
+        new Instruction22t(Opcode.IF_EQ, (byte) 0, (byte) 1, (short) -1),
+        new Instruction22t(Opcode.IF_NE, (byte) 2, (byte) 3, (short) -3),
+        new Instruction22t(Opcode.IF_LT, (byte) 4, (byte) 5, (short) -5),
+        new Instruction22t(Opcode.IF_GE, (byte) 6, (byte) 7, (short) -7),
+        new Instruction22t(Opcode.IF_GT, (byte) 8, (byte) 9, (short) -9),
+        new Instruction22t(Opcode.IF_LE, (byte) 10, (byte) 11, (short) -10)
+      }, new String[] {
+        "L0:",
+        "nop",
+        "L1:",
+        "if-eq v0, v1, L0",
+        "if-ne v2, v3, L0",
+        "if-lt v4, v5, L0",
+        "if-ge v6, v7, L0",
+        "if-gt v8, v9, L0",
+        "if-le v10, v11, L1"
       });
   }
 }

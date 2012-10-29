@@ -92,10 +92,10 @@ public class MethodPanel extends InfoPanel {
     panelInstructions.removeAll();
     for (val insn : method.getCode()) {
       val label = new WebHotkeyLabel(insn.getOriginalAssembly());
-      
+
       // indent instructions (not labels)
       if (insn instanceof DexInstruction)
-    	  label.setMargin(new Insets(0, 20, 0, 0));
+        label.setMargin(new Insets(0, 20, 0, 0));
 
       // for const instructions, show the hex value in tooltip
       if (insn instanceof DexInstruction_Const)
