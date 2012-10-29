@@ -25,6 +25,7 @@ import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.DexMethod;
+import uk.ac.cam.db538.dexter.dex.code.DexInstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 import java.io.File;
@@ -169,6 +170,10 @@ public class MainWindow {
       // TODO: handle
       return;
     } catch (UnknownTypeException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      return;
+    } catch (DexInstructionParsingException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
       return;

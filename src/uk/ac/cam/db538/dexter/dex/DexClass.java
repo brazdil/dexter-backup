@@ -6,6 +6,7 @@ import java.util.Set;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.code.DexInstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -30,10 +31,10 @@ public class DexClass {
     Methods = (methods == null) ? new HashSet<DexMethod>() : methods;
   }
 
-  public DexClass(Dex parent, ClassDefItem clsInfo) throws UnknownTypeException {
+  public DexClass(Dex parent, ClassDefItem clsInfo) throws UnknownTypeException, DexInstructionParsingException {
     this(parent,
-         DexClassType.parse(clsInfo.getClassType().getTypeDescriptor() , parent.getKnownTypes()),
-         DexClassType.parse(clsInfo.getSuperclass().getTypeDescriptor() , parent.getKnownTypes()),
+         DexClassType.parse(clsInfo.getClassType().getTypeDescriptor() , parent.getParsingCache()),
+         DexClassType.parse(clsInfo.getSuperclass().getTypeDescriptor() , parent.getParsingCache()),
          Utils.getAccessFlagSet(AccessFlags.getAccessFlagsForClass(clsInfo.getAccessFlags())),
          null,
          null);

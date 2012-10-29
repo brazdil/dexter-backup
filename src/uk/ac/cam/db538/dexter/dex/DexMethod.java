@@ -8,7 +8,9 @@ import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction;
+import uk.ac.cam.db538.dexter.dex.code.DexInstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -25,11 +27,11 @@ public class DexMethod {
   @Getter private final DexType ReturnType;
   @Getter private final List<DexRegisterType> ParameterTypes;
   @Getter private final boolean Direct;
-  @Getter private final List<DexInstruction> Code;
+  @Getter private final List<DexCodeElement> Code;
 
   public DexMethod(DexClass parent, String name, Set<AccessFlags> accessFlags,
                    DexType returnType, List<DexRegisterType> parameterTypes,
-                   boolean direct, List<DexInstruction> code) {
+                   boolean direct, List<DexCodeElement> code) {
     ParentClass = parent;
     Name = name;
     AccessFlagSet = Utils.getNonNullAccessFlagSet(accessFlags);
@@ -48,14 +50,14 @@ public class DexMethod {
     return list;
   }
 
-  public DexMethod(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException {
+  public DexMethod(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, DexInstructionParsingException {
     this(parent,
          methodInfo.method.getMethodName().getStringValue(),
          Utils.getAccessFlagSet(AccessFlags.getAccessFlagsForMethod(methodInfo.accessFlags)),
-         DexType.parse(methodInfo.method.getPrototype().getReturnType().getTypeDescriptor(), parent.getParentFile().getKnownTypes()),
-         parseParameterTypes(methodInfo.method.getPrototype().getParameters(), parent.getParentFile().getKnownTypes()),
+         DexType.parse(methodInfo.method.getPrototype().getReturnType().getTypeDescriptor(), parent.getParentFile().getParsingCache()),
+         parseParameterTypes(methodInfo.method.getPrototype().getParameters(), parent.getParentFile().getParsingCache()),
          methodInfo.isDirect(),
-         DexInstruction.parse(methodInfo.codeItem.getInstructions(), parent.getParentFile().getKnownTypes()));
+         DexInstruction.parse(methodInfo.codeItem.getInstructions(), parent.getParentFile().getParsingCache()));
   }
 
   public boolean isStatic() {

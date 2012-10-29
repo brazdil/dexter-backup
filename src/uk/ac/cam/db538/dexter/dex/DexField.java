@@ -29,7 +29,7 @@ public class DexField {
   public DexField(DexClass parent, EncodedField fieldInfo) throws UnknownTypeException {
     this(parent,
          StringIdItem.getStringValue(fieldInfo.field.getFieldName()),
-         DexRegisterType.parse(fieldInfo.field.getFieldType().getTypeDescriptor(), parent.getParentFile().getKnownTypes()),
+         DexRegisterType.parse(fieldInfo.field.getFieldType().getTypeDescriptor(), parent.getParentFile().getParsingCache()),
          Utils.getAccessFlagSet(AccessFlags.getAccessFlagsForField(fieldInfo.accessFlags)));
   }
 

@@ -11,30 +11,34 @@ import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
+import org.jf.dexlib.Code.Format.Instruction10t;
 import org.jf.dexlib.Code.Format.Instruction10x;
 import org.jf.dexlib.Code.Format.Instruction11n;
 import org.jf.dexlib.Code.Format.Instruction11x;
 import org.jf.dexlib.Code.Format.Instruction12x;
+import org.jf.dexlib.Code.Format.Instruction20t;
 import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction22c;
 import org.jf.dexlib.Code.Format.Instruction22x;
+import org.jf.dexlib.Code.Format.Instruction30t;
 import org.jf.dexlib.Code.Format.Instruction31c;
 import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction32x;
 import org.jf.dexlib.Code.Format.Instruction51l;
 import org.junit.Test;
 
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstructionTest {
 
-  private static DexInstruction compare(Instruction insn, String output) {
-    List<DexInstruction> insnList;
+  private static DexCodeElement compare(Instruction insn, String output) {
+    List<DexCodeElement> insnList;
     try {
       insnList = DexInstruction.parse(new Instruction[] { insn }, null);
-    } catch (UnknownTypeException e) {
+    } catch (UnknownTypeException | DexInstructionParsingException e) {
       fail(e.getClass().getName() + ": " + e.getMessage());
       return null;
     }
@@ -42,6 +46,20 @@ public class DexInstructionTest {
     val insnInsn = insnList.get(0);
     assertEquals(output, insnInsn.getOriginalAssembly());
     return insnInsn;
+  }
+
+  private static void compareList(Instruction[] insns, String[] output) throws DexInstructionParsingException {
+    List<DexCodeElement> insnList;
+    try {
+      insnList = DexInstruction.parse(insns, new DexParsingCache());
+    } catch (UnknownTypeException e) {
+      fail(e.getClass().getName() + ": " + e.getMessage());
+      return;
+    }
+
+    assertEquals(output.length, insnList.size());
+    for (int i = 0; i < output.length; ++i)
+      assertEquals(output[i], insnList.get(i).getOriginalAssembly());
   }
 
   @Test
@@ -349,5 +367,101 @@ public class DexInstructionTest {
   public void testThrow() {
     compare(new Instruction11x(Opcode.THROW, (byte) 243),
             "throw v243");
+  }
+
+  @Test
+  public void testGoto() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction10x(Opcode.NOP),
+        new Instruction10t(Opcode.GOTO, -1),
+        new Instruction10x(Opcode.NOP)
+      }, new String[] {
+        "L0:",
+        "nop",
+        "goto L0",
+        "nop"
+      });
+    compareList(
+      new Instruction[] {
+        new Instruction32x(Opcode.MOVE_16, 12345, 23456),
+        new Instruction10t(Opcode.GOTO, 1),
+        new Instruction10x(Opcode.NOP)
+      }, new String[] {
+        "move v12345, v23456",
+        "goto L4",
+        "L4:",
+        "nop"
+      });
+  }
+
+  @Test(expected=DexInstructionParsingException.class)
+  public void testLabels_InvalidOffset_Positive() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction10t(Opcode.GOTO, 2),
+        new Instruction10x(Opcode.NOP)
+      }, null);
+  }
+
+  @Test(expected=DexInstructionParsingException.class)
+  public void testLabels_InvalidOffset_Negative() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction10x(Opcode.NOP),
+        new Instruction10t(Opcode.GOTO, -2)
+      }, null);
+  }
+
+  @Test
+  public void testGoto16() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction10x(Opcode.NOP),
+        new Instruction20t(Opcode.GOTO_16, -1),
+        new Instruction10x(Opcode.NOP)
+      }, new String[] {
+        "L0:",
+        "nop",
+        "goto L0",
+        "nop"
+      });
+    compareList(
+      new Instruction[] {
+        new Instruction32x(Opcode.MOVE_16, 12345, 23456),
+        new Instruction20t(Opcode.GOTO_16, 2),
+        new Instruction10x(Opcode.NOP)
+      }, new String[] {
+        "move v12345, v23456",
+        "goto L5",
+        "L5:",
+        "nop"
+      });
+  }
+
+  @Test
+  public void testGoto32() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction10x(Opcode.NOP),
+        new Instruction30t(Opcode.GOTO_32, -1),
+        new Instruction10x(Opcode.NOP)
+      }, new String[] {
+        "L0:",
+        "nop",
+        "goto L0",
+        "nop"
+      });
+    compareList(
+      new Instruction[] {
+        new Instruction32x(Opcode.MOVE_16, 12345, 23456),
+        new Instruction30t(Opcode.GOTO_32, 3),
+        new Instruction10x(Opcode.NOP)
+      }, new String[] {
+        "move v12345, v23456",
+        "goto L6",
+        "L6:",
+        "nop"
+      });
   }
 }
