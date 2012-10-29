@@ -338,32 +338,11 @@ public abstract class DexInstruction extends DexCodeElement {
       case IF_GT:
       case IF_LE:
         val insnIfTest = (Instruction22t) insn;
-        DexInstruction_IfTest.Operation insnIfTest_Type = null;
-        switch (insn.opcode) {
-        case IF_EQ:
-          insnIfTest_Type = DexInstruction_IfTest.Operation.eq;
-          break;
-        case IF_NE:
-          insnIfTest_Type = DexInstruction_IfTest.Operation.ne;
-          break;
-        case IF_LT:
-          insnIfTest_Type = DexInstruction_IfTest.Operation.lt;
-          break;
-        case IF_GE:
-          insnIfTest_Type = DexInstruction_IfTest.Operation.ge;
-          break;
-        case IF_GT:
-          insnIfTest_Type = DexInstruction_IfTest.Operation.gt;
-          break;
-        case IF_LE:
-          insnIfTest_Type = DexInstruction_IfTest.Operation.le;
-          break;
-        }
         parsedInsn = new DexInstruction_IfTest(
           getRegister(insnIfTest.getRegisterA(), registers),
           getRegister(insnIfTest.getRegisterB(), registers),
           getLabel(offset + insnIfTest.getTargetAddressOffset(), labelOffsetMap),
-          insnIfTest_Type);
+          DexInstruction_IfTest.Opcode.convert(insn.opcode));
         break;
 
       case IF_EQZ:
@@ -373,87 +352,32 @@ public abstract class DexInstruction extends DexCodeElement {
       case IF_GTZ:
       case IF_LEZ:
         val insnIfTestZero = (Instruction21t) insn;
-        DexInstruction_IfTestZero.Operation insnIfTestZero_Type = null;
-        switch (insn.opcode) {
-        case IF_EQZ:
-          insnIfTestZero_Type = DexInstruction_IfTestZero.Operation.eqz;
-          break;
-        case IF_NEZ:
-          insnIfTestZero_Type = DexInstruction_IfTestZero.Operation.nez;
-          break;
-        case IF_LTZ:
-          insnIfTestZero_Type = DexInstruction_IfTestZero.Operation.ltz;
-          break;
-        case IF_GEZ:
-          insnIfTestZero_Type = DexInstruction_IfTestZero.Operation.gez;
-          break;
-        case IF_GTZ:
-          insnIfTestZero_Type = DexInstruction_IfTestZero.Operation.gtz;
-          break;
-        case IF_LEZ:
-          insnIfTestZero_Type = DexInstruction_IfTestZero.Operation.lez;
-          break;
-        }
         parsedInsn = new DexInstruction_IfTestZero(
           getRegister(insnIfTestZero.getRegisterA(), registers),
           getLabel(offset + insnIfTestZero.getTargetAddressOffset(), labelOffsetMap),
-          insnIfTestZero_Type);
+          DexInstruction_IfTestZero.Opcode.convert(insn.opcode));
         break;
 
       case NEG_INT:
       case NOT_INT:
       case NEG_FLOAT:
         val insnUnaryOp = (Instruction12x) insn;
-        DexInstruction_UnaryOp.Operation insnUnaryOp_Operation = null;
-        DexInstruction_UnaryOp.Operand insnUnaryOp_Operand = null;
-        switch (insn.opcode) {
-        case NEG_INT:
-          insnUnaryOp_Operation = DexInstruction_UnaryOp.Operation.neg;
-          insnUnaryOp_Operand = DexInstruction_UnaryOp.Operand.Int;
-          break;
-        case NOT_INT:
-          insnUnaryOp_Operation = DexInstruction_UnaryOp.Operation.not;
-          insnUnaryOp_Operand = DexInstruction_UnaryOp.Operand.Int;
-          break;
-        case NEG_FLOAT:
-          insnUnaryOp_Operation = DexInstruction_UnaryOp.Operation.neg;
-          insnUnaryOp_Operand = DexInstruction_UnaryOp.Operand.Float;
-          break;
-        }
         parsedInsn = new DexInstruction_UnaryOp(
           getRegister(insnUnaryOp.getRegisterA(), registers),
           getRegister(insnUnaryOp.getRegisterB(), registers),
-          insnUnaryOp_Operation,
-          insnUnaryOp_Operand);
+          DexInstruction_UnaryOp.Opcode.convert(insn.opcode));
         break;
 
       case NEG_LONG:
       case NOT_LONG:
       case NEG_DOUBLE:
         val insnUnaryOpWide = (Instruction12x) insn;
-        DexInstruction_UnaryOpWide.Operation insnUnaryOpWide_Operation = null;
-        DexInstruction_UnaryOpWide.Operand insnUnaryOpWide_Operand = null;
-        switch (insn.opcode) {
-        case NEG_LONG:
-          insnUnaryOpWide_Operation = DexInstruction_UnaryOpWide.Operation.neg;
-          insnUnaryOpWide_Operand = DexInstruction_UnaryOpWide.Operand.Long;
-          break;
-        case NOT_LONG:
-          insnUnaryOpWide_Operation = DexInstruction_UnaryOpWide.Operation.not;
-          insnUnaryOpWide_Operand = DexInstruction_UnaryOpWide.Operand.Long;
-          break;
-        case NEG_DOUBLE:
-          insnUnaryOpWide_Operation = DexInstruction_UnaryOpWide.Operation.neg;
-          insnUnaryOpWide_Operand = DexInstruction_UnaryOpWide.Operand.Double;
-          break;
-        }
         parsedInsn = new DexInstruction_UnaryOpWide(
           getRegister(insnUnaryOpWide.getRegisterA(), registers),
           getRegister(insnUnaryOpWide.getRegisterA() + 1, registers),
           getRegister(insnUnaryOpWide.getRegisterB(), registers),
           getRegister(insnUnaryOpWide.getRegisterB() + 1, registers),
-          insnUnaryOpWide_Operation,
-          insnUnaryOpWide_Operand);
+          DexInstruction_UnaryOpWide.Opcode.convert(insn.opcode));
         break;
 
       case INT_TO_FLOAT:

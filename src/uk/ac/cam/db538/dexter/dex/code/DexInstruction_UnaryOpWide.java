@@ -4,35 +4,60 @@ import lombok.Getter;
 
 public class DexInstruction_UnaryOpWide extends DexInstruction {
 
-  public static enum Operation {
-    neg,
-    not
-  }
+  public static enum Opcode {
+    NegLong("neg-long"),
+    NotLong("not-long"),
+    NegDouble("neg-double");
 
-  public static enum Operand {
-    Long,
-    Double
+    @Getter private final String AssemblyName;
+
+    private Opcode(String assemblyName) {
+      AssemblyName = assemblyName;
+    }
+
+    public static Opcode convert(org.jf.dexlib.Code.Opcode opcode) {
+      switch (opcode) {
+      case NEG_LONG:
+        return NegLong;
+      case NOT_LONG:
+        return NotLong;
+      case NEG_DOUBLE:
+        return NegDouble;
+      default:
+        return null;
+      }
+    }
+
+    public static org.jf.dexlib.Code.Opcode convert(Opcode opcode) {
+      switch (opcode) {
+      case NegLong:
+        return org.jf.dexlib.Code.Opcode.NEG_LONG;
+      case NotLong:
+        return org.jf.dexlib.Code.Opcode.NOT_LONG;
+      case NegDouble:
+        return org.jf.dexlib.Code.Opcode.NEG_DOUBLE;
+      default:
+        return null;
+      }
+    }
   }
 
   @Getter private final DexRegister RegTo1;
   @Getter private final DexRegister RegTo2;
   @Getter private final DexRegister RegFrom1;
   @Getter private final DexRegister RegFrom2;
-  @Getter private final Operation InsnOperation;
-  @Getter private final Operand InsnOperand;
+  @Getter private final Opcode InsnOpcode;
 
-  public DexInstruction_UnaryOpWide(DexRegister to1, DexRegister to2, DexRegister from1, DexRegister from2, Operation op, Operand type) {
+  public DexInstruction_UnaryOpWide(DexRegister to1, DexRegister to2, DexRegister from1, DexRegister from2, Opcode opcode) {
     RegTo1 = to1;
     RegTo2 = to2;
     RegFrom1 = from1;
     RegFrom2 = from2;
-    InsnOperation = op;
-    InsnOperand = type;
+    InsnOpcode = opcode;
   }
 
   @Override
   public String getOriginalAssembly() {
-    return InsnOperation.name() + "-" + InsnOperand.name().toLowerCase() +
-           " v" + RegTo1.getOriginalId() + ", v" + RegFrom1.getOriginalId();
+    return InsnOpcode.getAssemblyName() + " v" + RegTo1.getOriginalId() + ", v" + RegFrom1.getOriginalId();
   }
 }
