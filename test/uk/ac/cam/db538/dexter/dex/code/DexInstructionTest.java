@@ -641,4 +641,25 @@ public class DexInstructionTest {
     assertEquals(14, insn.getRegFrom1().getOriginalId());
     assertEquals(15, insn.getRegFrom2().getOriginalId());
   }
+
+  @Test
+  public void testConvertWide() throws DexInstructionParsingException {
+    DexInstruction_ConvertWide insn;
+
+    insn = (DexInstruction_ConvertWide)
+           compare(new Instruction12x(Opcode.LONG_TO_DOUBLE, (byte) 0, (byte) 2),
+                   "long-to-double v0, v2");
+    assertEquals(0, insn.getRegTo1().getOriginalId());
+    assertEquals(1, insn.getRegTo2().getOriginalId());
+    assertEquals(2, insn.getRegFrom1().getOriginalId());
+    assertEquals(3, insn.getRegFrom2().getOriginalId());
+
+    insn = (DexInstruction_ConvertWide)
+           compare(new Instruction12x(Opcode.DOUBLE_TO_LONG, (byte) 8, (byte) 10),
+                   "double-to-long v8, v10");
+    assertEquals(8, insn.getRegTo1().getOriginalId());
+    assertEquals(9, insn.getRegTo2().getOriginalId());
+    assertEquals(10, insn.getRegFrom1().getOriginalId());
+    assertEquals(11, insn.getRegFrom2().getOriginalId());
+  }
 }
