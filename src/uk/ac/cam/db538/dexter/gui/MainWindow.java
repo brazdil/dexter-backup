@@ -3,11 +3,16 @@ package uk.ac.cam.db538.dexter.gui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -15,11 +20,22 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.jf.dexlib.Util.AccessFlags;
 
+import com.alee.extended.filechooser.SelectionMode;
+import com.alee.extended.filechooser.WebFileChooser;
+import com.alee.extended.filefilter.DefaultFileFilter;
+import com.alee.extended.window.WebProgressDialog;
+import com.alee.laf.GlobalConstants;
+import com.alee.laf.StyleConstants;
+import com.alee.laf.menu.MenubarStyle;
+import com.alee.laf.menu.WebMenu;
+import com.alee.laf.menu.WebMenuBar;
+import com.alee.laf.menu.WebMenuItem;
 import com.alee.laf.scroll.WebScrollPane;
 import com.alee.laf.splitpane.WebSplitPane;
 import com.alee.laf.tabbedpane.WebTabbedPane;
 import com.alee.laf.tree.WebTree;
 import com.alee.laf.tree.WebTreeCellRenderer;
+import com.alee.managers.language.LanguageManager;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -49,6 +65,8 @@ public class MainWindow {
   }
 
   private void initialize() {
+    LanguageManager.initialize();
+
     Frame = new JFrame("Dexter");
     Frame.setBounds(100, 100, 800, 600);
     Frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -56,9 +74,28 @@ public class MainWindow {
     TabbedPane = new WebTabbedPane();
     Frame.add(TabbedPane);
 
-    openFile(new File("out.dex"));
-    openFile(new File("metronome.dex"));
-    openFile(new File("endomondo.dex"));
+    val menubar = new WebMenuBar();
+    {
+      val menuFile = new WebMenu("File");
+      menuFile.setMnemonic(KeyEvent.VK_F);
+      {
+        val menuFileOpen = new WebMenuItem("Open", KeyEvent.VK_O);
+        menuFileOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+        menuFileOpen.addActionListener(new ActionListener() {
+          private JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+
+          @Override
+          public void actionPerformed(ActionEvent arg0) {
+            if (fc.showOpenDialog(Frame) == JFileChooser.APPROVE_OPTION) {
+              openFileModal(fc.getSelectedFile());
+            }
+          }
+        } );
+        menuFile.add(menuFileOpen);
+      }
+      menubar.add(menuFile);
+    }
+    Frame.setJMenuBar(menubar);
   }
 
   /*
@@ -162,6 +199,25 @@ public class MainWindow {
     }
   }
 
+  private void openFileModal(final File filename) {
+    // Load dialog
+    val progress = new WebProgressDialog(Frame, "");
+    progress.setText("Loading " + filename.getName());
+    progress.setIndeterminate(true);
+    progress.setShowProgressText(false);
+
+    // Starting updater thread
+    new Thread(new Runnable() {
+      public void run() {
+        openFile(filename);
+        progress.setVisible(false);
+      }
+    }).start();
+
+    progress.setModal(true);
+    progress.setVisible(true);
+  }
+
   private void openFile(File filename) {
     // load the file
     Dex dex;
@@ -184,9 +240,6 @@ public class MainWindow {
     val splitPane = new WebSplitPane();
     splitPane.setDividerLocation(300);
     splitPane.setContinuousLayout (true);
-
-    // create tab
-    TabbedPane.addTab(filename.getName(), splitPane);
 
     // create class tree
     val classTreeRoot = new DefaultMutableTreeNode("classes.dex");
@@ -226,6 +279,9 @@ public class MainWindow {
         }
       }
     });
+
+    // create tab
+    TabbedPane.addTab(filename.getName(), splitPane);
   }
 
   private static String getDisplayName(DefaultMutableTreeNode node) {
