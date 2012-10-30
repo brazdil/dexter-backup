@@ -56,6 +56,7 @@ public class MainWindow {
     TabbedPane = new WebTabbedPane();
     Frame.add(TabbedPane);
 
+    openFile(new File("out.dex"));
     openFile(new File("metronome.dex"));
     openFile(new File("endomondo.dex"));
   }

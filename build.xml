@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="dexter" basedir="." default="clean-build">
 
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+	  <classpath>
+	    <pathelement location="ant-contrib-1.0b3.jar"/>
+	  </classpath>
+	</taskdef>	
+	
 	<property name="src.dir"           value="src"/>
 	<property name="src_test.dir"      value="test"/>
 	<property name="res.dir"           value="res"/>
+  <property name="examples.dir"      value="examples"/>
 	<property name="build.dir"         value="build"/>
 	<property name="classes.dir"       value="${build.dir}/classes"/>
 	<property name="classes_test.dir"  value="${build.dir}/tests"/>
 	<property name="jar.dir"           value="${build.dir}/jar"/>
+	<property name="dex.dir"           value="${build.dir}/example_dex"/>
 	<property name="lib.dir"           value="lib"/>
 	<property name="main-class"        value="uk.ac.cam.db538.dexter.gui.MainWindow"/>
 	
@@ -20,7 +28,7 @@
 		<delete dir="${build.dir}"/>
 	</target>
 
-	<target name="compile">
+	<target name="compile" depends="compile-examples">
 		<mkdir dir="${classes.dir}"/>
 		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="yes" includeantruntime="false"/>
 		<copy todir="${classes.dir}">
@@ -45,6 +53,28 @@
 				<attribute name="Main-Class" value="${main-class}"/>
 			</manifest>
 		</jar>
+	</target>
+	
+  <target name="-compile-example">
+  	<mkdir dir="${dex.dir}" />
+  	<basename property="filename" file="${example-file}" suffix=".smali" />
+    <java classname="org.jf.smali.main" fork="true" failonerror="true" maxmemory="128m">
+      <arg value="--output=${dex.dir}/${filename}.dex"/>
+      <arg value="${example-file}"/>
+      <classpath>
+        <path refid="classpath"/>
+      </classpath>
+    </java>
+	</target>
+	
+	<target name="compile-examples">
+		<foreach target="-compile-example" param="example-file">
+		  <path>
+		    <fileset dir="${examples.dir}">
+		      <include name="*.smali"/>
+		    </fileset>
+		  </path>
+	  </foreach>
 	</target>
 
 	<target name="run" depends="jar">
