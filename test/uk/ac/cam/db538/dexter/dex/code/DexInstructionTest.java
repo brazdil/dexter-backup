@@ -575,4 +575,37 @@ public class DexInstructionTest {
         "int-to-short v8, v9"
       });
   }
+
+  @Test
+  public void testConvertToWide() throws DexInstructionParsingException {
+    DexInstruction_ConvertToWide insn;
+
+    insn = (DexInstruction_ConvertToWide)
+           compare(new Instruction12x(Opcode.INT_TO_LONG, (byte) 0, (byte) 2),
+                   "int-to-long v0, v2");
+    assertEquals(0, insn.getRegTo1().getOriginalId());
+    assertEquals(1, insn.getRegTo2().getOriginalId());
+    assertEquals(2, insn.getRegFrom().getOriginalId());
+
+    insn = (DexInstruction_ConvertToWide)
+           compare(new Instruction12x(Opcode.INT_TO_DOUBLE, (byte) 4, (byte) 6),
+                   "int-to-double v4, v6");
+    assertEquals(4, insn.getRegTo1().getOriginalId());
+    assertEquals(5, insn.getRegTo2().getOriginalId());
+    assertEquals(6, insn.getRegFrom().getOriginalId());
+
+    insn = (DexInstruction_ConvertToWide)
+           compare(new Instruction12x(Opcode.FLOAT_TO_LONG, (byte) 8, (byte) 10),
+                   "float-to-long v8, v10");
+    assertEquals(8, insn.getRegTo1().getOriginalId());
+    assertEquals(9, insn.getRegTo2().getOriginalId());
+    assertEquals(10, insn.getRegFrom().getOriginalId());
+
+    insn = (DexInstruction_ConvertToWide)
+           compare(new Instruction12x(Opcode.FLOAT_TO_DOUBLE, (byte) 12, (byte) 14),
+                   "float-to-double v12, v14");
+    assertEquals(12, insn.getRegTo1().getOriginalId());
+    assertEquals(13, insn.getRegTo2().getOriginalId());
+    assertEquals(14, insn.getRegFrom().getOriginalId());
+  }
 }
