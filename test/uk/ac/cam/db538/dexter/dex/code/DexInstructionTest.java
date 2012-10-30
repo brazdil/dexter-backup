@@ -24,6 +24,7 @@ import org.jf.dexlib.Code.Format.Instruction21t;
 import org.jf.dexlib.Code.Format.Instruction22c;
 import org.jf.dexlib.Code.Format.Instruction22t;
 import org.jf.dexlib.Code.Format.Instruction22x;
+import org.jf.dexlib.Code.Format.Instruction23x;
 import org.jf.dexlib.Code.Format.Instruction30t;
 import org.jf.dexlib.Code.Format.Instruction31c;
 import org.jf.dexlib.Code.Format.Instruction31i;
@@ -153,13 +154,13 @@ public class DexInstructionTest {
 
   @Test
   public void testMoveResult() {
-    compare(new Instruction11x(Opcode.MOVE_RESULT, (byte) 234),
+    compare(new Instruction11x(Opcode.MOVE_RESULT, (short) 234),
             "move-result v234");
   }
 
   @Test
   public void testMoveResultObject() {
-    compare(new Instruction11x(Opcode.MOVE_RESULT_OBJECT, (byte) 234),
+    compare(new Instruction11x(Opcode.MOVE_RESULT_OBJECT, (short) 234),
             "move-result-object v234");
   }
 
@@ -167,7 +168,7 @@ public class DexInstructionTest {
   public void testMoveResultWide() {
     val insn = (DexInstruction_MoveResultWide)
                compare(
-                 new Instruction11x(Opcode.MOVE_RESULT_WIDE, (byte) 233),
+                 new Instruction11x(Opcode.MOVE_RESULT_WIDE, (short) 233),
                  "move-result-wide v233");
     assertEquals(233, insn.getRegTo1().getOriginalId());
     assertEquals(234, insn.getRegTo2().getOriginalId());
@@ -175,7 +176,7 @@ public class DexInstructionTest {
 
   @Test
   public void testMoveException() {
-    compare(new Instruction11x(Opcode.MOVE_EXCEPTION, (byte) 231),
+    compare(new Instruction11x(Opcode.MOVE_EXCEPTION, (short) 231),
             "move-exception v231");
   }
 
@@ -187,13 +188,13 @@ public class DexInstructionTest {
 
   @Test
   public void testReturn() {
-    compare(new Instruction11x(Opcode.RETURN, (byte) 231),
+    compare(new Instruction11x(Opcode.RETURN, (short) 231),
             "return v231");
   }
 
   @Test
   public void testReturnObject() {
-    compare(new Instruction11x(Opcode.RETURN_OBJECT, (byte) 230),
+    compare(new Instruction11x(Opcode.RETURN_OBJECT, (short) 230),
             "return-object v230");
   }
 
@@ -201,7 +202,7 @@ public class DexInstructionTest {
   public void testReturnWide() {
     val insn = (DexInstruction_ReturnWide)
                compare(
-                 new Instruction11x(Opcode.RETURN_WIDE, (byte) 235),
+                 new Instruction11x(Opcode.RETURN_WIDE, (short) 235),
                  "return-wide v235");
     assertEquals(235, insn.getRegFrom1().getOriginalId());
     assertEquals(236, insn.getRegFrom2().getOriginalId());
@@ -217,34 +218,34 @@ public class DexInstructionTest {
 
   @Test
   public void testConst16() {
-    compare(new Instruction21s(Opcode.CONST_16, (byte) 236, (short) 32082),
+    compare(new Instruction21s(Opcode.CONST_16, (short) 236, (short) 32082),
             "const v236, #32082");
-    compare(new Instruction21s(Opcode.CONST_16, (byte) 236, (short) -32082),
+    compare(new Instruction21s(Opcode.CONST_16, (short) 236, (short) -32082),
             "const v236, #-32082");
   }
 
   @Test
   public void testConst() {
-    compare(new Instruction31i(Opcode.CONST, (byte) 237, 0x01ABCDEF),
+    compare(new Instruction31i(Opcode.CONST, (short) 237, 0x01ABCDEF),
             "const v237, #28036591");
-    compare(new Instruction31i(Opcode.CONST, (byte) 237, 0xABCDEF01),
+    compare(new Instruction31i(Opcode.CONST, (short) 237, 0xABCDEF01),
             "const v237, #-1412567295");
   }
 
   @Test
   public void testConstHigh16() {
-    compare(new Instruction21h(Opcode.CONST_HIGH16, (byte) 238, (short)0x1234),
+    compare(new Instruction21h(Opcode.CONST_HIGH16, (short) 238, (short)0x1234),
             "const v238, #305397760");
-    compare(new Instruction21h(Opcode.CONST_HIGH16, (byte) 238, (short)0xABCD),
+    compare(new Instruction21h(Opcode.CONST_HIGH16, (short) 238, (short)0xABCD),
             "const v238, #-1412628480");
   }
 
   @Test
   public void testConstWide16() {
-    compare(new Instruction21s(Opcode.CONST_WIDE_16, (byte) 236, (short) 32082),
+    compare(new Instruction21s(Opcode.CONST_WIDE_16, (short) 236, (short) 32082),
             "const-wide v236, #32082");
     val insn = (DexInstruction_ConstWide)
-               compare(new Instruction21s(Opcode.CONST_WIDE_16, (byte) 236, (short) -32082),
+               compare(new Instruction21s(Opcode.CONST_WIDE_16, (short) 236, (short) -32082),
                        "const-wide v236, #-32082");
     assertEquals(236, insn.getRegTo1().getOriginalId());
     assertEquals(237, insn.getRegTo2().getOriginalId());
@@ -252,10 +253,10 @@ public class DexInstructionTest {
 
   @Test
   public void testConstWide32() {
-    compare(new Instruction31i(Opcode.CONST_WIDE_32, (byte) 236, 0x01ABCDEF),
+    compare(new Instruction31i(Opcode.CONST_WIDE_32, (short) 236, 0x01ABCDEF),
             "const-wide v236, #28036591");
     val insn = (DexInstruction_ConstWide)
-               compare(new Instruction31i(Opcode.CONST_WIDE_32, (byte) 236, 0xABCDEF01),
+               compare(new Instruction31i(Opcode.CONST_WIDE_32, (short) 236, 0xABCDEF01),
                        "const-wide v236, #-1412567295");
     assertEquals(236, insn.getRegTo1().getOriginalId());
     assertEquals(237, insn.getRegTo2().getOriginalId());
@@ -263,10 +264,10 @@ public class DexInstructionTest {
 
   @Test
   public void testConstWide() {
-    compare(new Instruction51l(Opcode.CONST_WIDE, (byte) 236, 0x0102030405060708L),
+    compare(new Instruction51l(Opcode.CONST_WIDE, (short) 236, 0x0102030405060708L),
             "const-wide v236, #72623859790382856");
     val insn = (DexInstruction_ConstWide)
-               compare(new Instruction51l(Opcode.CONST_WIDE, (byte) 236, 0xFFFFFFFFFFFFFFFEL),
+               compare(new Instruction51l(Opcode.CONST_WIDE, (short) 236, 0xFFFFFFFFFFFFFFFEL),
                        "const-wide v236, #-2");
     assertEquals(236, insn.getRegTo1().getOriginalId());
     assertEquals(237, insn.getRegTo2().getOriginalId());
@@ -274,10 +275,10 @@ public class DexInstructionTest {
 
   @Test
   public void testConstWideHigh16() {
-    compare(new Instruction21h(Opcode.CONST_WIDE_HIGH16, (byte) 236, (short) 0x1234),
+    compare(new Instruction21h(Opcode.CONST_WIDE_HIGH16, (short) 236, (short) 0x1234),
             "const-wide v236, #1311673391471656960");
     val insn = (DexInstruction_ConstWide)
-               compare(new Instruction21h(Opcode.CONST_WIDE_HIGH16, (byte) 236, (short) 0xFEDC),
+               compare(new Instruction21h(Opcode.CONST_WIDE_HIGH16, (short) 236, (short) 0xFEDC),
                        "const-wide v236, #-82190693199511552");
     assertEquals(236, insn.getRegTo1().getOriginalId());
     assertEquals(237, insn.getRegTo2().getOriginalId());
@@ -289,23 +290,23 @@ public class DexInstructionTest {
 
   @Test
   public void testConstString() {
-    compare(new Instruction21c(Opcode.CONST_STRING, (byte) 236, getStringItem("Hello, world!")),
+    compare(new Instruction21c(Opcode.CONST_STRING, (short) 236, getStringItem("Hello, world!")),
             "const-string v236, \"Hello, world!\"");
     // escaping characters
-    compare(new Instruction21c(Opcode.CONST_STRING, (byte) 236, getStringItem("Hello, \"world!")),
+    compare(new Instruction21c(Opcode.CONST_STRING, (short) 236, getStringItem("Hello, \"world!")),
             "const-string v236, \"Hello, \\\"world!\"");
     // cutting off after 15 characters
-    compare(new Instruction21c(Opcode.CONST_STRING, (byte) 236, getStringItem("123456789012345")),
+    compare(new Instruction21c(Opcode.CONST_STRING, (short) 236, getStringItem("123456789012345")),
             "const-string v236, \"123456789012345\"");
-    compare(new Instruction21c(Opcode.CONST_STRING, (byte) 236, getStringItem("1234567890123456")),
+    compare(new Instruction21c(Opcode.CONST_STRING, (short) 236, getStringItem("1234567890123456")),
             "const-string v236, \"123456789012345...\"");
-    compare(new Instruction21c(Opcode.CONST_STRING, (byte) 236, getStringItem("12345678901234\"")),
+    compare(new Instruction21c(Opcode.CONST_STRING, (short) 236, getStringItem("12345678901234\"")),
             "const-string v236, \"12345678901234\\...\"");
   }
 
   @Test
   public void testConstStringJumbo() {
-    compare(new Instruction31c(Opcode.CONST_STRING_JUMBO, (byte) 236, getStringItem("Hello, world!")),
+    compare(new Instruction31c(Opcode.CONST_STRING_JUMBO, (short) 236, getStringItem("Hello, world!")),
             "const-string v236, \"Hello, world!\"");
   }
 
@@ -315,29 +316,29 @@ public class DexInstructionTest {
 
   @Test
   public void testConstClass() {
-    compare(new Instruction21c(Opcode.CONST_CLASS, (byte) 236, getTypeItem("Ljava.lang.String;")),
+    compare(new Instruction21c(Opcode.CONST_CLASS, (short) 236, getTypeItem("Ljava.lang.String;")),
             "const-class v236, Ljava.lang.String;");
-    compare(new Instruction21c(Opcode.CONST_CLASS, (byte) 236, getTypeItem("[Ljava.lang.String;")),
+    compare(new Instruction21c(Opcode.CONST_CLASS, (short) 236, getTypeItem("[Ljava.lang.String;")),
             "const-class v236, [Ljava.lang.String;");
   }
 
   @Test
   public void testMonitorEnter() {
-    compare(new Instruction11x(Opcode.MONITOR_ENTER, (byte) 244),
+    compare(new Instruction11x(Opcode.MONITOR_ENTER, (short) 244),
             "monitor-enter v244");
   }
 
   @Test
   public void testMonitorExit() {
-    compare(new Instruction11x(Opcode.MONITOR_EXIT, (byte) 245),
+    compare(new Instruction11x(Opcode.MONITOR_EXIT, (short) 245),
             "monitor-exit v245");
   }
 
   @Test
   public void testCheckCast() {
-    compare(new Instruction21c(Opcode.CHECK_CAST, (byte) 236, getTypeItem("Ljava.lang.String;")),
+    compare(new Instruction21c(Opcode.CHECK_CAST, (short) 236, getTypeItem("Ljava.lang.String;")),
             "check-cast v236, Ljava.lang.String;");
-    compare(new Instruction21c(Opcode.CHECK_CAST, (byte) 236, getTypeItem("[Ljava.lang.String;")),
+    compare(new Instruction21c(Opcode.CHECK_CAST, (short) 236, getTypeItem("[Ljava.lang.String;")),
             "check-cast v236, [Ljava.lang.String;");
   }
 
@@ -351,7 +352,7 @@ public class DexInstructionTest {
 
   @Test
   public void testNewInstance() {
-    compare(new Instruction21c(Opcode.NEW_INSTANCE, (byte) 236, getTypeItem("Ljava.lang.String;")),
+    compare(new Instruction21c(Opcode.NEW_INSTANCE, (short) 236, getTypeItem("Ljava.lang.String;")),
             "new-instance v236, Ljava.lang.String;");
   }
 
@@ -496,12 +497,12 @@ public class DexInstructionTest {
     compareList(
       new Instruction[] {
         new Instruction10x(Opcode.NOP),
-        new Instruction21t(Opcode.IF_EQZ, (byte) 130, (short) -1),
-        new Instruction21t(Opcode.IF_NEZ, (byte) 140, (short) -3),
-        new Instruction21t(Opcode.IF_LTZ, (byte) 150, (short) -5),
-        new Instruction21t(Opcode.IF_GEZ, (byte) 160, (short) -7),
-        new Instruction21t(Opcode.IF_GTZ, (byte) 170, (short) -9),
-        new Instruction21t(Opcode.IF_LEZ, (byte) 180, (short) -10)
+        new Instruction21t(Opcode.IF_EQZ, (short) 130, (short) -1),
+        new Instruction21t(Opcode.IF_NEZ, (short) 140, (short) -3),
+        new Instruction21t(Opcode.IF_LTZ, (short) 150, (short) -5),
+        new Instruction21t(Opcode.IF_GEZ, (short) 160, (short) -7),
+        new Instruction21t(Opcode.IF_GTZ, (short) 170, (short) -9),
+        new Instruction21t(Opcode.IF_LEZ, (short) 180, (short) -10)
       }, new String[] {
         "L0:",
         "nop",
@@ -661,5 +662,45 @@ public class DexInstructionTest {
     assertEquals(9, insn.getRegTo2().getOriginalId());
     assertEquals(10, insn.getRegFrom1().getOriginalId());
     assertEquals(11, insn.getRegFrom2().getOriginalId());
+  }
+
+  @Test
+  public void testBinaryOp() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction23x(Opcode.ADD_INT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.SUB_INT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.MUL_INT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.DIV_INT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.REM_INT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.AND_INT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.OR_INT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.XOR_INT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.SHL_INT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.SHR_INT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.USHR_INT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.ADD_FLOAT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.SUB_FLOAT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.MUL_FLOAT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.DIV_FLOAT, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.REM_FLOAT, (short) 234, (short) 235, (short) 236)
+      }, new String[] {
+        "add-int v234, v235, v236",
+        "sub-int v234, v235, v236",
+        "mul-int v234, v235, v236",
+        "div-int v234, v235, v236",
+        "rem-int v234, v235, v236",
+        "and-int v234, v235, v236",
+        "or-int v234, v235, v236",
+        "xor-int v234, v235, v236",
+        "shl-int v234, v235, v236",
+        "shr-int v234, v235, v236",
+        "ushr-int v234, v235, v236",
+        "add-float v234, v235, v236",
+        "sub-float v234, v235, v236",
+        "mul-float v234, v235, v236",
+        "div-float v234, v235, v236",
+        "rem-float v234, v235, v236"
+      });
   }
 }

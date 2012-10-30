@@ -21,6 +21,7 @@ import org.jf.dexlib.Code.Format.Instruction21t;
 import org.jf.dexlib.Code.Format.Instruction22c;
 import org.jf.dexlib.Code.Format.Instruction22t;
 import org.jf.dexlib.Code.Format.Instruction22x;
+import org.jf.dexlib.Code.Format.Instruction23x;
 import org.jf.dexlib.Code.Format.Instruction30t;
 import org.jf.dexlib.Code.Format.Instruction31c;
 import org.jf.dexlib.Code.Format.Instruction31i;
@@ -425,6 +426,30 @@ public abstract class DexInstruction extends DexCodeElement {
           getRegister(insnConvertWide.getRegisterB(), registers),
           getRegister(insnConvertWide.getRegisterB() + 1, registers),
           DexInstruction_ConvertWide.Opcode.convert(insn.opcode));
+        break;
+
+      case ADD_INT:
+      case SUB_INT:
+      case MUL_INT:
+      case DIV_INT:
+      case REM_INT:
+      case AND_INT:
+      case OR_INT:
+      case XOR_INT:
+      case SHL_INT:
+      case SHR_INT:
+      case USHR_INT:
+      case ADD_FLOAT:
+      case SUB_FLOAT:
+      case MUL_FLOAT:
+      case DIV_FLOAT:
+      case REM_FLOAT:
+        val insnBinaryOp = (Instruction23x) insn;
+        parsedInsn = new DexInstruction_BinaryOp(
+          getRegister(insnBinaryOp.getRegisterA(), registers),
+          getRegister(insnBinaryOp.getRegisterB(), registers),
+          getRegister(insnBinaryOp.getRegisterC(), registers),
+          DexInstruction_BinaryOp.Opcode.convert(insn.opcode));
         break;
 
       default:
