@@ -17,8 +17,9 @@ import org.jf.dexlib.Util.AccessFlags;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.DexField;
-import uk.ac.cam.db538.dexter.dex.DexMethod;
+import uk.ac.cam.db538.dexter.dex.DexPurelyVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -118,7 +119,7 @@ public class MainWindowTest {
     val instanceField1 = new DexField(null, "d", typeInt, null);
     val instanceField2 = new DexField(null, "b", typeInt, null);
 
-    val method1 = new DexMethod(null, "a", null, typeInt, Arrays.asList(new DexRegisterType[] { typeInt, typeInt }), true, null);
+    val method1 = new DexMethodWithCode(null, "a", null, typeInt, Arrays.asList(new DexRegisterType[] { typeInt, typeInt }), null, true);
 
     val cls = new DexClass(null, new DexClassType("LTestClass;"), null, null, null, null);
     cls.addField(staticField1);

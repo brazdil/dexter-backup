@@ -9,7 +9,9 @@ import javax.swing.JTextField;
 import org.jf.dexlib.Util.AccessFlags;
 
 import lombok.val;
+import uk.ac.cam.db538.dexter.dex.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.DexMethod;
+import uk.ac.cam.db538.dexter.dex.DexPurelyVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction_ConstString;
@@ -85,27 +87,29 @@ public class MethodPanel extends InfoPanel {
     }
     fieldParameters.setText(params.toString());
 
-    this.setCheckboxValueUneditable(checkboxVirtual, !method.isDirect());
+    this.setCheckboxValueUneditable(checkboxVirtual, method.isVirtual());
     this.setAccessFlagCheckboxes(method.getAccessFlagSet());
 
     // put instructions
     panelInstructions.removeAll();
-    for (val insn : method.getCode()) {
-      val label = new WebHotkeyLabel(insn.getOriginalAssembly());
+    if (method instanceof DexMethodWithCode) {
+        for (val insn : ((DexMethodWithCode) method).getCode()) {
+            val label = new WebHotkeyLabel(insn.getOriginalAssembly());
 
-      // indent instructions (not labels)
-      if (insn instanceof DexInstruction)
-        label.setMargin(new Insets(0, 20, 0, 0));
+            // indent instructions (not labels)
+            if (insn instanceof DexInstruction)
+              label.setMargin(new Insets(0, 20, 0, 0));
 
-      // for const instructions, show the hex value in tooltip
-      if (insn instanceof DexInstruction_Const)
-        TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_Const) insn).getValue()), TooltipWay.trailing, 0);
-      else if (insn instanceof DexInstruction_ConstWide)
-        TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_ConstWide) insn).getValue()), TooltipWay.trailing, 0);
-      else if (insn instanceof DexInstruction_ConstString)
-        TooltipManager.setTooltip(label, ((DexInstruction_ConstString) insn).getStringConstant().getValue(), TooltipWay.up, 0);
+            // for const instructions, show the hex value in tooltip
+            if (insn instanceof DexInstruction_Const)
+              TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_Const) insn).getValue()), TooltipWay.trailing, 0);
+            else if (insn instanceof DexInstruction_ConstWide)
+              TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_ConstWide) insn).getValue()), TooltipWay.trailing, 0);
+            else if (insn instanceof DexInstruction_ConstString)
+              TooltipManager.setTooltip(label, ((DexInstruction_ConstString) insn).getStringConstant().getValue(), TooltipWay.up, 0);
 
-      panelInstructions.add(label);
+            panelInstructions.add(label);
+          }
     }
   }
 }

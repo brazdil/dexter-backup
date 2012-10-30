@@ -47,7 +47,13 @@ public class DexClass {
         Fields.add(new DexField(this, instanceFieldInfo));
 
       for (val directMethodInfo : clsData.getDirectMethods())
-        Methods.add(new DexMethod(this, directMethodInfo));
+        Methods.add(new DexMethodWithCode(this, directMethodInfo));
+      for (val virtualMethodInfo : clsData.getVirtualMethods()) {
+    	  if (virtualMethodInfo.codeItem == null)
+    		  Methods.add(new DexPurelyVirtualMethod(this, virtualMethodInfo));
+    	  else
+    		  Methods.add(new DexMethodWithCode(this, virtualMethodInfo));
+      }
     }
   }
 
