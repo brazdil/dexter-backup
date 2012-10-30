@@ -48,7 +48,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
         return DivInt;
       case REM_INT:
       case REM_INT_2ADDR:
-    	  return RemInt;
+        return RemInt;
       case AND_INT:
       case AND_INT_2ADDR:
         return AndInt;
@@ -127,43 +127,43 @@ public class DexInstruction_BinaryOp extends DexInstruction {
     }
 
     public static org.jf.dexlib.Code.Opcode convert2addr(Opcode opcode) {
-        switch (opcode) {
-        case AddInt:
-          return org.jf.dexlib.Code.Opcode.ADD_INT_2ADDR;
-        case SubInt:
-          return org.jf.dexlib.Code.Opcode.SUB_INT_2ADDR;
-        case MulInt:
-          return org.jf.dexlib.Code.Opcode.MUL_INT_2ADDR;
-        case DivInt:
-          return org.jf.dexlib.Code.Opcode.DIV_INT_2ADDR;
-        case RemInt:
-          return org.jf.dexlib.Code.Opcode.REM_INT_2ADDR;
-        case AndInt:
-          return org.jf.dexlib.Code.Opcode.AND_INT_2ADDR;
-        case OrInt:
-          return org.jf.dexlib.Code.Opcode.OR_INT_2ADDR;
-        case XorInt:
-          return org.jf.dexlib.Code.Opcode.XOR_INT_2ADDR;
-        case ShlInt:
-          return org.jf.dexlib.Code.Opcode.SHL_INT_2ADDR;
-        case ShrInt:
-          return org.jf.dexlib.Code.Opcode.SHR_INT_2ADDR;
-        case UshrInt:
-          return org.jf.dexlib.Code.Opcode.USHR_INT_2ADDR;
-        case AddFloat:
-          return org.jf.dexlib.Code.Opcode.ADD_FLOAT_2ADDR;
-        case SubFloat:
-          return org.jf.dexlib.Code.Opcode.SUB_FLOAT_2ADDR;
-        case MulFloat:
-          return org.jf.dexlib.Code.Opcode.MUL_FLOAT_2ADDR;
-        case DivFloat:
-          return org.jf.dexlib.Code.Opcode.DIV_FLOAT_2ADDR;
-        case RemFloat:
-          return org.jf.dexlib.Code.Opcode.REM_FLOAT_2ADDR;
-        default:
-          return null;
-        }
+      switch (opcode) {
+      case AddInt:
+        return org.jf.dexlib.Code.Opcode.ADD_INT_2ADDR;
+      case SubInt:
+        return org.jf.dexlib.Code.Opcode.SUB_INT_2ADDR;
+      case MulInt:
+        return org.jf.dexlib.Code.Opcode.MUL_INT_2ADDR;
+      case DivInt:
+        return org.jf.dexlib.Code.Opcode.DIV_INT_2ADDR;
+      case RemInt:
+        return org.jf.dexlib.Code.Opcode.REM_INT_2ADDR;
+      case AndInt:
+        return org.jf.dexlib.Code.Opcode.AND_INT_2ADDR;
+      case OrInt:
+        return org.jf.dexlib.Code.Opcode.OR_INT_2ADDR;
+      case XorInt:
+        return org.jf.dexlib.Code.Opcode.XOR_INT_2ADDR;
+      case ShlInt:
+        return org.jf.dexlib.Code.Opcode.SHL_INT_2ADDR;
+      case ShrInt:
+        return org.jf.dexlib.Code.Opcode.SHR_INT_2ADDR;
+      case UshrInt:
+        return org.jf.dexlib.Code.Opcode.USHR_INT_2ADDR;
+      case AddFloat:
+        return org.jf.dexlib.Code.Opcode.ADD_FLOAT_2ADDR;
+      case SubFloat:
+        return org.jf.dexlib.Code.Opcode.SUB_FLOAT_2ADDR;
+      case MulFloat:
+        return org.jf.dexlib.Code.Opcode.MUL_FLOAT_2ADDR;
+      case DivFloat:
+        return org.jf.dexlib.Code.Opcode.DIV_FLOAT_2ADDR;
+      case RemFloat:
+        return org.jf.dexlib.Code.Opcode.REM_FLOAT_2ADDR;
+      default:
+        return null;
       }
+    }
   }
 
   @Getter private final DexRegister RegTarget;

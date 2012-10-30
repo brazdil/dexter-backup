@@ -705,7 +705,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testBinaryOp2Addr() throws DexInstructionParsingException {
+  public void testBinaryOp2addr() throws DexInstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction12x(Opcode.ADD_INT_2ADDR, (byte) 2, (byte) 10),
@@ -792,5 +792,55 @@ public class DexInstructionTest {
     assertEquals(13, insn.getRegSourceA2().getOriginalId());
     assertEquals(112, insn.getRegSourceB1().getOriginalId());
     assertEquals(113, insn.getRegSourceB2().getOriginalId());
+  }
+
+  @Test
+  public void testBinaryOpWide2addr() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction12x(Opcode.ADD_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.SUB_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.MUL_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.DIV_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.REM_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.AND_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.OR_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.XOR_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.SHL_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.SHR_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.USHR_LONG_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.ADD_DOUBLE_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.SUB_DOUBLE_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.MUL_DOUBLE_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.DIV_DOUBLE_2ADDR, (byte) 4, (byte) 14),
+        new Instruction12x(Opcode.REM_DOUBLE_2ADDR, (byte) 4, (byte) 14)
+      }, new String[] {
+        "add-long v4, v4, v14",
+        "sub-long v4, v4, v14",
+        "mul-long v4, v4, v14",
+        "div-long v4, v4, v14",
+        "rem-long v4, v4, v14",
+        "and-long v4, v4, v14",
+        "or-long v4, v4, v14",
+        "xor-long v4, v4, v14",
+        "shl-long v4, v4, v14",
+        "shr-long v4, v4, v14",
+        "ushr-long v4, v4, v14",
+        "add-double v4, v4, v14",
+        "sub-double v4, v4, v14",
+        "mul-double v4, v4, v14",
+        "div-double v4, v4, v14",
+        "rem-double v4, v4, v14"
+      });
+
+    val insn = (DexInstruction_BinaryOpWide)
+               compare(new Instruction12x(Opcode.ADD_LONG_2ADDR, (byte) 3, (byte) 6),
+                       "add-long v3, v3, v6");
+    assertEquals(3, insn.getRegTarget1().getOriginalId());
+    assertEquals(4, insn.getRegTarget2().getOriginalId());
+    assertEquals(3, insn.getRegSourceA1().getOriginalId());
+    assertEquals(4, insn.getRegSourceA2().getOriginalId());
+    assertEquals(6, insn.getRegSourceB1().getOriginalId());
+    assertEquals(7, insn.getRegSourceB2().getOriginalId());
   }
 }

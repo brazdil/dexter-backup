@@ -503,6 +503,33 @@ public abstract class DexInstruction extends DexCodeElement {
           DexInstruction_BinaryOpWide.Opcode.convert(insn.opcode));
         break;
 
+      case ADD_LONG_2ADDR:
+      case SUB_LONG_2ADDR:
+      case MUL_LONG_2ADDR:
+      case DIV_LONG_2ADDR:
+      case REM_LONG_2ADDR:
+      case AND_LONG_2ADDR:
+      case OR_LONG_2ADDR:
+      case XOR_LONG_2ADDR:
+      case SHL_LONG_2ADDR:
+      case SHR_LONG_2ADDR:
+      case USHR_LONG_2ADDR:
+      case ADD_DOUBLE_2ADDR:
+      case SUB_DOUBLE_2ADDR:
+      case MUL_DOUBLE_2ADDR:
+      case DIV_DOUBLE_2ADDR:
+      case REM_DOUBLE_2ADDR:
+        val insnBinaryOpWide2addr = (Instruction12x) insn;
+        parsedInsn = new DexInstruction_BinaryOpWide(
+          getRegister(insnBinaryOpWide2addr.getRegisterA(), registers),
+          getRegister(insnBinaryOpWide2addr.getRegisterA() + 1, registers),
+          getRegister(insnBinaryOpWide2addr.getRegisterA(), registers),
+          getRegister(insnBinaryOpWide2addr.getRegisterA() + 1, registers),
+          getRegister(insnBinaryOpWide2addr.getRegisterB(), registers),
+          getRegister(insnBinaryOpWide2addr.getRegisterB() + 1, registers),
+          DexInstruction_BinaryOpWide.Opcode.convert(insn.opcode));
+        break;
+
       default:
         // TODO: throw exception
         parsedInsn = new DexInstruction_Unknown();
