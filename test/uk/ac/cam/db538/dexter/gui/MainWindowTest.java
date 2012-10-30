@@ -19,7 +19,6 @@ import org.junit.Test;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.DexField;
-import uk.ac.cam.db538.dexter.dex.DexPurelyVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;

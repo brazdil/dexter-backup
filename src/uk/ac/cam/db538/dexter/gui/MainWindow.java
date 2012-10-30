@@ -25,7 +25,6 @@ import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.DexMethod;
-import uk.ac.cam.db538.dexter.dex.DexPurelyVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.code.DexInstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 

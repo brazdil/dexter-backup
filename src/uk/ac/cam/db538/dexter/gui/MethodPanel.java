@@ -11,7 +11,6 @@ import org.jf.dexlib.Util.AccessFlags;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.DexMethod;
-import uk.ac.cam.db538.dexter.dex.DexPurelyVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction_ConstString;
