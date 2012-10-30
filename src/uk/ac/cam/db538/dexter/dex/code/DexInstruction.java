@@ -452,6 +452,30 @@ public abstract class DexInstruction extends DexCodeElement {
           DexInstruction_BinaryOp.Opcode.convert(insn.opcode));
         break;
 
+      case ADD_INT_2ADDR:
+      case SUB_INT_2ADDR:
+      case MUL_INT_2ADDR:
+      case DIV_INT_2ADDR:
+      case REM_INT_2ADDR:
+      case AND_INT_2ADDR:
+      case OR_INT_2ADDR:
+      case XOR_INT_2ADDR:
+      case SHL_INT_2ADDR:
+      case SHR_INT_2ADDR:
+      case USHR_INT_2ADDR:
+      case ADD_FLOAT_2ADDR:
+      case SUB_FLOAT_2ADDR:
+      case MUL_FLOAT_2ADDR:
+      case DIV_FLOAT_2ADDR:
+      case REM_FLOAT_2ADDR:
+        val insnBinaryOp2addr = (Instruction12x) insn;
+        parsedInsn = new DexInstruction_BinaryOp(
+          getRegister(insnBinaryOp2addr.getRegisterA(), registers),
+          getRegister(insnBinaryOp2addr.getRegisterA(), registers),
+          getRegister(insnBinaryOp2addr.getRegisterB(), registers),
+          DexInstruction_BinaryOp.Opcode.convert(insn.opcode));
+        break;
+
       case ADD_LONG:
       case SUB_LONG:
       case MUL_LONG:

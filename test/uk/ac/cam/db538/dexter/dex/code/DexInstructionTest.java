@@ -705,6 +705,46 @@ public class DexInstructionTest {
   }
 
   @Test
+  public void testBinaryOp2Addr() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction12x(Opcode.ADD_INT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.SUB_INT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.MUL_INT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.DIV_INT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.REM_INT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.AND_INT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.OR_INT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.XOR_INT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.SHL_INT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.SHR_INT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.USHR_INT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.ADD_FLOAT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.SUB_FLOAT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.MUL_FLOAT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.DIV_FLOAT_2ADDR, (byte) 2, (byte) 10),
+        new Instruction12x(Opcode.REM_FLOAT_2ADDR, (byte) 2, (byte) 10),
+      }, new String[] {
+        "add-int v2, v2, v10",
+        "sub-int v2, v2, v10",
+        "mul-int v2, v2, v10",
+        "div-int v2, v2, v10",
+        "rem-int v2, v2, v10",
+        "and-int v2, v2, v10",
+        "or-int v2, v2, v10",
+        "xor-int v2, v2, v10",
+        "shl-int v2, v2, v10",
+        "shr-int v2, v2, v10",
+        "ushr-int v2, v2, v10",
+        "add-float v2, v2, v10",
+        "sub-float v2, v2, v10",
+        "mul-float v2, v2, v10",
+        "div-float v2, v2, v10",
+        "rem-float v2, v2, v10",
+      });
+  }
+
+  @Test
   public void testBinaryOpWide() throws DexInstructionParsingException {
     compareList(
       new Instruction[] {
