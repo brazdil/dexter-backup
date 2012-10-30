@@ -703,4 +703,54 @@ public class DexInstructionTest {
         "rem-float v234, v235, v236"
       });
   }
+
+  @Test
+  public void testBinaryOpWide() throws DexInstructionParsingException {
+    compareList(
+      new Instruction[] {
+        new Instruction23x(Opcode.ADD_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.SUB_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.MUL_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.DIV_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.REM_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.AND_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.OR_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.XOR_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.SHL_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.SHR_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.USHR_LONG, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.ADD_DOUBLE, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.SUB_DOUBLE, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.MUL_DOUBLE, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.DIV_DOUBLE, (short) 234, (short) 235, (short) 236),
+        new Instruction23x(Opcode.REM_DOUBLE, (short) 234, (short) 235, (short) 236)
+      }, new String[] {
+        "add-long v234, v235, v236",
+        "sub-long v234, v235, v236",
+        "mul-long v234, v235, v236",
+        "div-long v234, v235, v236",
+        "rem-long v234, v235, v236",
+        "and-long v234, v235, v236",
+        "or-long v234, v235, v236",
+        "xor-long v234, v235, v236",
+        "shl-long v234, v235, v236",
+        "shr-long v234, v235, v236",
+        "ushr-long v234, v235, v236",
+        "add-double v234, v235, v236",
+        "sub-double v234, v235, v236",
+        "mul-double v234, v235, v236",
+        "div-double v234, v235, v236",
+        "rem-double v234, v235, v236"
+      });
+
+    val insn = (DexInstruction_BinaryOpWide)
+               compare(new Instruction23x(Opcode.ADD_LONG, (short) 2, (short) 12, (short) 112),
+                       "add-long v2, v12, v112");
+    assertEquals(2, insn.getRegTarget1().getOriginalId());
+    assertEquals(3, insn.getRegTarget2().getOriginalId());
+    assertEquals(12, insn.getRegSourceA1().getOriginalId());
+    assertEquals(13, insn.getRegSourceA2().getOriginalId());
+    assertEquals(112, insn.getRegSourceB1().getOriginalId());
+    assertEquals(113, insn.getRegSourceB2().getOriginalId());
+  }
 }
