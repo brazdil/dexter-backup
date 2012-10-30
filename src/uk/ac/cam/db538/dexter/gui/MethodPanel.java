@@ -93,23 +93,23 @@ public class MethodPanel extends InfoPanel {
     // put instructions
     panelInstructions.removeAll();
     if (method instanceof DexMethodWithCode) {
-        for (val insn : ((DexMethodWithCode) method).getCode()) {
-            val label = new WebHotkeyLabel(insn.getOriginalAssembly());
+      for (val insn : ((DexMethodWithCode) method).getCode()) {
+        val label = new WebHotkeyLabel(insn.getOriginalAssembly());
 
-            // indent instructions (not labels)
-            if (insn instanceof DexInstruction)
-              label.setMargin(new Insets(0, 20, 0, 0));
+        // indent instructions (not labels)
+        if (insn instanceof DexInstruction)
+          label.setMargin(new Insets(0, 20, 0, 0));
 
-            // for const instructions, show the hex value in tooltip
-            if (insn instanceof DexInstruction_Const)
-              TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_Const) insn).getValue()), TooltipWay.trailing, 0);
-            else if (insn instanceof DexInstruction_ConstWide)
-              TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_ConstWide) insn).getValue()), TooltipWay.trailing, 0);
-            else if (insn instanceof DexInstruction_ConstString)
-              TooltipManager.setTooltip(label, ((DexInstruction_ConstString) insn).getStringConstant().getValue(), TooltipWay.up, 0);
+        // for const instructions, show the hex value in tooltip
+        if (insn instanceof DexInstruction_Const)
+          TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_Const) insn).getValue()), TooltipWay.trailing, 0);
+        else if (insn instanceof DexInstruction_ConstWide)
+          TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_ConstWide) insn).getValue()), TooltipWay.trailing, 0);
+        else if (insn instanceof DexInstruction_ConstString)
+          TooltipManager.setTooltip(label, ((DexInstruction_ConstString) insn).getStringConstant().getValue(), TooltipWay.up, 0);
 
-            panelInstructions.add(label);
-          }
+        panelInstructions.add(label);
+      }
     }
   }
 }

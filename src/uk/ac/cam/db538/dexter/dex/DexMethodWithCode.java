@@ -21,21 +21,21 @@ public class DexMethodWithCode extends DexMethod {
   private final boolean Direct;
 
   public DexMethodWithCode(DexClass parent, String name, Set<AccessFlags> accessFlags,
-                   DexType returnType, List<DexRegisterType> parameterTypes,
-                   List<DexCodeElement> code, boolean direct) {
-	  super(parent, name, accessFlags, returnType, parameterTypes);
+                           DexType returnType, List<DexRegisterType> parameterTypes,
+                           List<DexCodeElement> code, boolean direct) {
+    super(parent, name, accessFlags, returnType, parameterTypes);
     Code = code;
     Direct = direct;
   }
 
   public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, DexInstructionParsingException {
-	  super(parent, methodInfo);
-	  Code = DexInstruction.parse(methodInfo.codeItem.getInstructions(), parent.getParentFile().getParsingCache());
-	  Direct = methodInfo.isDirect();
+    super(parent, methodInfo);
+    Code = DexInstruction.parse(methodInfo.codeItem.getInstructions(), parent.getParentFile().getParsingCache());
+    Direct = methodInfo.isDirect();
   }
 
-@Override
-public boolean isVirtual() {
-	return !Direct;
-}
+  @Override
+  public boolean isVirtual() {
+    return !Direct;
+  }
 }

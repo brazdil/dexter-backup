@@ -54,6 +54,6 @@ public abstract class DexMethod {
   public boolean isStatic() {
     return AccessFlagSet.contains(AccessFlags.STATIC);
   }
-  
+
   public abstract boolean isVirtual();
 }
