@@ -65,8 +65,6 @@ public class MainWindow {
   }
 
   private void initialize() {
-    LanguageManager.initialize();
-
     Frame = new JFrame("Dexter");
     Frame.setBounds(100, 100, 800, 600);
     Frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
