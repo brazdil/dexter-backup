@@ -100,4 +100,9 @@ public class DexClass {
       m.setParentClass(null);
     }
   }
+
+  public void instrument() {
+    for (val method : Methods)
+      method.instrument();
+  }
 }

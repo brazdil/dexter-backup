@@ -26,4 +26,8 @@ public class DexPurelyVirtualMethod extends DexMethod {
   public boolean isVirtual() {
     return true;
   }
+
+  @Override
+  public void instrument() {
+  }
 }

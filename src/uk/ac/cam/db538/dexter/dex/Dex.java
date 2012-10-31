@@ -31,4 +31,9 @@ public class Dex {
       Classes.add(new DexClass(this, dexClsInfo));
   }
 
+  public void instrument() {
+    for (val cls : Classes)
+      cls.instrument();
+  }
+
 }

@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -20,22 +21,19 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.jf.dexlib.Util.AccessFlags;
 
-import com.alee.extended.filechooser.SelectionMode;
-import com.alee.extended.filechooser.WebFileChooser;
-import com.alee.extended.filefilter.DefaultFileFilter;
 import com.alee.extended.window.WebProgressDialog;
-import com.alee.laf.GlobalConstants;
-import com.alee.laf.StyleConstants;
-import com.alee.laf.menu.MenubarStyle;
+import com.alee.laf.button.WebButton;
 import com.alee.laf.menu.WebMenu;
 import com.alee.laf.menu.WebMenuBar;
 import com.alee.laf.menu.WebMenuItem;
+import com.alee.laf.panel.WebPanel;
 import com.alee.laf.scroll.WebScrollPane;
 import com.alee.laf.splitpane.WebSplitPane;
 import com.alee.laf.tabbedpane.WebTabbedPane;
+import com.alee.laf.toolbar.ToolbarStyle;
+import com.alee.laf.toolbar.WebToolBar;
 import com.alee.laf.tree.WebTree;
 import com.alee.laf.tree.WebTreeCellRenderer;
-import com.alee.managers.language.LanguageManager;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -207,7 +205,13 @@ public class MainWindow {
     // Starting updater thread
     new Thread(new Runnable() {
       public void run() {
-        openFile(filename);
+        try {
+          openFile(filename);
+        } catch (IOException | UnknownTypeException
+        | DexInstructionParsingException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
         progress.setVisible(false);
       }
     }).start();
@@ -216,34 +220,23 @@ public class MainWindow {
     progress.setVisible(true);
   }
 
-  private void openFile(File filename) {
+  private void openFile(File filename) throws IOException, UnknownTypeException, DexInstructionParsingException {
     // load the file
-    Dex dex;
-    try {
-      dex = new Dex(filename);
-    } catch (IOException ex) {
-      // TODO: handle
-      return;
-    } catch (UnknownTypeException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-      return;
-    } catch (DexInstructionParsingException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-      return;
-    }
+    val dex = new Dex(filename);
 
     // create split pane
     val splitPane = new WebSplitPane();
     splitPane.setDividerLocation(300);
     splitPane.setContinuousLayout (true);
 
-    // create class tree
-    val classTreeRoot = new DefaultMutableTreeNode("classes.dex");
-    addClassesToTree(classTreeRoot, dex.getClasses());
+    // left pane
+    val leftPane = new WebPanel();
+    leftPane.setLayout(new BoxLayout(leftPane, BoxLayout.Y_AXIS));
+    splitPane.setLeftComponent(leftPane);
 
     // create list of classes
+    val classTreeRoot = new DefaultMutableTreeNode(filename.getName());
+    addClassesToTree(classTreeRoot, dex.getClasses());
     val classTree = new WebTree(classTreeRoot);
     classTree.setShowsRootHandles(true);
     classTree.setVisibleRowCount(4);
@@ -251,7 +244,7 @@ public class MainWindow {
     javax.swing.ToolTipManager.sharedInstance().registerComponent(classTree);
     val classTreeScroll = new WebScrollPane(classTree);
     classTreeScroll.setMinimumSize(new Dimension(300, 200));
-    splitPane.setLeftComponent(classTreeScroll);
+    leftPane.add(classTreeScroll);
 
     // create selection panels
     SelectedClassPanel = new ClassPanel();
@@ -259,11 +252,10 @@ public class MainWindow {
 
     // set selection listener
     classTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-    classTree.addTreeSelectionListener(new TreeSelectionListener() {
+    val classTree_Listener = new TreeSelectionListener() {
       @Override
       public void valueChanged(TreeSelectionEvent e) {
-        val tree = (JTree) e.getSource();
-        val node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+        val node = (DefaultMutableTreeNode) classTree.getLastSelectedPathComponent();
         if (node != null) {
           val obj = node.getUserObject();
 
@@ -276,7 +268,24 @@ public class MainWindow {
           }
         }
       }
+    };
+    classTree.addTreeSelectionListener(classTree_Listener);
+
+    // left toolbar
+    val leftToolbar = new WebToolBar(WebToolBar.HORIZONTAL);
+    leftToolbar.setFloatable(false);
+    leftToolbar.setToolbarStyle(ToolbarStyle.attached);
+    val leftToolbar_Instrument = new WebButton("Instrument");
+    leftToolbar_Instrument.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        dex.instrument();
+        classTree_Listener.valueChanged(null);
+      }
     });
+    leftToolbar.add(leftToolbar_Instrument);
+    leftPane.add(leftToolbar);
+
 
     // create tab
     TabbedPane.addTab(filename.getName(), splitPane);

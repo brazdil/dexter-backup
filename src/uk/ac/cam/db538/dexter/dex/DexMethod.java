@@ -56,4 +56,6 @@ public abstract class DexMethod {
   }
 
   public abstract boolean isVirtual();
+
+  public abstract void instrument();
 }
