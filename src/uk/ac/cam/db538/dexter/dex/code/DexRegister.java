@@ -1,12 +1,13 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import lombok.Getter;
+import lombok.Setter;
 
 public class DexRegister {
 
-  @Getter private final int OriginalId;
+  @Getter @Setter private int Id;
 
-  public DexRegister(int originalId) {
-    OriginalId = originalId;
+  public DexRegister(int id) {
+    Id = id;
   }
 }

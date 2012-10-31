@@ -33,4 +33,10 @@ public class DexCode extends LinkedList<DexCodeElement> {
   public void insertAfter(DexCodeElement elem, DexCodeElement after) {
     this.add(findElement(after) + 1, elem);
   }
+
+//  public void replace(DexCodeElement replaced, DexCodeElement[] replacedWith) {
+//	  int location = findElement(replaced);
+//	  this.remove(location);
+//	  this.addAll(location, Arrays.asList(replacedWith));
+//  }
 }

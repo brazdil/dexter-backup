@@ -180,7 +180,19 @@ public class DexInstruction_BinaryOp extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return InsnOpcode.getAssemblyName() + " v" + RegTarget.getOriginalId() +
-           ", v" + RegSourceA.getOriginalId() + ", v" + RegSourceB.getOriginalId();
+    return InsnOpcode.getAssemblyName() + " v" + RegTarget.getId() +
+           ", v" + RegSourceA.getId() + ", v" + RegSourceB.getId();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] {
+             this,
+             new DexInstruction_BinaryOp(
+               getTaintRegister(RegTarget, mapping),
+               getTaintRegister(RegSourceA, mapping),
+               getTaintRegister(RegSourceB, mapping),
+               DexInstruction_BinaryOp.Opcode.OrInt)
+           };
   }
 }

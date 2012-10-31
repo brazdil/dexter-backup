@@ -18,6 +18,11 @@ public class DexInstruction_MoveWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "move-wide v" + RegTo1.getOriginalId() + ", v" + RegFrom1.getOriginalId();
+    return "move-wide v" + RegTo1.getId() + ", v" + RegFrom1.getId();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }

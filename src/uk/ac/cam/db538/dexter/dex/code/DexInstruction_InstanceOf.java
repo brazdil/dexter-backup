@@ -20,7 +20,12 @@ public class DexInstruction_InstanceOf extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "instance-of v" + RegTo.getOriginalId() + ", v" + RegFrom.getOriginalId() +
+    return "instance-of v" + RegTo.getId() + ", v" + RegFrom.getId() +
            ", " + Value.getDescriptor();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }

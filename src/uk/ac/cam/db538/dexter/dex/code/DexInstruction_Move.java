@@ -19,6 +19,11 @@ public class DexInstruction_Move extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "move" + (ObjectMoving ? "-object" : "") +
-           " v" + RegTo.getOriginalId() + ", v" + RegFrom.getOriginalId();
+           " v" + RegTo.getId() + ", v" + RegFrom.getId();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }

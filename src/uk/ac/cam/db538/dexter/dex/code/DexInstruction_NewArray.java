@@ -18,7 +18,12 @@ public class DexInstruction_NewArray extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "new-array v" + RegTo.getOriginalId() + ", v" + RegSize.getOriginalId() +
+    return "new-array v" + RegTo.getId() + ", v" + RegSize.getId() +
            ", " + Value.getDescriptor();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }

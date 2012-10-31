@@ -14,4 +14,9 @@ public class DexInstruction_Goto extends DexInstruction {
   public String getOriginalAssembly() {
     return "goto L" + Target.getOriginalOffset();
   }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
+  }
 }

@@ -15,6 +15,11 @@ public class DexInstruction_Monitor extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "monitor-" + (Enter ? "enter" : "exit") +
-           " v" + Reg.getOriginalId();
+           " v" + Reg.getId();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }

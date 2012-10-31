@@ -14,6 +14,11 @@ public class DexInstruction_ReturnWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "return-wide v" + RegFrom1.getOriginalId();
+    return "return-wide v" + RegFrom1.getId();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }

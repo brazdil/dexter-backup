@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -9,16 +10,17 @@ import org.jf.dexlib.Util.AccessFlags;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.DexInstructionParsingException;
-import uk.ac.cam.db538.dexter.dex.code.DexInstruction_Nop;
+import uk.ac.cam.db538.dexter.dex.code.DexInstruction.TaintRegisterMap;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 import lombok.Getter;
+import lombok.val;
 
 public class DexMethodWithCode extends DexMethod {
 
-  @Getter private final DexCode Code;
+  @Getter private DexCode Code;
   @Getter private final boolean Direct;
 
   public DexMethodWithCode(DexClass parent, String name, Set<AccessFlags> accessFlags,
@@ -42,6 +44,15 @@ public class DexMethodWithCode extends DexMethod {
 
   @Override
   public void instrument() {
-    Code.addFirst(new DexInstruction_Nop());
+    TaintRegisterMap taintRegs = new TaintRegisterMap();
+    val newCode = new DexCode();
+    for (val elem : Code) {
+      if (elem instanceof DexInstruction) {
+        val insn = (DexInstruction) elem;
+        newCode.addAll(Arrays.asList(insn.instrument(taintRegs)));
+      } else
+        newCode.add(elem);
+    }
+    Code = newCode;
   }
 }

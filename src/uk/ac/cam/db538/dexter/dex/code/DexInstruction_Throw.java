@@ -12,6 +12,11 @@ public class DexInstruction_Throw extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "throw v" + RegFrom.getOriginalId();
+    return "throw v" + RegFrom.getId();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }

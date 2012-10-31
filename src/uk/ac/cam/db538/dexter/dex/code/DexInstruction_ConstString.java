@@ -22,6 +22,11 @@ public class DexInstruction_ConstString extends DexInstruction {
     String escapedVal = StringEscapeUtils.escapeJava(StringConstant.getValue());
     if (escapedVal.length() > 15)
       escapedVal = escapedVal.substring(0, 15) + "...";
-    return "const-string v" + RegTo.getOriginalId() + ", \"" + escapedVal + "\"";
+    return "const-string v" + RegTo.getId() + ", \"" + escapedVal + "\"";
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }

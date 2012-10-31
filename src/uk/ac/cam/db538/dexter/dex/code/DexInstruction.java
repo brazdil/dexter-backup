@@ -36,6 +36,28 @@ import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public abstract class DexInstruction extends DexCodeElement {
 
+  // INSTRUCTION INSTRUMENTATION
+
+  public static class TaintRegisterMap extends HashMap<DexRegister, DexRegister> {
+    private static final long serialVersionUID = 4672776602746844235L;
+  }
+
+  public static DexRegister getTaintRegister(DexRegister reg, TaintRegisterMap map) {
+    val taintReg = map.get(reg);
+    if (taintReg == null) {
+      reg.setId(2 * reg.getId());
+      val newReg = new DexRegister(reg.getId() + 1);
+      map.put(reg, newReg);
+      return newReg;
+    } else
+      return taintReg;
+  }
+
+  public abstract DexInstruction[] instrument(TaintRegisterMap mapping);
+
+
+  // INSTRUCTION PARSING
+
   private static DexRegister getRegister(int id, Map<Integer, DexRegister> map) {
     val objId = new Integer(id);
     val register = map.get(objId);

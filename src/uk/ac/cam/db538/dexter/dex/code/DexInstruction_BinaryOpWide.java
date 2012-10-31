@@ -188,7 +188,12 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return InsnOpcode.getAssemblyName() + " v" + RegTarget1.getOriginalId() +
-           ", v" + RegSourceA1.getOriginalId() + ", v" + RegSourceB1.getOriginalId();
+    return InsnOpcode.getAssemblyName() + " v" + RegTarget1.getId() +
+           ", v" + RegSourceA1.getId() + ", v" + RegSourceB1.getId();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }

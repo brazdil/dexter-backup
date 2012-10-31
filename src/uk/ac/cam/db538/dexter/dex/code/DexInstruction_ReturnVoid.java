@@ -6,4 +6,9 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   public String getOriginalAssembly() {
     return "return-void";
   }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
+  }
 }

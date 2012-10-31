@@ -16,6 +16,11 @@ public class DexInstruction_ConstClass extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "const-class v" + RegTo.getOriginalId() + ", " + Value.getDescriptor();
+    return "const-class v" + RegTo.getId() + ", " + Value.getDescriptor();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }

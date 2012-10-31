@@ -7,4 +7,8 @@ public class DexInstruction_Nop extends DexInstruction {
     return "nop";
   }
 
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
+  }
 }

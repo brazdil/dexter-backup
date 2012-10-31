@@ -15,6 +15,11 @@ public class DexInstruction_MoveResult extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "move-result" + (ObjectMoving ? "-object" : "") +
-           " v" + RegTo.getOriginalId();
+           " v" + RegTo.getId();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }

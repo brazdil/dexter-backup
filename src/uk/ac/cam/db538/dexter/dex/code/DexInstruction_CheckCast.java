@@ -18,6 +18,11 @@ public class DexInstruction_CheckCast extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "check-cast v" + RegTo.getOriginalId() + ", " + Value.getDescriptor();
+    return "check-cast v" + RegTo.getId() + ", " + Value.getDescriptor();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }

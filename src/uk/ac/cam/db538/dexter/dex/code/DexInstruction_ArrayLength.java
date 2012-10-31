@@ -16,6 +16,11 @@ public class DexInstruction_ArrayLength extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "array-length v" + RegTo.getOriginalId() + ", v" + RegFrom.getOriginalId();
+    return "array-length v" + RegTo.getId() + ", v" + RegFrom.getId();
+  }
+
+  @Override
+  public DexInstruction[] instrument(TaintRegisterMap mapping) {
+    return new DexInstruction[] { this };
   }
 }
