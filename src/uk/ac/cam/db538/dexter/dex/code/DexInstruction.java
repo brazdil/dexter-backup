@@ -58,12 +58,18 @@ public abstract class DexInstruction extends DexCodeElement {
   protected static class InstructionParsingState {
     private final Map<Integer, DexRegister> RegisterIdMap;
     private final Map<Long, DexLabel> LabelOffsetMap;
+    private final Map<Long, DexInstruction> InstructionOffsetMap;
+    private long CurrentOffset;
     @Getter private final DexParsingCache Cache;
+    @Getter private final DexCode Code;
 
     public InstructionParsingState(DexParsingCache cache) {
       RegisterIdMap = new HashMap<Integer, DexRegister>();
       LabelOffsetMap = new HashMap<Long, DexLabel>();
+      InstructionOffsetMap = new HashMap<Long, DexInstruction>();
       Cache = cache;
+      CurrentOffset = 0L;
+      Code = new DexCode();
     }
 
     public DexRegister getRegister(int id) {
@@ -77,27 +83,33 @@ public abstract class DexInstruction extends DexCodeElement {
         return register;
     }
 
-    public DexLabel getLabel(long offset) {
-      val objOffset = new Long(offset);
+    public DexLabel getLabel(long insnOffset) {
+      val objOffset = new Long(CurrentOffset + insnOffset);
       val label = LabelOffsetMap.get(objOffset);
       if (label == null) {
-        val newLabel = new DexLabel(offset);
+        val newLabel = new DexLabel(insnOffset);
         LabelOffsetMap.put(objOffset, newLabel);
         return newLabel;
       } else
         return label;
     }
 
-    public void placeLabels(DexCode code, Map<Long, DexInstruction> insnOffsetMap) throws DexInstructionParsingException {
+    public void finishInstruction(long size, DexInstruction insn) {
+      CurrentOffset += size;
+      InstructionOffsetMap.put(CurrentOffset, insn);
+      Code.add(insn);
+    }
+
+    public void placeLabels() throws DexInstructionParsingException {
       for (val entry : LabelOffsetMap.entrySet()) {
         val labelOffset = entry.getKey();
-        val insnAtOffset = insnOffsetMap.get(labelOffset);
+        val insnAtOffset = InstructionOffsetMap.get(labelOffset);
         if (insnAtOffset == null)
           throw new DexInstructionParsingException(
             "Label could not be placed (non-existent offset " + labelOffset + ")");
         else {
           val label = entry.getValue();
-          code.insertBefore(label, insnAtOffset);
+          Code.insertBefore(label, insnAtOffset);
         }
       }
     }
@@ -112,10 +124,7 @@ public abstract class DexInstruction extends DexCodeElement {
     // - labels are placed in the right position inside
     //   the instruction list
 
-    val code = new DexCode();
     val parsingState = new InstructionParsingState(cache);
-    val insnOffsetMap = new HashMap<Long, DexInstruction>();
-    long offset = 0L;
 
     for (val insn : instructions) {
       DexInstruction parsedInsn = null;
@@ -437,13 +446,10 @@ public abstract class DexInstruction extends DexCodeElement {
         break;
       }
 
-      code.add(parsedInsn);
-      insnOffsetMap.put(offset, parsedInsn);
-      offset += insn.getSize(0); // arg is ignored
+      parsingState.finishInstruction(insn.getSize(0), parsedInsn);
     }
 
-    parsingState.placeLabels(code, insnOffsetMap);
-
-    return code;
+    parsingState.placeLabels();
+    return parsingState.getCode();
   }
 }
