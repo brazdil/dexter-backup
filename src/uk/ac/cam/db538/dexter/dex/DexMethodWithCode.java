@@ -44,7 +44,7 @@ public class DexMethodWithCode extends DexMethod {
 
   @Override
   public void instrument() {
-    TaintRegisterMap taintRegs = new TaintRegisterMap();
+    TaintRegisterMap taintRegs = new TaintRegisterMap(Code);
     val newCode = new DexCode();
     for (val elem : Code) {
       if (elem instanceof DexInstruction) {

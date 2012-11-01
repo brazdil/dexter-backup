@@ -38,23 +38,43 @@ public abstract class DexInstruction extends DexCodeElement {
 
   // INSTRUCTION INSTRUMENTATION
 
-  public static class TaintRegisterMap extends HashMap<DexRegister, DexRegister> {
-    private static final long serialVersionUID = 4672776602746844235L;
+  public static class TaintRegisterMap {
+    private final Map<DexRegister, DexRegister> RegisterMap;
+    private final int IdOffset;
+
+    public TaintRegisterMap(DexCode code) {
+      RegisterMap = new HashMap<DexRegister, DexRegister>();
+
+      // find the maximal register id in the code
+      // this is strictly for GUI purposes
+      // actual register allocation happens later
+      int maxId = -1;
+      for (val elem : code)
+        if (elem instanceof DexInstruction)
+          for (val reg : ((DexInstruction) elem).getReferencedRegisters())
+            if (maxId < reg.getId())
+              maxId = reg.getId();
+      IdOffset = maxId + 1;
+    }
+
+    public DexRegister getTaintRegister(DexRegister reg) {
+      val taintReg = RegisterMap.get(reg);
+      if (taintReg == null) {
+        val newReg = new DexRegister(reg.getId() + IdOffset);
+        RegisterMap.put(reg, newReg);
+        return newReg;
+      } else
+        return taintReg;
+    }
   }
 
-  public static DexRegister getTaintRegister(DexRegister reg, TaintRegisterMap map) {
-    val taintReg = map.get(reg);
-    if (taintReg == null) {
-      reg.setId(2 * reg.getId());
-      val newReg = new DexRegister(reg.getId() + 1);
-      map.put(reg, newReg);
-      return newReg;
-    } else
-      return taintReg;
+  public DexCodeElement[] instrument(TaintRegisterMap mapping) {
+    return new DexCodeElement[] { this };
   }
 
-  public abstract DexInstruction[] instrument(TaintRegisterMap mapping);
-
+  protected DexRegister[] getReferencedRegisters() {
+    return new DexRegister[] { };
+  }
 
   // INSTRUCTION PARSING
 

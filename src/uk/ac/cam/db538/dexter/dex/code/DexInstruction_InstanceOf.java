@@ -23,9 +23,4 @@ public class DexInstruction_InstanceOf extends DexInstruction {
     return "instance-of v" + RegTo.getId() + ", v" + RegFrom.getId() +
            ", " + Value.getDescriptor();
   }
-
-  @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] { this };
-  }
 }

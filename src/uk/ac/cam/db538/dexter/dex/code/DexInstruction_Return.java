@@ -17,9 +17,4 @@ public class DexInstruction_Return extends DexInstruction {
     return "return" + (ObjectMoving ? "-object" : "") +
            " v" + RegFrom.getId();
   }
-
-  @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] { this };
-  }
 }

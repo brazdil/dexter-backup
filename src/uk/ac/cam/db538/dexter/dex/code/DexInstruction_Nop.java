@@ -6,9 +6,4 @@ public class DexInstruction_Nop extends DexInstruction {
   public String getOriginalAssembly() {
     return "nop";
   }
-
-  @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] { this };
-  }
 }

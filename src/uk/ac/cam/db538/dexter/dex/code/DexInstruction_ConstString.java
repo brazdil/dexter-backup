@@ -24,9 +24,4 @@ public class DexInstruction_ConstString extends DexInstruction {
       escapedVal = escapedVal.substring(0, 15) + "...";
     return "const-string v" + RegTo.getId() + ", \"" + escapedVal + "\"";
   }
-
-  @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] { this };
-  }
 }

@@ -63,9 +63,4 @@ public class DexInstruction_ConvertFromWide extends DexInstruction {
   public String getOriginalAssembly() {
     return InsnOpcode.getAssemblyName() + " v" + RegTo.getId() + ", v" + RegFrom1.getId();
   }
-
-  @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] { this };
-  }
 }

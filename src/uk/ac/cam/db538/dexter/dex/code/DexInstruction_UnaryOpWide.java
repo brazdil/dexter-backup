@@ -60,9 +60,4 @@ public class DexInstruction_UnaryOpWide extends DexInstruction {
   public String getOriginalAssembly() {
     return InsnOpcode.getAssemblyName() + " v" + RegTo1.getId() + ", v" + RegFrom1.getId();
   }
-
-  @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] { this };
-  }
 }

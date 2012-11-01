@@ -185,14 +185,19 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] {
+  public DexCodeElement[] instrument(TaintRegisterMap mapping) {
+    return new DexCodeElement[] {
              this,
              new DexInstruction_BinaryOp(
-               getTaintRegister(RegTarget, mapping),
-               getTaintRegister(RegSourceA, mapping),
-               getTaintRegister(RegSourceB, mapping),
+               mapping.getTaintRegister(RegTarget),
+               mapping.getTaintRegister(RegSourceA),
+               mapping.getTaintRegister(RegSourceB),
                DexInstruction_BinaryOp.Opcode.OrInt)
            };
+  }
+
+  @Override
+  protected DexRegister[] getReferencedRegisters() {
+    return new DexRegister[] { RegTarget, RegSourceA, RegSourceB };
   }
 }

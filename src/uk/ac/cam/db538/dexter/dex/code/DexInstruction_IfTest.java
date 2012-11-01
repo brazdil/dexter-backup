@@ -68,9 +68,4 @@ public class DexInstruction_IfTest extends DexInstruction {
     return "if-" + InsnOpcode.name() + " v" + RegA.getId() +
            ", v" + RegB.getId() + ", L" + Target.getOriginalOffset();
   }
-
-  @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] { this };
-  }
 }

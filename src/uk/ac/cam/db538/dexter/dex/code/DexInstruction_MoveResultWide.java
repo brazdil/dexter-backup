@@ -16,9 +16,4 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
   public String getOriginalAssembly() {
     return "move-result-wide v" + RegTo1.getId();
   }
-
-  @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] { this };
-  }
 }

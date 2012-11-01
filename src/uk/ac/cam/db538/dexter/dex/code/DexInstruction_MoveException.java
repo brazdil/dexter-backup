@@ -14,9 +14,4 @@ public class DexInstruction_MoveException extends DexInstruction {
   public String getOriginalAssembly() {
     return "move-exception v" + RegTo.getId();
   }
-
-  @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] { this };
-  }
 }

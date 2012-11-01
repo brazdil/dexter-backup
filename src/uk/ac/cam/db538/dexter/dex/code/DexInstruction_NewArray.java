@@ -21,9 +21,4 @@ public class DexInstruction_NewArray extends DexInstruction {
     return "new-array v" + RegTo.getId() + ", v" + RegSize.getId() +
            ", " + Value.getDescriptor();
   }
-
-  @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] { this };
-  }
 }

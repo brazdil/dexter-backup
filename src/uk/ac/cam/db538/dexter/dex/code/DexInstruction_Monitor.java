@@ -17,9 +17,4 @@ public class DexInstruction_Monitor extends DexInstruction {
     return "monitor-" + (Enter ? "enter" : "exit") +
            " v" + Reg.getId();
   }
-
-  @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] { this };
-  }
 }

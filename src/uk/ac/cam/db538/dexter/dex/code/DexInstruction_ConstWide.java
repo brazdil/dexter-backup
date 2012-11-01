@@ -21,9 +21,4 @@ public class DexInstruction_ConstWide extends DexInstruction {
   public String getOriginalAssembly() {
     return "const-wide v" + RegTo1.getId() + ", #" + Value;
   }
-
-  @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] { this };
-  }
 }

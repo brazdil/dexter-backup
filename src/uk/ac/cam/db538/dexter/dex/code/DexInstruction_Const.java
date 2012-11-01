@@ -21,12 +21,17 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
-  public DexInstruction[] instrument(TaintRegisterMap mapping) {
-    return new DexInstruction[] {
+  public DexCodeElement[] instrument(TaintRegisterMap mapping) {
+    return new DexCodeElement[] {
              this,
              new DexInstruction_Const(
-               getTaintRegister(RegTo, mapping),
+               mapping.getTaintRegister(RegTo),
                (Value == 0xdec0ded) ? 1 : 0)
            };
+  }
+
+  @Override
+  protected DexRegister[] getReferencedRegisters() {
+    return new DexRegister[] { RegTo };
   }
 }
