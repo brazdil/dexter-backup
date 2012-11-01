@@ -78,11 +78,11 @@ public abstract class DexInstruction extends DexCodeElement {
 
   // INSTRUCTION PARSING
 
-  protected static class InstructionParsingMaps {
+  protected static class InstructionParsingState {
     private final Map<Integer, DexRegister> RegisterIdMap;
     private final Map<Long, DexLabel> LabelOffsetMap;
 
-    public InstructionParsingMaps() {
+    public InstructionParsingState() {
       RegisterIdMap = new HashMap<Integer, DexRegister>();
       LabelOffsetMap = new HashMap<Long, DexLabel>();
     }
@@ -134,7 +134,7 @@ public abstract class DexInstruction extends DexCodeElement {
     //   the instruction list
 
     val code = new DexCode();
-    val mappings = new InstructionParsingMaps();
+    val parsingState = new InstructionParsingState();
     val insnOffsetMap = new HashMap<Long, DexInstruction>();
     long offset = 0L;
 
@@ -153,26 +153,26 @@ public abstract class DexInstruction extends DexCodeElement {
       case MOVE_OBJECT_FROM16:
       case MOVE_16:
       case MOVE_OBJECT_16:
-        parsedInsn = new DexInstruction_Move(insn, mappings);
+        parsedInsn = new DexInstruction_Move(insn, parsingState);
         break;
 
       case MOVE_WIDE:
       case MOVE_WIDE_FROM16:
       case MOVE_WIDE_16:
-        parsedInsn = new DexInstruction_MoveWide(insn, mappings);
+        parsedInsn = new DexInstruction_MoveWide(insn, parsingState);
         break;
 
       case MOVE_RESULT:
       case MOVE_RESULT_OBJECT:
-        parsedInsn = new DexInstruction_MoveResult(insn, mappings);
+        parsedInsn = new DexInstruction_MoveResult(insn, parsingState);
         break;
 
       case MOVE_RESULT_WIDE:
-        parsedInsn = new DexInstruction_MoveResultWide(insn, mappings);
+        parsedInsn = new DexInstruction_MoveResultWide(insn, parsingState);
         break;
 
       case MOVE_EXCEPTION:
-        parsedInsn = new DexInstruction_MoveException(insn, mappings);
+        parsedInsn = new DexInstruction_MoveException(insn, parsingState);
         break;
 
 //      case RETURN_VOID:
@@ -558,7 +558,7 @@ public abstract class DexInstruction extends DexCodeElement {
       offset += insn.getSize(0); // arg is ignored
     }
 
-    mappings.placeLabels(code, insnOffsetMap);
+    parsingState.placeLabels(code, insnOffsetMap);
 
     return code;
   }

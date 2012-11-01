@@ -23,30 +23,30 @@ public class DexInstruction_MoveWide extends DexInstruction {
     RegFrom2 = from2;
   }
 
-  public DexInstruction_MoveWide(Instruction insn, InstructionParsingMaps mapping) throws DexInstructionParsingException {
+  public DexInstruction_MoveWide(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
     if ( insn instanceof Instruction12x && insn.opcode == Opcode.MOVE_WIDE) {
 
       val insnMoveWide = (Instruction12x) insn;
-      RegTo1 = mapping.getRegister(insnMoveWide.getRegisterA());
-      RegTo2 = mapping.getRegister(insnMoveWide.getRegisterA() + 1);
-      RegFrom1 = mapping.getRegister(insnMoveWide.getRegisterB());
-      RegFrom2 = mapping.getRegister(insnMoveWide.getRegisterB() + 1);
+      RegTo1 = parsingState.getRegister(insnMoveWide.getRegisterA());
+      RegTo2 = parsingState.getRegister(insnMoveWide.getRegisterA() + 1);
+      RegFrom1 = parsingState.getRegister(insnMoveWide.getRegisterB());
+      RegFrom2 = parsingState.getRegister(insnMoveWide.getRegisterB() + 1);
 
     } else if (insn instanceof Instruction22x && insn.opcode == Opcode.MOVE_WIDE_FROM16) {
 
       val insnMoveWideFrom16 = (Instruction22x) insn;
-      RegTo1 = mapping.getRegister(insnMoveWideFrom16.getRegisterA());
-      RegTo2 = mapping.getRegister(insnMoveWideFrom16.getRegisterA() + 1);
-      RegFrom1 = mapping.getRegister(insnMoveWideFrom16.getRegisterB());
-      RegFrom2 = mapping.getRegister(insnMoveWideFrom16.getRegisterB() + 1);
+      RegTo1 = parsingState.getRegister(insnMoveWideFrom16.getRegisterA());
+      RegTo2 = parsingState.getRegister(insnMoveWideFrom16.getRegisterA() + 1);
+      RegFrom1 = parsingState.getRegister(insnMoveWideFrom16.getRegisterB());
+      RegFrom2 = parsingState.getRegister(insnMoveWideFrom16.getRegisterB() + 1);
 
     } else if (insn instanceof Instruction32x && insn.opcode == Opcode.MOVE_WIDE_16) {
 
       val insnMoveWide16 = (Instruction32x) insn;
-      RegTo1 = mapping.getRegister(insnMoveWide16.getRegisterA());
-      RegTo2 = mapping.getRegister(insnMoveWide16.getRegisterA() + 1);
-      RegFrom1 = mapping.getRegister(insnMoveWide16.getRegisterB());
-      RegFrom2 = mapping.getRegister(insnMoveWide16.getRegisterB() + 1);
+      RegTo1 = parsingState.getRegister(insnMoveWide16.getRegisterA());
+      RegTo2 = parsingState.getRegister(insnMoveWide16.getRegisterA() + 1);
+      RegFrom1 = parsingState.getRegister(insnMoveWide16.getRegisterB());
+      RegFrom2 = parsingState.getRegister(insnMoveWide16.getRegisterB() + 1);
 
     } else
       throw new DexInstructionParsingException("Unknown instruction format or opcode");

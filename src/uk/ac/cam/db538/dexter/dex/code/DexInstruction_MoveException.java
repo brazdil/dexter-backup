@@ -15,11 +15,11 @@ public class DexInstruction_MoveException extends DexInstruction {
     RegTo = to;
   }
 
-  public DexInstruction_MoveException(Instruction insn, InstructionParsingMaps mapping) throws DexInstructionParsingException {
+  public DexInstruction_MoveException(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
     if ( insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_EXCEPTION) {
 
       val insnMoveException = (Instruction11x) insn;
-      RegTo = mapping.getRegister(insnMoveException.getRegisterA());
+      RegTo = parsingState.getRegister(insnMoveException.getRegisterA());
 
     } else
       throw new DexInstructionParsingException("Unknown instruction format or opcode");
