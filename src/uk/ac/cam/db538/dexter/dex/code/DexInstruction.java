@@ -188,36 +188,13 @@ public abstract class DexInstruction extends DexCodeElement {
         parsedInsn = new DexInstruction_ReturnWide(insn, parsingState);
         break;
 
-//      case CONST_4:
-//        val insnConst4 = (Instruction11n) insn;
-//        parsedInsn = new DexInstruction_Const(
-//          getRegister(insnConst4.getRegisterA(), registers),
-//          insnConst4.getLiteral());
-//        break;
-//
-//      case CONST_16:
-//        val insnConst16 = (Instruction21s) insn;
-//        parsedInsn = new DexInstruction_Const(
-//          getRegister(insnConst16.getRegisterA(), registers),
-//          insnConst16.getLiteral());
-//        break;
-//
-//      case CONST:
-//        val insnConst = (Instruction31i) insn;
-//        parsedInsn = new DexInstruction_Const(
-//          getRegister(insnConst.getRegisterA(), registers),
-//          insnConst.getLiteral());
-//        break;
-//
-//      case CONST_HIGH16:
-//        // we store const/high16 exactly the same as other const instructions,
-//        // it gets converted back automatically
-//        val insnConstHigh16 = (Instruction21h) insn;
-//        parsedInsn = new DexInstruction_Const(
-//          getRegister(insnConstHigh16.getRegisterA(), registers),
-//          insnConstHigh16.getLiteral() << 16);
-//        break;
-//
+      case CONST_4:
+      case CONST_16:
+      case CONST:
+      case CONST_HIGH16:
+        parsedInsn = new DexInstruction_Const(insn, parsingState);
+        break;
+
 //      case CONST_WIDE_16:
 //        val insnConstWide16 = (Instruction21s) insn;
 //        parsedInsn = new DexInstruction_ConstWide(
