@@ -33,6 +33,18 @@ import org.jf.dexlib.Code.Format.Instruction51l;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertFromWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertToWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstructionTest {

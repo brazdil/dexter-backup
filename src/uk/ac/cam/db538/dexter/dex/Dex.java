@@ -7,7 +7,7 @@ import java.util.LinkedList;
 
 import org.jf.dexlib.DexFile;
 
-import uk.ac.cam.db538.dexter.dex.code.DexInstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 import lombok.Getter;

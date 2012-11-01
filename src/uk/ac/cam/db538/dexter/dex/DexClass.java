@@ -6,7 +6,7 @@ import java.util.Set;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.Util.AccessFlags;
 
-import uk.ac.cam.db538.dexter.dex.code.DexInstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 

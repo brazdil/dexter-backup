@@ -8,9 +8,9 @@ import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexInstruction;
-import uk.ac.cam.db538.dexter.dex.code.DexInstructionParsingException;
-import uk.ac.cam.db538.dexter.dex.code.DexInstruction.TaintRegisterMap;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction.TaintRegisterMap;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
