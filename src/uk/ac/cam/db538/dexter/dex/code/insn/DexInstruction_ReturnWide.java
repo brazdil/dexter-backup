@@ -20,7 +20,7 @@ public class DexInstruction_ReturnWide extends DexInstruction {
   }
 
   public DexInstruction_ReturnWide(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
-    if ( insn instanceof Instruction11x && insn.opcode == Opcode.RETURN_WIDE) {
+    if (insn instanceof Instruction11x && insn.opcode == Opcode.RETURN_WIDE) {
 
       val insnReturnWide = (Instruction11x) insn;
       RegFrom1 = parsingState.getRegister(insnReturnWide.getRegisterA());

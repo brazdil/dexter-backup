@@ -20,8 +20,8 @@ public class DexInstruction_Return extends DexInstruction {
   }
 
   public DexInstruction_Return(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
-    if ( insn instanceof Instruction11x &&
-         (insn.opcode == Opcode.RETURN || insn.opcode == Opcode.RETURN_OBJECT)) {
+    if (insn instanceof Instruction11x &&
+        (insn.opcode == Opcode.RETURN || insn.opcode == Opcode.RETURN_OBJECT)) {
 
       val insnReturn = (Instruction11x) insn;
       RegFrom = parsingState.getRegister(insnReturn.getRegisterA());

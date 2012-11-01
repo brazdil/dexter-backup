@@ -47,8 +47,6 @@ public class DexInstruction_Const extends DexInstruction {
 
     } else if (insn instanceof Instruction21h && insn.opcode == Opcode.CONST_HIGH16) {
 
-      // we store const/high16 exactly the same as other const instructions,
-      // it gets converted back automatically
       val insnConstHigh16 = (Instruction21h) insn;
       RegTo = parsingState.getRegister(insnConstHigh16.getRegisterA());
       Value = insnConstHigh16.getLiteral() << 16;

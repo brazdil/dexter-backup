@@ -196,22 +196,22 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   public DexInstruction_BinaryOpWide(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
     if (insn instanceof Instruction23x && Opcode.convert(insn.opcode) != null) {
 
-      val insnBinaryOp = (Instruction23x) insn;
-      RegTarget1 = parsingState.getRegister(insnBinaryOp.getRegisterA());
-      RegTarget2 = parsingState.getRegister(insnBinaryOp.getRegisterA() + 1);
-      RegSourceA1 = parsingState.getRegister(insnBinaryOp.getRegisterB());
-      RegSourceA2 = parsingState.getRegister(insnBinaryOp.getRegisterB() + 1);
-      RegSourceB1 = parsingState.getRegister(insnBinaryOp.getRegisterC());
-      RegSourceB2 = parsingState.getRegister(insnBinaryOp.getRegisterC() + 1);
+      val insnBinaryOpWide = (Instruction23x) insn;
+      RegTarget1 = parsingState.getRegister(insnBinaryOpWide.getRegisterA());
+      RegTarget2 = parsingState.getRegister(insnBinaryOpWide.getRegisterA() + 1);
+      RegSourceA1 = parsingState.getRegister(insnBinaryOpWide.getRegisterB());
+      RegSourceA2 = parsingState.getRegister(insnBinaryOpWide.getRegisterB() + 1);
+      RegSourceB1 = parsingState.getRegister(insnBinaryOpWide.getRegisterC());
+      RegSourceB2 = parsingState.getRegister(insnBinaryOpWide.getRegisterC() + 1);
       InsnOpcode = Opcode.convert(insn.opcode);
 
     } else if (insn instanceof Instruction12x && Opcode.convert(insn.opcode) != null) {
 
-      val insnBinaryOp = (Instruction12x) insn;
-      RegTarget1 = RegSourceA1 = parsingState.getRegister(insnBinaryOp.getRegisterA());
-      RegTarget2 = RegSourceA2 = parsingState.getRegister(insnBinaryOp.getRegisterA() + 1);
-      RegSourceB1 = parsingState.getRegister(insnBinaryOp.getRegisterB());
-      RegSourceB2 = parsingState.getRegister(insnBinaryOp.getRegisterB() + 1);
+      val insnBinaryOpWide2addr = (Instruction12x) insn;
+      RegTarget1 = RegSourceA1 = parsingState.getRegister(insnBinaryOpWide2addr.getRegisterA());
+      RegTarget2 = RegSourceA2 = parsingState.getRegister(insnBinaryOpWide2addr.getRegisterA() + 1);
+      RegSourceB1 = parsingState.getRegister(insnBinaryOpWide2addr.getRegisterB());
+      RegSourceB2 = parsingState.getRegister(insnBinaryOpWide2addr.getRegisterB() + 1);
       InsnOpcode = Opcode.convert(insn.opcode);
 
     } else

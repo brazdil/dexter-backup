@@ -197,9 +197,9 @@ public class DexInstruction_BinaryOp extends DexInstruction {
 
     } else if (insn instanceof Instruction12x && Opcode.convert(insn.opcode) != null) {
 
-      val insnBinaryOp = (Instruction12x) insn;
-      RegTarget = RegSourceA = parsingState.getRegister(insnBinaryOp.getRegisterA());
-      RegSourceB = parsingState.getRegister(insnBinaryOp.getRegisterB());
+      val insnBinaryOp2addr = (Instruction12x) insn;
+      RegTarget = RegSourceA = parsingState.getRegister(insnBinaryOp2addr.getRegisterA());
+      RegSourceB = parsingState.getRegister(insnBinaryOp2addr.getRegisterB());
       InsnOpcode = Opcode.convert(insn.opcode);
 
     } else

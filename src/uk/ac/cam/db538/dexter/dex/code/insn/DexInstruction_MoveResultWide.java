@@ -20,7 +20,7 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
   }
 
   public DexInstruction_MoveResultWide(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
-    if ( insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_RESULT_WIDE) {
+    if (insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_RESULT_WIDE) {
 
       val insnMove = (Instruction11x) insn;
       RegTo1 = parsingState.getRegister(insnMove.getRegisterA());

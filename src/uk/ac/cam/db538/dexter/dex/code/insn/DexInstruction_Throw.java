@@ -18,7 +18,7 @@ public class DexInstruction_Throw extends DexInstruction {
   }
 
   public DexInstruction_Throw(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
-    if ( insn instanceof Instruction11x && insn.opcode == Opcode.THROW) {
+    if (insn instanceof Instruction11x && insn.opcode == Opcode.THROW) {
 
       val insnThrow = (Instruction11x) insn;
       RegFrom = parsingState.getRegister(insnThrow.getRegisterA());

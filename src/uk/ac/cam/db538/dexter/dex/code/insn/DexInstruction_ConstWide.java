@@ -51,8 +51,6 @@ public class DexInstruction_ConstWide extends DexInstruction {
 
     } else if (insn instanceof Instruction21h && insn.opcode == Opcode.CONST_WIDE_HIGH16) {
 
-      // we store const-wide/high16 exactly the same as other const-wide instructions,
-      // it gets converted back automatically
       val insnConstHigh16 = (Instruction21h) insn;
       RegTo1 = parsingState.getRegister(insnConstHigh16.getRegisterA());
       RegTo2 = parsingState.getRegister(insnConstHigh16.getRegisterA() + 1);

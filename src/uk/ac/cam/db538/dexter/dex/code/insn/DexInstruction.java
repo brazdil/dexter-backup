@@ -137,7 +137,7 @@ public abstract class DexInstruction extends DexCodeElement {
       switch (insn.opcode) {
 
       case NOP:
-        parsedInsn = new DexInstruction_Nop();
+        parsedInsn = new DexInstruction_Nop(insn, parsingState);
         break;
 
       case MOVE:

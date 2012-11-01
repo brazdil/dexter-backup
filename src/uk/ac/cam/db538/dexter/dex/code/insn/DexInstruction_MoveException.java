@@ -18,7 +18,7 @@ public class DexInstruction_MoveException extends DexInstruction {
   }
 
   public DexInstruction_MoveException(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
-    if ( insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_EXCEPTION) {
+    if (insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_EXCEPTION) {
 
       val insnMoveException = (Instruction11x) insn;
       RegTo = parsingState.getRegister(insnMoveException.getRegisterA());
