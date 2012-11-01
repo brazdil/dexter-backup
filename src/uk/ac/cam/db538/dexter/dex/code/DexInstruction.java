@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.dex.code;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.StringIdItem;
@@ -81,10 +82,12 @@ public abstract class DexInstruction extends DexCodeElement {
   protected static class InstructionParsingState {
     private final Map<Integer, DexRegister> RegisterIdMap;
     private final Map<Long, DexLabel> LabelOffsetMap;
+    @Getter private final DexParsingCache Cache;
 
-    public InstructionParsingState() {
+    public InstructionParsingState(DexParsingCache cache) {
       RegisterIdMap = new HashMap<Integer, DexRegister>();
       LabelOffsetMap = new HashMap<Long, DexLabel>();
+      Cache = cache;
     }
 
     public DexRegister getRegister(int id) {
@@ -134,7 +137,7 @@ public abstract class DexInstruction extends DexCodeElement {
     //   the instruction list
 
     val code = new DexCode();
-    val parsingState = new InstructionParsingState();
+    val parsingState = new InstructionParsingState(cache);
     val insnOffsetMap = new HashMap<Long, DexInstruction>();
     long offset = 0L;
 
@@ -202,20 +205,11 @@ public abstract class DexInstruction extends DexCodeElement {
         parsedInsn = new DexInstruction_ConstWide(insn, parsingState);
         break;
 
-//      case CONST_STRING:
-//        val insnConstString = (Instruction21c) insn;
-//        parsedInsn = new DexInstruction_ConstString(
-//          getRegister(insnConstString.getRegisterA(), registers),
-//          DexStringConstant.create(((StringIdItem) insnConstString.getReferencedItem()), cache));
-//        break;
-//
-//      case CONST_STRING_JUMBO:
-//        val insnConstStringJumbo = (Instruction31c) insn;
-//        parsedInsn = new DexInstruction_ConstString(
-//          getRegister(insnConstStringJumbo.getRegisterA(), registers),
-//          DexStringConstant.create(((StringIdItem) insnConstStringJumbo.getReferencedItem()), cache));
-//        break;
-//
+      case CONST_STRING:
+      case CONST_STRING_JUMBO:
+        parsedInsn = new DexInstruction_ConstString(insn, parsingState);
+        break;
+
 //      case CONST_CLASS:
 //        val insnConstClass = (Instruction21c) insn;
 //        parsedInsn = new DexInstruction_ConstClass(

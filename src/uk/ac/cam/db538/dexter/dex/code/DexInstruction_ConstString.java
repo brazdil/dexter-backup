@@ -1,8 +1,14 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.jf.dexlib.StringIdItem;
+import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Opcode;
+import org.jf.dexlib.Code.Format.Instruction21c;
+import org.jf.dexlib.Code.Format.Instruction31c;
 
 import lombok.Getter;
+import lombok.val;
 
 public class DexInstruction_ConstString extends DexInstruction {
 
@@ -15,6 +21,23 @@ public class DexInstruction_ConstString extends DexInstruction {
   public DexInstruction_ConstString(DexRegister to, DexStringConstant value) {
     RegTo = to;
     StringConstant = value;
+  }
+
+  public DexInstruction_ConstString(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+    if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_STRING) {
+
+      val insnConstString = (Instruction21c) insn;
+      RegTo = parsingState.getRegister(insnConstString.getRegisterA());
+      StringConstant = DexStringConstant.create(((StringIdItem) insnConstString.getReferencedItem()), parsingState.getCache());
+
+    } else if (insn instanceof Instruction31c && insn.opcode == Opcode.CONST_STRING_JUMBO) {
+
+      val insnConstStringJumbo = (Instruction31c) insn;
+      RegTo = parsingState.getRegister(insnConstStringJumbo.getRegisterA());
+      StringConstant = DexStringConstant.create(((StringIdItem) insnConstStringJumbo.getReferencedItem()), parsingState.getCache());
+
+    } else
+      throw new DexInstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override
