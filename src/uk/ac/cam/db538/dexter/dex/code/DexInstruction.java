@@ -84,10 +84,11 @@ public abstract class DexInstruction extends DexCodeElement {
     }
 
     public DexLabel getLabel(long insnOffset) {
-      val objOffset = new Long(CurrentOffset + insnOffset);
+      long absoluteOffset = CurrentOffset + insnOffset;
+      val objOffset = new Long(absoluteOffset);
       val label = LabelOffsetMap.get(objOffset);
       if (label == null) {
-        val newLabel = new DexLabel(insnOffset);
+        val newLabel = new DexLabel(absoluteOffset);
         LabelOffsetMap.put(objOffset, newLabel);
         return newLabel;
       } else
@@ -95,8 +96,8 @@ public abstract class DexInstruction extends DexCodeElement {
     }
 
     public void finishInstruction(long size, DexInstruction insn) {
-      CurrentOffset += size;
       InstructionOffsetMap.put(CurrentOffset, insn);
+      CurrentOffset += size;
       Code.add(insn);
     }
 
@@ -224,24 +225,12 @@ public abstract class DexInstruction extends DexCodeElement {
         parsedInsn = new DexInstruction_Throw(insn, parsingState);
         break;
 
-//      case GOTO:
-//        val insnGoto = (Instruction10t) insn;
-//        parsedInsn = new DexInstruction_Goto(
-//          getLabel(offset + insnGoto.getTargetAddressOffset(), labelOffsetMap));
-//        break;
-//
-//      case GOTO_16:
-//        val insnGoto16 = (Instruction20t) insn;
-//        parsedInsn = new DexInstruction_Goto(
-//          getLabel(offset + insnGoto16.getTargetAddressOffset(), labelOffsetMap));
-//        break;
-//
-//      case GOTO_32:
-//        val insnGoto32 = (Instruction30t) insn;
-//        parsedInsn = new DexInstruction_Goto(
-//          getLabel(offset + insnGoto32.getTargetAddressOffset(), labelOffsetMap));
-//        break;
-//
+      case GOTO:
+      case GOTO_16:
+      case GOTO_32:
+        parsedInsn = new DexInstruction_Goto(insn, parsingState);
+        break;
+
 //      case IF_EQ:
 //      case IF_NE:
 //      case IF_LT:
