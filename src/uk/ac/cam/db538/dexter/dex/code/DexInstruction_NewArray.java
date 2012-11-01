@@ -16,6 +16,7 @@ public class DexInstruction_NewArray extends DexInstruction {
     Value = value;
   }
 
+
   @Override
   public String getOriginalAssembly() {
     return "new-array v" + RegTo.getId() + ", v" + RegSize.getId() +
