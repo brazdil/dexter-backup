@@ -15,13 +15,15 @@ import lombok.val;
 
 public class Dex {
 
-  @Getter private DexFile OriginalFile;
+  @Getter private final DexFile OriginalFile;
+  @Getter private final File Filename;
 
-  @Getter private List<DexClass> Classes;
-  @Getter private DexParsingCache ParsingCache;
+  @Getter private final List<DexClass> Classes;
+  @Getter private final DexParsingCache ParsingCache;
 
   public Dex(File filename) throws IOException, UnknownTypeException, DexInstructionParsingException {
     OriginalFile = new DexFile(filename);
+    Filename = filename;
 
     ParsingCache = new DexParsingCache();
 

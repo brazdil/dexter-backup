@@ -27,7 +27,7 @@ public class MainWindowTest {
 
   private static void execAddClassesToTree(DefaultMutableTreeNode root, List<DexClass> classes) {
     try {
-      Method m = MainWindow.class.getDeclaredMethod("addClassesToTree", DefaultMutableTreeNode.class, List.class);
+      Method m = FileTab.class.getDeclaredMethod("addClassesToTree", DefaultMutableTreeNode.class, List.class);
       m.setAccessible(true);
       m.invoke(null, root, classes);
     } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
@@ -155,7 +155,7 @@ public class MainWindowTest {
 
   private static void execInsertNodeAlphabetically(DefaultMutableTreeNode parent, DefaultMutableTreeNode newChild) {
     try {
-      Method m = MainWindow.class.getDeclaredMethod("insertNodeAlphabetically", DefaultMutableTreeNode.class, DefaultMutableTreeNode.class);
+      Method m = FileTab.class.getDeclaredMethod("insertNodeAlphabetically", DefaultMutableTreeNode.class, DefaultMutableTreeNode.class);
       m.setAccessible(true);
       m.invoke(null, parent, newChild);
     } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
