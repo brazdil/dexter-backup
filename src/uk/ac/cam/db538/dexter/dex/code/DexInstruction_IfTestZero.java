@@ -1,6 +1,10 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Format.Instruction21t;
+
 import lombok.Getter;
+import lombok.val;
 
 public class DexInstruction_IfTestZero extends DexInstruction {
 
@@ -59,6 +63,18 @@ public class DexInstruction_IfTestZero extends DexInstruction {
     Reg = reg;
     Target = target;
     InsnOpcode = opcode;
+  }
+
+  public DexInstruction_IfTestZero(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+    if (insn instanceof Instruction21t && Opcode.convert(insn.opcode) != null) {
+
+      val insnIfTestZero = (Instruction21t) insn;
+      Reg = parsingState.getRegister(insnIfTestZero.getRegisterA());
+      Target = parsingState.getLabel(insnIfTestZero.getTargetAddressOffset());
+      InsnOpcode = Opcode.convert(insn.opcode);
+
+    } else
+      throw new DexInstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

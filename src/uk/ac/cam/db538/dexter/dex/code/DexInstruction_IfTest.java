@@ -1,11 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import org.jf.dexlib.Code.Instruction;
-import org.jf.dexlib.Code.Opcode;
-import org.jf.dexlib.Code.Format.Instruction11x;
 import org.jf.dexlib.Code.Format.Instruction22t;
 
-import uk.ac.cam.db538.dexter.dex.code.DexInstruction.InstructionParsingState;
 import lombok.Getter;
 import lombok.val;
 

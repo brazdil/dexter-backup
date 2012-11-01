@@ -240,19 +240,15 @@ public abstract class DexInstruction extends DexCodeElement {
         parsedInsn = new DexInstruction_IfTest(insn, parsingState);
         break;
 
-//      case IF_EQZ:
-//      case IF_NEZ:
-//      case IF_LTZ:
-//      case IF_GEZ:
-//      case IF_GTZ:
-//      case IF_LEZ:
-//        val insnIfTestZero = (Instruction21t) insn;
-//        parsedInsn = new DexInstruction_IfTestZero(
-//          getRegister(insnIfTestZero.getRegisterA(), registers),
-//          getLabel(offset + insnIfTestZero.getTargetAddressOffset(), labelOffsetMap),
-//          DexInstruction_IfTestZero.Opcode.convert(insn.opcode));
-//        break;
-//
+      case IF_EQZ:
+      case IF_NEZ:
+      case IF_LTZ:
+      case IF_GEZ:
+      case IF_GTZ:
+      case IF_LEZ:
+        parsedInsn = new DexInstruction_IfTestZero(insn, parsingState);
+        break;
+
 //      case NEG_INT:
 //      case NOT_INT:
 //      case NEG_FLOAT:
