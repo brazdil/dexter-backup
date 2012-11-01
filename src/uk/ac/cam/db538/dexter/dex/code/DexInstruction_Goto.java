@@ -7,7 +7,6 @@ import org.jf.dexlib.Code.Format.Instruction20t;
 import org.jf.dexlib.Code.Format.Instruction30t;
 
 import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_Goto extends DexInstruction {
 
