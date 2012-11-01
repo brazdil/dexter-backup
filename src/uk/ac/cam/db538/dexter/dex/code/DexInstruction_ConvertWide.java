@@ -3,8 +3,6 @@ package uk.ac.cam.db538.dexter.dex.code;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
-import uk.ac.cam.db538.dexter.dex.code.DexInstruction.InstructionParsingState;
-import uk.ac.cam.db538.dexter.dex.code.DexInstruction_ConvertFromWide.Opcode;
 import lombok.Getter;
 import lombok.val;
 

@@ -287,108 +287,76 @@ public abstract class DexInstruction extends DexCodeElement {
       case DOUBLE_TO_LONG:
         parsedInsn = new DexInstruction_ConvertWide(insn, parsingState);
         break;
-//
-//      case ADD_INT:
-//      case SUB_INT:
-//      case MUL_INT:
-//      case DIV_INT:
-//      case REM_INT:
-//      case AND_INT:
-//      case OR_INT:
-//      case XOR_INT:
-//      case SHL_INT:
-//      case SHR_INT:
-//      case USHR_INT:
-//      case ADD_FLOAT:
-//      case SUB_FLOAT:
-//      case MUL_FLOAT:
-//      case DIV_FLOAT:
-//      case REM_FLOAT:
-//        val insnBinaryOp = (Instruction23x) insn;
-//        parsedInsn = new DexInstruction_BinaryOp(
-//          getRegister(insnBinaryOp.getRegisterA(), registers),
-//          getRegister(insnBinaryOp.getRegisterB(), registers),
-//          getRegister(insnBinaryOp.getRegisterC(), registers),
-//          DexInstruction_BinaryOp.Opcode.convert(insn.opcode));
-//        break;
-//
-//      case ADD_INT_2ADDR:
-//      case SUB_INT_2ADDR:
-//      case MUL_INT_2ADDR:
-//      case DIV_INT_2ADDR:
-//      case REM_INT_2ADDR:
-//      case AND_INT_2ADDR:
-//      case OR_INT_2ADDR:
-//      case XOR_INT_2ADDR:
-//      case SHL_INT_2ADDR:
-//      case SHR_INT_2ADDR:
-//      case USHR_INT_2ADDR:
-//      case ADD_FLOAT_2ADDR:
-//      case SUB_FLOAT_2ADDR:
-//      case MUL_FLOAT_2ADDR:
-//      case DIV_FLOAT_2ADDR:
-//      case REM_FLOAT_2ADDR:
-//        val insnBinaryOp2addr = (Instruction12x) insn;
-//        parsedInsn = new DexInstruction_BinaryOp(
-//          getRegister(insnBinaryOp2addr.getRegisterA(), registers),
-//          getRegister(insnBinaryOp2addr.getRegisterA(), registers),
-//          getRegister(insnBinaryOp2addr.getRegisterB(), registers),
-//          DexInstruction_BinaryOp.Opcode.convert(insn.opcode));
-//        break;
-//
-//      case ADD_LONG:
-//      case SUB_LONG:
-//      case MUL_LONG:
-//      case DIV_LONG:
-//      case REM_LONG:
-//      case AND_LONG:
-//      case OR_LONG:
-//      case XOR_LONG:
-//      case SHL_LONG:
-//      case SHR_LONG:
-//      case USHR_LONG:
-//      case ADD_DOUBLE:
-//      case SUB_DOUBLE:
-//      case MUL_DOUBLE:
-//      case DIV_DOUBLE:
-//      case REM_DOUBLE:
-//        val insnBinaryOpWide = (Instruction23x) insn;
-//        parsedInsn = new DexInstruction_BinaryOpWide(
-//          getRegister(insnBinaryOpWide.getRegisterA(), registers),
-//          getRegister(insnBinaryOpWide.getRegisterA() + 1, registers),
-//          getRegister(insnBinaryOpWide.getRegisterB(), registers),
-//          getRegister(insnBinaryOpWide.getRegisterB() + 1, registers),
-//          getRegister(insnBinaryOpWide.getRegisterC(), registers),
-//          getRegister(insnBinaryOpWide.getRegisterC() + 1, registers),
-//          DexInstruction_BinaryOpWide.Opcode.convert(insn.opcode));
-//        break;
-//
-//      case ADD_LONG_2ADDR:
-//      case SUB_LONG_2ADDR:
-//      case MUL_LONG_2ADDR:
-//      case DIV_LONG_2ADDR:
-//      case REM_LONG_2ADDR:
-//      case AND_LONG_2ADDR:
-//      case OR_LONG_2ADDR:
-//      case XOR_LONG_2ADDR:
-//      case SHL_LONG_2ADDR:
-//      case SHR_LONG_2ADDR:
-//      case USHR_LONG_2ADDR:
-//      case ADD_DOUBLE_2ADDR:
-//      case SUB_DOUBLE_2ADDR:
-//      case MUL_DOUBLE_2ADDR:
-//      case DIV_DOUBLE_2ADDR:
-//      case REM_DOUBLE_2ADDR:
-//        val insnBinaryOpWide2addr = (Instruction12x) insn;
-//        parsedInsn = new DexInstruction_BinaryOpWide(
-//          getRegister(insnBinaryOpWide2addr.getRegisterA(), registers),
-//          getRegister(insnBinaryOpWide2addr.getRegisterA() + 1, registers),
-//          getRegister(insnBinaryOpWide2addr.getRegisterA(), registers),
-//          getRegister(insnBinaryOpWide2addr.getRegisterA() + 1, registers),
-//          getRegister(insnBinaryOpWide2addr.getRegisterB(), registers),
-//          getRegister(insnBinaryOpWide2addr.getRegisterB() + 1, registers),
-//          DexInstruction_BinaryOpWide.Opcode.convert(insn.opcode));
-//        break;
+
+      case ADD_INT:
+      case SUB_INT:
+      case MUL_INT:
+      case DIV_INT:
+      case REM_INT:
+      case AND_INT:
+      case OR_INT:
+      case XOR_INT:
+      case SHL_INT:
+      case SHR_INT:
+      case USHR_INT:
+      case ADD_FLOAT:
+      case SUB_FLOAT:
+      case MUL_FLOAT:
+      case DIV_FLOAT:
+      case REM_FLOAT:
+      case ADD_INT_2ADDR:
+      case SUB_INT_2ADDR:
+      case MUL_INT_2ADDR:
+      case DIV_INT_2ADDR:
+      case REM_INT_2ADDR:
+      case AND_INT_2ADDR:
+      case OR_INT_2ADDR:
+      case XOR_INT_2ADDR:
+      case SHL_INT_2ADDR:
+      case SHR_INT_2ADDR:
+      case USHR_INT_2ADDR:
+      case ADD_FLOAT_2ADDR:
+      case SUB_FLOAT_2ADDR:
+      case MUL_FLOAT_2ADDR:
+      case DIV_FLOAT_2ADDR:
+      case REM_FLOAT_2ADDR:
+        parsedInsn = new DexInstruction_BinaryOp(insn, parsingState);
+        break;
+
+      case ADD_LONG:
+      case SUB_LONG:
+      case MUL_LONG:
+      case DIV_LONG:
+      case REM_LONG:
+      case AND_LONG:
+      case OR_LONG:
+      case XOR_LONG:
+      case SHL_LONG:
+      case SHR_LONG:
+      case USHR_LONG:
+      case ADD_DOUBLE:
+      case SUB_DOUBLE:
+      case MUL_DOUBLE:
+      case DIV_DOUBLE:
+      case REM_DOUBLE:
+      case ADD_LONG_2ADDR:
+      case SUB_LONG_2ADDR:
+      case MUL_LONG_2ADDR:
+      case DIV_LONG_2ADDR:
+      case REM_LONG_2ADDR:
+      case AND_LONG_2ADDR:
+      case OR_LONG_2ADDR:
+      case XOR_LONG_2ADDR:
+      case SHL_LONG_2ADDR:
+      case SHR_LONG_2ADDR:
+      case USHR_LONG_2ADDR:
+      case ADD_DOUBLE_2ADDR:
+      case SUB_DOUBLE_2ADDR:
+      case MUL_DOUBLE_2ADDR:
+      case DIV_DOUBLE_2ADDR:
+      case REM_DOUBLE_2ADDR:
+        parsedInsn = new DexInstruction_BinaryOpWide(insn, parsingState);
+        break;
 
       default:
         // TODO: throw exception

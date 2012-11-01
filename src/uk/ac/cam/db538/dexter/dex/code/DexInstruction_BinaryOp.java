@@ -1,6 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Format.Instruction12x;
+import org.jf.dexlib.Code.Format.Instruction23x;
+
 import lombok.Getter;
+import lombok.val;
 
 public class DexInstruction_BinaryOp extends DexInstruction {
 
@@ -176,6 +181,26 @@ public class DexInstruction_BinaryOp extends DexInstruction {
     RegSourceA = sourceA;
     RegSourceB = sourceB;
     InsnOpcode = opcode;
+  }
+
+  public DexInstruction_BinaryOp(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+    if (insn instanceof Instruction23x && Opcode.convert(insn.opcode) != null) {
+
+      val insnBinaryOp = (Instruction23x) insn;
+      RegTarget = parsingState.getRegister(insnBinaryOp.getRegisterA());
+      RegSourceA = parsingState.getRegister(insnBinaryOp.getRegisterB());
+      RegSourceB = parsingState.getRegister(insnBinaryOp.getRegisterC());
+      InsnOpcode = Opcode.convert(insn.opcode);
+
+    } else if (insn instanceof Instruction12x && Opcode.convert(insn.opcode) != null) {
+
+      val insnBinaryOp = (Instruction12x) insn;
+      RegTarget = RegSourceA = parsingState.getRegister(insnBinaryOp.getRegisterA());
+      RegSourceB = parsingState.getRegister(insnBinaryOp.getRegisterB());
+      InsnOpcode = Opcode.convert(insn.opcode);
+
+    } else
+      throw new DexInstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override
