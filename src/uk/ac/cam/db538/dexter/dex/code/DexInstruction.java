@@ -6,33 +6,9 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.val;
 
-import org.jf.dexlib.StringIdItem;
-import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
-import org.jf.dexlib.Code.Opcode;
-import org.jf.dexlib.Code.Format.Instruction10t;
-import org.jf.dexlib.Code.Format.Instruction11n;
-import org.jf.dexlib.Code.Format.Instruction11x;
-import org.jf.dexlib.Code.Format.Instruction12x;
-import org.jf.dexlib.Code.Format.Instruction20t;
-import org.jf.dexlib.Code.Format.Instruction21c;
-import org.jf.dexlib.Code.Format.Instruction21h;
-import org.jf.dexlib.Code.Format.Instruction21s;
-import org.jf.dexlib.Code.Format.Instruction21t;
-import org.jf.dexlib.Code.Format.Instruction22c;
-import org.jf.dexlib.Code.Format.Instruction22t;
-import org.jf.dexlib.Code.Format.Instruction22x;
-import org.jf.dexlib.Code.Format.Instruction23x;
-import org.jf.dexlib.Code.Format.Instruction30t;
-import org.jf.dexlib.Code.Format.Instruction31c;
-import org.jf.dexlib.Code.Format.Instruction31i;
-import org.jf.dexlib.Code.Format.Instruction32x;
-import org.jf.dexlib.Code.Format.Instruction51l;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public abstract class DexInstruction extends DexCodeElement {
@@ -219,15 +195,10 @@ public abstract class DexInstruction extends DexCodeElement {
         parsedInsn = new DexInstruction_Monitor(insn, parsingState);
         break;
 
-//      case CHECK_CAST:
-//        val insnCheckCast = (Instruction21c) insn;
-//        parsedInsn = new DexInstruction_CheckCast(
-//          getRegister(insnCheckCast.getRegisterA(), registers),
-//          DexReferenceType.parse(
-//            ((TypeIdItem) insnCheckCast.getReferencedItem()).getTypeDescriptor(),
-//            cache));
-//        break;
-//
+      case CHECK_CAST:
+        parsedInsn = new DexInstruction_CheckCast(insn, parsingState);
+        break;
+
 //      case INSTANCE_OF:
 //        val insnInstanceOf = (Instruction22c) insn;
 //        parsedInsn = new DexInstruction_InstanceOf(
