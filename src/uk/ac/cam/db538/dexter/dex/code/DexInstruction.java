@@ -213,15 +213,12 @@ public abstract class DexInstruction extends DexCodeElement {
       case CONST_CLASS:
         parsedInsn = new DexInstruction_ConstClass(insn, parsingState);
         break;
-//
-//      case MONITOR_ENTER:
-//      case MONITOR_EXIT:
-//        val insnMonitor = (Instruction11x) insn;
-//        parsedInsn = new DexInstruction_Monitor(
-//          getRegister(insnMonitor.getRegisterA(), registers),
-//          insn.opcode == Opcode.MONITOR_ENTER);
-//        break;
-//
+
+      case MONITOR_ENTER:
+      case MONITOR_EXIT:
+        parsedInsn = new DexInstruction_Monitor(insn, parsingState);
+        break;
+
 //      case CHECK_CAST:
 //        val insnCheckCast = (Instruction21c) insn;
 //        parsedInsn = new DexInstruction_CheckCast(
