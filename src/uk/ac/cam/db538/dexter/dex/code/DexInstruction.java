@@ -175,25 +175,19 @@ public abstract class DexInstruction extends DexCodeElement {
         parsedInsn = new DexInstruction_MoveException(insn, parsingState);
         break;
 
-//      case RETURN_VOID:
-//        parsedInsn = new DexInstruction_ReturnVoid();
-//        break;
-//
-//      case RETURN:
-//      case RETURN_OBJECT:
-//        val insnReturn = (Instruction11x) insn;
-//        parsedInsn = new DexInstruction_Return(
-//          getRegister(insnReturn.getRegisterA(), registers),
-//          insn.opcode == Opcode.RETURN_OBJECT);
-//        break;
-//
-//      case RETURN_WIDE:
-//        val insnReturnWide = (Instruction11x) insn;
-//        parsedInsn = new DexInstruction_ReturnWide(
-//          getRegister(insnReturnWide.getRegisterA(), registers),
-//          getRegister(insnReturnWide.getRegisterA() + 1, registers));
-//        break;
-//
+      case RETURN_VOID:
+        parsedInsn = new DexInstruction_ReturnVoid();
+        break;
+
+      case RETURN:
+      case RETURN_OBJECT:
+        parsedInsn = new DexInstruction_Return(insn, parsingState);
+        break;
+
+      case RETURN_WIDE:
+        parsedInsn = new DexInstruction_ReturnWide(insn, parsingState);
+        break;
+
 //      case CONST_4:
 //        val insnConst4 = (Instruction11n) insn;
 //        parsedInsn = new DexInstruction_Const(
