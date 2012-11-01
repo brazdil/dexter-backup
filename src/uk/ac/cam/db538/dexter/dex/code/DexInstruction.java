@@ -249,27 +249,17 @@ public abstract class DexInstruction extends DexCodeElement {
         parsedInsn = new DexInstruction_IfTestZero(insn, parsingState);
         break;
 
-//      case NEG_INT:
-//      case NOT_INT:
-//      case NEG_FLOAT:
-//        val insnUnaryOp = (Instruction12x) insn;
-//        parsedInsn = new DexInstruction_UnaryOp(
-//          getRegister(insnUnaryOp.getRegisterA(), registers),
-//          getRegister(insnUnaryOp.getRegisterB(), registers),
-//          DexInstruction_UnaryOp.Opcode.convert(insn.opcode));
-//        break;
-//
-//      case NEG_LONG:
-//      case NOT_LONG:
-//      case NEG_DOUBLE:
-//        val insnUnaryOpWide = (Instruction12x) insn;
-//        parsedInsn = new DexInstruction_UnaryOpWide(
-//          getRegister(insnUnaryOpWide.getRegisterA(), registers),
-//          getRegister(insnUnaryOpWide.getRegisterA() + 1, registers),
-//          getRegister(insnUnaryOpWide.getRegisterB(), registers),
-//          getRegister(insnUnaryOpWide.getRegisterB() + 1, registers),
-//          DexInstruction_UnaryOpWide.Opcode.convert(insn.opcode));
-//        break;
+      case NEG_INT:
+      case NOT_INT:
+      case NEG_FLOAT:
+        parsedInsn = new DexInstruction_UnaryOp(insn, parsingState);
+        break;
+
+      case NEG_LONG:
+      case NOT_LONG:
+      case NEG_DOUBLE:
+        parsedInsn = new DexInstruction_UnaryOpWide(insn, parsingState);
+        break;
 //
 //      case INT_TO_FLOAT:
 //      case FLOAT_TO_INT:

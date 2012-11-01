@@ -1,6 +1,10 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Format.Instruction12x;
+
 import lombok.Getter;
+import lombok.val;
 
 public class DexInstruction_UnaryOp extends DexInstruction {
 
@@ -50,6 +54,18 @@ public class DexInstruction_UnaryOp extends DexInstruction {
     RegTo = to;
     RegFrom = from;
     InsnOpcode = opcode;
+  }
+
+  public DexInstruction_UnaryOp(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+    if (insn instanceof Instruction12x && Opcode.convert(insn.opcode) != null) {
+
+      val insnUnaryOp = (Instruction12x) insn;
+      RegTo = parsingState.getRegister(insnUnaryOp.getRegisterA());
+      RegFrom = parsingState.getRegister(insnUnaryOp.getRegisterB());
+      InsnOpcode = Opcode.convert(insn.opcode);
+
+    } else
+      throw new DexInstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override
