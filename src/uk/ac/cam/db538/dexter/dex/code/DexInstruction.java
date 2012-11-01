@@ -207,16 +207,10 @@ public abstract class DexInstruction extends DexCodeElement {
         parsedInsn = new DexInstruction_NewInstance(insn, parsingState);
         break;
 
-//      case NEW_ARRAY:
-//        val insnNewArray = (Instruction22c) insn;
-//        parsedInsn = new DexInstruction_NewArray(
-//          getRegister(insnNewArray.getRegisterA(), registers),
-//          getRegister(insnNewArray.getRegisterB(), registers),
-//          DexArrayType.parse(
-//            ((TypeIdItem) insnNewArray.getReferencedItem()).getTypeDescriptor(),
-//            cache));
-//        break;
-//
+      case NEW_ARRAY:
+        parsedInsn = new DexInstruction_NewArray(insn, parsingState);
+        break;
+
 //      case THROW:
 //        val insnThrow = (Instruction11x) insn;
 //        parsedInsn = new DexInstruction_Throw(

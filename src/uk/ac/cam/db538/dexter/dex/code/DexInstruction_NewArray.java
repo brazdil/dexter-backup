@@ -1,8 +1,15 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import org.jf.dexlib.TypeIdItem;
+import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Opcode;
+import org.jf.dexlib.Code.Format.Instruction22c;
+
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
+import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 import lombok.Getter;
+import lombok.val;
 
 public class DexInstruction_NewArray extends DexInstruction {
 
@@ -16,6 +23,19 @@ public class DexInstruction_NewArray extends DexInstruction {
     Value = value;
   }
 
+  public DexInstruction_NewArray(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException, UnknownTypeException {
+    if (insn instanceof Instruction22c && insn.opcode == Opcode.NEW_ARRAY) {
+
+      val insnNewArray = (Instruction22c) insn;
+      RegTo = parsingState.getRegister(insnNewArray.getRegisterA());
+      RegSize = parsingState.getRegister(insnNewArray.getRegisterB());
+      Value = DexArrayType.parse(
+                ((TypeIdItem) insnNewArray.getReferencedItem()).getTypeDescriptor(),
+                parsingState.getCache());
+
+    } else
+      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+  }
 
   @Override
   public String getOriginalAssembly() {
