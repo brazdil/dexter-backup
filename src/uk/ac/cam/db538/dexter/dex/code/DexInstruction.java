@@ -195,38 +195,13 @@ public abstract class DexInstruction extends DexCodeElement {
         parsedInsn = new DexInstruction_Const(insn, parsingState);
         break;
 
-//      case CONST_WIDE_16:
-//        val insnConstWide16 = (Instruction21s) insn;
-//        parsedInsn = new DexInstruction_ConstWide(
-//          getRegister(insnConstWide16.getRegisterA(), registers),
-//          getRegister(insnConstWide16.getRegisterA() + 1, registers),
-//          insnConstWide16.getLiteral());
-//        break;
-//
-//      case CONST_WIDE_32:
-//        val insnConstWide32 = (Instruction31i) insn;
-//        parsedInsn = new DexInstruction_ConstWide(
-//          getRegister(insnConstWide32.getRegisterA(), registers),
-//          getRegister(insnConstWide32.getRegisterA() + 1, registers),
-//          insnConstWide32.getLiteral());
-//        break;
-//
-//      case CONST_WIDE:
-//        val insnConstWide = (Instruction51l) insn;
-//        parsedInsn = new DexInstruction_ConstWide(
-//          getRegister(insnConstWide.getRegisterA(), registers),
-//          getRegister(insnConstWide.getRegisterA() + 1, registers),
-//          insnConstWide.getLiteral());
-//        break;
-//
-//      case CONST_WIDE_HIGH16:
-//        val insnConstWideHigh16 = (Instruction21h) insn;
-//        parsedInsn = new DexInstruction_ConstWide(
-//          getRegister(insnConstWideHigh16.getRegisterA(), registers),
-//          getRegister(insnConstWideHigh16.getRegisterA() + 1, registers),
-//          insnConstWideHigh16.getLiteral() << 48);
-//        break;
-//
+      case CONST_WIDE_16:
+      case CONST_WIDE_32:
+      case CONST_WIDE:
+      case CONST_WIDE_HIGH16:
+        parsedInsn = new DexInstruction_ConstWide(insn, parsingState);
+        break;
+
 //      case CONST_STRING:
 //        val insnConstString = (Instruction21c) insn;
 //        parsedInsn = new DexInstruction_ConstString(
