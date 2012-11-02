@@ -3,9 +3,6 @@ package uk.ac.cam.db538.dexter.dex.code;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import java.util.List;
-
 import lombok.val;
 
 import org.jf.dexlib.DexFile;
@@ -35,7 +32,6 @@ import org.jf.dexlib.Code.Format.Instruction51l;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertFromWide;
@@ -52,9 +48,9 @@ import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 public class DexInstructionTest {
 
   private static DexCodeElement compare(Instruction insn, String output) {
-    List<DexCodeElement> insnList;
+    DexCode insnList;
     try {
-      insnList = DexInstruction.parseMethodCode(new Instruction[] { insn }, new DexParsingCache());
+      insnList = new DexCode(new Instruction[] { insn }, new DexParsingCache());
     } catch (UnknownTypeException | InstructionParsingException e) {
       fail(e.getClass().getName() + ": " + e.getMessage());
       return null;
@@ -66,9 +62,9 @@ public class DexInstructionTest {
   }
 
   private static void compareList(Instruction[] insns, String[] output) throws InstructionParsingException {
-    List<DexCodeElement> insnList;
+    DexCode insnList;
     try {
-      insnList = DexInstruction.parseMethodCode(insns, new DexParsingCache());
+      insnList = new DexCode(insns, new DexParsingCache());
     } catch (UnknownTypeException e) {
       fail(e.getClass().getName() + ": " + e.getMessage());
       return;

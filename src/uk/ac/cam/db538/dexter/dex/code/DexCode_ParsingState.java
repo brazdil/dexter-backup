@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.dex.code.insn;
+package uk.ac.cam.db538.dexter.dex.code;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,12 +6,12 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.utils.Cache;
 
-class ParsingState {
+public class DexCode_ParsingState {
   private final Cache<Integer, DexRegister> RegisterIdCache;
   private final Cache<Long, DexLabel> LabelOffsetCache;
   private final Map<Long, DexInstruction> InstructionOffsetMap;
@@ -19,13 +19,13 @@ class ParsingState {
   @Getter private final DexParsingCache Cache;
   @Getter private final DexCode Code;
 
-  public ParsingState(DexParsingCache cache) {
+  public DexCode_ParsingState(DexParsingCache cache, DexCode code) {
     RegisterIdCache = DexRegister.createCache();
     LabelOffsetCache = DexLabel.createCache();
     InstructionOffsetMap = new HashMap<Long, DexInstruction>();
     Cache = cache;
     CurrentOffset = 0L;
-    Code = new DexCode();
+    Code = code;
   }
 
   public DexRegister getRegister(int id) {

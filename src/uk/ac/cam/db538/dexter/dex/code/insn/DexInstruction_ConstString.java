@@ -7,7 +7,8 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction31c;
 
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 import lombok.Getter;
 import lombok.val;
@@ -25,7 +26,7 @@ public class DexInstruction_ConstString extends DexInstruction {
     StringConstant = value;
   }
 
-  public DexInstruction_ConstString(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_ConstString(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_STRING) {
 
       val insnConstString = (Instruction21c) insn;

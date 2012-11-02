@@ -4,7 +4,8 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 import lombok.Getter;
 import lombok.val;
@@ -19,7 +20,7 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
     RegTo2 = to2;
   }
 
-  public DexInstruction_MoveResultWide(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_MoveResultWide(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
     if (insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_RESULT_WIDE) {
 
       val insnMove = (Instruction11x) insn;

@@ -1,13 +1,20 @@
-package uk.ac.cam.db538.dexter.dex;
+package uk.ac.cam.db538.dexter.dex.method;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.jf.dexlib.CodeItem;
+import org.jf.dexlib.DexFile;
+import org.jf.dexlib.MethodIdItem;
 import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
+import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.Utils;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
@@ -58,4 +65,15 @@ public abstract class DexMethod {
   public abstract boolean isVirtual();
 
   public abstract void instrument();
+
+  protected abstract CodeItem generateCodeItem(DexFile outFile);
+
+  public EncodedMethod writeToFile(DexFile outFile, DexAssemblingCache cache) {
+    val classType = cache.getTypeId(ParentClass.getType());
+    val methodName = cache.getStringConstant(Name);
+    val methodPrototype = cache.getPrototype(ReturnType, ParameterTypes);
+
+    val methodItem = MethodIdItem.internMethodIdItem(outFile, classType, methodPrototype, methodName);
+    return new EncodedMethod(methodItem, Utils.assembleAccessFlags(AccessFlagSet), generateCodeItem(outFile));
+  }
 }

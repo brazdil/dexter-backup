@@ -4,7 +4,8 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction21t;
 
 import uk.ac.cam.db538.dexter.dex.code.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 import lombok.Getter;
 import lombok.val;
@@ -21,7 +22,7 @@ public class DexInstruction_IfTestZero extends DexInstruction {
     InsnOpcode = opcode;
   }
 
-  public DexInstruction_IfTestZero(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_IfTestZero(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
     if (insn instanceof Instruction21t && Opcode_IfTestZero.convert(insn.opcode) != null) {
 
       val insnIfTestZero = (Instruction21t) insn;

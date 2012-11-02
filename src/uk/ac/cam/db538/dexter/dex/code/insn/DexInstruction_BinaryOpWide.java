@@ -4,7 +4,8 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 import lombok.Getter;
 import lombok.val;
@@ -35,7 +36,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
     InsnOpcode = opcode;
   }
 
-  public DexInstruction_BinaryOpWide(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_BinaryOpWide(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
     int regA, regB, regC;
 
     if (insn instanceof Instruction23x && Opcode_BinaryOpWide.convert(insn.opcode) != null) {

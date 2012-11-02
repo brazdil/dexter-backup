@@ -6,7 +6,8 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction22x;
 import org.jf.dexlib.Code.Format.Instruction32x;
 
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 import lombok.Getter;
 import lombok.val;
@@ -25,7 +26,7 @@ public class DexInstruction_MoveWide extends DexInstruction {
     RegFrom2 = from2;
   }
 
-  public DexInstruction_MoveWide(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_MoveWide(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
     int regA, regB;
 
     if (insn instanceof Instruction12x && insn.opcode == Opcode.MOVE_WIDE) {

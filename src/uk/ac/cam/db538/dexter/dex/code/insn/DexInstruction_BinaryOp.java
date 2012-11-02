@@ -5,7 +5,8 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 import lombok.Getter;
 import lombok.val;
@@ -28,7 +29,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
     InsnOpcode = opcode;
   }
 
-  public DexInstruction_BinaryOp(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_BinaryOp(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
     int regA, regB, regC;
 
     if (insn instanceof Instruction23x && Opcode_BinaryOp.convert(insn.opcode) != null) {
@@ -72,7 +73,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   @Override
-  protected DexRegister[] getReferencedRegisters() {
+  public DexRegister[] getReferencedRegisters() {
     return new DexRegister[] { RegTarget, RegSourceA, RegSourceB };
   }
 }

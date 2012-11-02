@@ -1,11 +1,14 @@
-package uk.ac.cam.db538.dexter.dex;
+package uk.ac.cam.db538.dexter.dex.method;
 
 import java.util.List;
 import java.util.Set;
 
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
+import org.jf.dexlib.CodeItem;
+import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
@@ -28,6 +31,10 @@ public class DexPurelyVirtualMethod extends DexMethod {
   }
 
   @Override
-  public void instrument() {
+  public void instrument() { }
+
+  @Override
+  protected CodeItem generateCodeItem(DexFile outFile) {
+    return null;
   }
 }

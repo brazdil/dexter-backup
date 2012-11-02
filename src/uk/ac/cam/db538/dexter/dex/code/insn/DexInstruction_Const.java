@@ -2,13 +2,16 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
+import org.jf.dexlib.Code.Format.Instruction10x;
 import org.jf.dexlib.Code.Format.Instruction11n;
 import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction31i;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
 
 import lombok.Getter;
 import lombok.val;
@@ -26,7 +29,7 @@ public class DexInstruction_Const extends DexInstruction {
     Value = value;
   }
 
-  public DexInstruction_Const(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_Const(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
     if (insn instanceof Instruction11n && insn.opcode == Opcode.CONST_4) {
 
       val insnConst4 = (Instruction11n) insn;
@@ -71,7 +74,14 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
-  protected DexRegister[] getReferencedRegisters() {
+  public DexRegister[] getReferencedRegisters() {
     return new DexRegister[] { RegTo };
+  }
+
+  @Override
+  public Instruction[] assembleBytecode(RegisterAllocation regAlloc) {
+    return new Instruction[] {
+             new Instruction10x(Opcode.NOP)
+           };
   }
 }

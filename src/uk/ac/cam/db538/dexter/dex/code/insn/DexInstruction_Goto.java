@@ -7,6 +7,7 @@ import org.jf.dexlib.Code.Format.Instruction20t;
 import org.jf.dexlib.Code.Format.Instruction30t;
 
 import uk.ac.cam.db538.dexter.dex.code.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 
 import lombok.Getter;
 
@@ -18,7 +19,7 @@ public class DexInstruction_Goto extends DexInstruction {
     Target = target;
   }
 
-  public DexInstruction_Goto(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_Goto(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
     long targetOffset;
     if ( insn instanceof Instruction10t && insn.opcode == Opcode.GOTO) {
       targetOffset = ((Instruction10t) insn).getTargetAddressOffset();

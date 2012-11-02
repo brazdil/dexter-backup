@@ -9,12 +9,12 @@ import javax.swing.JTextField;
 import org.jf.dexlib.Util.AccessFlags;
 
 import lombok.val;
-import uk.ac.cam.db538.dexter.dex.DexMethodWithCode;
-import uk.ac.cam.db538.dexter.dex.DexMethod;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstWide;
+import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 
 import com.alee.extended.label.WebHotkeyLabel;
 import com.alee.extended.panel.GroupPanel;

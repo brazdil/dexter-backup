@@ -3,7 +3,8 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 import lombok.Getter;
 import lombok.val;
@@ -24,7 +25,7 @@ public class DexInstruction_UnaryOpWide extends DexInstruction {
     InsnOpcode = opcode;
   }
 
-  public DexInstruction_UnaryOpWide(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_UnaryOpWide(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
     if (insn instanceof Instruction12x && Opcode_UnaryOpWide.convert(insn.opcode) != null) {
 
       val insnUnaryOp = (Instruction12x) insn;

@@ -18,6 +18,10 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
+import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.dex.method.DexPurelyVirtualMethod;
+import uk.ac.cam.db538.dexter.dex.method.DexVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -69,12 +73,12 @@ public class DexClass {
         Fields.add(new DexField(this, instanceFieldInfo));
 
       for (val directMethodInfo : clsData.getDirectMethods())
-        Methods.add(new DexMethodWithCode(this, directMethodInfo));
+        Methods.add(new DexDirectMethod(this, directMethodInfo));
       for (val virtualMethodInfo : clsData.getVirtualMethods()) {
         if (virtualMethodInfo.codeItem == null)
           Methods.add(new DexPurelyVirtualMethod(this, virtualMethodInfo));
         else
-          Methods.add(new DexMethodWithCode(this, virtualMethodInfo));
+          Methods.add(new DexVirtualMethod(this, virtualMethodInfo));
       }
 
     }
@@ -148,12 +152,25 @@ public class DexClass {
 //                        new LinkedList<MethodAnnotation>(),
 //                        new LinkedList<ParameterAnnotation>());
 
+    val staticFields = new LinkedList<EncodedField>();
+    val instanceFields = new LinkedList<EncodedField>();
+    val directMethods = new LinkedList<EncodedMethod>();
+    val virtualMethods = new LinkedList<EncodedMethod>();
+
+    for (val method : Methods) {
+      if (method instanceof DexDirectMethod)
+        directMethods.add(method.writeToFile(outFile, cache));
+      else if ((method instanceof DexVirtualMethod) || (method instanceof DexPurelyVirtualMethod))
+        virtualMethods.add(method.writeToFile(outFile, cache));
+
+    }
+
     val classData = ClassDataItem.internClassDataItem(
                       outFile,
-                      new LinkedList<EncodedField>(),
-                      new LinkedList<EncodedField>(),
-                      new LinkedList<EncodedMethod>(),
-                      new LinkedList<EncodedMethod>());
+                      staticFields,
+                      instanceFields,
+                      directMethods,
+                      virtualMethods);
 
     val staticFieldInitializers = new LinkedList<StaticFieldInitializer>();
 

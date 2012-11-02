@@ -6,6 +6,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.lang.Thread.State;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -79,7 +80,9 @@ public class MainWindow {
       public void run() {
         try {
           task.start();
-          task.join();
+          do {
+            Thread.sleep(1000);
+          } while (task.getState() != State.TERMINATED);
         } catch (InterruptedException e) {
         } finally {
           progress.setVisible(false);
