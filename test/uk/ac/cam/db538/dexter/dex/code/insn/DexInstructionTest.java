@@ -1,7 +1,8 @@
-package uk.ac.cam.db538.dexter.dex.code;
+package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import lombok.val;
 
@@ -32,6 +33,8 @@ import org.jf.dexlib.Code.Format.Instruction51l;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertFromWide;
@@ -46,6 +49,32 @@ import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstructionTest {
+
+  @Test
+  public void testFitsIntoBits_Signed() {
+    assertTrue(DexInstruction.fitsIntoBits_Signed(127L, 8));
+    assertFalse(DexInstruction.fitsIntoBits_Signed(128L, 8));
+    assertTrue(DexInstruction.fitsIntoBits_Signed(-128L, 8));
+    assertFalse(DexInstruction.fitsIntoBits_Signed(-129L, 8));
+  }
+
+  @Test
+  public void testFitsIntoBits_Unsigned() {
+    assertTrue(DexInstruction.fitsIntoBits_Unsigned(255L, 8));
+    assertFalse(DexInstruction.fitsIntoBits_Unsigned(256L, 8));
+    assertTrue(DexInstruction.fitsIntoBits_Unsigned(0L, 8));
+    assertFalse(DexInstruction.fitsIntoBits_Unsigned(-1L, 8));
+  }
+
+  @Test
+  public void testFitsIntoHighBits_Signed() {
+    assertTrue(DexInstruction.fitsIntoHighBits_Signed(127L << 4, 8, 4));
+    assertFalse(DexInstruction.fitsIntoHighBits_Signed(128L << 4, 8, 4));
+    assertFalse(DexInstruction.fitsIntoHighBits_Signed((127L << 4) | (1L << 3), 8, 4));
+    assertTrue(DexInstruction.fitsIntoHighBits_Signed(-128L << 4, 8, 4));
+    assertFalse(DexInstruction.fitsIntoHighBits_Signed(-129L << 4, 8, 4));
+    assertFalse(DexInstruction.fitsIntoHighBits_Signed((-128L << 4) | (1L << 3), 8, 4));
+  }
 
   private static DexCodeElement compare(Instruction insn, String output) {
     DexCode insnList;
@@ -216,38 +245,6 @@ public class DexInstructionTest {
                  "return-wide v235");
     assertEquals(Integer.valueOf(235), insn.getRegFrom1().getId());
     assertEquals(Integer.valueOf(236), insn.getRegFrom2().getId());
-  }
-
-  @Test
-  public void testConst4() {
-    compare(new Instruction11n(Opcode.CONST_4, (byte) 13, (byte) 7),
-            "const v13, #7");
-    compare(new Instruction11n(Opcode.CONST_4, (byte) 13, (byte) -8),
-            "const v13, #-8");
-  }
-
-  @Test
-  public void testConst16() {
-    compare(new Instruction21s(Opcode.CONST_16, (short) 236, (short) 32082),
-            "const v236, #32082");
-    compare(new Instruction21s(Opcode.CONST_16, (short) 236, (short) -32082),
-            "const v236, #-32082");
-  }
-
-  @Test
-  public void testConst() {
-    compare(new Instruction31i(Opcode.CONST, (short) 237, 0x01ABCDEF),
-            "const v237, #28036591");
-    compare(new Instruction31i(Opcode.CONST, (short) 237, 0xABCDEF01),
-            "const v237, #-1412567295");
-  }
-
-  @Test
-  public void testConstHigh16() {
-    compare(new Instruction21h(Opcode.CONST_HIGH16, (short) 238, (short)0x1234),
-            "const v238, #305397760");
-    compare(new Instruction21h(Opcode.CONST_HIGH16, (short) 238, (short)0xABCD),
-            "const v238, #-1412628480");
   }
 
   @Test

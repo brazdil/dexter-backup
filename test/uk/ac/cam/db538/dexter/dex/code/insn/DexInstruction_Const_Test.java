@@ -1,0 +1,190 @@
+package uk.ac.cam.db538.dexter.dex.code.insn;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import lombok.val;
+
+import org.jf.dexlib.Code.Opcode;
+import org.jf.dexlib.Code.Format.Instruction11n;
+import org.jf.dexlib.Code.Format.Instruction21h;
+import org.jf.dexlib.Code.Format.Instruction21s;
+import org.jf.dexlib.Code.Format.Instruction31i;
+import org.junit.Test;
+
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+
+public class DexInstruction_Const_Test {
+
+  @Test
+  public void testParse_Const4() {
+    Utils.parseAndCompare(
+      new Instruction11n(Opcode.CONST_4, (byte) 13, (byte) 7),
+      "const v13, #7");
+    Utils.parseAndCompare(
+      new Instruction11n(Opcode.CONST_4, (byte) 13, (byte) -8),
+      "const v13, #-8");
+  }
+
+  @Test
+  public void testParse_Const16() {
+    Utils.parseAndCompare(
+      new Instruction21s(Opcode.CONST_16, (short) 236, (short) 32082),
+      "const v236, #32082");
+    Utils.parseAndCompare(
+      new Instruction21s(Opcode.CONST_16, (short) 236, (short) -32082),
+      "const v236, #-32082");
+  }
+
+  @Test
+  public void testParse_Const() {
+    Utils.parseAndCompare(
+      new Instruction31i(Opcode.CONST, (short) 237, 0x01ABCDEF),
+      "const v237, #28036591");
+    Utils.parseAndCompare(
+      new Instruction31i(Opcode.CONST, (short) 237, 0xABCDEF01),
+      "const v237, #-1412567295");
+  }
+
+  @Test
+  public void testParse_ConstHigh16() {
+    Utils.parseAndCompare(
+      new Instruction21h(Opcode.CONST_HIGH16, (short) 238, (short)0x1234),
+      "const v238, #305397760");
+    Utils.parseAndCompare(
+      new Instruction21h(Opcode.CONST_HIGH16, (short) 238, (short)0xABCD),
+      "const v238, #-1412628480");
+  }
+
+  @Test
+  public void testAssemble_Const4() {
+    val bitLit = 4;
+    val lit = (1L << (bitLit - 1)) - 1;
+
+    val bitReg = 4;
+    val regNum = (1 << bitReg) - 1;
+    val reg = new DexRegister(regNum);
+    val regAlloc = Utils.genRegAlloc(reg);
+
+    val insn = new DexInstruction_Const(reg, lit);
+
+    val asm = insn.assembleBytecode(regAlloc);
+    assertEquals(1, asm.length);
+    assertTrue(asm[0] instanceof Instruction11n);
+
+    val asmInsn = (Instruction11n) asm[0];
+    assertEquals(regNum, asmInsn.getRegisterA());
+    assertEquals(lit, asmInsn.getLiteral());
+  }
+
+  @Test
+  public void testAssemble_Const16_DueToRegister() {
+    val bitLit = 4;
+    val lit = (1L << (bitLit - 1)) - 1;
+
+    val bitReg = 5;
+    val regNum = (1 << bitReg) - 1;
+    val reg = new DexRegister(regNum);
+    val regAlloc = Utils.genRegAlloc(reg);
+
+    val insn = new DexInstruction_Const(reg, lit);
+
+    val asm = insn.assembleBytecode(regAlloc);
+    assertEquals(1, asm.length);
+    assertTrue(asm[0] instanceof Instruction21s);
+
+    val asmInsn = (Instruction21s) asm[0];
+    assertEquals(regNum, asmInsn.getRegisterA());
+    assertEquals(lit, asmInsn.getLiteral());
+  }
+
+  @Test
+  public void testAssemble_Const16_DueToLiteral() {
+    val bitLit = 16;
+    val lit = (1L << (bitLit - 1)) - 1;
+
+    val bitReg = 4;
+    val regNum = (1 << bitReg) - 1;
+    val reg = new DexRegister(regNum);
+    val regAlloc = Utils.genRegAlloc(reg);
+
+    val insn = new DexInstruction_Const(reg, lit);
+
+    val asm = insn.assembleBytecode(regAlloc);
+    assertEquals(1, asm.length);
+    assertTrue(asm[0] instanceof Instruction21s);
+
+    val asmInsn = (Instruction21s) asm[0];
+    assertEquals(regNum, asmInsn.getRegisterA());
+    assertEquals(lit, asmInsn.getLiteral());
+  }
+
+  @Test
+  public void testAssemble_ConstHigh16() {
+    val bitLitBottom = 16;
+    val lit = -1L << bitLitBottom;
+
+    val bitReg = 8;
+    val regNum = (1 << bitReg) - 1;
+    val reg = new DexRegister(regNum);
+    val regAlloc = Utils.genRegAlloc(reg);
+
+    val insn = new DexInstruction_Const(reg, lit);
+
+    val asm = insn.assembleBytecode(regAlloc);
+    assertEquals(1, asm.length);
+    assertTrue(asm[0] instanceof Instruction21h);
+
+    val asmInsn = (Instruction21h) asm[0];
+    assertEquals(regNum, asmInsn.getRegisterA());
+    assertEquals(lit >> bitLitBottom, asmInsn.getLiteral());
+  }
+
+  @Test
+  public void testAssemble_Const32() {
+    val bitLit = 32;
+    val lit = (1L << (bitLit - 1)) - 1;
+
+    val bitReg = 8;
+    val regNum = (1 << bitReg) - 1;
+    val reg = new DexRegister(regNum);
+    val regAlloc = Utils.genRegAlloc(reg);
+
+    val insn = new DexInstruction_Const(reg, lit);
+
+    val asm = insn.assembleBytecode(regAlloc);
+    assertEquals(1, asm.length);
+    assertTrue(asm[0] instanceof Instruction31i);
+
+    val asmInsn = (Instruction31i) asm[0];
+    assertEquals(regNum, asmInsn.getRegisterA());
+    assertEquals(lit, asmInsn.getLiteral());
+  }
+
+  @Test(expected=InstructionAssemblyException.class)
+  public void testAssemble_ConstTooBig() {
+    val bitLit = 33;
+    val lit = (1L << (bitLit - 1)) - 1;
+
+    val bitReg = 8;
+    val regNum = (1 << bitReg) - 1;
+    val reg = new DexRegister(regNum);
+    val regAlloc = Utils.genRegAlloc(reg);
+
+    val insn = new DexInstruction_Const(reg, lit);
+    insn.assembleBytecode(regAlloc);
+  }
+
+  @Test(expected=InstructionAssemblyException.class)
+  public void testAssemble_RegisterIdTooBig() {
+    val bitLit = 32;
+    val lit = (1L << (bitLit - 1)) - 1;
+
+    val bitReg = 9;
+    val regNum = (1 << bitReg) - 1;
+    val reg = new DexRegister(regNum);
+    val regAlloc = Utils.genRegAlloc(reg);
+
+    val insn = new DexInstruction_Const(reg, lit);
+    insn.assembleBytecode(regAlloc);
+  }
+}

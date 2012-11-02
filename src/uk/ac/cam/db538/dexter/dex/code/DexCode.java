@@ -40,6 +40,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
@@ -112,7 +113,7 @@ public class DexCode extends LinkedList<DexCodeElement> {
     return list;
   }
 
-  public List<Instruction> assembleBytecode(RegisterAllocation regAlloc) {
+  public List<Instruction> assembleBytecode(RegisterAllocation regAlloc) throws InstructionAssemblyException {
     val bytecode = new LinkedList<Instruction>();
 
     // place labels here; let every instruction tell you

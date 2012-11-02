@@ -1,8 +1,10 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import lombok.Getter;
+import lombok.val;
+
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
-import org.jf.dexlib.Code.Format.Instruction10x;
 import org.jf.dexlib.Code.Format.Instruction11n;
 import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
@@ -12,9 +14,6 @@ import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_Const extends DexInstruction {
 
@@ -29,7 +28,7 @@ public class DexInstruction_Const extends DexInstruction {
     Value = value;
   }
 
-  public DexInstruction_Const(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_Const(Instruction insn, DexCode_ParsingState parsingState) {
     if (insn instanceof Instruction11n && insn.opcode == Opcode.CONST_4) {
 
       val insnConst4 = (Instruction11n) insn;
@@ -80,8 +79,17 @@ public class DexInstruction_Const extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(RegisterAllocation regAlloc) {
-    return new Instruction[] {
-             new Instruction10x(Opcode.NOP)
-           };
+    int rTo = regAlloc.get(RegTo);
+
+    if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Signed(Value, 4))
+      return new Instruction[] { new Instruction11n(Opcode.CONST_4, (byte) rTo, (byte) Value) };
+    else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoBits_Signed(Value, 16))
+      return new Instruction[] { new Instruction21s(Opcode.CONST_16, (short) rTo, (short) Value) };
+    else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoHighBits_Signed(Value, 16, 16))
+      return new Instruction[] { new Instruction21h(Opcode.CONST_HIGH16, (short) rTo, (short) (Value >> 16)) };
+    else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoBits_Signed(Value, 32))
+      return new Instruction[] { new Instruction31i(Opcode.CONST, (short) rTo, (int) Value) };
+    else
+      throw new InstructionAssemblyException("Cannot assemble instruction: " + getOriginalAssembly());
   }
 }
