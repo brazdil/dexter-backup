@@ -1,7 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import org.jf.dexlib.DexFile;
+import org.jf.dexlib.TypeIdItem;
+
 import lombok.Getter;
 import lombok.val;
+import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.utils.Cache;
 
@@ -34,12 +38,23 @@ public class DexClassType extends DexReferenceType {
     return cache.getClassType(typeDescriptor);
   }
 
-  public static Cache<String, DexClassType> createCache() {
+  public static Cache<String, DexClassType> createParsingCache() {
     return new Cache<String, DexClassType>() {
       @Override
       protected DexClassType createNewEntry(String typeDescriptor) {
         return new DexClassType(typeDescriptor);
       }
     };
+  }
+
+  public static Cache<DexClassType, TypeIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
+    return new Cache<DexClassType, TypeIdItem>() {
+      @Override
+      protected TypeIdItem createNewEntry(DexClassType type) {
+        return TypeIdItem.internTypeIdItem(outFile,
+                                           cache.getStringConstant(type.getDescriptor()));
+      }
+    };
+
   }
 }
