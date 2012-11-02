@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jf.dexlib.ClassDefItem;
+import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionParsingException;
@@ -104,5 +105,8 @@ public class DexClass {
   public void instrument() {
     for (val method : Methods)
       method.instrument();
+  }
+
+  public void writeToFile(DexFile outFile) {
   }
 }

@@ -53,7 +53,18 @@ public class MainWindow {
           @Override
           public void actionPerformed(ActionEvent arg0) {
             if (fc.showOpenDialog(Frame) == JFileChooser.APPROVE_OPTION) {
-              openFileModal(fc.getSelectedFile());
+              val file = fc.getSelectedFile();
+              doModal("Loading " + file.getName(), new Thread(new Runnable() {
+                public void run() {
+                  try {
+                    openFile(file);
+                  } catch (IOException | UnknownTypeException
+                  | DexInstructionParsingException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                  }
+                }
+              }));
             }
           }
         } );
@@ -66,37 +77,66 @@ public class MainWindow {
           public void actionPerformed(ActionEvent arg0) {
             val selected = TabbedPane.getSelectedComponent();
             if (selected != null) {
-            	val tab = (FileTab) selected;
-            	tab.getOpenedFile().instrument();
+              val tab = (FileTab) selected;
+              tab.getOpenedFile().instrument();
               tab.getTreeListener().valueChanged(null);
-              }
+            }
           }
         } );
         menuFile.add(menuFileInstrument);
+
+        val menuFileSave = new WebMenuItem("Save", KeyEvent.VK_S);
+        menuFileSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        menuFileSave.addActionListener(new ActionListener() {
+          private JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+
+          @Override
+          public void actionPerformed(ActionEvent arg0) {
+            val selected = TabbedPane.getSelectedComponent();
+            if (selected != null) {
+              val tab = (FileTab) selected;
+              if (fc.showSaveDialog(Frame) == JFileChooser.APPROVE_OPTION) {
+                val file = fc.getSelectedFile();
+                doModal("Saving " + file.getName(), new Thread(new Runnable() {
+                  public void run() {
+                    try {
+                      tab.getOpenedFile().writeToFile(file);
+                    } catch (IOException e) {
+                      // TODO Auto-generated catch block
+                      e.printStackTrace();
+                    }
+                  }
+                }));
+              }
+            }
+          }
+        } );
+        menuFile.add(menuFileSave);
       }
       menubar.add(menuFile);
     }
     Frame.setJMenuBar(menubar);
   }
 
-  private void openFileModal(final File filename) {
+  private void doModal(String message, final Thread task) {
     // Load dialog
     val progress = new WebProgressDialog(Frame, "");
-    progress.setText("Loading " + filename.getName());
+    progress.setText(message);
     progress.setIndeterminate(true);
     progress.setShowProgressText(false);
 
     // Starting updater thread
     new Thread(new Runnable() {
+      @Override
       public void run() {
+        task.start();
         try {
-          openFile(filename);
-        } catch (IOException | UnknownTypeException
-        | DexInstructionParsingException e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+          task.join();
+        } catch (InterruptedException e) {
+
+        } finally {
+          progress.setVisible(false);
         }
-        progress.setVisible(false);
       }
     }).start();
 
