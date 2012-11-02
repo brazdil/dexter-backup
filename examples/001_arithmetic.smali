@@ -9,10 +9,10 @@
 .method public static main([Ljava/lang/String;)V
     .registers 3
 
-		const v0, 0xDEC0DED 	# tainted
+    const v0, 0xDEC0DED 	# tainted
     const v1, 1234
 
-		add-int v2, v0, v1
+    add-int v2, v0, v1
 
     return-void
 .end method
