@@ -34,6 +34,6 @@ public class DexInstruction_Goto extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "goto L" + Target.getOriginalOffset();
+    return "goto L" + Target.getOriginalAbsoluteOffset();
   }
 }

@@ -39,6 +39,6 @@ public class DexInstruction_IfTest extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "if-" + InsnOpcode.name() + " v" + RegA.getId() +
-           ", v" + RegB.getId() + ", L" + Target.getOriginalOffset();
+           ", v" + RegB.getId() + ", L" + Target.getOriginalAbsoluteOffset();
   }
 }

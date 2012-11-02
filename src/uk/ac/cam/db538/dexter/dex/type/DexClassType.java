@@ -1,16 +1,23 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import lombok.Getter;
 import lombok.val;
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexClassType extends DexReferenceType {
 
   @Getter	private final String ShortName;
   @Getter	private final String PackageName;
 
+  private static String checkDescriptor(String descriptor) {
+    if (!descriptor.startsWith("L") || !descriptor.endsWith(";"))
+      throw new UnknownTypeException(descriptor);
+    return descriptor;
+  }
+
   public DexClassType(String descriptor) {
-    super(descriptor, descriptor.substring(1, descriptor.length() - 1).replace('/', '.'), 1);
+    super(checkDescriptor(descriptor), descriptor.substring(1, descriptor.length() - 1).replace('/', '.'), 1);
 
     val prettyName = getPrettyName();
     int lastDot = prettyName.lastIndexOf('.');
@@ -23,20 +30,16 @@ public class DexClassType extends DexReferenceType {
     }
   }
 
-  public static DexClassType parse(String typeDescriptor, DexParsingCache cache) throws UnknownTypeException {
-    if (!typeDescriptor.startsWith("L") || !typeDescriptor.endsWith(";"))
-      throw new UnknownTypeException(typeDescriptor);
-
-    if (cache != null) {
-      val res = cache.getClassTypes().get(typeDescriptor);
-      if (res != null)
-        return res;
-    }
-
-    val newType = new DexClassType(typeDescriptor);
-    if (cache != null)
-      cache.getClassTypes().put(typeDescriptor, newType);
-    return newType;
+  public static DexClassType parse(String typeDescriptor, DexParsingCache cache) {
+    return cache.getClassType(typeDescriptor);
   }
 
+  public static Cache<String, DexClassType> createCache() {
+    return new Cache<String, DexClassType>() {
+      @Override
+      protected DexClassType createNewEntry(String typeDescriptor) {
+        return new DexClassType(typeDescriptor);
+      }
+    };
+  }
 }

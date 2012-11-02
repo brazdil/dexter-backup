@@ -3,6 +3,9 @@ package uk.ac.cam.db538.dexter.dex;
 import java.util.HashSet;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.val;
+
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.AccessFlags;
@@ -10,9 +13,6 @@ import org.jf.dexlib.Util.AccessFlags;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexClass {
 
@@ -108,5 +108,6 @@ public class DexClass {
   }
 
   public void writeToFile(DexFile outFile) {
+//	  val classDef = ClassDefItem.internClassDefItem(outFile, classType, accessFlags, superType, implementedInterfaces, sourceFile, annotations, classData, staticFieldInitializers)
   }
 }

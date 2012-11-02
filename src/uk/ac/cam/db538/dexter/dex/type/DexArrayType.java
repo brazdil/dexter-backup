@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.utils.Cache;
 import lombok.Getter;
 import lombok.val;
 
@@ -15,21 +16,20 @@ public class DexArrayType extends DexReferenceType {
     ElementType = elementType;
   }
 
-  public static DexArrayType parse(String typeDescriptor, DexParsingCache cache) throws UnknownTypeException {
-    if (!typeDescriptor.startsWith("["))
-      throw new UnknownTypeException(typeDescriptor);
-
-    if (cache != null) {
-      val res = cache.getArrayTypes().get(typeDescriptor);
-      if (res != null)
-        return res;
-    }
-
-    val elementType = DexRegisterType.parse(typeDescriptor.substring(1), cache);
-    val newType = new DexArrayType(elementType);
-    if (cache != null)
-      cache.getArrayTypes().put(typeDescriptor, newType);
-    return newType;
+  public static DexArrayType parse(String typeDescriptor, DexParsingCache cache) {
+    return cache.getArrayType(typeDescriptor);
   }
 
+  public static Cache<String, DexArrayType> createCache(final DexParsingCache cache) {
+    return new Cache<String, DexArrayType>() {
+      @Override
+      protected DexArrayType createNewEntry(String typeDescriptor) {
+        if (!typeDescriptor.startsWith("["))
+          throw new UnknownTypeException(typeDescriptor);
+
+        val elementType = DexRegisterType.parse(typeDescriptor.substring(1), cache);
+        return new DexArrayType(elementType);
+      }
+    };
+  }
 }

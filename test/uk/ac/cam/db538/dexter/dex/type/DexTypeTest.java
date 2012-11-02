@@ -19,74 +19,74 @@ public class DexTypeTest {
 
   @Test(expected=UnknownTypeException.class)
   public void testIncorrectType() throws UnknownTypeException {
-    DexType.parse("X", null);
+    DexType.parse("X", new DexParsingCache());
   }
 
   @Test
   public void testVoid() throws UnknownTypeException {
-    val type = DexType.parse("V", null);
+    val type = DexType.parse("V", new DexParsingCache());
     assertTrue(type instanceof DexVoid);
   }
 
   @Test
   public void testByte() throws UnknownTypeException {
-    val type = DexType.parse("B", null);
+    val type = DexType.parse("B", new DexParsingCache());
     assertTrue(type instanceof DexByte);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
   }
 
   @Test
   public void testBoolean() throws UnknownTypeException {
-    val type = DexType.parse("Z", null);
+    val type = DexType.parse("Z", new DexParsingCache());
     assertTrue(type instanceof DexBoolean);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
   }
 
   @Test
   public void testShort() throws UnknownTypeException {
-    val type = DexType.parse("S", null);
+    val type = DexType.parse("S", new DexParsingCache());
     assertTrue(type instanceof DexShort);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
   }
 
   @Test
   public void testChar() throws UnknownTypeException {
-    val type = DexType.parse("C", null);
+    val type = DexType.parse("C", new DexParsingCache());
     assertTrue(type instanceof DexChar);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
   }
 
   @Test
   public void testInteger() throws UnknownTypeException {
-    val type = DexType.parse("I", null);
+    val type = DexType.parse("I", new DexParsingCache());
     assertTrue(type instanceof DexInteger);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
   }
 
   @Test
   public void testLong() throws UnknownTypeException {
-    val type = DexType.parse("J", null);
+    val type = DexType.parse("J", new DexParsingCache());
     assertTrue(type instanceof DexLong);
     assertEquals(2, ((DexRegisterType) type).getRegisters());
   }
 
   @Test
   public void testFloat() throws UnknownTypeException {
-    val type = DexType.parse("F", null);
+    val type = DexType.parse("F", new DexParsingCache());
     assertTrue(type instanceof DexFloat);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
   }
 
   @Test
   public void testDouble() throws UnknownTypeException {
-    val type = DexType.parse("D", null);
+    val type = DexType.parse("D", new DexParsingCache());
     assertTrue(type instanceof DexDouble);
     assertEquals(2, ((DexRegisterType) type).getRegisters());
   }
 
   @Test
   public void testClassType() throws UnknownTypeException {
-    val type = DexType.parse("Ljava.lang.String;", null);
+    val type = DexType.parse("Ljava.lang.String;", new DexParsingCache());
     assertTrue(type instanceof DexClassType);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
 
@@ -98,12 +98,12 @@ public class DexTypeTest {
 
   @Test(expected=UnknownTypeException.class)
   public void testClassType_MissingSemicolon() throws UnknownTypeException {
-    DexType.parse("Ljava.lang.String", null);
+    DexType.parse("Ljava.lang.String", new DexParsingCache());
   }
 
   @Test
   public void testClassType_DefaultPackage() throws UnknownTypeException {
-    val type = DexType.parse("LTestClass;", null);
+    val type = DexType.parse("LTestClass;", new DexParsingCache());
     assertTrue(type instanceof DexClassType);
 
     val classType = (DexClassType) type;
@@ -113,14 +113,7 @@ public class DexTypeTest {
   }
 
   @Test
-  public void testClassType_NoCache() throws UnknownTypeException {
-    val type1 = DexType.parse("Ljava.lang.String;", null);
-    val type2 = DexType.parse("Ljava.lang.String;", null);
-    assertFalse(type1 == type2);
-  }
-
-  @Test
-  public void testClassType_WithCache() throws UnknownTypeException {
+  public void testClassType_Cache() throws UnknownTypeException {
     DexParsingCache cache = new DexParsingCache();
     val type1 = DexType.parse("Ljava.lang.String;", cache);
     val type2 = DexType.parse("Ljava.lang.String;", cache);
@@ -129,21 +122,14 @@ public class DexTypeTest {
 
   @Test
   public void testArrayType() throws UnknownTypeException {
-    val type = DexType.parse("[I", null);
+    val type = DexType.parse("[I", new DexParsingCache());
     assertTrue(type instanceof DexArrayType);
     assertTrue(((DexArrayType) type).getElementType() instanceof DexInteger);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
   }
 
   @Test
-  public void testArrayType_NoCache() throws UnknownTypeException {
-    val type1 = DexType.parse("[I", null);
-    val type2 = DexType.parse("[I", null);
-    assertFalse(type1 == type2);
-  }
-
-  @Test
-  public void testArrayType_WithCache() throws UnknownTypeException {
+  public void testArrayType_Cache() throws UnknownTypeException {
     DexParsingCache cache = new DexParsingCache();
     val type1 = DexType.parse("[I", cache);
     val type2 = DexType.parse("[I", cache);
@@ -152,6 +138,6 @@ public class DexTypeTest {
 
   @Test(expected=UnknownTypeException.class)
   public void testArrayType_UnknownElementType() throws UnknownTypeException {
-    DexType.parse("[X", null);
+    DexType.parse("[X", new DexParsingCache());
   }
 }

@@ -31,13 +31,13 @@ public class DexInstruction_ConstString extends DexInstruction {
 
       val insnConstString = (Instruction21c) insn;
       RegTo = parsingState.getRegister(insnConstString.getRegisterA());
-      StringConstant = DexStringConstant.create(((StringIdItem) insnConstString.getReferencedItem()), parsingState.getCache());
+      StringConstant = DexStringConstant.parse(((StringIdItem) insnConstString.getReferencedItem()), parsingState.getCache());
 
     } else if (insn instanceof Instruction31c && insn.opcode == Opcode.CONST_STRING_JUMBO) {
 
       val insnConstStringJumbo = (Instruction31c) insn;
       RegTo = parsingState.getRegister(insnConstStringJumbo.getRegisterA());
-      StringConstant = DexStringConstant.create(((StringIdItem) insnConstStringJumbo.getReferencedItem()), parsingState.getCache());
+      StringConstant = DexStringConstant.parse(((StringIdItem) insnConstStringJumbo.getReferencedItem()), parsingState.getCache());
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");

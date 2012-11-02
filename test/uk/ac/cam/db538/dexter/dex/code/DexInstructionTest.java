@@ -1,6 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -34,7 +36,6 @@ import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertFromWide;
@@ -45,6 +46,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstructionTest {
@@ -52,7 +54,7 @@ public class DexInstructionTest {
   private static DexCodeElement compare(Instruction insn, String output) {
     List<DexCodeElement> insnList;
     try {
-      insnList = DexInstruction.parseMethodCode(new Instruction[] { insn }, null);
+      insnList = DexInstruction.parseMethodCode(new Instruction[] { insn }, new DexParsingCache());
     } catch (UnknownTypeException | InstructionParsingException e) {
       fail(e.getClass().getName() + ": " + e.getMessage());
       return null;
@@ -134,10 +136,10 @@ public class DexInstructionTest {
                compare(
                  new Instruction12x(Opcode.MOVE_WIDE, (byte) 8, (byte) 5),
                  "move-wide v8, v5");
-    assertEquals(8, insn.getRegTo1().getId());
-    assertEquals(9, insn.getRegTo2().getId());
-    assertEquals(5, insn.getRegFrom1().getId());
-    assertEquals(6, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(8), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(9), insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(5), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(6), insn.getRegFrom2().getId());
   }
 
   @Test
@@ -146,10 +148,10 @@ public class DexInstructionTest {
                compare(
                  new Instruction22x(Opcode.MOVE_WIDE_FROM16, (short) 253, 62435),
                  "move-wide v253, v62435");
-    assertEquals(253, insn.getRegTo1().getId());
-    assertEquals(254, insn.getRegTo2().getId());
-    assertEquals(62435, insn.getRegFrom1().getId());
-    assertEquals(62436, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(253), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(254), insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(62435), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(62436), insn.getRegFrom2().getId());
   }
 
   @Test
@@ -158,10 +160,10 @@ public class DexInstructionTest {
                compare(
                  new Instruction32x(Opcode.MOVE_WIDE_16, 60123, 62435),
                  "move-wide v60123, v62435");
-    assertEquals(60123, insn.getRegTo1().getId());
-    assertEquals(60124, insn.getRegTo2().getId());
-    assertEquals(62435, insn.getRegFrom1().getId());
-    assertEquals(62436, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(60123), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(60124), insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(62435), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(62436), insn.getRegFrom2().getId());
   }
 
   @Test
@@ -182,8 +184,8 @@ public class DexInstructionTest {
                compare(
                  new Instruction11x(Opcode.MOVE_RESULT_WIDE, (short) 233),
                  "move-result-wide v233");
-    assertEquals(233, insn.getRegTo1().getId());
-    assertEquals(234, insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(233), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(234), insn.getRegTo2().getId());
   }
 
   @Test
@@ -216,8 +218,8 @@ public class DexInstructionTest {
                compare(
                  new Instruction11x(Opcode.RETURN_WIDE, (short) 235),
                  "return-wide v235");
-    assertEquals(235, insn.getRegFrom1().getId());
-    assertEquals(236, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(235), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(236), insn.getRegFrom2().getId());
   }
 
   @Test
@@ -259,8 +261,8 @@ public class DexInstructionTest {
     val insn = (DexInstruction_ConstWide)
                compare(new Instruction21s(Opcode.CONST_WIDE_16, (short) 236, (short) -32082),
                        "const-wide v236, #-32082");
-    assertEquals(236, insn.getRegTo1().getId());
-    assertEquals(237, insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(236), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(237), insn.getRegTo2().getId());
   }
 
   @Test
@@ -270,8 +272,8 @@ public class DexInstructionTest {
     val insn = (DexInstruction_ConstWide)
                compare(new Instruction31i(Opcode.CONST_WIDE_32, (short) 236, 0xABCDEF01),
                        "const-wide v236, #-1412567295");
-    assertEquals(236, insn.getRegTo1().getId());
-    assertEquals(237, insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(236), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(237), insn.getRegTo2().getId());
   }
 
   @Test
@@ -281,8 +283,8 @@ public class DexInstructionTest {
     val insn = (DexInstruction_ConstWide)
                compare(new Instruction51l(Opcode.CONST_WIDE, (short) 236, 0xFFFFFFFFFFFFFFFEL),
                        "const-wide v236, #-2");
-    assertEquals(236, insn.getRegTo1().getId());
-    assertEquals(237, insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(236), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(237), insn.getRegTo2().getId());
   }
 
   @Test
@@ -292,8 +294,8 @@ public class DexInstructionTest {
     val insn = (DexInstruction_ConstWide)
                compare(new Instruction21h(Opcode.CONST_WIDE_HIGH16, (short) 236, (short) 0xFEDC),
                        "const-wide v236, #-82190693199511552");
-    assertEquals(236, insn.getRegTo1().getId());
-    assertEquals(237, insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(236), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(237), insn.getRegTo2().getId());
   }
 
   private static StringIdItem getStringItem(String str) {
@@ -549,26 +551,26 @@ public class DexInstructionTest {
     insn = (DexInstruction_UnaryOpWide)
            compare(new Instruction12x(Opcode.NEG_LONG, (byte) 0, (byte) 2),
                    "neg-long v0, v2");
-    assertEquals(0, insn.getRegTo1().getId());
-    assertEquals(1, insn.getRegTo2().getId());
-    assertEquals(2, insn.getRegFrom1().getId());
-    assertEquals(3, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(0), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(1), insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(2), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(3), insn.getRegFrom2().getId());
 
     insn = (DexInstruction_UnaryOpWide)
            compare(new Instruction12x(Opcode.NOT_LONG, (byte) 4, (byte) 6),
                    "not-long v4, v6");
-    assertEquals(4, insn.getRegTo1().getId());
-    assertEquals(5, insn.getRegTo2().getId());
-    assertEquals(6, insn.getRegFrom1().getId());
-    assertEquals(7, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(4), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(5), insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(6), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(7), insn.getRegFrom2().getId());
 
     insn = (DexInstruction_UnaryOpWide)
            compare(new Instruction12x(Opcode.NEG_DOUBLE, (byte) 8, (byte) 10),
                    "neg-double v8, v10");
-    assertEquals(8, insn.getRegTo1().getId());
-    assertEquals(9, insn.getRegTo2().getId());
-    assertEquals(10, insn.getRegFrom1().getId());
-    assertEquals(11, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(8), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(9), insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(10), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(11), insn.getRegFrom2().getId());
   }
 
   @Test
@@ -596,30 +598,30 @@ public class DexInstructionTest {
     insn = (DexInstruction_ConvertToWide)
            compare(new Instruction12x(Opcode.INT_TO_LONG, (byte) 0, (byte) 2),
                    "int-to-long v0, v2");
-    assertEquals(0, insn.getRegTo1().getId());
-    assertEquals(1, insn.getRegTo2().getId());
-    assertEquals(2, insn.getRegFrom().getId());
+    assertEquals(Integer.valueOf(0), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(1), insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(2), insn.getRegFrom().getId());
 
     insn = (DexInstruction_ConvertToWide)
            compare(new Instruction12x(Opcode.INT_TO_DOUBLE, (byte) 4, (byte) 6),
                    "int-to-double v4, v6");
-    assertEquals(4, insn.getRegTo1().getId());
-    assertEquals(5, insn.getRegTo2().getId());
-    assertEquals(6, insn.getRegFrom().getId());
+    assertEquals(Integer.valueOf(4), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(5), insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(6), insn.getRegFrom().getId());
 
     insn = (DexInstruction_ConvertToWide)
            compare(new Instruction12x(Opcode.FLOAT_TO_LONG, (byte) 8, (byte) 10),
                    "float-to-long v8, v10");
-    assertEquals(8, insn.getRegTo1().getId());
-    assertEquals(9, insn.getRegTo2().getId());
-    assertEquals(10, insn.getRegFrom().getId());
+    assertEquals(Integer.valueOf(8), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(9), insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(10), insn.getRegFrom().getId());
 
     insn = (DexInstruction_ConvertToWide)
            compare(new Instruction12x(Opcode.FLOAT_TO_DOUBLE, (byte) 12, (byte) 14),
                    "float-to-double v12, v14");
-    assertEquals(12, insn.getRegTo1().getId());
-    assertEquals(13, insn.getRegTo2().getId());
-    assertEquals(14, insn.getRegFrom().getId());
+    assertEquals(Integer.valueOf(12), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(13), insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(14), insn.getRegFrom().getId());
   }
 
   @Test
@@ -629,30 +631,30 @@ public class DexInstructionTest {
     insn = (DexInstruction_ConvertFromWide)
            compare(new Instruction12x(Opcode.LONG_TO_INT, (byte) 0, (byte) 2),
                    "long-to-int v0, v2");
-    assertEquals(0, insn.getRegTo().getId());
-    assertEquals(2, insn.getRegFrom1().getId());
-    assertEquals(3, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(0), insn.getRegTo().getId());
+    assertEquals(Integer.valueOf(2), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(3), insn.getRegFrom2().getId());
 
     insn = (DexInstruction_ConvertFromWide)
            compare(new Instruction12x(Opcode.LONG_TO_FLOAT, (byte) 8, (byte) 10),
                    "long-to-float v8, v10");
-    assertEquals(8, insn.getRegTo().getId());
-    assertEquals(10, insn.getRegFrom1().getId());
-    assertEquals(11, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(8), insn.getRegTo().getId());
+    assertEquals(Integer.valueOf(10), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(11), insn.getRegFrom2().getId());
 
     insn = (DexInstruction_ConvertFromWide)
            compare(new Instruction12x(Opcode.DOUBLE_TO_INT, (byte) 4, (byte) 6),
                    "double-to-int v4, v6");
-    assertEquals(4, insn.getRegTo().getId());
-    assertEquals(6, insn.getRegFrom1().getId());
-    assertEquals(7, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(4), insn.getRegTo().getId());
+    assertEquals(Integer.valueOf(6), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(7), insn.getRegFrom2().getId());
 
     insn = (DexInstruction_ConvertFromWide)
            compare(new Instruction12x(Opcode.DOUBLE_TO_FLOAT, (byte) 12, (byte) 14),
                    "double-to-float v12, v14");
-    assertEquals(12, insn.getRegTo().getId());
-    assertEquals(14, insn.getRegFrom1().getId());
-    assertEquals(15, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(12), insn.getRegTo().getId());
+    assertEquals(Integer.valueOf(14), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(15), insn.getRegFrom2().getId());
   }
 
   @Test
@@ -662,18 +664,18 @@ public class DexInstructionTest {
     insn = (DexInstruction_ConvertWide)
            compare(new Instruction12x(Opcode.LONG_TO_DOUBLE, (byte) 0, (byte) 2),
                    "long-to-double v0, v2");
-    assertEquals(0, insn.getRegTo1().getId());
-    assertEquals(1, insn.getRegTo2().getId());
-    assertEquals(2, insn.getRegFrom1().getId());
-    assertEquals(3, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(0), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(1), insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(2), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(3), insn.getRegFrom2().getId());
 
     insn = (DexInstruction_ConvertWide)
            compare(new Instruction12x(Opcode.DOUBLE_TO_LONG, (byte) 8, (byte) 10),
                    "double-to-long v8, v10");
-    assertEquals(8, insn.getRegTo1().getId());
-    assertEquals(9, insn.getRegTo2().getId());
-    assertEquals(10, insn.getRegFrom1().getId());
-    assertEquals(11, insn.getRegFrom2().getId());
+    assertEquals(Integer.valueOf(8), insn.getRegTo1().getId());
+    assertEquals(Integer.valueOf(9), insn.getRegTo2().getId());
+    assertEquals(Integer.valueOf(10), insn.getRegFrom1().getId());
+    assertEquals(Integer.valueOf(11), insn.getRegFrom2().getId());
   }
 
   @Test
@@ -798,12 +800,12 @@ public class DexInstructionTest {
     val insn = (DexInstruction_BinaryOpWide)
                compare(new Instruction23x(Opcode.ADD_LONG, (short) 2, (short) 12, (short) 112),
                        "add-long v2, v12, v112");
-    assertEquals(2, insn.getRegTarget1().getId());
-    assertEquals(3, insn.getRegTarget2().getId());
-    assertEquals(12, insn.getRegSourceA1().getId());
-    assertEquals(13, insn.getRegSourceA2().getId());
-    assertEquals(112, insn.getRegSourceB1().getId());
-    assertEquals(113, insn.getRegSourceB2().getId());
+    assertEquals(Integer.valueOf(2), insn.getRegTarget1().getId());
+    assertEquals(Integer.valueOf(3), insn.getRegTarget2().getId());
+    assertEquals(Integer.valueOf(12), insn.getRegSourceA1().getId());
+    assertEquals(Integer.valueOf(13), insn.getRegSourceA2().getId());
+    assertEquals(Integer.valueOf(112), insn.getRegSourceB1().getId());
+    assertEquals(Integer.valueOf(113), insn.getRegSourceB2().getId());
   }
 
   @Test
@@ -848,11 +850,11 @@ public class DexInstructionTest {
     val insn = (DexInstruction_BinaryOpWide)
                compare(new Instruction12x(Opcode.ADD_LONG_2ADDR, (byte) 3, (byte) 6),
                        "add-long v3, v3, v6");
-    assertEquals(3, insn.getRegTarget1().getId());
-    assertEquals(4, insn.getRegTarget2().getId());
-    assertEquals(3, insn.getRegSourceA1().getId());
-    assertEquals(4, insn.getRegSourceA2().getId());
-    assertEquals(6, insn.getRegSourceB1().getId());
-    assertEquals(7, insn.getRegSourceB2().getId());
+    assertEquals(Integer.valueOf(3), insn.getRegTarget1().getId());
+    assertEquals(Integer.valueOf(4), insn.getRegTarget2().getId());
+    assertEquals(Integer.valueOf(3), insn.getRegSourceA1().getId());
+    assertEquals(Integer.valueOf(4), insn.getRegSourceA2().getId());
+    assertEquals(Integer.valueOf(6), insn.getRegSourceB1().getId());
+    assertEquals(Integer.valueOf(7), insn.getRegSourceB2().getId());
   }
 }

@@ -1,25 +1,31 @@
 package uk.ac.cam.db538.dexter.dex;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import uk.ac.cam.db538.dexter.dex.code.DexStringConstant;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-
-import lombok.Getter;
+import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexParsingCache {
 
-  @Getter private final Map<String, DexClassType> ClassTypes;
-  @Getter private final Map<String, DexArrayType> ArrayTypes;
-  @Getter private final Map<String, DexStringConstant> StringConstants;
+  private final Cache<String, DexClassType> ClassTypes;
+  private final Cache<String, DexArrayType> ArrayTypes;
+  private final Cache<String, DexStringConstant> StringConstants;
 
   public DexParsingCache() {
-    ClassTypes = new HashMap<String, DexClassType>();
-    ArrayTypes = new HashMap<String, DexArrayType>();
-    StringConstants = new HashMap<String, DexStringConstant>();
+    ClassTypes = DexClassType.createCache();
+    ArrayTypes = DexArrayType.createCache(this);
+    StringConstants = DexStringConstant.createCache();
   }
 
+  public DexClassType getClassType(String desc) {
+    return ClassTypes.getCachedEntry(desc);
+  }
 
+  public DexArrayType getArrayType(String desc) {
+    return ArrayTypes.getCachedEntry(desc);
+  }
+
+  public DexStringConstant getStringConstant(String value) {
+    return StringConstants.getCachedEntry(value);
+  }
 }

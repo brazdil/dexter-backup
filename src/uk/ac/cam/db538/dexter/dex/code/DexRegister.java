@@ -1,13 +1,22 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import uk.ac.cam.db538.dexter.utils.Cache;
 import lombok.Getter;
-import lombok.Setter;
 
 public class DexRegister {
 
-  @Getter @Setter private int Id;
+  @Getter private final Integer Id;
 
-  public DexRegister(int id) {
+  public DexRegister(Integer id) {
     Id = id;
+  }
+
+  public static Cache<Integer, DexRegister> createCache() {
+    return new Cache<Integer, DexRegister>() {
+      @Override
+      protected DexRegister createNewEntry(Integer id) {
+        return new DexRegister(id);
+      }
+    };
   }
 }

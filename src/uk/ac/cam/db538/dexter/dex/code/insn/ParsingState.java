@@ -9,18 +9,19 @@ import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.utils.Cache;
 
 class ParsingState {
-  private final Map<Integer, DexRegister> RegisterIdMap;
-  private final Map<Long, DexLabel> LabelOffsetMap;
+  private final Cache<Integer, DexRegister> RegisterIdCache;
+  private final Cache<Long, DexLabel> LabelOffsetCache;
   private final Map<Long, DexInstruction> InstructionOffsetMap;
   private long CurrentOffset;
   @Getter private final DexParsingCache Cache;
   @Getter private final DexCode Code;
 
   public ParsingState(DexParsingCache cache) {
-    RegisterIdMap = new HashMap<Integer, DexRegister>();
-    LabelOffsetMap = new HashMap<Long, DexLabel>();
+    RegisterIdCache = DexRegister.createCache();
+    LabelOffsetCache = DexLabel.createCache();
     InstructionOffsetMap = new HashMap<Long, DexInstruction>();
     Cache = cache;
     CurrentOffset = 0L;
@@ -28,26 +29,12 @@ class ParsingState {
   }
 
   public DexRegister getRegister(int id) {
-    val objId = new Integer(id);
-    val register = RegisterIdMap.get(objId);
-    if (register == null) {
-      val newRegister = new DexRegister(id);
-      RegisterIdMap.put(objId, newRegister);
-      return newRegister;
-    } else
-      return register;
+    return RegisterIdCache.getCachedEntry(id);
   }
 
   public DexLabel getLabel(long insnOffset) {
     long absoluteOffset = CurrentOffset + insnOffset;
-    val objOffset = new Long(absoluteOffset);
-    val label = LabelOffsetMap.get(objOffset);
-    if (label == null) {
-      val newLabel = new DexLabel(absoluteOffset);
-      LabelOffsetMap.put(objOffset, newLabel);
-      return newLabel;
-    } else
-      return label;
+    return LabelOffsetCache.getCachedEntry(absoluteOffset);
   }
 
   public void addInstruction(long size, DexInstruction insn) {
@@ -57,7 +44,7 @@ class ParsingState {
   }
 
   public void placeLabels() throws InstructionParsingException {
-    for (val entry : LabelOffsetMap.entrySet()) {
+    for (val entry : LabelOffsetCache.entrySet()) {
       val labelOffset = entry.getKey();
       val insnAtOffset = InstructionOffsetMap.get(labelOffset);
       if (insnAtOffset == null)
