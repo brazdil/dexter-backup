@@ -19,7 +19,7 @@ public class DexInstruction_ReturnWide extends DexInstruction {
     RegFrom2 = from2;
   }
 
-  public DexInstruction_ReturnWide(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+  public DexInstruction_ReturnWide(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
     if (insn instanceof Instruction11x && insn.opcode == Opcode.RETURN_WIDE) {
 
       val insnReturnWide = (Instruction11x) insn;
@@ -27,7 +27,7 @@ public class DexInstruction_ReturnWide extends DexInstruction {
       RegFrom2 = parsingState.getRegister(insnReturnWide.getRegisterA() + 1);
 
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

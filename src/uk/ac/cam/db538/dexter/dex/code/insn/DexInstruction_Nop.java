@@ -8,9 +8,9 @@ public class DexInstruction_Nop extends DexInstruction {
   public DexInstruction_Nop() {
   }
 
-  public DexInstruction_Nop(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+  public DexInstruction_Nop(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
     if (insn.opcode != Opcode.NOP)
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

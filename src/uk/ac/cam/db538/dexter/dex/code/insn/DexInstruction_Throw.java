@@ -17,14 +17,14 @@ public class DexInstruction_Throw extends DexInstruction {
     RegFrom = from;
   }
 
-  public DexInstruction_Throw(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+  public DexInstruction_Throw(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
     if (insn instanceof Instruction11x && insn.opcode == Opcode.THROW) {
 
       val insnThrow = (Instruction11x) insn;
       RegFrom = parsingState.getRegister(insnThrow.getRegisterA());
 
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

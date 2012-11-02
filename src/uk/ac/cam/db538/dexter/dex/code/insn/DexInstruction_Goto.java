@@ -18,7 +18,7 @@ public class DexInstruction_Goto extends DexInstruction {
     Target = target;
   }
 
-  public DexInstruction_Goto(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+  public DexInstruction_Goto(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
     long targetOffset;
     if ( insn instanceof Instruction10t && insn.opcode == Opcode.GOTO) {
       targetOffset = ((Instruction10t) insn).getTargetAddressOffset();
@@ -27,7 +27,7 @@ public class DexInstruction_Goto extends DexInstruction {
     } else if ( insn instanceof Instruction30t && insn.opcode == Opcode.GOTO_32) {
       targetOffset = ((Instruction30t) insn).getTargetAddressOffset();
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
 
     Target = parsingState.getLabel(targetOffset);
   }

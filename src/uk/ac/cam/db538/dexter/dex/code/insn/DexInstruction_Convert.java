@@ -10,74 +10,26 @@ import lombok.val;
 
 public class DexInstruction_Convert extends DexInstruction {
 
-  public static enum Opcode {
-    IntToFloat("int-to-float"),
-    FloatToInt("float-to-int"),
-    IntToByte("int-to-byte"),
-    IntToChar("int-to-char"),
-    IntToShort("int-to-short");
-
-    @Getter private final String AssemblyName;
-
-    private Opcode(String assemblyName) {
-      AssemblyName = assemblyName;
-    }
-
-    public static Opcode convert(org.jf.dexlib.Code.Opcode opcode) {
-      switch (opcode) {
-      case INT_TO_FLOAT:
-        return IntToFloat;
-      case FLOAT_TO_INT:
-        return FloatToInt;
-      case INT_TO_BYTE:
-        return IntToByte;
-      case INT_TO_CHAR:
-        return IntToChar;
-      case INT_TO_SHORT:
-        return IntToShort;
-      default:
-        return null;
-      }
-    }
-
-    public static org.jf.dexlib.Code.Opcode convert(Opcode opcode) {
-      switch (opcode) {
-      case IntToFloat:
-        return org.jf.dexlib.Code.Opcode.INT_TO_FLOAT;
-      case FloatToInt:
-        return org.jf.dexlib.Code.Opcode.FLOAT_TO_INT;
-      case IntToByte:
-        return org.jf.dexlib.Code.Opcode.INT_TO_BYTE;
-      case IntToChar:
-        return org.jf.dexlib.Code.Opcode.INT_TO_CHAR;
-      case IntToShort:
-        return org.jf.dexlib.Code.Opcode.INT_TO_SHORT;
-      default:
-        return null;
-      }
-    }
-  }
-
   @Getter private final DexRegister RegTo;
   @Getter private final DexRegister RegFrom;
-  @Getter private final Opcode InsnOpcode;
+  @Getter private final Opcode_Convert InsnOpcode;
 
-  public DexInstruction_Convert(DexRegister to, DexRegister from, Opcode opcode) {
+  public DexInstruction_Convert(DexRegister to, DexRegister from, Opcode_Convert opcode) {
     RegTo = to;
     RegFrom = from;
     InsnOpcode = opcode;
   }
 
-  public DexInstruction_Convert(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
-    if (insn instanceof Instruction12x && Opcode.convert(insn.opcode) != null) {
+  public DexInstruction_Convert(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
+    if (insn instanceof Instruction12x && Opcode_Convert.convert(insn.opcode) != null) {
 
       val insnConvert = (Instruction12x) insn;
       RegTo = parsingState.getRegister(insnConvert.getRegisterA());
       RegFrom = parsingState.getRegister(insnConvert.getRegisterB());
-      InsnOpcode = Opcode.convert(insn.opcode);
+      InsnOpcode = Opcode_Convert.convert(insn.opcode);
 
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

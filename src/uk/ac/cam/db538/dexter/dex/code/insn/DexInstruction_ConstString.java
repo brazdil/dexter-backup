@@ -26,7 +26,7 @@ public class DexInstruction_ConstString extends DexInstruction {
     StringConstant = value;
   }
 
-  public DexInstruction_ConstString(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+  public DexInstruction_ConstString(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_STRING) {
 
       val insnConstString = (Instruction21c) insn;
@@ -40,7 +40,7 @@ public class DexInstruction_ConstString extends DexInstruction {
       StringConstant = DexStringConstant.create(((StringIdItem) insnConstStringJumbo.getReferencedItem()), parsingState.getCache());
 
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

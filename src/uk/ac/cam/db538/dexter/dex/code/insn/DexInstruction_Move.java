@@ -25,33 +25,38 @@ public class DexInstruction_Move extends DexInstruction {
     ObjectMoving = objectMoving;
   }
 
-  public DexInstruction_Move(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+  public DexInstruction_Move(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
+    int regA, regB;
+
     if (insn instanceof Instruction12x &&
         (insn.opcode == Opcode.MOVE || insn.opcode == Opcode.MOVE_OBJECT)) {
 
       val insnMove = (Instruction12x) insn;
-      RegTo = parsingState.getRegister(insnMove.getRegisterA());
-      RegFrom = parsingState.getRegister(insnMove.getRegisterB());
+      regA = insnMove.getRegisterA();
+      regB = insnMove.getRegisterB();
       ObjectMoving = insn.opcode == Opcode.MOVE_OBJECT;
 
     } else if (insn instanceof Instruction22x &&
                (insn.opcode == Opcode.MOVE_FROM16 || insn.opcode == Opcode.MOVE_OBJECT_FROM16)) {
 
       val insnMoveFrom16 = (Instruction22x) insn;
-      RegTo = parsingState.getRegister(insnMoveFrom16.getRegisterA());
-      RegFrom = parsingState.getRegister(insnMoveFrom16.getRegisterB());
+      regA = insnMoveFrom16.getRegisterA();
+      regB = insnMoveFrom16.getRegisterB();
       ObjectMoving = insn.opcode == Opcode.MOVE_OBJECT_FROM16;
 
     } else if (insn instanceof Instruction32x &&
                (insn.opcode == Opcode.MOVE_16 || insn.opcode == Opcode.MOVE_OBJECT_16)) {
 
       val insnMove16 = (Instruction32x) insn;
-      RegTo = parsingState.getRegister(insnMove16.getRegisterA());
-      RegFrom = parsingState.getRegister(insnMove16.getRegisterB());
+      regA = insnMove16.getRegisterA();
+      regB = insnMove16.getRegisterB();
       ObjectMoving = insn.opcode == Opcode.MOVE_OBJECT_16;
 
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
+
+    RegTo = parsingState.getRegister(regA);
+    RegFrom = parsingState.getRegister(regB);
   }
 
   @Override

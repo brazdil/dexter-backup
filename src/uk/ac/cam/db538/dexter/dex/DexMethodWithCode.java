@@ -9,7 +9,7 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction.TaintRegisterMap;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
@@ -31,9 +31,9 @@ public class DexMethodWithCode extends DexMethod {
     Direct = direct;
   }
 
-  public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, DexInstructionParsingException {
+  public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, InstructionParsingException {
     super(parent, methodInfo);
-    Code = DexInstruction.parse(methodInfo.codeItem.getInstructions(), parent.getParentFile().getParsingCache());
+    Code = DexInstruction.parseMethodCode(methodInfo.codeItem.getInstructions(), parent.getParentFile().getParsingCache());
     Direct = methodInfo.isDirect();
   }
 

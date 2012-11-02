@@ -19,7 +19,7 @@ public class DexInstruction_MoveResult extends DexInstruction {
     ObjectMoving = objectMoving;
   }
 
-  public DexInstruction_MoveResult(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+  public DexInstruction_MoveResult(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
     if (insn instanceof Instruction11x &&
         (insn.opcode == Opcode.MOVE_RESULT || insn.opcode == Opcode.MOVE_RESULT_OBJECT)) {
 
@@ -28,7 +28,7 @@ public class DexInstruction_MoveResult extends DexInstruction {
       ObjectMoving = insn.opcode == Opcode.MOVE_RESULT_OBJECT;
 
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

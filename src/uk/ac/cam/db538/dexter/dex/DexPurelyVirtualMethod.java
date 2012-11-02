@@ -6,7 +6,7 @@ import java.util.Set;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.Util.AccessFlags;
 
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -18,7 +18,7 @@ public class DexPurelyVirtualMethod extends DexMethod {
     super(parent, name, accessFlags, returnType, parameterTypes);
   }
 
-  public DexPurelyVirtualMethod(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, DexInstructionParsingException {
+  public DexPurelyVirtualMethod(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, InstructionParsingException {
     super(parent, methodInfo);
   }
 

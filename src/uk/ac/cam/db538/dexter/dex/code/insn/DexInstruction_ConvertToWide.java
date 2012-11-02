@@ -10,72 +10,29 @@ import lombok.val;
 
 public class DexInstruction_ConvertToWide extends DexInstruction {
 
-  public static enum Opcode {
-    IntToLong("int-to-long"),
-    IntToDouble("int-to-double"),
-    FloatToLong("float-to-long"),
-    FloatToDouble("float-to-double");
-
-    @Getter private final String AssemblyName;
-
-    private Opcode(String assemblyName) {
-      AssemblyName = assemblyName;
-    }
-
-    public static Opcode convert(org.jf.dexlib.Code.Opcode opcode) {
-      switch (opcode) {
-      case INT_TO_LONG:
-        return IntToLong;
-      case INT_TO_DOUBLE:
-        return IntToDouble;
-      case FLOAT_TO_LONG:
-        return FloatToLong;
-      case FLOAT_TO_DOUBLE:
-        return FloatToDouble;
-      default:
-        return null;
-      }
-    }
-
-    public static org.jf.dexlib.Code.Opcode convert(Opcode opcode) {
-      switch (opcode) {
-      case IntToLong:
-        return org.jf.dexlib.Code.Opcode.INT_TO_LONG;
-      case IntToDouble:
-        return org.jf.dexlib.Code.Opcode.INT_TO_DOUBLE;
-      case FloatToLong:
-        return org.jf.dexlib.Code.Opcode.FLOAT_TO_LONG;
-      case FloatToDouble:
-        return org.jf.dexlib.Code.Opcode.FLOAT_TO_DOUBLE;
-      default:
-        return null;
-      }
-    }
-  }
-
   @Getter private final DexRegister RegTo1;
   @Getter private final DexRegister RegTo2;
   @Getter private final DexRegister RegFrom;
-  @Getter private final Opcode InsnOpcode;
+  @Getter private final Opcode_ConvertToWide InsnOpcode;
 
-  public DexInstruction_ConvertToWide(DexRegister to1, DexRegister to2, DexRegister from, Opcode opcode) {
+  public DexInstruction_ConvertToWide(DexRegister to1, DexRegister to2, DexRegister from, Opcode_ConvertToWide opcode) {
     RegTo1 = to1;
     RegTo2 = to2;
     RegFrom = from;
     InsnOpcode = opcode;
   }
 
-  public DexInstruction_ConvertToWide(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
-    if (insn instanceof Instruction12x && Opcode.convert(insn.opcode) != null) {
+  public DexInstruction_ConvertToWide(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
+    if (insn instanceof Instruction12x && Opcode_ConvertToWide.convert(insn.opcode) != null) {
 
       val insnConvert = (Instruction12x) insn;
       RegTo1 = parsingState.getRegister(insnConvert.getRegisterA());
       RegTo2 = parsingState.getRegister(insnConvert.getRegisterA() + 1);
       RegFrom = parsingState.getRegister(insnConvert.getRegisterB());
-      InsnOpcode = Opcode.convert(insn.opcode);
+      InsnOpcode = Opcode_ConvertToWide.convert(insn.opcode);
 
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

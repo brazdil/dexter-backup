@@ -24,7 +24,7 @@ public class DexInstruction_NewArray extends DexInstruction {
     Value = value;
   }
 
-  public DexInstruction_NewArray(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException, UnknownTypeException {
+  public DexInstruction_NewArray(Instruction insn, ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
     if (insn instanceof Instruction22c && insn.opcode == Opcode.NEW_ARRAY) {
 
       val insnNewArray = (Instruction22c) insn;
@@ -35,7 +35,7 @@ public class DexInstruction_NewArray extends DexInstruction {
                 parsingState.getCache());
 
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

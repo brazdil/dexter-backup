@@ -8,7 +8,7 @@ import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.Util.AccessFlags;
 
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -43,7 +43,7 @@ public abstract class DexMethod {
     return list;
   }
 
-  public DexMethod(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, DexInstructionParsingException {
+  public DexMethod(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, InstructionParsingException {
     this(parent,
          methodInfo.method.getMethodName().getStringValue(),
          Utils.getAccessFlagSet(AccessFlags.getAccessFlagsForMethod(methodInfo.accessFlags)),

@@ -26,7 +26,7 @@ public class DexInstruction_Const extends DexInstruction {
     Value = value;
   }
 
-  public DexInstruction_Const(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+  public DexInstruction_Const(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
     if (insn instanceof Instruction11n && insn.opcode == Opcode.CONST_4) {
 
       val insnConst4 = (Instruction11n) insn;
@@ -52,7 +52,7 @@ public class DexInstruction_Const extends DexInstruction {
       Value = insnConstHigh16.getLiteral() << 16;
 
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

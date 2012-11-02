@@ -27,7 +27,7 @@ public class DexInstruction_ConstWide extends DexInstruction {
     Value = value;
   }
 
-  public DexInstruction_ConstWide(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+  public DexInstruction_ConstWide(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
     if (insn instanceof Instruction21s && insn.opcode == Opcode.CONST_WIDE_16) {
 
       val insnConstWide16 = (Instruction21s) insn;
@@ -57,7 +57,7 @@ public class DexInstruction_ConstWide extends DexInstruction {
       Value = insnConstHigh16.getLiteral() << 48;
 
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertFromWide;
@@ -52,8 +52,8 @@ public class DexInstructionTest {
   private static DexCodeElement compare(Instruction insn, String output) {
     List<DexCodeElement> insnList;
     try {
-      insnList = DexInstruction.parse(new Instruction[] { insn }, null);
-    } catch (UnknownTypeException | DexInstructionParsingException e) {
+      insnList = DexInstruction.parseMethodCode(new Instruction[] { insn }, null);
+    } catch (UnknownTypeException | InstructionParsingException e) {
       fail(e.getClass().getName() + ": " + e.getMessage());
       return null;
     }
@@ -63,10 +63,10 @@ public class DexInstructionTest {
     return insnInsn;
   }
 
-  private static void compareList(Instruction[] insns, String[] output) throws DexInstructionParsingException {
+  private static void compareList(Instruction[] insns, String[] output) throws InstructionParsingException {
     List<DexCodeElement> insnList;
     try {
-      insnList = DexInstruction.parse(insns, new DexParsingCache());
+      insnList = DexInstruction.parseMethodCode(insns, new DexParsingCache());
     } catch (UnknownTypeException e) {
       fail(e.getClass().getName() + ": " + e.getMessage());
       return;
@@ -385,7 +385,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testGoto() throws DexInstructionParsingException {
+  public void testGoto() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction10x(Opcode.NOP),
@@ -410,8 +410,8 @@ public class DexInstructionTest {
       });
   }
 
-  @Test(expected=DexInstructionParsingException.class)
-  public void testLabels_InvalidOffset_Positive() throws DexInstructionParsingException {
+  @Test(expected=InstructionParsingException.class)
+  public void testLabels_InvalidOffset_Positive() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction10t(Opcode.GOTO, 2),
@@ -419,8 +419,8 @@ public class DexInstructionTest {
       }, null);
   }
 
-  @Test(expected=DexInstructionParsingException.class)
-  public void testLabels_InvalidOffset_Negative() throws DexInstructionParsingException {
+  @Test(expected=InstructionParsingException.class)
+  public void testLabels_InvalidOffset_Negative() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction10x(Opcode.NOP),
@@ -429,7 +429,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testGoto16() throws DexInstructionParsingException {
+  public void testGoto16() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction10x(Opcode.NOP),
@@ -455,7 +455,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testGoto32() throws DexInstructionParsingException {
+  public void testGoto32() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction10x(Opcode.NOP),
@@ -481,7 +481,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testIfTest() throws DexInstructionParsingException {
+  public void testIfTest() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction10x(Opcode.NOP),
@@ -505,7 +505,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testIfTestZero() throws DexInstructionParsingException {
+  public void testIfTestZero() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction10x(Opcode.NOP),
@@ -529,7 +529,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testUnaryOp() throws DexInstructionParsingException {
+  public void testUnaryOp() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction12x(Opcode.NEG_INT, (byte) 0, (byte) 1),
@@ -543,7 +543,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testUnaryOpWide() throws DexInstructionParsingException {
+  public void testUnaryOpWide() throws InstructionParsingException {
     DexInstruction_UnaryOpWide insn;
 
     insn = (DexInstruction_UnaryOpWide)
@@ -572,7 +572,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testConvert() throws DexInstructionParsingException {
+  public void testConvert() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction12x(Opcode.INT_TO_FLOAT, (byte) 0, (byte) 1),
@@ -590,7 +590,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testConvertToWide() throws DexInstructionParsingException {
+  public void testConvertToWide() throws InstructionParsingException {
     DexInstruction_ConvertToWide insn;
 
     insn = (DexInstruction_ConvertToWide)
@@ -623,7 +623,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testConvertFromWide() throws DexInstructionParsingException {
+  public void testConvertFromWide() throws InstructionParsingException {
     DexInstruction_ConvertFromWide insn;
 
     insn = (DexInstruction_ConvertFromWide)
@@ -656,7 +656,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testConvertWide() throws DexInstructionParsingException {
+  public void testConvertWide() throws InstructionParsingException {
     DexInstruction_ConvertWide insn;
 
     insn = (DexInstruction_ConvertWide)
@@ -677,7 +677,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testBinaryOp() throws DexInstructionParsingException {
+  public void testBinaryOp() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction23x(Opcode.ADD_INT, (short) 234, (short) 235, (short) 236),
@@ -717,7 +717,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testBinaryOp2addr() throws DexInstructionParsingException {
+  public void testBinaryOp2addr() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction12x(Opcode.ADD_INT_2ADDR, (byte) 2, (byte) 10),
@@ -757,7 +757,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testBinaryOpWide() throws DexInstructionParsingException {
+  public void testBinaryOpWide() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction23x(Opcode.ADD_LONG, (short) 234, (short) 235, (short) 236),
@@ -807,7 +807,7 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testBinaryOpWide2addr() throws DexInstructionParsingException {
+  public void testBinaryOpWide2addr() throws InstructionParsingException {
     compareList(
       new Instruction[] {
         new Instruction12x(Opcode.ADD_LONG_2ADDR, (byte) 4, (byte) 14),

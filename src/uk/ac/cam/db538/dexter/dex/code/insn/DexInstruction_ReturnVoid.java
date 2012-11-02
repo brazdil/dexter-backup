@@ -8,9 +8,9 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   public DexInstruction_ReturnVoid() {
   }
 
-  public DexInstruction_ReturnVoid(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+  public DexInstruction_ReturnVoid(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
     if (insn.opcode != Opcode.RETURN_VOID)
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

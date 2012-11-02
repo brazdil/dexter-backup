@@ -19,7 +19,7 @@ public class DexInstruction_Monitor extends DexInstruction {
     Enter = entering;
   }
 
-  public DexInstruction_Monitor(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException {
+  public DexInstruction_Monitor(Instruction insn, ParsingState parsingState) throws InstructionParsingException {
     if (insn instanceof Instruction11x &&
         (insn.opcode == Opcode.MONITOR_ENTER || insn.opcode == Opcode.MONITOR_EXIT)) {
 
@@ -28,7 +28,7 @@ public class DexInstruction_Monitor extends DexInstruction {
       Enter = insn.opcode == Opcode.MONITOR_ENTER;
 
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

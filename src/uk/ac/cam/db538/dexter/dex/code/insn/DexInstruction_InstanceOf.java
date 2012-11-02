@@ -26,7 +26,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
     Value = value;
   }
 
-  public DexInstruction_InstanceOf(Instruction insn, InstructionParsingState parsingState) throws DexInstructionParsingException, UnknownTypeException {
+  public DexInstruction_InstanceOf(Instruction insn, ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
     if (insn instanceof Instruction22c && insn.opcode == Opcode.INSTANCE_OF) {
 
       val insnInstanceOf = (Instruction22c) insn;
@@ -37,7 +37,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
                 parsingState.getCache());
 
     } else
-      throw new DexInstructionParsingException("Unknown instruction format or opcode");
+      throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
   @Override

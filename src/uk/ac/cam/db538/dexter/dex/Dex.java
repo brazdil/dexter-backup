@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 import lombok.Getter;
@@ -23,7 +23,7 @@ public class Dex {
   @Getter private final List<DexClass> Classes;
   @Getter private final DexParsingCache ParsingCache;
 
-  public Dex(File filename) throws IOException, UnknownTypeException, DexInstructionParsingException {
+  public Dex(File filename) throws IOException, UnknownTypeException, InstructionParsingException {
     OriginalFile = new DexFile(filename);
     Filename = filename;
 
