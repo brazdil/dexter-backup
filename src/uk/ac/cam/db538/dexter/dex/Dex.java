@@ -44,8 +44,11 @@ public class Dex {
     val outFile = new DexFile();
     val out = new ByteArrayAnnotatedOutput();
 
-    for (val cls : Classes)
-      cls.writeToFile(outFile);
+    val asmCache = new DexAssemblingCache(outFile);
+    for (val cls : Classes) {
+      System.out.println("Writing " + cls.getType().getPrettyName());
+      cls.writeToFile(outFile, asmCache);
+    }
 
     outFile.place();
     outFile.writeTo(out);

@@ -1,13 +1,9 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
-import org.jf.dexlib.DexFile;
-import org.jf.dexlib.TypeIdItem;
-
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.utils.Cache;
 import lombok.Getter;
 import lombok.val;
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexArrayType extends DexReferenceType {
 
@@ -33,16 +29,6 @@ public class DexArrayType extends DexReferenceType {
 
         val elementType = DexRegisterType.parse(typeDescriptor.substring(1), cache);
         return new DexArrayType(elementType);
-      }
-    };
-  }
-
-  public static Cache<DexArrayType, TypeIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
-    return new Cache<DexArrayType, TypeIdItem>() {
-      @Override
-      protected TypeIdItem createNewEntry(DexArrayType key) {
-        return TypeIdItem.internTypeIdItem(outFile,
-                                           cache.getStringConstant(key.getDescriptor()));
       }
     };
   }

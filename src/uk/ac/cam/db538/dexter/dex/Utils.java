@@ -21,4 +21,11 @@ public class Utils {
     else
       return EnumSet.copyOf(list);
   }
+
+  public static int assembleAccessFlags(Set<AccessFlags> accessFlags) {
+    int result = 0;
+    for (val flag : accessFlags)
+      result |= flag.getValue();
+    return result;
+  }
 }

@@ -77,8 +77,8 @@ public class MainWindow {
     new Thread(new Runnable() {
       @Override
       public void run() {
-        task.start();
         try {
+          task.start();
           task.join();
         } catch (InterruptedException e) {
         } finally {
