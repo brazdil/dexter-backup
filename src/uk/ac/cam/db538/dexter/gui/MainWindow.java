@@ -94,16 +94,16 @@ public class MainWindow {
     progress.setVisible(true);
   }
 
-  private ActionListener Listener_FileOpen = new ActionListener() {
+  private JFileChooser FileChooser = new JFileChooser(System.getProperty("user.dir"));
 
-    private JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+  private ActionListener Listener_FileOpen = new ActionListener() {
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-      if (fc.showOpenDialog(Frame) != JFileChooser.APPROVE_OPTION)
+      if (FileChooser.showOpenDialog(Frame) != JFileChooser.APPROVE_OPTION)
         return;
 
-      val file = fc.getSelectedFile();
+      val file = FileChooser.getSelectedFile();
       doModal("Loading " + file.getName(), new Thread(new Runnable() {
         public void run() {
           try {
@@ -138,19 +138,17 @@ public class MainWindow {
 
   private ActionListener Listener_FileSave = new ActionListener() {
 
-    private JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
-
     @Override
     public void actionPerformed(ActionEvent arg0) {
       val selected = TabbedPane.getSelectedComponent();
       if (selected == null)
         return;
 
-      if (fc.showSaveDialog(Frame) != JFileChooser.APPROVE_OPTION)
+      if (FileChooser.showSaveDialog(Frame) != JFileChooser.APPROVE_OPTION)
         return;
 
       val tab = (FileTab) selected;
-      val file = fc.getSelectedFile();
+      val file = FileChooser.getSelectedFile();
 
       doModal("Saving " + file.getName(), new Thread(new Runnable() {
         public void run() {
