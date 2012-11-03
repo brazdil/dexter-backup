@@ -9,6 +9,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
+import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 import static org.junit.Assert.*;
 
@@ -31,6 +32,20 @@ public class Utils {
     return insnInsn;
   }
 
+  static void parseAndCompare(Instruction[] insns, String[] output) {
+    DexCode insnList;
+    try {
+      insnList = new DexCode(insns, new DexParsingCache());
+    } catch (UnknownTypeException e) {
+      fail(e.getClass().getName() + ": " + e.getMessage());
+      return;
+    }
+
+    assertEquals(output.length, insnList.size());
+    for (int i = 0; i < output.length; ++i)
+      assertEquals(output[i], insnList.get(i).getOriginalAssembly());
+  }
+
   static RegisterAllocation genRegAlloc(DexRegister ... regs) {
     val regAlloc = new RegisterAllocation();
     for (val reg : regs)
@@ -38,4 +53,11 @@ public class Utils {
     return regAlloc;
   }
 
+  static long numFitsInto_Signed(int bits) {
+    return (1L << (bits - 1)) - 1;
+  }
+
+  static int numFitsInto_Unsigned(int bits) {
+    return (1 << bits) - 1;
+  }
 }

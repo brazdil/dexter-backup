@@ -7,6 +7,7 @@ import org.jf.dexlib.Code.Format.Instruction23x;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
 
 import lombok.Getter;
 import lombok.val;
@@ -76,4 +77,21 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   public DexRegister[] getReferencedRegisters() {
     return new DexRegister[] { RegTarget, RegSourceA, RegSourceB };
   }
+
+  @Override
+  public Instruction[] assembleBytecode(RegisterAllocation regAlloc)
+  throws InstructionAssemblyException {
+    int rTarget = regAlloc.get(RegTarget);
+    int rSourceA = regAlloc.get(RegSourceA);
+    int rSourceB = regAlloc.get(RegSourceB);
+
+    if (rTarget == rSourceA && fitsIntoBits_Unsigned(rTarget, 4) && fitsIntoBits_Unsigned(rSourceB, 4))
+      return new Instruction[] { new Instruction12x(Opcode_BinaryOp.convert2addr(InsnOpcode), (byte) rTarget, (byte) rSourceB) };
+    else if (fitsIntoBits_Unsigned(rTarget, 8) && fitsIntoBits_Unsigned(rSourceA, 8) && fitsIntoBits_Unsigned(rSourceB, 8))
+      return new Instruction[] { new Instruction23x(Opcode_BinaryOp.convert(InsnOpcode), (short) rTarget, (short) rSourceA, (short) rSourceB)	};
+    else
+      return throwCannotAssembleException();
+  }
+
+
 }

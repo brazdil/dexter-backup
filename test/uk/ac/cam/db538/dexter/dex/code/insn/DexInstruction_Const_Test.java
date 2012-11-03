@@ -57,11 +57,9 @@ public class DexInstruction_Const_Test {
 
   @Test
   public void testAssemble_Const4() {
-    val bitLit = 4;
-    val lit = (1L << (bitLit - 1)) - 1;
+    val lit = Utils.numFitsInto_Signed(4);
+    val regNum = Utils.numFitsInto_Unsigned(4);
 
-    val bitReg = 4;
-    val regNum = (1 << bitReg) - 1;
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
@@ -72,17 +70,16 @@ public class DexInstruction_Const_Test {
     assertTrue(asm[0] instanceof Instruction11n);
 
     val asmInsn = (Instruction11n) asm[0];
+    assertEquals(Opcode.CONST_4, asmInsn.opcode);
     assertEquals(regNum, asmInsn.getRegisterA());
     assertEquals(lit, asmInsn.getLiteral());
   }
 
   @Test
   public void testAssemble_Const16_DueToRegister() {
-    val bitLit = 4;
-    val lit = (1L << (bitLit - 1)) - 1;
+    val lit = Utils.numFitsInto_Signed(4);
+    val regNum = Utils.numFitsInto_Unsigned(5);
 
-    val bitReg = 5;
-    val regNum = (1 << bitReg) - 1;
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
@@ -93,17 +90,16 @@ public class DexInstruction_Const_Test {
     assertTrue(asm[0] instanceof Instruction21s);
 
     val asmInsn = (Instruction21s) asm[0];
+    assertEquals(Opcode.CONST_16, asmInsn.opcode);
     assertEquals(regNum, asmInsn.getRegisterA());
     assertEquals(lit, asmInsn.getLiteral());
   }
 
   @Test
   public void testAssemble_Const16_DueToLiteral() {
-    val bitLit = 16;
-    val lit = (1L << (bitLit - 1)) - 1;
+    val lit = Utils.numFitsInto_Signed(16);
+    val regNum = Utils.numFitsInto_Unsigned(4);
 
-    val bitReg = 4;
-    val regNum = (1 << bitReg) - 1;
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
@@ -114,6 +110,7 @@ public class DexInstruction_Const_Test {
     assertTrue(asm[0] instanceof Instruction21s);
 
     val asmInsn = (Instruction21s) asm[0];
+    assertEquals(Opcode.CONST_16, asmInsn.opcode);
     assertEquals(regNum, asmInsn.getRegisterA());
     assertEquals(lit, asmInsn.getLiteral());
   }
@@ -122,9 +119,8 @@ public class DexInstruction_Const_Test {
   public void testAssemble_ConstHigh16() {
     val bitLitBottom = 16;
     val lit = -1L << bitLitBottom;
+    val regNum = Utils.numFitsInto_Unsigned(8);
 
-    val bitReg = 8;
-    val regNum = (1 << bitReg) - 1;
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
@@ -135,17 +131,16 @@ public class DexInstruction_Const_Test {
     assertTrue(asm[0] instanceof Instruction21h);
 
     val asmInsn = (Instruction21h) asm[0];
+    assertEquals(Opcode.CONST_HIGH16, asmInsn.opcode);
     assertEquals(regNum, asmInsn.getRegisterA());
     assertEquals(lit >> bitLitBottom, asmInsn.getLiteral());
   }
 
   @Test
   public void testAssemble_Const32() {
-    val bitLit = 32;
-    val lit = (1L << (bitLit - 1)) - 1;
+    val lit = Utils.numFitsInto_Signed(32);
+    val regNum = Utils.numFitsInto_Unsigned(8);
 
-    val bitReg = 8;
-    val regNum = (1 << bitReg) - 1;
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
@@ -156,17 +151,16 @@ public class DexInstruction_Const_Test {
     assertTrue(asm[0] instanceof Instruction31i);
 
     val asmInsn = (Instruction31i) asm[0];
+    assertEquals(Opcode.CONST, asmInsn.opcode);
     assertEquals(regNum, asmInsn.getRegisterA());
     assertEquals(lit, asmInsn.getLiteral());
   }
 
   @Test(expected=InstructionAssemblyException.class)
   public void testAssemble_ConstTooBig() {
-    val bitLit = 33;
-    val lit = (1L << (bitLit - 1)) - 1;
+    val lit = Utils.numFitsInto_Signed(33);
+    val regNum = Utils.numFitsInto_Unsigned(8);
 
-    val bitReg = 8;
-    val regNum = (1 << bitReg) - 1;
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
@@ -176,11 +170,9 @@ public class DexInstruction_Const_Test {
 
   @Test(expected=InstructionAssemblyException.class)
   public void testAssemble_RegisterIdTooBig() {
-    val bitLit = 32;
-    val lit = (1L << (bitLit - 1)) - 1;
+    val lit = Utils.numFitsInto_Signed(32);
+    val regNum = Utils.numFitsInto_Unsigned(9);
 
-    val bitReg = 9;
-    val regNum = (1 << bitReg) - 1;
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 

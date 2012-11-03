@@ -59,6 +59,10 @@ public abstract class DexInstruction extends DexCodeElement {
     return new Instruction[] { };
   }
 
+  protected Instruction[] throwCannotAssembleException() {
+    throw new InstructionAssemblyException("Cannot assemble instruction: " + getOriginalAssembly());
+  }
+
   static boolean fitsIntoBits_Signed(long value, int bits) {
     assert bits > 0;
     assert bits <= 64;
