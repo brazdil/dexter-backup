@@ -92,7 +92,7 @@ public class MethodPanel extends InfoPanel {
     // put instructions
     panelInstructions.removeAll();
     if (method instanceof DexMethodWithCode) {
-      for (val insn : ((DexMethodWithCode) method).getCode()) {
+      for (val insn : ((DexMethodWithCode) method).getCode().getInstructionList()) {
         val label = new WebHotkeyLabel(insn.getOriginalAssembly());
 
         // indent instructions (not labels)

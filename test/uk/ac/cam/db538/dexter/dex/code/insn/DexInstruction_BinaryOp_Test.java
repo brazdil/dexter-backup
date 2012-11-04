@@ -2,6 +2,9 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+
 import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
@@ -10,6 +13,7 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 import org.junit.Test;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 public class DexInstruction_BinaryOp_Test {
@@ -236,5 +240,35 @@ public class DexInstruction_BinaryOp_Test {
     val insn = new DexInstruction_BinaryOp(regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
 
     insn.assembleBytecode(regAlloc);
+  }
+
+  @Test
+  public void testGetReferencedRegisters() {
+	  val regTo = new DexRegister(null);
+	  val regSA = new DexRegister(null);
+	  val regSB = new DexRegister(null);
+	  val insn = new DexInstruction_BinaryOp(regTo, regSA, regSB, Opcode_BinaryOp.AddInt);
+	  val ref = Arrays.asList(insn.getReferencedRegisters());
+	  
+	  assertEquals(3, ref.size());
+	  assertTrue(ref.contains(regTo));
+	  assertTrue(ref.contains(regSA));
+	  assertTrue(ref.contains(regSB));
+  }
+  
+  @Test
+  public void testInstrument() {
+	  val reg1 = new DexRegister(0);
+	  val reg2 = new DexRegister(1);
+	  val reg3 = new DexRegister(2);
+	  val code = new DexCode();
+	  code.add(new DexInstruction_BinaryOp(reg1, reg2, reg3, Opcode_BinaryOp.XorInt));
+	  
+	  Utils.instrumentAndCompare(
+			  code, 
+			  new String[] {
+				"xor-int v0, v1, v2",
+				"or-int v3, v4, v5"
+			  });
   }
 }

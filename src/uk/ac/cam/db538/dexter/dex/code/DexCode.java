@@ -45,17 +45,20 @@ import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
 
+import lombok.Getter;
 import lombok.val;
 
-public class DexCode extends LinkedList<DexCodeElement> {
+public class DexCode {
 
-  private static final long serialVersionUID = -4818112329933761251L;
+	@Getter private final List<DexCodeElement> InstructionList;
 
   public DexCode() {
-
+	InstructionList = new LinkedList<DexCodeElement>();
   }
 
   public DexCode(Instruction[] instructions, DexParsingCache cache) throws InstructionParsingException {
+	  this();
+	  
     // What happens here:
     // - each instruction is parsed
     //   - offset of each instruction is stored
@@ -77,7 +80,7 @@ public class DexCode extends LinkedList<DexCodeElement> {
   private int findElement(DexCodeElement elem) {
     int index = 0;
     boolean found = false;
-    for (val e : this) {
+    for (val e : InstructionList) {
       if (e.equals(elem)) {
         found = true;
         break;
@@ -90,19 +93,28 @@ public class DexCode extends LinkedList<DexCodeElement> {
     else
       throw new NoSuchElementException();
   }
+  
+  public void add(DexCodeElement elem) {
+	  InstructionList.add(elem);	  
+  }
+  
+  public void addAll(DexCodeElement[] elems) {
+	  for (val elem : elems)
+		  add(elem);
+  }
 
   public void insertBefore(DexCodeElement elem, DexCodeElement before) {
-    this.add(findElement(before), elem);
+	  InstructionList.add(findElement(before), elem);
   }
 
   public void insertAfter(DexCodeElement elem, DexCodeElement after) {
-    this.add(findElement(after) + 1, elem);
+	  InstructionList.add(findElement(after) + 1, elem);
   }
 
   public List<DexRegister> getAllReferencedRegisters() {
     val list = new LinkedList<DexRegister>();
 
-    for (val elem : this)
+    for (val elem : InstructionList)
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
         for (val reg : insn.getReferencedRegisters())
@@ -112,6 +124,19 @@ public class DexCode extends LinkedList<DexCodeElement> {
 
     return list;
   }
+  
+  public DexCode instrument() {
+	val newCode = new DexCode();
+    val taintRegs = new DexCode_InstrumentationState(this);
+    for (val elem : InstructionList) {
+      if (elem instanceof DexInstruction) {
+        val insn = (DexInstruction) elem;
+        newCode.addAll(insn.instrument(taintRegs));
+      } else
+        newCode.add(elem);
+    }
+    return newCode;
+  }
 
   public List<Instruction> assembleBytecode(RegisterAllocation regAlloc) throws InstructionAssemblyException {
     val bytecode = new LinkedList<Instruction>();
@@ -120,7 +145,7 @@ public class DexCode extends LinkedList<DexCodeElement> {
     // the longest it can possibly get to pick the right
     // format of jumps
 
-    for (val elem : this)
+    for (val elem : InstructionList)
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
         bytecode.addAll(Arrays.asList(insn.assembleBytecode(regAlloc)));

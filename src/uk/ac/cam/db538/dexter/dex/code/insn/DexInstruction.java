@@ -1,13 +1,10 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jf.dexlib.Code.Instruction;
 
-import lombok.val;
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
 
@@ -15,37 +12,7 @@ public abstract class DexInstruction extends DexCodeElement {
 
   // INSTRUCTION INSTRUMENTATION
 
-  public static class TaintRegisterMap {
-    private final Map<DexRegister, DexRegister> RegisterMap;
-    private final int IdOffset;
-
-    public TaintRegisterMap(DexCode code) {
-      RegisterMap = new HashMap<DexRegister, DexRegister>();
-
-      // find the maximal register id in the code
-      // this is strictly for GUI purposes
-      // actual register allocation happens later;
-      // that said, it still organises the registers
-      // according to this
-      int maxId = -1;
-      for (val reg : code.getAllReferencedRegisters())
-        if (maxId < reg.getId())
-          maxId = reg.getId();
-      IdOffset = maxId + 1;
-    }
-
-    public DexRegister getTaintRegister(DexRegister reg) {
-      val taintReg = RegisterMap.get(reg);
-      if (taintReg == null) {
-        val newReg = new DexRegister(reg.getId() + IdOffset);
-        RegisterMap.put(reg, newReg);
-        return newReg;
-      } else
-        return taintReg;
-    }
-  }
-
-  public DexCodeElement[] instrument(TaintRegisterMap mapping) {
+  public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
     return new DexCodeElement[] { this };
   }
 

@@ -11,6 +11,7 @@ import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction31i;
 import org.junit.Test;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 public class DexInstruction_Const_Test {
@@ -178,5 +179,33 @@ public class DexInstruction_Const_Test {
 
     val insn = new DexInstruction_Const(reg, lit);
     insn.assembleBytecode(regAlloc);
+  }
+  
+  @Test
+  public void testGetReferencedRegisters() {
+	  val reg = new DexRegister(null);
+	  val insn = new DexInstruction_Const(reg, 1L);
+	  val ref = insn.getReferencedRegisters();
+	  
+	  assertEquals(1, ref.length);
+	  assertEquals(reg, ref[0]);
+  }
+  
+  @Test
+  public void testInstrument() {
+	  val reg1 = new DexRegister(0);
+	  val reg2 = new DexRegister(1);
+	  val code = new DexCode();
+	  code.add(new DexInstruction_Const(reg1, 1));
+	  code.add(new DexInstruction_Const(reg2, 0xdec0ded));
+	  
+	  Utils.instrumentAndCompare(
+			  code, 
+			  new String[] {
+				"const v0, #1",
+				"const v2, #0",
+				"const v1, #233573869",
+				"const v3, #1"
+			  });
   }
 }

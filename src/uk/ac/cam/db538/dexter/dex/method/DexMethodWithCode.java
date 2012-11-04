@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.method;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -18,8 +17,6 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction.TaintRegisterMap;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocator_Append;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -56,16 +53,7 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   @Override
   public void instrument() {
-    TaintRegisterMap taintRegs = new TaintRegisterMap(Code);
-    val newCode = new DexCode();
-    for (val elem : Code) {
-      if (elem instanceof DexInstruction) {
-        val insn = (DexInstruction) elem;
-        newCode.addAll(Arrays.asList(insn.instrument(taintRegs)));
-      } else
-        newCode.add(elem);
-    }
-    Code = newCode;
+    Code = Code.instrument();
   }
 
   @Override

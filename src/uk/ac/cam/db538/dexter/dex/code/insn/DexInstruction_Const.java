@@ -12,6 +12,7 @@ import org.jf.dexlib.Code.Format.Instruction31i;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
 
@@ -63,7 +64,7 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] instrument(TaintRegisterMap mapping) {
+  public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
     return new DexCodeElement[] {
              this,
              new DexInstruction_Const(

@@ -16,14 +16,16 @@ import static org.junit.Assert.*;
 public class Utils {
 
   static DexCodeElement parseAndCompare(Instruction insn, String output) {
-    DexCode insnList;
+    DexCode code;
     try {
-      insnList = new DexCode(new Instruction[] { insn }, new DexParsingCache());
+      code = new DexCode(new Instruction[] { insn }, new DexParsingCache());
     } catch (Throwable e) {
       fail(e.getClass().getName() + ": " + e.getMessage());
       return null;
     }
 
+    val insnList = code.getInstructionList();
+    
     assertEquals(1, insnList.size());
 
     val insnInsn = insnList.get(0);
@@ -33,13 +35,15 @@ public class Utils {
   }
 
   static void parseAndCompare(Instruction[] insns, String[] output) {
-    DexCode insnList;
+    DexCode code;
     try {
-      insnList = new DexCode(insns, new DexParsingCache());
+      code = new DexCode(insns, new DexParsingCache());
     } catch (UnknownTypeException e) {
       fail(e.getClass().getName() + ": " + e.getMessage());
       return;
     }
+
+    val insnList = code.getInstructionList();
 
     assertEquals(output.length, insnList.size());
     for (int i = 0; i < output.length; ++i)
@@ -59,5 +63,12 @@ public class Utils {
 
   static int numFitsInto_Unsigned(int bits) {
     return (1 << bits) - 1;
+  }
+  
+  static void instrumentAndCompare(DexCode code, String[] output) {
+	  val insnList = code.instrument().getInstructionList();
+	    assertEquals(output.length, insnList.size());
+	    for (int i = 0; i < output.length; ++i)
+	      assertEquals(output[i], insnList.get(i).getOriginalAssembly());
   }
 }

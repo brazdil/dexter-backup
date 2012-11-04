@@ -65,13 +65,14 @@ public class DexInstructionTest {
   }
 
   private static DexCodeElement compare(Instruction insn, String output) {
-    DexCode insnList;
+    DexCode code;
     try {
-      insnList = new DexCode(new Instruction[] { insn }, new DexParsingCache());
+      code = new DexCode(new Instruction[] { insn }, new DexParsingCache());
     } catch (UnknownTypeException | InstructionParsingException e) {
       fail(e.getClass().getName() + ": " + e.getMessage());
       return null;
     }
+    val insnList = code.getInstructionList();
     assertEquals(1, insnList.size());
     val insnInsn = insnList.get(0);
     assertEquals(output, insnInsn.getOriginalAssembly());
@@ -79,14 +80,15 @@ public class DexInstructionTest {
   }
 
   private static void compareList(Instruction[] insns, String[] output) throws InstructionParsingException {
-    DexCode insnList;
+    DexCode code;
     try {
-      insnList = new DexCode(insns, new DexParsingCache());
+      code = new DexCode(insns, new DexParsingCache());
     } catch (UnknownTypeException e) {
       fail(e.getClass().getName() + ": " + e.getMessage());
       return;
     }
 
+    val insnList = code.getInstructionList();
     assertEquals(output.length, insnList.size());
     for (int i = 0; i < output.length; ++i)
       assertEquals(output[i], insnList.get(i).getOriginalAssembly());

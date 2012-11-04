@@ -22,9 +22,10 @@ public class DexCodeTest {
     code.add(elem3);
     code.insertBefore(elem2, elem3);
 
-    assertEquals(elem1, code.get(0));
-    assertEquals(elem2, code.get(1));
-    assertEquals(elem3, code.get(2));
+    val insnList = code.getInstructionList();
+    assertEquals(elem1, insnList.get(0));
+    assertEquals(elem2, insnList.get(1));
+    assertEquals(elem3, insnList.get(2));
   }
 
   @Test
@@ -39,9 +40,10 @@ public class DexCodeTest {
     code.add(elem3);
     code.insertBefore(elem1, elem2);
 
-    assertEquals(elem1, code.get(0));
-    assertEquals(elem2, code.get(1));
-    assertEquals(elem3, code.get(2));
+    val insnList = code.getInstructionList();
+    assertEquals(elem1, insnList.get(0));
+    assertEquals(elem2, insnList.get(1));
+    assertEquals(elem3, insnList.get(2));
   }
 
   @Test(expected=NoSuchElementException.class)
@@ -68,9 +70,10 @@ public class DexCodeTest {
     code.add(elem3);
     code.insertAfter(elem2, elem1);
 
-    assertEquals(elem1, code.get(0));
-    assertEquals(elem2, code.get(1));
-    assertEquals(elem3, code.get(2));
+    val insnList = code.getInstructionList();
+    assertEquals(elem1, insnList.get(0));
+    assertEquals(elem2, insnList.get(1));
+    assertEquals(elem3, insnList.get(2));
   }
 
   @Test
@@ -85,9 +88,10 @@ public class DexCodeTest {
     code.add(elem2);
     code.insertAfter(elem3, elem2);
 
-    assertEquals(elem1, code.get(0));
-    assertEquals(elem2, code.get(1));
-    assertEquals(elem3, code.get(2));
+    val insnList = code.getInstructionList();
+    assertEquals(elem1, insnList.get(0));
+    assertEquals(elem2, insnList.get(1));
+    assertEquals(elem3, insnList.get(2));
   }
 
   @Test(expected=NoSuchElementException.class)
