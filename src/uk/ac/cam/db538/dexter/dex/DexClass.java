@@ -134,8 +134,8 @@ public class DexClass {
   }
 
   public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
-    val classType = cache.getTypeId(Type);
-    val superType = cache.getTypeId(SuperType);
+    val classType = cache.getType(Type);
+    val superType = cache.getType(SuperType);
     val accessFlags = Utils.assembleAccessFlags(AccessFlagSet);
     val interfaces = (Interfaces.isEmpty())
                      ? null
@@ -157,13 +157,17 @@ public class DexClass {
     val directMethods = new LinkedList<EncodedMethod>();
     val virtualMethods = new LinkedList<EncodedMethod>();
 
-    for (val method : Methods) {
+    for (val field : Fields)
+      if (field.isStatic())
+        staticFields.add(field.writeToFile(outFile, cache));
+      else
+        instanceFields.add(field.writeToFile(outFile, cache));
+
+    for (val method : Methods)
       if (method instanceof DexDirectMethod)
         directMethods.add(method.writeToFile(outFile, cache));
       else if ((method instanceof DexVirtualMethod) || (method instanceof DexPurelyVirtualMethod))
         virtualMethods.add(method.writeToFile(outFile, cache));
-
-    }
 
     val classData = ClassDataItem.internClassDataItem(
                       outFile,

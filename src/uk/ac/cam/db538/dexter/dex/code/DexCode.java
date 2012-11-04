@@ -50,15 +50,15 @@ import lombok.val;
 
 public class DexCode {
 
-	@Getter private final List<DexCodeElement> InstructionList;
+  @Getter private final List<DexCodeElement> InstructionList;
 
   public DexCode() {
-	InstructionList = new LinkedList<DexCodeElement>();
+    InstructionList = new LinkedList<DexCodeElement>();
   }
 
   public DexCode(Instruction[] instructions, DexParsingCache cache) throws InstructionParsingException {
-	  this();
-	  
+    this();
+
     // What happens here:
     // - each instruction is parsed
     //   - offset of each instruction is stored
@@ -93,22 +93,22 @@ public class DexCode {
     else
       throw new NoSuchElementException();
   }
-  
+
   public void add(DexCodeElement elem) {
-	  InstructionList.add(elem);	  
+    InstructionList.add(elem);
   }
-  
+
   public void addAll(DexCodeElement[] elems) {
-	  for (val elem : elems)
-		  add(elem);
+    for (val elem : elems)
+      add(elem);
   }
 
   public void insertBefore(DexCodeElement elem, DexCodeElement before) {
-	  InstructionList.add(findElement(before), elem);
+    InstructionList.add(findElement(before), elem);
   }
 
   public void insertAfter(DexCodeElement elem, DexCodeElement after) {
-	  InstructionList.add(findElement(after) + 1, elem);
+    InstructionList.add(findElement(after) + 1, elem);
   }
 
   public List<DexRegister> getAllReferencedRegisters() {
@@ -124,9 +124,9 @@ public class DexCode {
 
     return list;
   }
-  
+
   public DexCode instrument() {
-	val newCode = new DexCode();
+    val newCode = new DexCode();
     val taintRegs = new DexCode_InstrumentationState(this);
     for (val elem : InstructionList) {
       if (elem instanceof DexInstruction) {

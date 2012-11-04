@@ -47,7 +47,7 @@ public abstract class DexType {
       protected TypeListItem createNewEntry(List<DexType> typeList) {
         val dexTypeList = new ArrayList<TypeIdItem>(typeList.size());
         for (val type : typeList)
-          dexTypeList.add(cache.getTypeId(type));
+          dexTypeList.add(cache.getType(type));
 
         return TypeListItem.internTypeListItem(outFile, dexTypeList);
       }

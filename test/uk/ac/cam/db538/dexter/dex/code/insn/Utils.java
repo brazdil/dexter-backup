@@ -25,7 +25,7 @@ public class Utils {
     }
 
     val insnList = code.getInstructionList();
-    
+
     assertEquals(1, insnList.size());
 
     val insnInsn = insnList.get(0);
@@ -64,11 +64,11 @@ public class Utils {
   static int numFitsInto_Unsigned(int bits) {
     return (1 << bits) - 1;
   }
-  
+
   static void instrumentAndCompare(DexCode code, String[] output) {
-	  val insnList = code.instrument().getInstructionList();
-	    assertEquals(output.length, insnList.size());
-	    for (int i = 0; i < output.length; ++i)
-	      assertEquals(output[i], insnList.get(i).getOriginalAssembly());
+    val insnList = code.instrument().getInstructionList();
+    assertEquals(output.length, insnList.size());
+    for (int i = 0; i < output.length; ++i)
+      assertEquals(output[i], insnList.get(i).getOriginalAssembly());
   }
 }

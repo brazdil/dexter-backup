@@ -69,7 +69,7 @@ public abstract class DexMethod {
   protected abstract CodeItem generateCodeItem(DexFile outFile);
 
   public EncodedMethod writeToFile(DexFile outFile, DexAssemblingCache cache) {
-    val classType = cache.getTypeId(ParentClass.getType());
+    val classType = cache.getType(ParentClass.getType());
     val methodName = cache.getStringConstant(Name);
     val methodPrototype = cache.getPrototype(ReturnType, ParameterTypes);
 
