@@ -30,6 +30,10 @@ public abstract class DexInstruction extends DexCodeElement {
     throw new InstructionAssemblyException("Cannot assemble instruction: " + getOriginalAssembly());
   }
 
+  protected Instruction[] throwWideRegistersExpected() {
+    throw new InstructionAssemblyException("Wide registers badly aligned with instruction: " + getOriginalAssembly());
+  }
+
   static boolean fitsIntoBits_Signed(long value, int bits) {
     assert bits > 0;
     assert bits <= 64;
@@ -62,5 +66,9 @@ public abstract class DexInstruction extends DexCodeElement {
       mask |= 1L << i;
     return ((value & mask) == 0L) &&
            fitsIntoBits_Signed(value, bitsBottomEmpty + bitsWidth);
+  }
+
+  static boolean formWideRegister(int reg1, int reg2) {
+    return (reg1 + 1 == reg2);
   }
 }

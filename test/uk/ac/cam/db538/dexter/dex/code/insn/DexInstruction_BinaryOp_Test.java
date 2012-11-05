@@ -19,7 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 public class DexInstruction_BinaryOp_Test {
 
   @Test
-  public void testBinaryOp() throws InstructionParsingException {
+  public void testParse_BinaryOp() throws InstructionParsingException {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction23x(Opcode.ADD_INT, (short) 234, (short) 235, (short) 236),
@@ -59,7 +59,7 @@ public class DexInstruction_BinaryOp_Test {
   }
 
   @Test
-  public void testBinaryOp2addr() throws InstructionParsingException {
+  public void testParse_BinaryOp2addr() throws InstructionParsingException {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction12x(Opcode.ADD_INT_2ADDR, (byte) 2, (byte) 10),
