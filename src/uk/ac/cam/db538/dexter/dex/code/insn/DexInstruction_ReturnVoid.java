@@ -13,7 +13,7 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   }
 
   public DexInstruction_ReturnVoid(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-    if (insn.opcode != Opcode.RETURN_VOID)
+    if (!(insn instanceof Instruction10x) || insn.opcode != Opcode.RETURN_VOID)
       throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 

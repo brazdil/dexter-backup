@@ -184,7 +184,7 @@ public class DexCode {
       return new DexInstruction_MoveException(insn, parsingState);
 
     case RETURN_VOID:
-      return new DexInstruction_ReturnVoid();
+      return new DexInstruction_ReturnVoid(insn, parsingState);
 
     case RETURN:
     case RETURN_OBJECT:

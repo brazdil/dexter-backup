@@ -204,12 +204,6 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testReturnVoid() {
-    compare(new Instruction10x(Opcode.RETURN_VOID),
-            "return-void");
-  }
-
-  @Test
   public void testReturn() {
     compare(new Instruction11x(Opcode.RETURN, (short) 231),
             "return v231");
