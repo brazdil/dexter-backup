@@ -104,12 +104,6 @@ public class DexInstructionTest {
   }
 
   @Test
-  public void testNop() {
-    compare(new Instruction10x(Opcode.NOP),
-            "nop");
-  }
-
-  @Test
   public void testMove() {
     compare(new Instruction12x(Opcode.MOVE, (byte) 1, (byte) 2),
             "move v1, v2");
