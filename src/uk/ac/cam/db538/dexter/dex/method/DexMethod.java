@@ -43,9 +43,9 @@ public abstract class DexMethod {
   }
 
   public static DexType parseReturnType(TypeIdItem item, DexParsingCache cache) {
-	  return DexType.parse(item.getTypeDescriptor(), cache);
+    return DexType.parse(item.getTypeDescriptor(), cache);
   }
-  
+
   public static List<DexRegisterType> parseArgumentTypes(TypeListItem params, DexParsingCache cache) {
     val list = new LinkedList<DexRegisterType>();
     if (params != null) {
