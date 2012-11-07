@@ -13,12 +13,13 @@ import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction35c;
+import org.jf.dexlib.Code.Format.Instruction3rc;
 import org.junit.Test;
 
 public class DexInstruction_MethodCall_Test {
 
   @Test
-  public void testParse_MethodCall_RegisterParsing_Static() throws InstructionParsingException {
+  public void testParse_MethodCall_Standard_RegisterParsing_Static() throws InstructionParsingException {
     val file = new DexFile();
     val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
     val returnType = TypeIdItem.internTypeIdItem(file, "V");
@@ -46,7 +47,7 @@ public class DexInstruction_MethodCall_Test {
   }
 
   @Test
-  public void testParse_MethodCall_RegisterParsing_NonStatic() throws InstructionParsingException {
+  public void testParse_MethodCall_Standard_RegisterParsing_NonStatic() throws InstructionParsingException {
     val file = new DexFile();
     val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
     val returnType = TypeIdItem.internTypeIdItem(file, "V");
@@ -73,7 +74,7 @@ public class DexInstruction_MethodCall_Test {
   }
 
   @Test
-  public void testParse_MethodCall_CallTypes() throws InstructionParsingException {
+  public void testParse_MethodCall_Standard_CallTypes() throws InstructionParsingException {
     val file = new DexFile();
     val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
     val returnType = TypeIdItem.internTypeIdItem(file, "V");
@@ -101,6 +102,28 @@ public class DexInstruction_MethodCall_Test {
         "invoke-super com.test.myMethod{v11}(v12)",
         "invoke-interface com.test.myMethod{v11}(v12)"
       });
+  }
+
+  @Test
+  public void testParse_MethodCall_Range() throws InstructionParsingException {
+    val file = new DexFile();
+    val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
+    val returnType = TypeIdItem.internTypeIdItem(file, "V");
+    val intType = TypeIdItem.internTypeIdItem(file, "I");
+    val methodName = StringIdItem.internStringIdItem(file, "myMethod");
+
+    val paramsList = new LinkedList<TypeIdItem>();
+      for (int j = 0; j < 10; ++j)
+        paramsList.add(intType);
+
+      val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
+      val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
+      val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
+
+      Utils.parseAndCompare(
+        new Instruction3rc(Opcode.INVOKE_STATIC_RANGE, (short) 10, 48000 , methodItem),
+        "invoke-static com.test.myMethod(v48000, v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009)"
+      );
   }
 }
 

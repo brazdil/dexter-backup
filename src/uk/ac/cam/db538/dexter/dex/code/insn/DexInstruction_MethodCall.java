@@ -6,11 +6,10 @@ import java.util.List;
 import lombok.Getter;
 import lombok.val;
 
-import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
-import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction35c;
+import org.jf.dexlib.Code.Format.Instruction3rc;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
@@ -38,21 +37,16 @@ public class DexInstruction_MethodCall extends DexInstruction {
   }
 
   public DexInstruction_MethodCall(Instruction insn, DexCode_ParsingState parsingState) {
-    TypeIdItem classTypeId;
+	    val cache = parsingState.getCache();
 
-    val cache = parsingState.getCache();
+	    MethodIdItem methodInfo;
+	    ArgumentRegisters = new LinkedList<DexRegister>();    
 
     if (insn instanceof Instruction35c && Opcode_MethodCall.convert(insn.opcode) != null) {
 
       val insnInvoke = (Instruction35c) insn;
-      val methodInfo = (MethodIdItem) insnInvoke.getReferencedItem();
+      methodInfo = (MethodIdItem) insnInvoke.getReferencedItem();
 
-      classTypeId = methodInfo.getContainingClass();
-      MethodName = methodInfo.getMethodName().getStringValue();
-      ReturnType = DexMethod.parseReturnType(methodInfo.getPrototype().getReturnType(), cache);
-      ArgumentTypes = DexMethod.parseArgumentTypes(methodInfo.getPrototype().getParameters(), cache);
-
-      ArgumentRegisters = new LinkedList<DexRegister>();
       switch (insnInvoke.getRegCount()) {
       case 5:
         ArgumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterA()));
@@ -69,16 +63,25 @@ public class DexInstruction_MethodCall extends DexInstruction {
       default:
         throw new InstructionParsingException("Unexpected number of method argument registers");
       }
-//	      } else if (insn instanceof Instruction12x && Opcode_BinaryOp.convert(insn.opcode) != null) {
-//
-//	        val insnBinaryOp2addr = (Instruction12x) insn;
-//	        regA = regB = insnBinaryOp2addr.getRegisterA();
-//	        regC = insnBinaryOp2addr.getRegisterB();
-//
+      
+    } else if (insn instanceof Instruction3rc && Opcode_MethodCall.convert(insn.opcode) != null) {
+    	
+    	val insnInvokeRange = (Instruction3rc) insn;
+    	methodInfo = (MethodIdItem) insnInvokeRange.getReferencedItem();
+    
+    	val startRegister = insnInvokeRange.getStartRegister();
+    	for (int i = 0; i < insnInvokeRange.getRegCount(); ++i)
+    		ArgumentRegisters.add(parsingState.getRegister(startRegister + i));
+    	
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
 
-    ClassType = parsingState.getCache().getClassType(classTypeId.getTypeDescriptor());
+    ClassType = parsingState.getCache().getClassType(methodInfo.getContainingClass().getTypeDescriptor());
+
+    MethodName = methodInfo.getMethodName().getStringValue();
+    ReturnType = DexMethod.parseReturnType(methodInfo.getPrototype().getReturnType(), cache);
+    ArgumentTypes = DexMethod.parseArgumentTypes(methodInfo.getPrototype().getParameters(), cache);
+
     CallType = Opcode_MethodCall.convert(insn.opcode);
 
     // check that the number of registers is correct
@@ -87,13 +90,6 @@ public class DexInstruction_MethodCall extends DexInstruction {
       expectedRegisterCount += argType.getRegisters();
     if (expectedRegisterCount != ArgumentRegisters.size())
       throw new InstructionParsingException("Wrong number of arguments given to a method call");
-  }
-
-  private static boolean isInternalClass(DexFile file, TypeIdItem classType) {
-    for (val cls : file.ClassDefsSection.getItems())
-      if (cls.getClassType().equals(classType))
-        return true;
-    return false;
   }
 
   @Override

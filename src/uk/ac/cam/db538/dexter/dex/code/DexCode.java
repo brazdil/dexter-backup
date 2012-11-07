@@ -258,11 +258,11 @@ public class DexCode {
     case INVOKE_DIRECT:
     case INVOKE_STATIC:
     case INVOKE_INTERFACE:
-//    case INVOKE_VIRTUAL_RANGE:
-//    case INVOKE_SUPER_RANGE:
-//    case INVOKE_DIRECT_RANGE:
-//    case INVOKE_STATIC_RANGE:
-//    case INVOKE_INTERFACE_RANGE:
+    case INVOKE_VIRTUAL_RANGE:
+    case INVOKE_SUPER_RANGE:
+    case INVOKE_DIRECT_RANGE:
+    case INVOKE_STATIC_RANGE:
+    case INVOKE_INTERFACE_RANGE:
       return new DexInstruction_MethodCall(insn, parsingState);
 
     case NEG_INT:
