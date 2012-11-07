@@ -58,7 +58,6 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   @Override
   protected CodeItem generateCodeItem(DexFile outFile) {
-
     val registerList = Code.getAllReferencedRegisters();
     val registerAllocation = (new RegisterAllocator_Append()).allocate(registerList);
     val registerCount = registerList.size();
@@ -66,7 +65,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     int inWords = 0;
     if (!isStatic())
       inWords += DexClassType.NumberOfRegisters;
-    for (val param : this.getParameterTypes())
+    for (val param : this.getArgumentTypes())
       inWords += param.getRegisters();
 
     int outWords = 0; // TODO: finish (max inWords of methods called inside the code)

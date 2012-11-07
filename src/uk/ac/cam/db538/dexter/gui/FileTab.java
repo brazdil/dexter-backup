@@ -93,7 +93,7 @@ public class FileTab extends WebSplitPane {
       str.append("(");
 
       boolean first = true;
-      for (val type : f.getParameterTypes()) {
+      for (val type : f.getArgumentTypes()) {
         if (first)
           first = false;
         else

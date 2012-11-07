@@ -7,6 +7,7 @@ import java.util.Set;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
+import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.Util.AccessFlags;
@@ -30,18 +31,22 @@ public abstract class DexMethod {
   @Getter private final String Name;
   @Getter private final Set<AccessFlags> AccessFlagSet;
   @Getter private final DexType ReturnType;
-  @Getter private final List<DexRegisterType> ParameterTypes;
+  @Getter private final List<DexRegisterType> ArgumentTypes;
 
   public DexMethod(DexClass parent, String name, Set<AccessFlags> accessFlags,
-                   DexType returnType, List<DexRegisterType> parameterTypes) {
+                   DexType returnType, List<DexRegisterType> argumentTypes) {
     ParentClass = parent;
     Name = name;
     AccessFlagSet = Utils.getNonNullAccessFlagSet(accessFlags);
     ReturnType = returnType;
-    ParameterTypes = (parameterTypes == null) ? new LinkedList<DexRegisterType>() : parameterTypes;
+    ArgumentTypes = (argumentTypes == null) ? new LinkedList<DexRegisterType>() : argumentTypes;
   }
 
-  protected static List<DexRegisterType> parseParameterTypes(TypeListItem params, DexParsingCache cache) throws UnknownTypeException {
+  public static DexType parseReturnType(TypeIdItem item, DexParsingCache cache) {
+	  return DexType.parse(item.getTypeDescriptor(), cache);
+  }
+  
+  public static List<DexRegisterType> parseArgumentTypes(TypeListItem params, DexParsingCache cache) {
     val list = new LinkedList<DexRegisterType>();
     if (params != null) {
       for (val type : params.getTypes())
@@ -54,8 +59,8 @@ public abstract class DexMethod {
     this(parent,
          methodInfo.method.getMethodName().getStringValue(),
          Utils.getAccessFlagSet(AccessFlags.getAccessFlagsForMethod(methodInfo.accessFlags)),
-         DexType.parse(methodInfo.method.getPrototype().getReturnType().getTypeDescriptor(), parent.getParentFile().getParsingCache()),
-         parseParameterTypes(methodInfo.method.getPrototype().getParameters(), parent.getParentFile().getParsingCache()));
+         parseReturnType(methodInfo.method.getPrototype().getReturnType(), parent.getParentFile().getParsingCache()),
+         parseArgumentTypes(methodInfo.method.getPrototype().getParameters(), parent.getParentFile().getParsingCache()));
   }
 
   public boolean isStatic() {
@@ -71,7 +76,7 @@ public abstract class DexMethod {
   public EncodedMethod writeToFile(DexFile outFile, DexAssemblingCache cache) {
     val classType = cache.getType(ParentClass.getType());
     val methodName = cache.getStringConstant(Name);
-    val methodPrototype = cache.getPrototype(ReturnType, ParameterTypes);
+    val methodPrototype = cache.getPrototype(ReturnType, ArgumentTypes);
 
     val methodItem = MethodIdItem.internMethodIdItem(outFile, classType, methodPrototype, methodName);
     return new EncodedMethod(methodItem, Utils.assembleAccessFlags(AccessFlagSet), generateCodeItem(outFile));
