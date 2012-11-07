@@ -37,10 +37,10 @@ public class DexInstruction_MethodCall extends DexInstruction {
   }
 
   public DexInstruction_MethodCall(Instruction insn, DexCode_ParsingState parsingState) {
-	    val cache = parsingState.getCache();
+    val cache = parsingState.getCache();
 
-	    MethodIdItem methodInfo;
-	    ArgumentRegisters = new LinkedList<DexRegister>();    
+    MethodIdItem methodInfo;
+    ArgumentRegisters = new LinkedList<DexRegister>();
 
     if (insn instanceof Instruction35c && Opcode_MethodCall.convert(insn.opcode) != null) {
 
@@ -63,16 +63,16 @@ public class DexInstruction_MethodCall extends DexInstruction {
       default:
         throw new InstructionParsingException("Unexpected number of method argument registers");
       }
-      
+
     } else if (insn instanceof Instruction3rc && Opcode_MethodCall.convert(insn.opcode) != null) {
-    	
-    	val insnInvokeRange = (Instruction3rc) insn;
-    	methodInfo = (MethodIdItem) insnInvokeRange.getReferencedItem();
-    
-    	val startRegister = insnInvokeRange.getStartRegister();
-    	for (int i = 0; i < insnInvokeRange.getRegCount(); ++i)
-    		ArgumentRegisters.add(parsingState.getRegister(startRegister + i));
-    	
+
+      val insnInvokeRange = (Instruction3rc) insn;
+      methodInfo = (MethodIdItem) insnInvokeRange.getReferencedItem();
+
+      val startRegister = insnInvokeRange.getStartRegister();
+      for (int i = 0; i < insnInvokeRange.getRegCount(); ++i)
+        ArgumentRegisters.add(parsingState.getRegister(startRegister + i));
+
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
 
@@ -104,34 +104,34 @@ public class DexInstruction_MethodCall extends DexInstruction {
 
     if (CallType == Opcode_MethodCall.Static) {
 
-    	str.append("(");
-	    boolean first = true;
-	    for (val reg : ArgumentRegisters) {
-	      if (first) first = false;
-	      else str.append(", ");
-	      str.append("v" + reg.getId());
-	    }
-	    str.append(")");
+      str.append("(");
+      boolean first = true;
+      for (val reg : ArgumentRegisters) {
+        if (first) first = false;
+        else str.append(", ");
+        str.append("v" + reg.getId());
+      }
+      str.append(")");
 
     } else {
-    	str.append("{");
-    	
-	    boolean first = true;
-	    boolean second = false;
-	    for (val reg : ArgumentRegisters) {
-	      if (second) second = false;
-	      else if (!first) str.append(", ");
-	      
-	      str.append("v" + reg.getId());
-	      
-	      if (first) {
-	    	  first = false;
-	    	  second = true;
-	    	  str.append("}(");
-	      }
-	    }
-	    
-  	  str.append(")");
+      str.append("{");
+
+      boolean first = true;
+      boolean second = false;
+      for (val reg : ArgumentRegisters) {
+        if (second) second = false;
+        else if (!first) str.append(", ");
+
+        str.append("v" + reg.getId());
+
+        if (first) {
+          first = false;
+          second = true;
+          str.append("}(");
+        }
+      }
+
+      str.append(")");
     }
 
     return str.toString();

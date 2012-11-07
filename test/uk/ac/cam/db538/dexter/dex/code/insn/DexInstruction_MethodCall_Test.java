@@ -113,17 +113,17 @@ public class DexInstruction_MethodCall_Test {
     val methodName = StringIdItem.internStringIdItem(file, "myMethod");
 
     val paramsList = new LinkedList<TypeIdItem>();
-      for (int j = 0; j < 10; ++j)
-        paramsList.add(intType);
+    for (int j = 0; j < 10; ++j)
+      paramsList.add(intType);
 
-      val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
-      val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
-      val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
+    val paramsItem = TypeListItem.internTypeListItem(file, paramsList);
+    val protoItem = ProtoIdItem.internProtoIdItem(file, returnType, paramsItem);
+    val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
 
-      Utils.parseAndCompare(
-        new Instruction3rc(Opcode.INVOKE_STATIC_RANGE, (short) 10, 48000 , methodItem),
-        "invoke-static com.test.myMethod(v48000, v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009)"
-      );
+    Utils.parseAndCompare(
+      new Instruction3rc(Opcode.INVOKE_STATIC_RANGE, (short) 10, 48000 , methodItem),
+      "invoke-static com.test.myMethod(v48000, v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009)"
+    );
   }
 }
 
