@@ -8,6 +8,7 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10x;
 import org.junit.Test;
 
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 
 public class DexInstruction_ReturnVoid_Test {
@@ -41,7 +42,7 @@ public class DexInstruction_ReturnVoid_Test {
 
   @Test
   public void testInstrument() {
-    val code = new DexCode();
+    val code = new DexCode(new DexParsingCache());
     code.add(new DexInstruction_ReturnVoid());
 
     Utils.instrumentAndCompare(

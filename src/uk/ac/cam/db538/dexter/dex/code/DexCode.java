@@ -5,6 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import lombok.Getter;
+import lombok.val;
+
+import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
@@ -46,19 +50,33 @@ import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
 
-import lombok.Getter;
-import lombok.val;
-
 public class DexCode {
 
   @Getter private final List<DexCodeElement> InstructionList;
+  @Getter private final List<DexRegister> ParameterMapping;
 
-  public DexCode() {
+  private final DexCode_ParsingState ParsingState;
+
+  public DexCode(DexParsingCache cache) {
     InstructionList = new LinkedList<DexCodeElement>();
+    ParameterMapping = new LinkedList<DexRegister>();
+    ParsingState = new DexCode_ParsingState(cache, this);
   }
 
-  public DexCode(Instruction[] instructions, DexParsingCache cache) throws InstructionParsingException {
-    this();
+  public DexCode(CodeItem methodInfo, DexParsingCache cache) throws InstructionParsingException {
+    this(methodInfo.getInstructions(), cache);
+
+    val regCount = methodInfo.getRegisterCount();
+    val paramCount = methodInfo.getInWords();
+
+    // store parameter mapping
+    // index in the list is the index of the parameter
+    for (int i = regCount - paramCount; i < regCount; ++i)
+      ParameterMapping.add(ParsingState.getRegister(i));
+  }
+
+  public DexCode(Instruction[] instructions, DexParsingCache cache) {
+    this(cache);
 
     // What happens here:
     // - each instruction is parsed
@@ -68,14 +86,12 @@ public class DexCode {
     // - labels are placed in the right position inside
     //   the instruction list
 
-    val parsingState = new DexCode_ParsingState(cache, this);
-
     for (val insn : instructions) {
-      val parsedInsn = parseInstruction(insn, parsingState);
-      parsingState.addInstruction(insn.getSize(0), parsedInsn);
+      val parsedInsn = parseInstruction(insn, ParsingState);
+      ParsingState.addInstruction(insn.getSize(0), parsedInsn);
     }
 
-    parsingState.placeLabels();
+    ParsingState.placeLabels();
   }
 
   private int findElement(DexCodeElement elem) {
@@ -127,7 +143,7 @@ public class DexCode {
   }
 
   public DexCode instrument() {
-    val newCode = new DexCode();
+    val newCode = new DexCode(ParsingState.getCache());
     val taintRegs = new DexCode_InstrumentationState(this);
     for (val elem : InstructionList) {
       if (elem instanceof DexInstruction) {

@@ -13,6 +13,7 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 import org.junit.Test;
 
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
@@ -261,7 +262,7 @@ public class DexInstruction_BinaryOp_Test {
     val reg1 = new DexRegister(0);
     val reg2 = new DexRegister(1);
     val reg3 = new DexRegister(2);
-    val code = new DexCode();
+    val code = new DexCode(new DexParsingCache());
     code.add(new DexInstruction_BinaryOp(reg1, reg2, reg3, Opcode_BinaryOp.XorInt));
 
     Utils.instrumentAndCompare(

@@ -13,8 +13,11 @@ public class DexInstruction_Nop extends DexInstruction {
   }
 
   public DexInstruction_Nop(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-    if (!(insn instanceof Instruction10x) || insn.opcode != Opcode.NOP)
+    if (!(insn instanceof Instruction10x) || insn.opcode != Opcode.NOP) {
+      System.out.println(insn.getClass().getName());
+      System.out.println(insn.opcode.name());
       throw new InstructionParsingException("Unknown instruction format or opcode");
+    }
   }
 
   @Override

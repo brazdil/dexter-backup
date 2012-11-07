@@ -8,11 +8,13 @@ import lombok.val;
 
 import org.junit.Test;
 
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+
 public class DexCodeTest {
 
   @Test
   public void testInsertBefore_Middle() {
-    val code = new DexCode();
+    val code = new DexCode(new DexParsingCache());
 
     val elem1 = new DexLabel(1);
     val elem2 = new DexLabel(2);
@@ -30,7 +32,7 @@ public class DexCodeTest {
 
   @Test
   public void testInsertBefore_First() {
-    val code = new DexCode();
+    val code = new DexCode(new DexParsingCache());
 
     val elem1 = new DexLabel(1);
     val elem2 = new DexLabel(2);
@@ -48,7 +50,7 @@ public class DexCodeTest {
 
   @Test(expected=NoSuchElementException.class)
   public void testInsertBefore_NotFound() {
-    val code = new DexCode();
+    val code = new DexCode(new DexParsingCache());
 
     val elem1 = new DexLabel(1);
     val elem2 = new DexLabel(2);
@@ -60,7 +62,7 @@ public class DexCodeTest {
 
   @Test
   public void testInsertAfter_Middle() {
-    val code = new DexCode();
+    val code = new DexCode(new DexParsingCache());
 
     val elem1 = new DexLabel(1);
     val elem2 = new DexLabel(2);
@@ -78,7 +80,7 @@ public class DexCodeTest {
 
   @Test
   public void testInsertBefore_Last() {
-    val code = new DexCode();
+    val code = new DexCode(new DexParsingCache());
 
     val elem1 = new DexLabel(1);
     val elem2 = new DexLabel(2);
@@ -96,7 +98,7 @@ public class DexCodeTest {
 
   @Test(expected=NoSuchElementException.class)
   public void testInsertAfter_NotFound() {
-    val code = new DexCode();
+    val code = new DexCode(new DexParsingCache());
 
     val elem1 = new DexLabel(1);
     val elem2 = new DexLabel(2);

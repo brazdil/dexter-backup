@@ -40,7 +40,7 @@ public abstract class DexMethodWithCode extends DexMethod {
   public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, InstructionParsingException {
     super(parent, methodInfo);
     if (methodInfo.codeItem == null)
-      Code = new DexCode();
+      Code = new DexCode(parent.getParentFile().getParsingCache());
     else
       Code = new DexCode(methodInfo.codeItem.getInstructions(), parent.getParentFile().getParsingCache());
     Direct = methodInfo.isDirect();
