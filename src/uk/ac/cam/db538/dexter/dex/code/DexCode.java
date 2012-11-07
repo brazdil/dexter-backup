@@ -368,7 +368,7 @@ public class DexCode {
 
     default:
       // TODO: throw exception
-      return new DexInstruction_Unknown();
+      return new DexInstruction_Unknown(insn);
     }
   }
 }
