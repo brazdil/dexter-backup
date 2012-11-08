@@ -2,6 +2,7 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 
 
 import lombok.Getter;
+import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
 
@@ -25,9 +26,28 @@ public abstract class DexInstruction extends DexCodeElement {
     return new DexCodeElement[] { this };
   }
   
-  // CALL GRAPH
+  // FLOW GRAPH
 
+  protected DexCodeElement getNextCodeElement() {
+	  val insns = MethodCode.getInstructionList();
+	  
+	  int location = insns.indexOf(this);
+	  if (location < 0) // sanity check, should never happen
+		  throw new RuntimeException("Instruction not part of its DexCode");
+	  
+	  if (location < insns.size())
+		  return insns.get(location + 1);
+	  else
+		  return null;
+  }
   
+  public DexCodeElement[] getSuccessors() {
+	  val next = this.getNextCodeElement();
+	  if (next == null)
+		  return new DexCodeElement[] { };
+	  else
+		  return new DexCodeElement[] { next };
+  }
 
   // ASSEMBLING
 
