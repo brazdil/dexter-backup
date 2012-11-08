@@ -4,6 +4,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction22t;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
@@ -46,5 +47,18 @@ public class DexInstruction_IfTest extends DexInstruction {
   public String getOriginalAssembly() {
     return "if-" + InsnOpcode.name() + " v" + RegA.getId() +
            ", v" + RegB.getId() + ", L" + Target.getOriginalAbsoluteOffset();
+  }
+
+  @Override
+  public boolean cfgEndsBasicBlock() {
+    return true;
+  }
+
+  @Override
+  public DexCodeElement[] cfgGetSuccessors() {
+    return new DexCodeElement[] {
+             getNextCodeElement(),
+             Target
+           };
   }
 }

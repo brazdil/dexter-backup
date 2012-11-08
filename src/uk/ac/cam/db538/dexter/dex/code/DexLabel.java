@@ -1,13 +1,14 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
-import uk.ac.cam.db538.dexter.utils.Cache;
 import lombok.Getter;
 
 public class DexLabel extends DexCodeElement {
 
   @Getter private final long OriginalAbsoluteOffset;
 
-  public DexLabel(long originalAbsoluteOffset) {
+  public DexLabel(DexCode methodCode, long originalAbsoluteOffset) {
+    super(methodCode);
+
     OriginalAbsoluteOffset = originalAbsoluteOffset;
   }
 
@@ -16,12 +17,8 @@ public class DexLabel extends DexCodeElement {
     return "L" + OriginalAbsoluteOffset + ":";
   }
 
-  public static Cache<Long, DexLabel> createCache() {
-    return new Cache<Long, DexLabel>() {
-      @Override
-      protected DexLabel createNewEntry(Long absoluteOffset) {
-        return new DexLabel(absoluteOffset);
-      }
-    };
+  @Override
+  public boolean cfgStartsBasicBlock() {
+    return true;
   }
 }

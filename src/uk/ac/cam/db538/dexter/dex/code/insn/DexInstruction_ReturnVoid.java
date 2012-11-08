@@ -5,6 +5,7 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
 
@@ -31,5 +32,15 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
     return new Instruction[] {
              new Instruction10x(Opcode.RETURN_VOID)
            };
+  }
+
+  @Override
+  public boolean cfgExitsMethod() {
+    return true;
+  }
+
+  @Override
+  public DexCodeElement[] cfgGetSuccessors() {
+    return new DexCodeElement[0];
   }
 }

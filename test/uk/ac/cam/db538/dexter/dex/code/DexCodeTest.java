@@ -16,9 +16,9 @@ public class DexCodeTest {
   public void testInsertBefore_Middle() {
     val code = new DexCode(new DexParsingCache());
 
-    val elem1 = new DexLabel(1);
-    val elem2 = new DexLabel(2);
-    val elem3 = new DexLabel(3);
+    val elem1 = new DexLabel(code, 1);
+    val elem2 = new DexLabel(code, 2);
+    val elem3 = new DexLabel(code, 3);
 
     code.add(elem1);
     code.add(elem3);
@@ -34,9 +34,9 @@ public class DexCodeTest {
   public void testInsertBefore_First() {
     val code = new DexCode(new DexParsingCache());
 
-    val elem1 = new DexLabel(1);
-    val elem2 = new DexLabel(2);
-    val elem3 = new DexLabel(3);
+    val elem1 = new DexLabel(code, 1);
+    val elem2 = new DexLabel(code, 2);
+    val elem3 = new DexLabel(code, 3);
 
     code.add(elem2);
     code.add(elem3);
@@ -52,9 +52,9 @@ public class DexCodeTest {
   public void testInsertBefore_NotFound() {
     val code = new DexCode(new DexParsingCache());
 
-    val elem1 = new DexLabel(1);
-    val elem2 = new DexLabel(2);
-    val elem3 = new DexLabel(3);
+    val elem1 = new DexLabel(code, 1);
+    val elem2 = new DexLabel(code, 2);
+    val elem3 = new DexLabel(code, 3);
 
     code.add(elem3);
     code.insertBefore(elem1, elem2);
@@ -64,9 +64,9 @@ public class DexCodeTest {
   public void testInsertAfter_Middle() {
     val code = new DexCode(new DexParsingCache());
 
-    val elem1 = new DexLabel(1);
-    val elem2 = new DexLabel(2);
-    val elem3 = new DexLabel(3);
+    val elem1 = new DexLabel(code, 1);
+    val elem2 = new DexLabel(code, 2);
+    val elem3 = new DexLabel(code, 3);
 
     code.add(elem1);
     code.add(elem3);
@@ -82,9 +82,9 @@ public class DexCodeTest {
   public void testInsertBefore_Last() {
     val code = new DexCode(new DexParsingCache());
 
-    val elem1 = new DexLabel(1);
-    val elem2 = new DexLabel(2);
-    val elem3 = new DexLabel(3);
+    val elem1 = new DexLabel(code, 1);
+    val elem2 = new DexLabel(code, 2);
+    val elem3 = new DexLabel(code, 3);
 
     code.add(elem1);
     code.add(elem2);
@@ -100,9 +100,9 @@ public class DexCodeTest {
   public void testInsertAfter_NotFound() {
     val code = new DexCode(new DexParsingCache());
 
-    val elem1 = new DexLabel(1);
-    val elem2 = new DexLabel(2);
-    val elem3 = new DexLabel(3);
+    val elem1 = new DexLabel(code, 1);
+    val elem2 = new DexLabel(code, 2);
+    val elem3 = new DexLabel(code, 3);
 
     code.add(elem3);
     code.insertAfter(elem1, elem2);

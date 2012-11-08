@@ -49,17 +49,18 @@ import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
+import uk.ac.cam.db538.dexter.utils.NoDuplicatesLinkedList;
 
 public class DexCode {
 
-  @Getter private final List<DexCodeElement> InstructionList;
-  @Getter private final List<DexRegister> ParameterMapping;
+  @Getter private final NoDuplicatesLinkedList<DexCodeElement> InstructionList;
+  @Getter private final NoDuplicatesLinkedList<DexRegister> ParameterMapping;
 
   private final DexCode_ParsingState ParsingState;
 
   public DexCode(DexParsingCache cache) {
-    InstructionList = new LinkedList<DexCodeElement>();
-    ParameterMapping = new LinkedList<DexRegister>();
+    InstructionList = new NoDuplicatesLinkedList<DexCodeElement>();
+    ParameterMapping = new NoDuplicatesLinkedList<DexRegister>();
     ParsingState = new DexCode_ParsingState(cache, this);
   }
 

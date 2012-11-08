@@ -21,7 +21,13 @@ public class DexCode_ParsingState {
 
   public DexCode_ParsingState(DexParsingCache cache, DexCode code) {
     RegisterIdCache = DexRegister.createCache();
-    LabelOffsetCache = DexLabel.createCache();
+    LabelOffsetCache = new Cache<Long, DexLabel>() {
+      @Override
+      protected DexLabel createNewEntry(Long absoluteOffset) {
+        return new DexLabel(Code, absoluteOffset);
+      }
+    };
+
     InstructionOffsetMap = new HashMap<Long, DexInstruction>();
     Cache = cache;
     CurrentOffset = 0L;

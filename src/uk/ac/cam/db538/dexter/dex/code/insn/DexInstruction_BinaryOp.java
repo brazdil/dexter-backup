@@ -100,5 +100,4 @@ public class DexInstruction_BinaryOp extends DexInstruction {
       return throwCannotAssembleException();
   }
 
-
 }
