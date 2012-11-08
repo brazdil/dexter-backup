@@ -5,6 +5,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
@@ -21,13 +22,17 @@ public class DexInstruction_InstanceOf extends DexInstruction {
 
   // CAREFUL: likely to throw exception
 
-  public DexInstruction_InstanceOf(DexRegister to, DexRegister from, DexReferenceType value) {
+  public DexInstruction_InstanceOf(DexCode methodCode, DexRegister to, DexRegister from, DexReferenceType value) {
+	  super(methodCode);
+	  
     RegTo = to;
     RegFrom = from;
     Value = value;
   }
 
-  public DexInstruction_InstanceOf(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
+  public DexInstruction_InstanceOf(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
+	  super(methodCode);
+	  
     if (insn instanceof Instruction22c && insn.opcode == Opcode.INSTANCE_OF) {
 
       val insnInstanceOf = (Instruction22c) insn;

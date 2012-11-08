@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
@@ -15,13 +16,15 @@ public class DexInstruction_UnaryOp extends DexInstruction {
   @Getter private final DexRegister RegFrom;
   @Getter private final Opcode_UnaryOp InsnOpcode;
 
-  public DexInstruction_UnaryOp(DexRegister to, DexRegister from, Opcode_UnaryOp opcode) {
+  public DexInstruction_UnaryOp(DexCode methodCode, DexRegister to, DexRegister from, Opcode_UnaryOp opcode) {
+	  super(methodCode);
     RegTo = to;
     RegFrom = from;
     InsnOpcode = opcode;
   }
 
-  public DexInstruction_UnaryOp(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_UnaryOp(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+	  super(methodCode);
     if (insn instanceof Instruction12x && Opcode_UnaryOp.convert(insn.opcode) != null) {
 
       val insnUnaryOp = (Instruction12x) insn;

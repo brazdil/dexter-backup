@@ -6,6 +6,7 @@ import org.jf.dexlib.Code.Format.Instruction10t;
 import org.jf.dexlib.Code.Format.Instruction20t;
 import org.jf.dexlib.Code.Format.Instruction30t;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 
@@ -15,11 +16,15 @@ public class DexInstruction_Goto extends DexInstruction {
 
   @Getter private final DexLabel Target;
 
-  public DexInstruction_Goto(DexLabel target) {
+  public DexInstruction_Goto(DexCode methodCode, DexLabel target) {
+	  super(methodCode);
+	  
     Target = target;
   }
 
-  public DexInstruction_Goto(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_Goto(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+	  super(methodCode);
+	  
     long targetOffset;
     if ( insn instanceof Instruction10t && insn.opcode == Opcode.GOTO) {
       targetOffset = ((Instruction10t) insn).getTargetAddressOffset();

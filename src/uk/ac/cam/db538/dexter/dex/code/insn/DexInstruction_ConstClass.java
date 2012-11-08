@@ -5,6 +5,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
@@ -18,12 +19,16 @@ public class DexInstruction_ConstClass extends DexInstruction {
   @Getter private final DexRegister RegTo;
   @Getter private final DexReferenceType Value;
 
-  public DexInstruction_ConstClass(DexRegister to, DexReferenceType value) {
+  public DexInstruction_ConstClass(DexCode methodCode, DexRegister to, DexReferenceType value) {
+	  super(methodCode);
+	  
     RegTo = to;
     Value = value;
   }
 
-  public DexInstruction_ConstClass(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
+  public DexInstruction_ConstClass(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
+	  super(methodCode);
+	  
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_CLASS) {
 
       val insnConstClass = (Instruction21c) insn;

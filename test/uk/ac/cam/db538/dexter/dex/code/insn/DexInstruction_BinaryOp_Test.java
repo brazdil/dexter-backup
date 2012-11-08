@@ -111,7 +111,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val regAlloc = Utils.genRegAlloc(regTarget, regSourceA, regSourceB);
 
-    val insn = new DexInstruction_BinaryOp(regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
+    val insn = new DexInstruction_BinaryOp(null, regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
 
     val asm = insn.assembleBytecode(regAlloc);
     assertEquals(1, asm.length);
@@ -134,7 +134,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val regAlloc = Utils.genRegAlloc(regTarget, regSourceB);
 
-    val insn = new DexInstruction_BinaryOp(regTarget, regTarget, regSourceB, Opcode_BinaryOp.OrInt);
+    val insn = new DexInstruction_BinaryOp(null, regTarget, regTarget, regSourceB, Opcode_BinaryOp.OrInt);
 
     val asm = insn.assembleBytecode(regAlloc);
     assertEquals(1, asm.length);
@@ -156,7 +156,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val regAlloc = Utils.genRegAlloc(regTarget, regSourceB);
 
-    val insn = new DexInstruction_BinaryOp(regTarget, regTarget, regSourceB, Opcode_BinaryOp.OrInt);
+    val insn = new DexInstruction_BinaryOp(null, regTarget, regTarget, regSourceB, Opcode_BinaryOp.OrInt);
 
     val asm = insn.assembleBytecode(regAlloc);
     assertEquals(1, asm.length);
@@ -179,7 +179,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val regAlloc = Utils.genRegAlloc(regTarget, regSourceB);
 
-    val insn = new DexInstruction_BinaryOp(regTarget, regTarget, regSourceB, Opcode_BinaryOp.OrInt);
+    val insn = new DexInstruction_BinaryOp(null, regTarget, regTarget, regSourceB, Opcode_BinaryOp.OrInt);
 
     val asm = insn.assembleBytecode(regAlloc);
     assertEquals(1, asm.length);
@@ -204,7 +204,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val regAlloc = Utils.genRegAlloc(regTarget, regSourceA, regSourceB);
 
-    val insn = new DexInstruction_BinaryOp(regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
+    val insn = new DexInstruction_BinaryOp(null, regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
 
     insn.assembleBytecode(regAlloc);
   }
@@ -221,7 +221,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val regAlloc = Utils.genRegAlloc(regTarget, regSourceA, regSourceB);
 
-    val insn = new DexInstruction_BinaryOp(regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
+    val insn = new DexInstruction_BinaryOp(null, regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
 
     insn.assembleBytecode(regAlloc);
   }
@@ -238,7 +238,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val regAlloc = Utils.genRegAlloc(regTarget, regSourceA, regSourceB);
 
-    val insn = new DexInstruction_BinaryOp(regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
+    val insn = new DexInstruction_BinaryOp(null, regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
 
     insn.assembleBytecode(regAlloc);
   }
@@ -248,7 +248,7 @@ public class DexInstruction_BinaryOp_Test {
     val regTo = new DexRegister(null);
     val regSA = new DexRegister(null);
     val regSB = new DexRegister(null);
-    val insn = new DexInstruction_BinaryOp(regTo, regSA, regSB, Opcode_BinaryOp.AddInt);
+    val insn = new DexInstruction_BinaryOp(null, regTo, regSA, regSB, Opcode_BinaryOp.AddInt);
     val ref = Arrays.asList(insn.getReferencedRegisters());
 
     assertEquals(3, ref.size());
@@ -263,7 +263,7 @@ public class DexInstruction_BinaryOp_Test {
     val reg2 = new DexRegister(1);
     val reg3 = new DexRegister(2);
     val code = new DexCode(new DexParsingCache());
-    code.add(new DexInstruction_BinaryOp(reg1, reg2, reg3, Opcode_BinaryOp.XorInt));
+    code.add(new DexInstruction_BinaryOp(null, reg1, reg2, reg3, Opcode_BinaryOp.XorInt));
 
     Utils.instrumentAndCompare(
       code,

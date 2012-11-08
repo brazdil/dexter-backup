@@ -4,6 +4,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
@@ -15,12 +16,16 @@ public class DexInstruction_Monitor extends DexInstruction {
   @Getter private final DexRegister Reg;
   @Getter private final boolean Enter;
 
-  public DexInstruction_Monitor(DexRegister reg, boolean entering) {
+  public DexInstruction_Monitor(DexCode methodCode, DexRegister reg, boolean entering) {
+	  super(methodCode);
+	  
     Reg = reg;
     Enter = entering;
   }
 
-  public DexInstruction_Monitor(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_Monitor(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+	  super(methodCode);
+	  
     if (insn instanceof Instruction11x &&
         (insn.opcode == Opcode.MONITOR_ENTER || insn.opcode == Opcode.MONITOR_EXIT)) {
 

@@ -10,6 +10,7 @@ import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction31i;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -24,12 +25,16 @@ public class DexInstruction_Const extends DexInstruction {
   // CAREFUL: if Value is 32-bit and bottom 16-bits are zero,
   //          turn it into const/high16 instruction
 
-  public DexInstruction_Const(DexRegister to, long value) {
+  public DexInstruction_Const(DexCode methodCode, DexRegister to, long value) {
+	  super(methodCode);
+	  
     RegTo = to;
     Value = value;
   }
 
-  public DexInstruction_Const(Instruction insn, DexCode_ParsingState parsingState) {
+  public DexInstruction_Const(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
+	  super(methodCode);
+	  
     if (insn instanceof Instruction11n && insn.opcode == Opcode.CONST_4) {
 
       val insnConst4 = (Instruction11n) insn;
@@ -68,6 +73,7 @@ public class DexInstruction_Const extends DexInstruction {
     return new DexCodeElement[] {
              this,
              new DexInstruction_Const(
+               this.getMethodCode(),
                mapping.getTaintRegister(RegTo),
                (Value == 0xdec0ded) ? 1 : 0)
            };

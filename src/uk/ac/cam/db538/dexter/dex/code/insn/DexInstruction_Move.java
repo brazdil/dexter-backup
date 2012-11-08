@@ -6,6 +6,7 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction22x;
 import org.jf.dexlib.Code.Format.Instruction32x;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
@@ -20,13 +21,17 @@ public class DexInstruction_Move extends DexInstruction {
 
   // CAREFUL: registers can only be allocated to 0-15 regular move !!!
 
-  public DexInstruction_Move(DexRegister to, DexRegister from, boolean objectMoving) {
+  public DexInstruction_Move(DexCode methodCode, DexRegister to, DexRegister from, boolean objectMoving) {
+	  super(methodCode);
+	  
     RegTo = to;
     RegFrom = from;
     ObjectMoving = objectMoving;
   }
 
-  public DexInstruction_Move(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_Move(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+	  super(methodCode);
+	  
     int regA, regB;
 
     if (insn instanceof Instruction12x &&

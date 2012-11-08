@@ -4,6 +4,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
@@ -14,11 +15,14 @@ public class DexInstruction_Throw extends DexInstruction {
 
   @Getter private final DexRegister RegFrom;
 
-  public DexInstruction_Throw(DexRegister from) {
+  public DexInstruction_Throw(DexCode methodCode, DexRegister from) {
+	  super(methodCode);
     RegFrom = from;
   }
 
-  public DexInstruction_Throw(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_Throw(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+	  super(methodCode);
+	  
     if (insn instanceof Instruction11x && insn.opcode == Opcode.THROW) {
 
       val insnThrow = (Instruction11x) insn;

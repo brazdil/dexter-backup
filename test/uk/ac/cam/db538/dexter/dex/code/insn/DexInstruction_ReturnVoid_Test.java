@@ -22,7 +22,7 @@ public class DexInstruction_ReturnVoid_Test {
 
   @Test
   public void testAssemble() {
-    val insn = new DexInstruction_ReturnVoid();
+    val insn = new DexInstruction_ReturnVoid(null);
 
     val asm = insn.assembleBytecode(null);
     assertEquals(1, asm.length);
@@ -34,7 +34,7 @@ public class DexInstruction_ReturnVoid_Test {
 
   @Test
   public void testGetReferencedRegisters() {
-    val insn = new DexInstruction_ReturnVoid();
+    val insn = new DexInstruction_ReturnVoid(null);
     val ref = insn.getReferencedRegisters();
 
     assertEquals(0, ref.length);
@@ -43,7 +43,7 @@ public class DexInstruction_ReturnVoid_Test {
   @Test
   public void testInstrument() {
     val code = new DexCode(new DexParsingCache());
-    code.add(new DexInstruction_ReturnVoid());
+    code.add(new DexInstruction_ReturnVoid(null));
 
     Utils.instrumentAndCompare(
       code,

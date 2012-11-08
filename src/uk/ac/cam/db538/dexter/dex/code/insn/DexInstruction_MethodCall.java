@@ -11,6 +11,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
@@ -27,7 +28,8 @@ public class DexInstruction_MethodCall extends DexInstruction {
   @Getter private final List<DexRegister> ArgumentRegisters;
   @Getter private final Opcode_MethodCall CallType;
 
-  public DexInstruction_MethodCall(DexClassType classType, String methodName, DexType returnType, List<DexRegisterType> argumentTypes, List<DexRegister> argumentRegisters, Opcode_MethodCall callType) {
+  public DexInstruction_MethodCall(DexCode methodCode, DexClassType classType, String methodName, DexType returnType, List<DexRegisterType> argumentTypes, List<DexRegister> argumentRegisters, Opcode_MethodCall callType) {
+	  super(methodCode);
     ClassType = classType;
     MethodName = methodName;
     ReturnType = returnType;
@@ -36,7 +38,9 @@ public class DexInstruction_MethodCall extends DexInstruction {
     CallType = callType;
   }
 
-  public DexInstruction_MethodCall(Instruction insn, DexCode_ParsingState parsingState) {
+  public DexInstruction_MethodCall(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
+	  super(methodCode);
+	  
     val cache = parsingState.getCache();
 
     MethodIdItem methodInfo;
@@ -136,4 +140,6 @@ public class DexInstruction_MethodCall extends DexInstruction {
 
     return str.toString();
   }
+  
+  
 }

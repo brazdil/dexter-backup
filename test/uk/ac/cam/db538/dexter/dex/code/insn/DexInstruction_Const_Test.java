@@ -65,7 +65,7 @@ public class DexInstruction_Const_Test {
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
-    val insn = new DexInstruction_Const(reg, lit);
+    val insn = new DexInstruction_Const(null, reg, lit);
 
     val asm = insn.assembleBytecode(regAlloc);
     assertEquals(1, asm.length);
@@ -85,7 +85,7 @@ public class DexInstruction_Const_Test {
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
-    val insn = new DexInstruction_Const(reg, lit);
+    val insn = new DexInstruction_Const(null, reg, lit);
 
     val asm = insn.assembleBytecode(regAlloc);
     assertEquals(1, asm.length);
@@ -105,7 +105,7 @@ public class DexInstruction_Const_Test {
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
-    val insn = new DexInstruction_Const(reg, lit);
+    val insn = new DexInstruction_Const(null, reg, lit);
 
     val asm = insn.assembleBytecode(regAlloc);
     assertEquals(1, asm.length);
@@ -126,7 +126,7 @@ public class DexInstruction_Const_Test {
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
-    val insn = new DexInstruction_Const(reg, lit);
+    val insn = new DexInstruction_Const(null, reg, lit);
 
     val asm = insn.assembleBytecode(regAlloc);
     assertEquals(1, asm.length);
@@ -146,7 +146,7 @@ public class DexInstruction_Const_Test {
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
-    val insn = new DexInstruction_Const(reg, lit);
+    val insn = new DexInstruction_Const(null, reg, lit);
 
     val asm = insn.assembleBytecode(regAlloc);
     assertEquals(1, asm.length);
@@ -166,7 +166,7 @@ public class DexInstruction_Const_Test {
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
-    val insn = new DexInstruction_Const(reg, lit);
+    val insn = new DexInstruction_Const(null, reg, lit);
     insn.assembleBytecode(regAlloc);
   }
 
@@ -178,14 +178,14 @@ public class DexInstruction_Const_Test {
     val reg = new DexRegister(regNum);
     val regAlloc = Utils.genRegAlloc(reg);
 
-    val insn = new DexInstruction_Const(reg, lit);
+    val insn = new DexInstruction_Const(null, reg, lit);
     insn.assembleBytecode(regAlloc);
   }
 
   @Test
   public void testGetReferencedRegisters() {
     val reg = new DexRegister(null);
-    val insn = new DexInstruction_Const(reg, 1L);
+    val insn = new DexInstruction_Const(null, reg, 1L);
     val ref = insn.getReferencedRegisters();
 
     assertEquals(1, ref.length);
@@ -197,8 +197,8 @@ public class DexInstruction_Const_Test {
     val reg1 = new DexRegister(0);
     val reg2 = new DexRegister(1);
     val code = new DexCode(new DexParsingCache());
-    code.add(new DexInstruction_Const(reg1, 1));
-    code.add(new DexInstruction_Const(reg2, 0xdec0ded));
+    code.add(new DexInstruction_Const(null, reg1, 1));
+    code.add(new DexInstruction_Const(null, reg2, 0xdec0ded));
 
     Utils.instrumentAndCompare(
       code,

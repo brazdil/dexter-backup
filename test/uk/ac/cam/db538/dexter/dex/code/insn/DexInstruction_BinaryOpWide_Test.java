@@ -135,7 +135,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val regAlloc = Utils.genRegAlloc(regTarget1, regTarget2,
                                      regSourceA1, regSourceA2, regSourceB1, regSourceB2);
 
-    val insn = new DexInstruction_BinaryOpWide(regTarget1, regTarget2,
+    val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
     val asm = insn.assembleBytecode(regAlloc);
@@ -161,7 +161,7 @@ public class DexInstruction_BinaryOpWide_Test {
 
     val regAlloc = Utils.genRegAlloc(regTarget1, regTarget2, regSourceB1, regSourceB2);
 
-    val insn = new DexInstruction_BinaryOpWide(regTarget1, regTarget2, regTarget1, regTarget2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
+    val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2, regTarget1, regTarget2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
     val asm = insn.assembleBytecode(regAlloc);
     assertEquals(1, asm.length);
@@ -185,7 +185,7 @@ public class DexInstruction_BinaryOpWide_Test {
 
     val regAlloc = Utils.genRegAlloc(regTarget1, regTarget2, regSourceB1, regSourceB2);
 
-    val insn = new DexInstruction_BinaryOpWide(regTarget1, regTarget2, regTarget1, regTarget2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
+    val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2, regTarget1, regTarget2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
     val asm = insn.assembleBytecode(regAlloc);
     assertEquals(1, asm.length);
@@ -210,7 +210,7 @@ public class DexInstruction_BinaryOpWide_Test {
 
     val regAlloc = Utils.genRegAlloc(regTarget1, regTarget2, regSourceB1, regSourceB2);
 
-    val insn = new DexInstruction_BinaryOpWide(regTarget1, regTarget2, regTarget1, regTarget2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
+    val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2, regTarget1, regTarget2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
     val asm = insn.assembleBytecode(regAlloc);
     assertEquals(1, asm.length);
@@ -239,7 +239,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val regAlloc = Utils.genRegAlloc(regTarget1, regTarget2,
                                      regSourceA1, regSourceA2, regSourceB1, regSourceB2);
 
-    val insn = new DexInstruction_BinaryOpWide(regTarget1, regTarget2,
+    val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
     insn.assembleBytecode(regAlloc);
@@ -261,7 +261,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val regAlloc = Utils.genRegAlloc(regTarget1, regTarget2,
                                      regSourceA1, regSourceA2, regSourceB1, regSourceB2);
 
-    val insn = new DexInstruction_BinaryOpWide(regTarget1, regTarget2,
+    val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
     insn.assembleBytecode(regAlloc);
@@ -283,7 +283,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val regAlloc = Utils.genRegAlloc(regTarget1, regTarget2,
                                      regSourceA1, regSourceA2, regSourceB1, regSourceB2);
 
-    val insn = new DexInstruction_BinaryOpWide(regTarget1, regTarget2,
+    val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
     insn.assembleBytecode(regAlloc);
@@ -305,7 +305,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val regAlloc = Utils.genRegAlloc(regTarget1, regTarget2,
                                      regSourceA1, regSourceA2, regSourceB1, regSourceB2);
 
-    val insn = new DexInstruction_BinaryOpWide(regTarget1, regTarget2,
+    val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
     insn.assembleBytecode(regAlloc);
@@ -327,7 +327,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val regAlloc = Utils.genRegAlloc(regTarget1, regTarget2,
                                      regSourceA1, regSourceA2, regSourceB1, regSourceB2);
 
-    val insn = new DexInstruction_BinaryOpWide(regTarget1, regTarget2,
+    val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
     insn.assembleBytecode(regAlloc);
@@ -349,7 +349,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val regAlloc = Utils.genRegAlloc(regTarget1, regTarget2,
                                      regSourceA1, regSourceA2, regSourceB1, regSourceB2);
 
-    val insn = new DexInstruction_BinaryOpWide(regTarget1, regTarget2,
+    val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
     insn.assembleBytecode(regAlloc);
@@ -363,7 +363,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val regSA2 = new DexRegister(null);
     val regSB1 = new DexRegister(null);
     val regSB2 = new DexRegister(null);
-    val insn = new DexInstruction_BinaryOpWide(regTo1, regTo2, regSA1, regSA2, regSB1, regSB2, Opcode_BinaryOpWide.AddLong);
+    val insn = new DexInstruction_BinaryOpWide(null, regTo1, regTo2, regSA1, regSA2, regSB1, regSB2, Opcode_BinaryOpWide.AddLong);
     val ref = Arrays.asList(insn.getReferencedRegisters());
 
     assertEquals(6, ref.size());
@@ -384,7 +384,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val reg4 = new DexRegister(4);
     val reg5 = new DexRegister(5);
     val code = new DexCode(new DexParsingCache());
-    code.add(new DexInstruction_BinaryOpWide(reg0, reg1, reg2, reg3, reg4, reg5, Opcode_BinaryOpWide.SubLong));
+    code.add(new DexInstruction_BinaryOpWide(null, reg0, reg1, reg2, reg3, reg4, reg5, Opcode_BinaryOpWide.SubLong));
 
     Utils.instrumentAndCompare(
       code,

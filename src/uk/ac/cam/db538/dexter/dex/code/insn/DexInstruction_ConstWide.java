@@ -7,6 +7,7 @@ import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction51l;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
@@ -22,13 +23,17 @@ public class DexInstruction_ConstWide extends DexInstruction {
   // CAREFUL: if Value is 64-bit and bottom 48-bits are zero,
   //          turn it into const-wide/high16 instruction
 
-  public DexInstruction_ConstWide(DexRegister to1, DexRegister to2, long value) {
+  public DexInstruction_ConstWide(DexCode methodCode, DexRegister to1, DexRegister to2, long value) {
+	  super(methodCode);
+	  
     RegTo1 = to1;
     RegTo2 = to2;
     Value = value;
   }
 
-  public DexInstruction_ConstWide(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_ConstWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+	  super(methodCode);
+	  
     if (insn instanceof Instruction21s && insn.opcode == Opcode.CONST_WIDE_16) {
 
       val insnConstWide16 = (Instruction21s) insn;

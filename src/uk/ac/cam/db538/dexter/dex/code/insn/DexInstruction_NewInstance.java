@@ -5,6 +5,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -18,12 +19,16 @@ public class DexInstruction_NewInstance extends DexInstruction {
   @Getter private final DexRegister RegTo;
   @Getter private final DexClassType Value;
 
-  public DexInstruction_NewInstance(DexRegister to, DexClassType value) {
+  public DexInstruction_NewInstance(DexCode methodCode, DexRegister to, DexClassType value) {
+	  super(methodCode);
+	  
     RegTo = to;
     Value = value;
   }
 
-  public DexInstruction_NewInstance(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
+  public DexInstruction_NewInstance(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
+	  super(methodCode);
+	  
     if (insn instanceof Instruction21c && insn.opcode == Opcode.NEW_INSTANCE) {
 
       val insnNewInstance = (Instruction21c) insn;

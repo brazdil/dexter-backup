@@ -4,6 +4,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -24,14 +25,18 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   @Getter private final DexRegister RegSourceB;
   @Getter private final Opcode_BinaryOp InsnOpcode;
 
-  public DexInstruction_BinaryOp(DexRegister target, DexRegister sourceA, DexRegister sourceB, Opcode_BinaryOp opcode) {
+  public DexInstruction_BinaryOp(DexCode methodCode, DexRegister target, DexRegister sourceA, DexRegister sourceB, Opcode_BinaryOp opcode) {
+	  super(methodCode);
+	  
     RegTarget = target;
     RegSourceA = sourceA;
     RegSourceB = sourceB;
     InsnOpcode = opcode;
   }
 
-  public DexInstruction_BinaryOp(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_BinaryOp(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+	  super(methodCode);
+	  
     int regA, regB, regC;
 
     if (insn instanceof Instruction23x && Opcode_BinaryOp.convert(insn.opcode) != null) {
@@ -67,6 +72,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
     return new DexCodeElement[] {
              this,
              new DexInstruction_BinaryOp(
+            		 this.getMethodCode(),
                mapping.getTaintRegister(RegTarget),
                mapping.getTaintRegister(RegSourceA),
                mapping.getTaintRegister(RegSourceB),

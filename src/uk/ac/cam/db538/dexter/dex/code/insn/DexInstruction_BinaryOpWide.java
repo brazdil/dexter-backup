@@ -4,6 +4,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
@@ -27,9 +28,13 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   @Getter private final DexRegister RegSourceB2;
   @Getter private final Opcode_BinaryOpWide InsnOpcode;
 
-  public DexInstruction_BinaryOpWide(DexRegister target1, DexRegister target2,
+  public DexInstruction_BinaryOpWide(DexCode methodCode,
+		  							DexRegister target1, DexRegister target2,
                                      DexRegister sourceA1, DexRegister sourceA2,
-                                     DexRegister sourceB1, DexRegister sourceB2, Opcode_BinaryOpWide opcode) {
+                                     DexRegister sourceB1, DexRegister sourceB2, 
+                                     Opcode_BinaryOpWide opcode) {
+	  super(methodCode);
+	  
     RegTarget1 = target1;
     RegTarget2 = target2;
     RegSourceA1 = sourceA1;
@@ -39,7 +44,9 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
     InsnOpcode = opcode;
   }
 
-  public DexInstruction_BinaryOpWide(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_BinaryOpWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+	  super(methodCode);
+	  
     int regA, regB, regC;
 
     if (insn instanceof Instruction23x && Opcode_BinaryOpWide.convert(insn.opcode) != null) {
@@ -90,21 +97,25 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
     return new DexCodeElement[] {
              this,
              new DexInstruction_BinaryOp(
+            		 this.getMethodCode(),
                taintTarget1,
                taintSourceA1,
                taintSourceA2,
                Opcode_BinaryOp.OrInt),
              new DexInstruction_BinaryOp(
+            		 this.getMethodCode(),
                taintTarget1,
                taintTarget1,
                taintSourceB1,
                Opcode_BinaryOp.OrInt),
              new DexInstruction_BinaryOp(
+            		 this.getMethodCode(),
                taintTarget1,
                taintTarget1,
                taintSourceB2,
                Opcode_BinaryOp.OrInt),
              new DexInstruction_Move(
+            		 this.getMethodCode(),
                taintTarget2,
                taintTarget1,
                false)

@@ -175,7 +175,7 @@ public class DexCode {
     switch (insn.opcode) {
 
     case NOP:
-      return new DexInstruction_Nop(insn, parsingState);
+      return new DexInstruction_Nop(this, insn, parsingState);
 
     case MOVE:
     case MOVE_OBJECT:
@@ -183,75 +183,75 @@ public class DexCode {
     case MOVE_OBJECT_FROM16:
     case MOVE_16:
     case MOVE_OBJECT_16:
-      return new DexInstruction_Move(insn, parsingState);
+      return new DexInstruction_Move(this, insn, parsingState);
 
     case MOVE_WIDE:
     case MOVE_WIDE_FROM16:
     case MOVE_WIDE_16:
-      return new DexInstruction_MoveWide(insn, parsingState);
+      return new DexInstruction_MoveWide(this, insn, parsingState);
 
     case MOVE_RESULT:
     case MOVE_RESULT_OBJECT:
-      return new DexInstruction_MoveResult(insn, parsingState);
+      return new DexInstruction_MoveResult(this, insn, parsingState);
 
     case MOVE_RESULT_WIDE:
-      return new DexInstruction_MoveResultWide(insn, parsingState);
+      return new DexInstruction_MoveResultWide(this, insn, parsingState);
 
     case MOVE_EXCEPTION:
-      return new DexInstruction_MoveException(insn, parsingState);
+      return new DexInstruction_MoveException(this, insn, parsingState);
 
     case RETURN_VOID:
-      return new DexInstruction_ReturnVoid(insn, parsingState);
+      return new DexInstruction_ReturnVoid(this, insn, parsingState);
 
     case RETURN:
     case RETURN_OBJECT:
-      return new DexInstruction_Return(insn, parsingState);
+      return new DexInstruction_Return(this, insn, parsingState);
 
     case RETURN_WIDE:
-      return new DexInstruction_ReturnWide(insn, parsingState);
+      return new DexInstruction_ReturnWide(this, insn, parsingState);
 
     case CONST_4:
     case CONST_16:
     case CONST:
     case CONST_HIGH16:
-      return new DexInstruction_Const(insn, parsingState);
+      return new DexInstruction_Const(this, insn, parsingState);
 
     case CONST_WIDE_16:
     case CONST_WIDE_32:
     case CONST_WIDE:
     case CONST_WIDE_HIGH16:
-      return new DexInstruction_ConstWide(insn, parsingState);
+      return new DexInstruction_ConstWide(this, insn, parsingState);
 
     case CONST_STRING:
     case CONST_STRING_JUMBO:
-      return new DexInstruction_ConstString(insn, parsingState);
+      return new DexInstruction_ConstString(this, insn, parsingState);
 
     case CONST_CLASS:
-      return new DexInstruction_ConstClass(insn, parsingState);
+      return new DexInstruction_ConstClass(this, insn, parsingState);
 
     case MONITOR_ENTER:
     case MONITOR_EXIT:
-      return new DexInstruction_Monitor(insn, parsingState);
+      return new DexInstruction_Monitor(this, insn, parsingState);
 
     case CHECK_CAST:
-      return new DexInstruction_CheckCast(insn, parsingState);
+      return new DexInstruction_CheckCast(this, insn, parsingState);
 
     case INSTANCE_OF:
-      return new DexInstruction_InstanceOf(insn, parsingState);
+      return new DexInstruction_InstanceOf(this, insn, parsingState);
 
     case NEW_INSTANCE:
-      return new DexInstruction_NewInstance(insn, parsingState);
+      return new DexInstruction_NewInstance(this, insn, parsingState);
 
     case NEW_ARRAY:
-      return new DexInstruction_NewArray(insn, parsingState);
+      return new DexInstruction_NewArray(this, insn, parsingState);
 
     case THROW:
-      return new DexInstruction_Throw(insn, parsingState);
+      return new DexInstruction_Throw(this, insn, parsingState);
 
     case GOTO:
     case GOTO_16:
     case GOTO_32:
-      return new DexInstruction_Goto(insn, parsingState);
+      return new DexInstruction_Goto(this, insn, parsingState);
 
     case IF_EQ:
     case IF_NE:
@@ -259,7 +259,7 @@ public class DexCode {
     case IF_GE:
     case IF_GT:
     case IF_LE:
-      return new DexInstruction_IfTest(insn, parsingState);
+      return new DexInstruction_IfTest(this, insn, parsingState);
 
     case IF_EQZ:
     case IF_NEZ:
@@ -267,7 +267,7 @@ public class DexCode {
     case IF_GEZ:
     case IF_GTZ:
     case IF_LEZ:
-      return new DexInstruction_IfTestZero(insn, parsingState);
+      return new DexInstruction_IfTestZero(this, insn, parsingState);
 
     case INVOKE_VIRTUAL:
     case INVOKE_SUPER:
@@ -279,40 +279,40 @@ public class DexCode {
     case INVOKE_DIRECT_RANGE:
     case INVOKE_STATIC_RANGE:
     case INVOKE_INTERFACE_RANGE:
-      return new DexInstruction_MethodCall(insn, parsingState);
+      return new DexInstruction_MethodCall(this, insn, parsingState);
 
     case NEG_INT:
     case NOT_INT:
     case NEG_FLOAT:
-      return new DexInstruction_UnaryOp(insn, parsingState);
+      return new DexInstruction_UnaryOp(this, insn, parsingState);
 
     case NEG_LONG:
     case NOT_LONG:
     case NEG_DOUBLE:
-      return new DexInstruction_UnaryOpWide(insn, parsingState);
+      return new DexInstruction_UnaryOpWide(this, insn, parsingState);
 
     case INT_TO_FLOAT:
     case FLOAT_TO_INT:
     case INT_TO_BYTE:
     case INT_TO_CHAR:
     case INT_TO_SHORT:
-      return new DexInstruction_Convert(insn, parsingState);
+      return new DexInstruction_Convert(this, insn, parsingState);
 
     case INT_TO_LONG:
     case INT_TO_DOUBLE:
     case FLOAT_TO_LONG:
     case FLOAT_TO_DOUBLE:
-      return new DexInstruction_ConvertToWide(insn, parsingState);
+      return new DexInstruction_ConvertToWide(this, insn, parsingState);
 
     case LONG_TO_INT:
     case DOUBLE_TO_INT:
     case LONG_TO_FLOAT:
     case DOUBLE_TO_FLOAT:
-      return new DexInstruction_ConvertFromWide(insn, parsingState);
+      return new DexInstruction_ConvertFromWide(this, insn, parsingState);
 
     case LONG_TO_DOUBLE:
     case DOUBLE_TO_LONG:
-      return new DexInstruction_ConvertWide(insn, parsingState);
+      return new DexInstruction_ConvertWide(this, insn, parsingState);
 
     case ADD_INT:
     case SUB_INT:
@@ -346,7 +346,7 @@ public class DexCode {
     case MUL_FLOAT_2ADDR:
     case DIV_FLOAT_2ADDR:
     case REM_FLOAT_2ADDR:
-      return new DexInstruction_BinaryOp(insn, parsingState);
+      return new DexInstruction_BinaryOp(this, insn, parsingState);
 
     case ADD_LONG:
     case SUB_LONG:
@@ -380,11 +380,11 @@ public class DexCode {
     case MUL_DOUBLE_2ADDR:
     case DIV_DOUBLE_2ADDR:
     case REM_DOUBLE_2ADDR:
-      return new DexInstruction_BinaryOpWide(insn, parsingState);
+      return new DexInstruction_BinaryOpWide(this, insn, parsingState);
 
     default:
       // TODO: throw exception
-      return new DexInstruction_Unknown(insn);
+      return new DexInstruction_Unknown(this, insn);
     }
   }
 }

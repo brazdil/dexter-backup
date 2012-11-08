@@ -1,8 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 
+import lombok.Getter;
+
 import org.jf.dexlib.Code.Instruction;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
@@ -10,11 +13,21 @@ import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
 
 public abstract class DexInstruction extends DexCodeElement {
 
+	@Getter private DexCode MethodCode;
+	
+	public DexInstruction(DexCode methodCode) {
+		MethodCode = methodCode;
+	}
+	
   // INSTRUCTION INSTRUMENTATION
 
   public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
     return new DexCodeElement[] { this };
   }
+  
+  // CALL GRAPH
+
+  
 
   // ASSEMBLING
 

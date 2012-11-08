@@ -5,6 +5,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
@@ -19,13 +20,17 @@ public class DexInstruction_NewArray extends DexInstruction {
   @Getter private final DexRegister RegSize;
   @Getter private final DexArrayType Value;
 
-  public DexInstruction_NewArray(DexRegister to, DexRegister size, DexArrayType value) {
+  public DexInstruction_NewArray(DexCode methodCode, DexRegister to, DexRegister size, DexArrayType value) {
+	  super(methodCode);
+	  
     RegTo = to;
     RegSize = size;
     Value = value;
   }
 
-  public DexInstruction_NewArray(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
+  public DexInstruction_NewArray(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
+	  super(methodCode);
+	  
     if (insn instanceof Instruction22c && insn.opcode == Opcode.NEW_ARRAY) {
 
       val insnNewArray = (Instruction22c) insn;

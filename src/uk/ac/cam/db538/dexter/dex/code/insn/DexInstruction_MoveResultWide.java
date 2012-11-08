@@ -4,6 +4,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
@@ -15,12 +16,16 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
   @Getter private final DexRegister RegTo1;
   @Getter private final DexRegister RegTo2;
 
-  public DexInstruction_MoveResultWide(DexRegister to1, DexRegister to2) {
+  public DexInstruction_MoveResultWide(DexCode methodCode, DexRegister to1, DexRegister to2) {
+	  super(methodCode);
+	  
     RegTo1 = to1;
     RegTo2 = to2;
   }
 
-  public DexInstruction_MoveResultWide(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_MoveResultWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+	  super(methodCode);
+	  
     if (insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_RESULT_WIDE) {
 
       val insnMove = (Instruction11x) insn;
