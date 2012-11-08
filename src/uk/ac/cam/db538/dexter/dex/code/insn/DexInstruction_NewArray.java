@@ -21,16 +21,16 @@ public class DexInstruction_NewArray extends DexInstruction {
   @Getter private final DexArrayType Value;
 
   public DexInstruction_NewArray(DexCode methodCode, DexRegister to, DexRegister size, DexArrayType value) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo = to;
     RegSize = size;
     Value = value;
   }
 
   public DexInstruction_NewArray(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction22c && insn.opcode == Opcode.NEW_ARRAY) {
 
       val insnNewArray = (Instruction22c) insn;

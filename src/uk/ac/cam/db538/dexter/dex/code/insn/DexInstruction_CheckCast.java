@@ -22,15 +22,15 @@ public class DexInstruction_CheckCast extends DexInstruction {
   // CAREFUL: likely to throw exception
 
   public DexInstruction_CheckCast(DexCode methodCode, DexRegister to, DexReferenceType value) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo = to;
     Value = value;
   }
 
   public DexInstruction_CheckCast(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CHECK_CAST) {
 
       val insnCheckCast = (Instruction21c) insn;

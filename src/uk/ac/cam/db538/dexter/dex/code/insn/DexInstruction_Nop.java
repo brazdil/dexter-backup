@@ -11,12 +11,12 @@ import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
 public class DexInstruction_Nop extends DexInstruction {
 
   public DexInstruction_Nop(DexCode methodCode) {
-	  super(methodCode);
+    super(methodCode);
   }
 
   public DexInstruction_Nop(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (!(insn instanceof Instruction10x) || insn.opcode != Opcode.NOP) {
       System.out.println(insn.getClass().getName());
       System.out.println(insn.opcode.name());

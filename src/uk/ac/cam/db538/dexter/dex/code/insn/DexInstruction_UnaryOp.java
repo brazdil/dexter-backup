@@ -17,14 +17,14 @@ public class DexInstruction_UnaryOp extends DexInstruction {
   @Getter private final Opcode_UnaryOp InsnOpcode;
 
   public DexInstruction_UnaryOp(DexCode methodCode, DexRegister to, DexRegister from, Opcode_UnaryOp opcode) {
-	  super(methodCode);
+    super(methodCode);
     RegTo = to;
     RegFrom = from;
     InsnOpcode = opcode;
   }
 
   public DexInstruction_UnaryOp(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
+    super(methodCode);
     if (insn instanceof Instruction12x && Opcode_UnaryOp.convert(insn.opcode) != null) {
 
       val insnUnaryOp = (Instruction12x) insn;

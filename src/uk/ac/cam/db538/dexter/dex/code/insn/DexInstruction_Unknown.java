@@ -11,7 +11,7 @@ public class DexInstruction_Unknown extends DexInstruction {
   @Getter private final String Opcode;
 
   public DexInstruction_Unknown(DexCode methodCode, Instruction insn) {
-	  super(methodCode);
+    super(methodCode);
     Opcode = insn.opcode.name();
   }
 

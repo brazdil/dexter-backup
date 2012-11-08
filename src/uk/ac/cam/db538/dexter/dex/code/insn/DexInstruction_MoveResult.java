@@ -17,15 +17,15 @@ public class DexInstruction_MoveResult extends DexInstruction {
   @Getter private final boolean ObjectMoving;
 
   public DexInstruction_MoveResult(DexCode methodCode, DexRegister to, boolean objectMoving) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo = to;
     ObjectMoving = objectMoving;
   }
 
   public DexInstruction_MoveResult(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction11x &&
         (insn.opcode == Opcode.MOVE_RESULT || insn.opcode == Opcode.MOVE_RESULT_OBJECT)) {
 

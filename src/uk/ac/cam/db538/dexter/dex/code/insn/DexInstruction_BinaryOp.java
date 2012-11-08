@@ -26,8 +26,8 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   @Getter private final Opcode_BinaryOp InsnOpcode;
 
   public DexInstruction_BinaryOp(DexCode methodCode, DexRegister target, DexRegister sourceA, DexRegister sourceB, Opcode_BinaryOp opcode) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTarget = target;
     RegSourceA = sourceA;
     RegSourceB = sourceB;
@@ -35,8 +35,8 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   public DexInstruction_BinaryOp(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     int regA, regB, regC;
 
     if (insn instanceof Instruction23x && Opcode_BinaryOp.convert(insn.opcode) != null) {
@@ -72,7 +72,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
     return new DexCodeElement[] {
              this,
              new DexInstruction_BinaryOp(
-            		 this.getMethodCode(),
+               this.getMethodCode(),
                mapping.getTaintRegister(RegTarget),
                mapping.getTaintRegister(RegSourceA),
                mapping.getTaintRegister(RegSourceB),

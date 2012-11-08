@@ -19,8 +19,8 @@ public class DexInstruction_IfTest extends DexInstruction {
   @Getter private final Opcode_IfTest InsnOpcode;
 
   public DexInstruction_IfTest(DexCode methodCode, DexRegister regA, DexRegister regB, DexLabel target, Opcode_IfTest opcode) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegA = regA;
     RegB = regB;
     Target = target;
@@ -28,8 +28,8 @@ public class DexInstruction_IfTest extends DexInstruction {
   }
 
   public DexInstruction_IfTest(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction22t && Opcode_IfTest.convert(insn.opcode) != null) {
 
       val insnIfTest = (Instruction22t) insn;

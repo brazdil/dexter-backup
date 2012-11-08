@@ -26,15 +26,15 @@ public class DexInstruction_Const extends DexInstruction {
   //          turn it into const/high16 instruction
 
   public DexInstruction_Const(DexCode methodCode, DexRegister to, long value) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo = to;
     Value = value;
   }
 
   public DexInstruction_Const(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction11n && insn.opcode == Opcode.CONST_4) {
 
       val insnConst4 = (Instruction11n) insn;

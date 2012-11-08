@@ -17,14 +17,14 @@ public class DexInstruction_Goto extends DexInstruction {
   @Getter private final DexLabel Target;
 
   public DexInstruction_Goto(DexCode methodCode, DexLabel target) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     Target = target;
   }
 
   public DexInstruction_Goto(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     long targetOffset;
     if ( insn instanceof Instruction10t && insn.opcode == Opcode.GOTO) {
       targetOffset = ((Instruction10t) insn).getTargetAddressOffset();

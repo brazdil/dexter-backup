@@ -17,15 +17,15 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
   @Getter private final DexRegister RegTo2;
 
   public DexInstruction_MoveResultWide(DexCode methodCode, DexRegister to1, DexRegister to2) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo1 = to1;
     RegTo2 = to2;
   }
 
   public DexInstruction_MoveResultWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_RESULT_WIDE) {
 
       val insnMove = (Instruction11x) insn;

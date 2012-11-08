@@ -16,13 +16,13 @@ public class DexInstruction_Throw extends DexInstruction {
   @Getter private final DexRegister RegFrom;
 
   public DexInstruction_Throw(DexCode methodCode, DexRegister from) {
-	  super(methodCode);
+    super(methodCode);
     RegFrom = from;
   }
 
   public DexInstruction_Throw(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction11x && insn.opcode == Opcode.THROW) {
 
       val insnThrow = (Instruction11x) insn;

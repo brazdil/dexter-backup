@@ -18,16 +18,16 @@ public class DexInstruction_IfTestZero extends DexInstruction {
   @Getter private final Opcode_IfTestZero InsnOpcode;
 
   public DexInstruction_IfTestZero(DexCode methodCode, DexRegister reg, DexLabel target, Opcode_IfTestZero opcode) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     Reg = reg;
     Target = target;
     InsnOpcode = opcode;
   }
 
   public DexInstruction_IfTestZero(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction21t && Opcode_IfTestZero.convert(insn.opcode) != null) {
 
       val insnIfTestZero = (Instruction21t) insn;

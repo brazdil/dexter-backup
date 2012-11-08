@@ -23,15 +23,15 @@ public class DexInstruction_ConstString extends DexInstruction {
   //          the resulting StringDataItem has more than 16-bit id
 
   public DexInstruction_ConstString(DexCode methodCode, DexRegister to, String value) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo = to;
     StringConstant = value;
   }
 
   public DexInstruction_ConstString(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_STRING) {
 
       val insnConstString = (Instruction21c) insn;

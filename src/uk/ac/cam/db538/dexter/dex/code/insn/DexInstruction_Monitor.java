@@ -17,15 +17,15 @@ public class DexInstruction_Monitor extends DexInstruction {
   @Getter private final boolean Enter;
 
   public DexInstruction_Monitor(DexCode methodCode, DexRegister reg, boolean entering) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     Reg = reg;
     Enter = entering;
   }
 
   public DexInstruction_Monitor(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction11x &&
         (insn.opcode == Opcode.MONITOR_ENTER || insn.opcode == Opcode.MONITOR_EXIT)) {
 

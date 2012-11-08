@@ -16,14 +16,14 @@ public class DexInstruction_MoveException extends DexInstruction {
   @Getter private final DexRegister RegTo;
 
   public DexInstruction_MoveException(DexCode methodCode, DexRegister to) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo = to;
   }
 
   public DexInstruction_MoveException(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_EXCEPTION) {
 
       val insnMoveException = (Instruction11x) insn;

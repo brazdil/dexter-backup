@@ -24,16 +24,16 @@ public class DexInstruction_ConstWide extends DexInstruction {
   //          turn it into const-wide/high16 instruction
 
   public DexInstruction_ConstWide(DexCode methodCode, DexRegister to1, DexRegister to2, long value) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo1 = to1;
     RegTo2 = to2;
     Value = value;
   }
 
   public DexInstruction_ConstWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction21s && insn.opcode == Opcode.CONST_WIDE_16) {
 
       val insnConstWide16 = (Instruction21s) insn;

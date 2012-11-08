@@ -18,8 +18,8 @@ public class DexInstruction_ConvertToWide extends DexInstruction {
   @Getter private final Opcode_ConvertToWide InsnOpcode;
 
   public DexInstruction_ConvertToWide(DexCode methodCode, DexRegister to1, DexRegister to2, DexRegister from, Opcode_ConvertToWide opcode) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo1 = to1;
     RegTo2 = to2;
     RegFrom = from;
@@ -27,8 +27,8 @@ public class DexInstruction_ConvertToWide extends DexInstruction {
   }
 
   public DexInstruction_ConvertToWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction12x && Opcode_ConvertToWide.convert(insn.opcode) != null) {
 
       val insnConvert = (Instruction12x) insn;

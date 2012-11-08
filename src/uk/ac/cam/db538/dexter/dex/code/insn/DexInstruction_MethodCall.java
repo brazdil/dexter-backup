@@ -29,7 +29,7 @@ public class DexInstruction_MethodCall extends DexInstruction {
   @Getter private final Opcode_MethodCall CallType;
 
   public DexInstruction_MethodCall(DexCode methodCode, DexClassType classType, String methodName, DexType returnType, List<DexRegisterType> argumentTypes, List<DexRegister> argumentRegisters, Opcode_MethodCall callType) {
-	  super(methodCode);
+    super(methodCode);
     ClassType = classType;
     MethodName = methodName;
     ReturnType = returnType;
@@ -39,8 +39,8 @@ public class DexInstruction_MethodCall extends DexInstruction {
   }
 
   public DexInstruction_MethodCall(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     val cache = parsingState.getCache();
 
     MethodIdItem methodInfo;
@@ -140,6 +140,6 @@ public class DexInstruction_MethodCall extends DexInstruction {
 
     return str.toString();
   }
-  
-  
+
+
 }

@@ -19,7 +19,7 @@ public class DexInstruction_UnaryOpWide extends DexInstruction {
   @Getter private final Opcode_UnaryOpWide InsnOpcode;
 
   public DexInstruction_UnaryOpWide(DexCode methodCode, DexRegister to1, DexRegister to2, DexRegister from1, DexRegister from2, Opcode_UnaryOpWide opcode) {
-	  super(methodCode);
+    super(methodCode);
     RegTo1 = to1;
     RegTo2 = to2;
     RegFrom1 = from1;
@@ -28,7 +28,7 @@ public class DexInstruction_UnaryOpWide extends DexInstruction {
   }
 
   public DexInstruction_UnaryOpWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
+    super(methodCode);
     if (insn instanceof Instruction12x && Opcode_UnaryOpWide.convert(insn.opcode) != null) {
 
       val insnUnaryOp = (Instruction12x) insn;

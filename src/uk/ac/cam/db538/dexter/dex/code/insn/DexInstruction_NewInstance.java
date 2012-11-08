@@ -20,15 +20,15 @@ public class DexInstruction_NewInstance extends DexInstruction {
   @Getter private final DexClassType Value;
 
   public DexInstruction_NewInstance(DexCode methodCode, DexRegister to, DexClassType value) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo = to;
     Value = value;
   }
 
   public DexInstruction_NewInstance(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction21c && insn.opcode == Opcode.NEW_INSTANCE) {
 
       val insnNewInstance = (Instruction21c) insn;

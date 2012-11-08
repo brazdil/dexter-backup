@@ -17,16 +17,16 @@ public class DexInstruction_Convert extends DexInstruction {
   @Getter private final Opcode_Convert InsnOpcode;
 
   public DexInstruction_Convert(DexCode methodCode, DexRegister to, DexRegister from, Opcode_Convert opcode) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo = to;
     RegFrom = from;
     InsnOpcode = opcode;
   }
 
   public DexInstruction_Convert(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction12x && Opcode_Convert.convert(insn.opcode) != null) {
 
       val insnConvert = (Instruction12x) insn;

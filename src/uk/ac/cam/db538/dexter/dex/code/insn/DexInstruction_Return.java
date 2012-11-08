@@ -17,15 +17,15 @@ public class DexInstruction_Return extends DexInstruction {
   @Getter private final boolean ObjectMoving;
 
   public DexInstruction_Return(DexCode methodCode, DexRegister from, boolean objectMoving) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegFrom = from;
     ObjectMoving = objectMoving;
   }
 
   public DexInstruction_Return(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction11x &&
         (insn.opcode == Opcode.RETURN || insn.opcode == Opcode.RETURN_OBJECT)) {
 

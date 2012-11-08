@@ -14,39 +14,39 @@ import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
 
 public abstract class DexInstruction extends DexCodeElement {
 
-	@Getter private DexCode MethodCode;
-	
-	public DexInstruction(DexCode methodCode) {
-		MethodCode = methodCode;
-	}
-	
+  @Getter private DexCode MethodCode;
+
+  public DexInstruction(DexCode methodCode) {
+    MethodCode = methodCode;
+  }
+
   // INSTRUCTION INSTRUMENTATION
 
   public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
     return new DexCodeElement[] { this };
   }
-  
+
   // FLOW GRAPH
 
   protected DexCodeElement getNextCodeElement() {
-	  val insns = MethodCode.getInstructionList();
-	  
-	  int location = insns.indexOf(this);
-	  if (location < 0) // sanity check, should never happen
-		  throw new RuntimeException("Instruction not part of its DexCode");
-	  
-	  if (location < insns.size())
-		  return insns.get(location + 1);
-	  else
-		  return null;
+    val insns = MethodCode.getInstructionList();
+
+    int location = insns.indexOf(this);
+    if (location < 0) // sanity check, should never happen
+      throw new RuntimeException("Instruction not part of its DexCode");
+
+    if (location < insns.size())
+      return insns.get(location + 1);
+    else
+      return null;
   }
-  
+
   public DexCodeElement[] getSuccessors() {
-	  val next = this.getNextCodeElement();
-	  if (next == null)
-		  return new DexCodeElement[] { };
-	  else
-		  return new DexCodeElement[] { next };
+    val next = this.getNextCodeElement();
+    if (next == null)
+      return new DexCodeElement[] { };
+    else
+      return new DexCodeElement[] { next };
   }
 
   // ASSEMBLING

@@ -23,16 +23,16 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   // CAREFUL: likely to throw exception
 
   public DexInstruction_InstanceOf(DexCode methodCode, DexRegister to, DexRegister from, DexReferenceType value) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo = to;
     RegFrom = from;
     Value = value;
   }
 
   public DexInstruction_InstanceOf(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction22c && insn.opcode == Opcode.INSTANCE_OF) {
 
       val insnInstanceOf = (Instruction22c) insn;

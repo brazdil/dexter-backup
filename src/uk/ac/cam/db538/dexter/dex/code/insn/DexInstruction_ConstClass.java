@@ -20,15 +20,15 @@ public class DexInstruction_ConstClass extends DexInstruction {
   @Getter private final DexReferenceType Value;
 
   public DexInstruction_ConstClass(DexCode methodCode, DexRegister to, DexReferenceType value) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo = to;
     Value = value;
   }
 
   public DexInstruction_ConstClass(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_CLASS) {
 
       val insnConstClass = (Instruction21c) insn;

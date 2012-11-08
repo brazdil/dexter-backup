@@ -22,16 +22,16 @@ public class DexInstruction_Move extends DexInstruction {
   // CAREFUL: registers can only be allocated to 0-15 regular move !!!
 
   public DexInstruction_Move(DexCode methodCode, DexRegister to, DexRegister from, boolean objectMoving) {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     RegTo = to;
     RegFrom = from;
     ObjectMoving = objectMoving;
   }
 
   public DexInstruction_Move(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-	  super(methodCode);
-	  
+    super(methodCode);
+
     int regA, regB;
 
     if (insn instanceof Instruction12x &&
