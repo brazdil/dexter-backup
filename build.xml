@@ -87,7 +87,7 @@
 	</target>
 
 	<target name="test" depends="compile-test">
-		<junit printsummary="yes" showoutput="yes">
+		<junit printsummary="yes" haltonerror="yes" showoutput="yes">
 			<classpath>
 				<path refid="classpath"/>
 				<pathelement location="${classes.dir}"/>
