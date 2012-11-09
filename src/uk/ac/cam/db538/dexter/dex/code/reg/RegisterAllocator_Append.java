@@ -12,8 +12,8 @@ public class RegisterAllocator_Append implements RegisterAllocator {
 
   @Override
   public RegisterAllocation allocate(Set<DexRegister> regSet) {
-	  val regs = new ArrayList<DexRegister>(regSet);
-	  
+    val regs = new ArrayList<DexRegister>(regSet);
+
     Collections.sort(regs, new Comparator<DexRegister>() {
       @Override
       public int compare(DexRegister o1, DexRegister o2) {

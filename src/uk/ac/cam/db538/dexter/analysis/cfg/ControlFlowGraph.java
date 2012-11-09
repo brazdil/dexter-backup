@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
-import uk.ac.cam.db538.dexter.utils.NoDuplicatesLinkedList;
+import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class ControlFlowGraph {
 
@@ -36,13 +36,13 @@ public class ControlFlowGraph {
     val insnBlockMap = new HashMap<DexCodeElement, BasicBlock>();
 
     // split instruction list into basic blocks
-    NoDuplicatesLinkedList<DexCodeElement> currentBlock = new NoDuplicatesLinkedList<DexCodeElement>();
+    NoDuplicatesList<DexCodeElement> currentBlock = new NoDuplicatesList<DexCodeElement>();
     for (val insn : insns) {
       if (insn.cfgStartsBasicBlock() && !currentBlock.isEmpty()) {
         val block = new BasicBlock(currentBlock);
         BasicBlocks.add(block);
         insnBlockMap.put(block.getFirstInstruction(), block);
-        currentBlock = new NoDuplicatesLinkedList<DexCodeElement>();
+        currentBlock = new NoDuplicatesList<DexCodeElement>();
       }
 
       currentBlock.add(insn);
@@ -51,7 +51,7 @@ public class ControlFlowGraph {
         val block = new BasicBlock(currentBlock);
         BasicBlocks.add(block);
         insnBlockMap.put(block.getFirstInstruction(), block);
-        currentBlock = new NoDuplicatesLinkedList<DexCodeElement>();
+        currentBlock = new NoDuplicatesList<DexCodeElement>();
       }
     }
     if (!currentBlock.isEmpty()) {

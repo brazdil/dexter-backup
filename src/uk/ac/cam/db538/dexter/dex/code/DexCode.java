@@ -51,19 +51,19 @@ import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
-import uk.ac.cam.db538.dexter.utils.NoDuplicatesLinkedList;
+import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class DexCode {
 
-  @Getter private final NoDuplicatesLinkedList<DexCodeElement> InstructionList;
-  @Getter private final NoDuplicatesLinkedList<DexRegister> ParameterMapping;
+  @Getter private final NoDuplicatesList<DexCodeElement> InstructionList;
+  @Getter private final NoDuplicatesList<DexRegister> ParameterMapping;
   @Getter private final Set<DexRegister> UsedRegisters;
 
   private final DexCode_ParsingState ParsingState;
 
   public DexCode(DexParsingCache cache) {
-    InstructionList = new NoDuplicatesLinkedList<DexCodeElement>();
-    ParameterMapping = new NoDuplicatesLinkedList<DexRegister>();
+    InstructionList = new NoDuplicatesList<DexCodeElement>();
+    ParameterMapping = new NoDuplicatesList<DexRegister>();
     ParsingState = new DexCode_ParsingState(cache, this);
     UsedRegisters = new HashSet<DexRegister>();
   }
@@ -147,7 +147,7 @@ public class DexCode {
     }
     return newCode;
   }
-  
+
   public List<Instruction> assembleBytecode(RegisterAllocation regAlloc) throws InstructionAssemblyException {
     val bytecode = new LinkedList<Instruction>();
 
