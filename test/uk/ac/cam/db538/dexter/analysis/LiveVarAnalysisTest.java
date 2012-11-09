@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.analysis.lva;
+package uk.ac.cam.db538.dexter.analysis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -6,6 +6,7 @@ import lombok.val;
 
 import org.junit.Test;
 
+import uk.ac.cam.db538.dexter.analysis.LiveVarAnalysis;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexLabel;

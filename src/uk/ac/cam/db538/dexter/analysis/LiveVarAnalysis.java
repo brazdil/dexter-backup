@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.analysis.lva;
+package uk.ac.cam.db538.dexter.analysis;
 
 import java.util.Arrays;
 import java.util.HashMap;
