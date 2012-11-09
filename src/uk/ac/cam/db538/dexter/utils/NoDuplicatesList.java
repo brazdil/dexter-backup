@@ -5,21 +5,24 @@ import java.util.LinkedList;
 
 import lombok.val;
 
-public class NoDuplicatesLinkedList<E> extends LinkedList<E> {
+public class NoDuplicatesList<E> extends LinkedList<E> {
 
   private static final long serialVersionUID = -3844134393839278966L;
 
+  private static final RuntimeException DuplicateException = new RuntimeException("Duplicate inserted into NoDuplicatesList");
+
   @Override
   public boolean add(E e) {
-    if (!contains(e))
-      return super.add(e);
-    return true;
+    if (contains(e))
+      throw DuplicateException;
+    return super.add(e);
   }
 
   @Override
   public void add(int index, E element) {
-    if (!contains(element))
-      super.add(index, element);
+    if (contains(element))
+      throw DuplicateException;
+    super.add(index, element);
   }
 
   @Override
@@ -32,21 +35,25 @@ public class NoDuplicatesLinkedList<E> extends LinkedList<E> {
   @Override
   public boolean addAll(int index, Collection<? extends E> c) {
     for (val e : c)
-      if (!contains(e))
+      if (contains(e))
+        throw DuplicateException;
+      else
         super.add(index++, e);
     return true;
   }
 
   @Override
   public void addFirst(E e) {
-    if (!contains(e))
-      super.addFirst(e);
+    if (contains(e))
+      throw DuplicateException;
+    super.addFirst(e);
   }
 
   @Override
   public void addLast(E e) {
-    if (!contains(e))
-      super.addLast(e);
+    if (contains(e))
+      throw DuplicateException;
+    super.addLast(e);
   }
 
 
