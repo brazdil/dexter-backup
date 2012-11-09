@@ -99,4 +99,9 @@ public class DexInstruction_Const extends DexInstruction {
     else
       return throwCannotAssembleException();
   }
+
+  @Override
+  public DexRegister[] lvaDefinedRegisters() {
+    return new DexRegister[] { RegTo };
+  }
 }

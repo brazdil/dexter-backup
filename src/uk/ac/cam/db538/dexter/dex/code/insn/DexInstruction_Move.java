@@ -70,4 +70,14 @@ public class DexInstruction_Move extends DexInstruction {
     return "move" + (ObjectMoving ? "-object" : "") +
            " v" + RegTo.getId() + ", v" + RegFrom.getId();
   }
+
+  @Override
+  public DexRegister[] lvaDefinedRegisters() {
+    return new DexRegister[] { RegTo };
+  }
+
+  @Override
+  public DexRegister[] lvaReferencedRegisters() {
+    return new DexRegister[] { RegFrom };
+  }
 }

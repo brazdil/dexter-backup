@@ -142,4 +142,14 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
     else
       return throwCannotAssembleException();
   }
+
+  @Override
+  public DexRegister[] lvaDefinedRegisters() {
+    return new DexRegister[] { RegTarget1, RegTarget2 };
+  }
+
+  @Override
+  public DexRegister[] lvaReferencedRegisters() {
+    return new DexRegister[] { RegSourceA1, RegSourceA2, RegSourceB1, RegSourceB2 };
+  }
 }

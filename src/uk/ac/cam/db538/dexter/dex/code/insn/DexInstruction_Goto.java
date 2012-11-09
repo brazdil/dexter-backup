@@ -7,6 +7,7 @@ import org.jf.dexlib.Code.Format.Instruction20t;
 import org.jf.dexlib.Code.Format.Instruction30t;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 
@@ -41,5 +42,15 @@ public class DexInstruction_Goto extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "goto L" + Target.getOriginalAbsoluteOffset();
+  }
+
+  @Override
+  public boolean cfgEndsBasicBlock() {
+    return true;
+  }
+
+  @Override
+  public DexCodeElement[] cfgGetSuccessors() {
+    return new DexCodeElement[] { Target };
   }
 }

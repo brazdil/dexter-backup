@@ -61,4 +61,9 @@ public class DexInstruction_IfTest extends DexInstruction {
              Target
            };
   }
+
+  @Override
+  public DexRegister[] lvaReferencedRegisters() {
+    return new DexRegister[] { RegA, RegB };
+  }
 }

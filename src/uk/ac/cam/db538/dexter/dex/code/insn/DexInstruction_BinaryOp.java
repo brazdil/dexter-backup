@@ -1,18 +1,18 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import lombok.Getter;
+import lombok.val;
+
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_BinaryOp extends DexInstruction {
 
@@ -100,4 +100,13 @@ public class DexInstruction_BinaryOp extends DexInstruction {
       return throwCannotAssembleException();
   }
 
+  @Override
+  public DexRegister[] lvaDefinedRegisters() {
+    return new DexRegister[] { RegTarget };
+  }
+
+  @Override
+  public DexRegister[] lvaReferencedRegisters() {
+    return new DexRegister[] { RegSourceA, RegSourceB };
+  }
 }
