@@ -19,4 +19,17 @@ public class DexRegister {
       }
     };
   }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((Id == null) ? 0 : Id.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return (this == obj); // only take two equal references to be equal
+  }
 }
