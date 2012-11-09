@@ -58,7 +58,7 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   @Override
   protected CodeItem generateCodeItem(DexFile outFile) {
-    val registerList = Code.getAllReferencedRegisters();
+    val registerList = Code.getUsedRegisters();
     val registerAllocation = (new RegisterAllocator_Append()).allocate(registerList);
     val registerCount = registerList.size();
 

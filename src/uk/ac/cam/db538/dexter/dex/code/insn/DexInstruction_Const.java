@@ -80,11 +80,6 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
-  public DexRegister[] getReferencedRegisters() {
-    return new DexRegister[] { RegTo };
-  }
-
-  @Override
   public Instruction[] assembleBytecode(RegisterAllocation regAlloc) {
     int rTo = regAlloc.get(RegTo);
 

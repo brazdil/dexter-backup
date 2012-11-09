@@ -2,9 +2,6 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-
 import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
@@ -241,20 +238,6 @@ public class DexInstruction_BinaryOp_Test {
     val insn = new DexInstruction_BinaryOp(null, regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
 
     insn.assembleBytecode(regAlloc);
-  }
-
-  @Test
-  public void testGetReferencedRegisters() {
-    val regTo = new DexRegister(null);
-    val regSA = new DexRegister(null);
-    val regSB = new DexRegister(null);
-    val insn = new DexInstruction_BinaryOp(null, regTo, regSA, regSB, Opcode_BinaryOp.AddInt);
-    val ref = Arrays.asList(insn.getReferencedRegisters());
-
-    assertEquals(3, ref.size());
-    assertTrue(ref.contains(regTo));
-    assertTrue(ref.contains(regSA));
-    assertTrue(ref.contains(regSB));
   }
 
   @Test

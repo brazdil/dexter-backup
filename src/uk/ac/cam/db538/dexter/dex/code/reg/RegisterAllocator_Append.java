@@ -1,16 +1,19 @@
 package uk.ac.cam.db538.dexter.dex.code.reg;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import lombok.val;
 
 public class RegisterAllocator_Append implements RegisterAllocator {
 
   @Override
-  public RegisterAllocation allocate(List<DexRegister> regs) {
-
+  public RegisterAllocation allocate(Set<DexRegister> regSet) {
+	  val regs = new ArrayList<DexRegister>(regSet);
+	  
     Collections.sort(regs, new Comparator<DexRegister>() {
       @Override
       public int compare(DexRegister o1, DexRegister o2) {

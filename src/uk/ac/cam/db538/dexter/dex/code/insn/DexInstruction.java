@@ -6,7 +6,6 @@ import org.jf.dexlib.Code.Instruction;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
 
 public abstract class DexInstruction extends DexCodeElement {
@@ -23,10 +22,6 @@ public abstract class DexInstruction extends DexCodeElement {
 
 
   // ASSEMBLING
-
-  public DexRegister[] getReferencedRegisters() {
-    return new DexRegister[] { };
-  }
 
   public Instruction[] assembleBytecode(RegisterAllocation regAlloc) throws InstructionAssemblyException {
     return new Instruction[] { };

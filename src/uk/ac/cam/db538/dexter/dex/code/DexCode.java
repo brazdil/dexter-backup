@@ -1,9 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
@@ -55,6 +57,7 @@ public class DexCode {
 
   @Getter private final NoDuplicatesLinkedList<DexCodeElement> InstructionList;
   @Getter private final NoDuplicatesLinkedList<DexRegister> ParameterMapping;
+  @Getter private final Set<DexRegister> UsedRegisters;
 
   private final DexCode_ParsingState ParsingState;
 
@@ -62,6 +65,7 @@ public class DexCode {
     InstructionList = new NoDuplicatesLinkedList<DexCodeElement>();
     ParameterMapping = new NoDuplicatesLinkedList<DexRegister>();
     ParsingState = new DexCode_ParsingState(cache, this);
+    UsedRegisters = new HashSet<DexRegister>();
   }
 
   public DexCode(CodeItem methodInfo, DexParsingCache cache) throws InstructionParsingException {
@@ -114,6 +118,8 @@ public class DexCode {
 
   public void add(DexCodeElement elem) {
     InstructionList.add(elem);
+    UsedRegisters.addAll(Arrays.asList(elem.lvaDefinedRegisters()));
+    UsedRegisters.addAll(Arrays.asList(elem.lvaReferencedRegisters()));
   }
 
   public void addAll(DexCodeElement[] elems) {
@@ -129,20 +135,6 @@ public class DexCode {
     InstructionList.add(findElement(after) + 1, elem);
   }
 
-  public List<DexRegister> getAllReferencedRegisters() {
-    val list = new LinkedList<DexRegister>();
-
-    for (val elem : InstructionList)
-      if (elem instanceof DexInstruction) {
-        val insn = (DexInstruction) elem;
-        for (val reg : insn.getReferencedRegisters())
-          if (!list.contains(reg))
-            list.add(reg);
-      }
-
-    return list;
-  }
-
   public DexCode instrument() {
     val newCode = new DexCode(ParsingState.getCache());
     val taintRegs = new DexCode_InstrumentationState(this);
@@ -155,7 +147,7 @@ public class DexCode {
     }
     return newCode;
   }
-
+  
   public List<Instruction> assembleBytecode(RegisterAllocation regAlloc) throws InstructionAssemblyException {
     val bytecode = new LinkedList<Instruction>();
 

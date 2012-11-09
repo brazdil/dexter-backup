@@ -1,8 +1,9 @@
 package uk.ac.cam.db538.dexter.dex.code.reg;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.util.LinkedList;
+import java.util.HashSet;
 
 import lombok.val;
 
@@ -17,7 +18,7 @@ public class RegisterAllocator_Append_Test {
     val reg2 = new DexRegister(8);
     val reg3 = new DexRegister(340);
 
-    val regs = new LinkedList<DexRegister>();
+    val regs = new HashSet<DexRegister>();
     regs.add(reg1);
     regs.add(reg3);
     regs.add(reg2);
@@ -39,7 +40,7 @@ public class RegisterAllocator_Append_Test {
     val reg2 = new DexRegister(2);
     val reg3 = new DexRegister(null);
 
-    val regs = new LinkedList<DexRegister>();
+    val regs = new HashSet<DexRegister>();
     regs.add(reg1);
     regs.add(reg3);
     regs.add(reg2);
@@ -61,7 +62,7 @@ public class RegisterAllocator_Append_Test {
     val reg2 = new DexRegister(null);
     val reg3 = new DexRegister(null);
 
-    val regs = new LinkedList<DexRegister>();
+    val regs = new HashSet<DexRegister>();
     regs.add(reg1);
     regs.add(reg3);
     regs.add(reg2);

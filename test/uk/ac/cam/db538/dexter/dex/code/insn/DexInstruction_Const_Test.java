@@ -183,16 +183,6 @@ public class DexInstruction_Const_Test {
   }
 
   @Test
-  public void testGetReferencedRegisters() {
-    val reg = new DexRegister(null);
-    val insn = new DexInstruction_Const(null, reg, 1L);
-    val ref = insn.getReferencedRegisters();
-
-    assertEquals(1, ref.length);
-    assertEquals(reg, ref[0]);
-  }
-
-  @Test
   public void testInstrument() {
     val reg1 = new DexRegister(0);
     val reg2 = new DexRegister(1);

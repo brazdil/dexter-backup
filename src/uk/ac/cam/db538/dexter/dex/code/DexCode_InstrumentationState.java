@@ -19,7 +19,7 @@ public class DexCode_InstrumentationState {
     // that said, it still organises the registers
     // according to this
     int maxId = -1;
-    for (val reg : code.getAllReferencedRegisters()) {
+    for (val reg : code.getUsedRegisters()) {
       val id = reg.getId();
       if (id != null && maxId < id)
         maxId = id;

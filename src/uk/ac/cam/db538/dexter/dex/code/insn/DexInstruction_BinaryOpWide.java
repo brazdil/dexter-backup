@@ -81,11 +81,6 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   }
 
   @Override
-  public DexRegister[] getReferencedRegisters() {
-    return new DexRegister[] { RegTarget1, RegTarget2, RegSourceA1, RegSourceA2, RegSourceB1, RegSourceB2 };
-  }
-
-  @Override
   public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
     val taintTarget1 = mapping.getTaintRegister(RegTarget1);
     val taintTarget2 = mapping.getTaintRegister(RegTarget2);

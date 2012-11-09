@@ -33,14 +33,6 @@ public class DexInstruction_Nop_Test {
   }
 
   @Test
-  public void testGetReferencedRegisters() {
-    val insn = new DexInstruction_Nop(null);
-    val ref = insn.getReferencedRegisters();
-
-    assertEquals(0, ref.length);
-  }
-
-  @Test
   public void testInstrument() {
     val code = new DexCode(new DexParsingCache());
     code.add(new DexInstruction_Nop(null));

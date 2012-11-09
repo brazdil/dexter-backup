@@ -81,11 +81,6 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   @Override
-  public DexRegister[] getReferencedRegisters() {
-    return new DexRegister[] { RegTarget, RegSourceA, RegSourceB };
-  }
-
-  @Override
   public Instruction[] assembleBytecode(RegisterAllocation regAlloc)
   throws InstructionAssemblyException {
     int rTarget = regAlloc.get(RegTarget);
