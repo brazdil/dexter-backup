@@ -8,7 +8,7 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
-import uk.ac.cam.db538.dexter.analysis.cfg.BasicBlock;
+import uk.ac.cam.db538.dexter.analysis.cfg.CfgBasicBlock;
 import uk.ac.cam.db538.dexter.analysis.cfg.ControlFlowGraph;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
@@ -36,13 +36,13 @@ public class LiveVarAnalysis {
     do {
       somethingChanged = false;
 
-      for (val block : new ListReverser<BasicBlock>(CFG.getBasicBlocks())) {
+      for (val block : new ListReverser<CfgBasicBlock>(CFG.getBasicBlocks())) {
         Set<DexRegister> insnLiveIn = new HashSet<DexRegister>();
 
         // union of successors's liveOut
         for (val succ : block.getSuccessors())
-          if (succ instanceof BasicBlock)
-            insnLiveIn.addAll(LiveVars.get(((BasicBlock) succ).getFirstInstruction()));
+          if (succ instanceof CfgBasicBlock)
+            insnLiveIn.addAll(LiveVars.get(((CfgBasicBlock) succ).getFirstInstruction()));
 
         // iterate instructions of the block in reverse order
         // and propagate live var info

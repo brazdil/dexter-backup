@@ -46,10 +46,10 @@ public class ControlFlowGraphTest {
     // find successor of START
     assertEquals(1, start.getSuccessors().size());
     val succ = start.getSuccessors().toArray()[0];
-    assertTrue(succ instanceof BasicBlock);
+    assertTrue(succ instanceof CfgBasicBlock);
 
     // inspect block
-    val block = (BasicBlock) succ;
+    val block = (CfgBasicBlock) succ;
     val insns = block.getInstructions();
     assertEquals(1, insns.size());
     assertEquals(insnReturn, insns.get(0));

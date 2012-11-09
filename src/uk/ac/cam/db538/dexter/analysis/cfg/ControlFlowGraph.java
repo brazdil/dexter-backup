@@ -14,9 +14,9 @@ public class ControlFlowGraph {
 
   @Getter private final DexCode Code;
 
-  @Getter private StartBlock StartBlock;
-  @Getter private ExitBlock ExitBlock;
-  @Getter private List<BasicBlock> BasicBlocks;
+  @Getter private CfgStartBlock StartBlock;
+  @Getter private CfgExitBlock ExitBlock;
+  @Getter private List<CfgBasicBlock> BasicBlocks;
 
   public ControlFlowGraph(DexCode code) {
     Code = code;
@@ -24,22 +24,22 @@ public class ControlFlowGraph {
   }
 
   public void update() {
-    StartBlock = new StartBlock();
-    ExitBlock = new ExitBlock();
-    BasicBlocks = new LinkedList<BasicBlock>();
+    StartBlock = new CfgStartBlock();
+    ExitBlock = new CfgExitBlock();
+    BasicBlocks = new LinkedList<CfgBasicBlock>();
 
     val insns = Code.getInstructionList();
 
     // this is a map going from the first instruction
     // of a block to its reference; used later to create
     // edges between blocks
-    val insnBlockMap = new HashMap<DexCodeElement, BasicBlock>();
+    val insnBlockMap = new HashMap<DexCodeElement, CfgBasicBlock>();
 
     // split instruction list into basic blocks
     NoDuplicatesList<DexCodeElement> currentBlock = new NoDuplicatesList<DexCodeElement>();
     for (val insn : insns) {
       if (insn.cfgStartsBasicBlock() && !currentBlock.isEmpty()) {
-        val block = new BasicBlock(currentBlock);
+        val block = new CfgBasicBlock(currentBlock);
         BasicBlocks.add(block);
         insnBlockMap.put(block.getFirstInstruction(), block);
         currentBlock = new NoDuplicatesList<DexCodeElement>();
@@ -48,14 +48,14 @@ public class ControlFlowGraph {
       currentBlock.add(insn);
 
       if ((insn.cfgEndsBasicBlock() || insn.cfgExitsMethod()) && !currentBlock.isEmpty()) {
-        val block = new BasicBlock(currentBlock);
+        val block = new CfgBasicBlock(currentBlock);
         BasicBlocks.add(block);
         insnBlockMap.put(block.getFirstInstruction(), block);
         currentBlock = new NoDuplicatesList<DexCodeElement>();
       }
     }
     if (!currentBlock.isEmpty()) {
-      val block = new BasicBlock(currentBlock);
+      val block = new CfgBasicBlock(currentBlock);
       BasicBlocks.add(block);
       insnBlockMap.put(block.getFirstInstruction(), block);
     }
@@ -64,10 +64,10 @@ public class ControlFlowGraph {
 
     if (BasicBlocks.isEmpty()) {
       // no basic blocks => just connect START and EXIT
-      Block.createEdge(StartBlock, ExitBlock);
+      CfgBlock.createEdge(StartBlock, ExitBlock);
     } else {
       // connect first block with START
-      Block.createEdge(StartBlock, BasicBlocks.get(0));
+      CfgBlock.createEdge(StartBlock, BasicBlocks.get(0));
 
       // connect blocks together using the list of successors
       // provided by each instruction
@@ -78,13 +78,13 @@ public class ControlFlowGraph {
         // if a block ends with a returning instruction
         // connect it to EXIT
         if (lastInsn.cfgExitsMethod() || lastInsnSuccs.length == 0)
-          Block.createEdge(block, ExitBlock);
+          CfgBlock.createEdge(block, ExitBlock);
 
         for (val succ : lastInsnSuccs) {
           val blockSucc = insnBlockMap.get(succ);
           if (blockSucc == null)
             throw new CfgException("Successor of a block doesn't point to a different block");
-          Block.createEdge(block, blockSucc);
+          CfgBlock.createEdge(block, blockSucc);
         }
       }
     }
