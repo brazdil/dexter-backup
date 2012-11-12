@@ -20,10 +20,10 @@ public class GraphColoring_ActualSituationsTest {
     code.add(new DexInstruction_BinaryOp(code, reg1, reg1, reg2, Opcode_BinaryOp.AddInt));
     code.add(new DexInstruction_ReturnVoid(code));
   }
-  
+
   private static void gen4bitRangeConstraint(DexCode code, DexRegister reg, DexParsingCache cache) {
-	  code.add(new DexInstruction_InstanceOf(code, reg, reg, DexReferenceType.parse("Ljava.lang.String;", cache)));
-	    code.add(new DexInstruction_ReturnVoid(code));
+    code.add(new DexInstruction_InstanceOf(code, reg, reg, DexReferenceType.parse("Ljava.lang.String;", cache)));
+    code.add(new DexInstruction_ReturnVoid(code));
   }
 
   @Test
@@ -87,30 +87,30 @@ public class GraphColoring_ActualSituationsTest {
   }
 
   private static int SpillingRegNum = 17;
-  
+
   @Test
   public void testNeedsSpilling() {
-	  val cache = new DexParsingCache();
+    val cache = new DexParsingCache();
     val code = new DexCode(cache);
 
     // generate registers
     val regs = new DexRegister[SpillingRegNum];
     for (int i = 0; i < SpillingRegNum; ++i)
-    	regs[i] = new DexRegister(i);
-    
+      regs[i] = new DexRegister(i);
+
     // clash them all
     for (int i = 0; i < SpillingRegNum; ++i)
-    	for (int j = i + 1; j < SpillingRegNum; ++j)
-    		genClash(code, regs[i], regs[j]);
+      for (int j = i + 1; j < SpillingRegNum; ++j)
+        genClash(code, regs[i], regs[j]);
 
     // constraint them to 4 bits
     for (int i = 0; i < SpillingRegNum; ++i)
-    	gen4bitRangeConstraint(code, regs[i], cache);
-    
+      gen4bitRangeConstraint(code, regs[i], cache);
+
     val coloring = new GraphColoring(code);
     val newCode = coloring.getModifiedCode();
-    
+
     for (val insn : newCode.getInstructionList())
-    	System.out.println(insn.getOriginalAssembly());
+      System.out.println(insn.getOriginalAssembly());
   }
 }

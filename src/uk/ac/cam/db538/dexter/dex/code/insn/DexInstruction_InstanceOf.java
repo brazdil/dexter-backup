@@ -57,41 +57,41 @@ public class DexInstruction_InstanceOf extends DexInstruction {
            ", " + Value.getDescriptor();
   }
 
-@Override
-public Set<GcRangeConstraint> gcRangeConstraints() {
-	val set = new HashSet<GcRangeConstraint>();
-	set.add(new GcRangeConstraint(RegTo, GcColorRange.Range_0_15));
-	set.add(new GcRangeConstraint(RegFrom, GcColorRange.Range_0_15));
-	return set;
-}
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    val set = new HashSet<GcRangeConstraint>();
+    set.add(new GcRangeConstraint(RegTo, GcColorRange.Range_0_15));
+    set.add(new GcRangeConstraint(RegFrom, GcColorRange.Range_0_15));
+    return set;
+  }
 
-@Override
-public DexCodeElement[] gcAddTemporaries() {
+  @Override
+  public DexCodeElement[] gcAddTemporaries() {
     val code = getMethodCode();
 
     val tempTo = new DexRegister();
-	val tempFrom = new DexRegister();
-	
-	return new DexCodeElement[] {
-            new DexInstruction_Move(code, tempFrom, RegFrom, false),
-            new DexInstruction_InstanceOf(code, tempTo, tempFrom, Value),
-            new DexInstruction_Move(code, RegTo, tempTo, false)
-	};
-}
+    val tempFrom = new DexRegister();
 
-@Override
-public Set<DexRegister> lvaDefinedRegisters() {
-	val set = new HashSet<DexRegister>();
-	set.add(RegTo);
-	return set;
-}
+    return new DexCodeElement[] {
+             new DexInstruction_Move(code, tempFrom, RegFrom, false),
+             new DexInstruction_InstanceOf(code, tempTo, tempFrom, Value),
+             new DexInstruction_Move(code, RegTo, tempTo, false)
+           };
+  }
 
-@Override
-public Set<DexRegister> lvaReferencedRegisters() {
-	val set = new HashSet<DexRegister>();
-	set.add(RegFrom);
-	return set;
-}
-  
-  
+  @Override
+  public Set<DexRegister> lvaDefinedRegisters() {
+    val set = new HashSet<DexRegister>();
+    set.add(RegTo);
+    return set;
+  }
+
+  @Override
+  public Set<DexRegister> lvaReferencedRegisters() {
+    val set = new HashSet<DexRegister>();
+    set.add(RegFrom);
+    return set;
+  }
+
+
 }

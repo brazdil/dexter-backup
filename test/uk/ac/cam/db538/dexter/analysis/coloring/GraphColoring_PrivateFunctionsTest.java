@@ -504,116 +504,116 @@ public class GraphColoring_PrivateFunctionsTest {
 //  }
 
   // CONTAINS ANY OF NODES
-  
+
   private static boolean execContainsAnyOfNodes(Collection<DexRegister> collection, LinkedList<Pair<DexRegister, GcColorRange>> nodeRun) {
-	    try {
-	      Method m = GraphColoring.class.getDeclaredMethod("containsAnyOfNodes", Collection.class, LinkedList.class);
-	      m.setAccessible(true);
-	      return (Boolean) m.invoke(null, collection, nodeRun);
-	    } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
-	      e.printStackTrace(System.err);
-	      fail("Couldn't execute method: " + e.getClass().getSimpleName());
-	      return false;
-	    }
-	  }
-  
+    try {
+      Method m = GraphColoring.class.getDeclaredMethod("containsAnyOfNodes", Collection.class, LinkedList.class);
+      m.setAccessible(true);
+      return (Boolean) m.invoke(null, collection, nodeRun);
+    } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
+      e.printStackTrace(System.err);
+      fail("Couldn't execute method: " + e.getClass().getSimpleName());
+      return false;
+    }
+  }
+
   @Test
   public void testContainsAnyOfNodes() {
-	  val r1 = new DexRegister();
-	  val r2 = new DexRegister();
-	  val r3 = new DexRegister();
-	  val r4 = new DexRegister();
-	  
-	  val collection = new LinkedList<DexRegister>();
-	  collection.add(r1);
-	  collection.add(r2);
-	  
-	  val run1 = new LinkedList<Pair<DexRegister, GcColorRange>>();
-	  run1.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r1, GcColorRange.Range_0_65535));
-	  run1.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r3, GcColorRange.Range_0_65535));
+    val r1 = new DexRegister();
+    val r2 = new DexRegister();
+    val r3 = new DexRegister();
+    val r4 = new DexRegister();
 
-	  val run2 = new LinkedList<Pair<DexRegister, GcColorRange>>();
-	  run2.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r3, GcColorRange.Range_0_65535));
-	  run2.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r4, GcColorRange.Range_0_65535));
-	  
-	  assertTrue(execContainsAnyOfNodes(collection, run1));
-	  assertFalse(execContainsAnyOfNodes(collection, run2));
+    val collection = new LinkedList<DexRegister>();
+    collection.add(r1);
+    collection.add(r2);
+
+    val run1 = new LinkedList<Pair<DexRegister, GcColorRange>>();
+    run1.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r1, GcColorRange.Range_0_65535));
+    run1.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r3, GcColorRange.Range_0_65535));
+
+    val run2 = new LinkedList<Pair<DexRegister, GcColorRange>>();
+    run2.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r3, GcColorRange.Range_0_65535));
+    run2.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r4, GcColorRange.Range_0_65535));
+
+    assertTrue(execContainsAnyOfNodes(collection, run1));
+    assertFalse(execContainsAnyOfNodes(collection, run2));
   }
-  
-  // GENERATE CODE WITH SPILLED NODE 
-  
+
+  // GENERATE CODE WITH SPILLED NODE
+
   private static DexCode execGenerateCodeWithSpilledNode(DexCode currentCode, LinkedList<Pair<DexRegister, GcColorRange>> nodeRun) {
-	    try {
-	      Method m = GraphColoring.class.getDeclaredMethod("generateCodeWithSpilledNode", DexCode.class, LinkedList.class);
-	      m.setAccessible(true);
-	      return (DexCode) m.invoke(null, currentCode, nodeRun);
-	    } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
-	      e.printStackTrace(System.err);
-	      fail("Couldn't execute method: " + e.getClass().getSimpleName());
-	      return null;
-	    }
-	  }
-  
+    try {
+      Method m = GraphColoring.class.getDeclaredMethod("generateCodeWithSpilledNode", DexCode.class, LinkedList.class);
+      m.setAccessible(true);
+      return (DexCode) m.invoke(null, currentCode, nodeRun);
+    } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
+      e.printStackTrace(System.err);
+      fail("Couldn't execute method: " + e.getClass().getSimpleName());
+      return null;
+    }
+  }
+
   @Test
   public void testGenerateCodeWithSpilledNode_Empty() {
-	  val r1 = new DexRegister();
-	  val r2 = new DexRegister();
-	  val r3 = new DexRegister();
-	  val r4 = new DexRegister();
-	  
-	  val code = new DexCode(null);
+    val r1 = new DexRegister();
+    val r2 = new DexRegister();
+    val r3 = new DexRegister();
+    val r4 = new DexRegister();
 
-	  val i1 = new DexInstruction_BinaryOp(code, r1, r1, r1, Opcode_BinaryOp.AddInt);
-	  val i2 = new DexInstruction_BinaryOp(code, r2, r2, r2, Opcode_BinaryOp.AddInt);
-	  val i3 = new DexInstruction_BinaryOp(code, r3, r3, r3, Opcode_BinaryOp.AddInt);
-	  val i4 = new DexInstruction_BinaryOp(code, r4, r4, r4, Opcode_BinaryOp.AddInt);
-	  
-	  code.add(i1);
-	  code.add(i2);
-	  code.add(i3);
-	  code.add(i4);
-	  
-	  val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
+    val code = new DexCode(null);
+
+    val i1 = new DexInstruction_BinaryOp(code, r1, r1, r1, Opcode_BinaryOp.AddInt);
+    val i2 = new DexInstruction_BinaryOp(code, r2, r2, r2, Opcode_BinaryOp.AddInt);
+    val i3 = new DexInstruction_BinaryOp(code, r3, r3, r3, Opcode_BinaryOp.AddInt);
+    val i4 = new DexInstruction_BinaryOp(code, r4, r4, r4, Opcode_BinaryOp.AddInt);
+
+    code.add(i1);
+    code.add(i2);
+    code.add(i3);
+    code.add(i4);
+
+    val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
 //	  nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r2, GcColorRange.Range_0_255));
 //	  nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r3, GcColorRange.Range_0_255));
-	  
-	  val newCode = execGenerateCodeWithSpilledNode(code, nodeRun);
-	  assertEquals(4, newCode.getInstructionList().size());
-	  assertEquals(i1, newCode.getInstructionList().get(0));
-	  assertEquals(i2, newCode.getInstructionList().get(1));
-	  assertEquals(i3, newCode.getInstructionList().get(2));
-	  assertEquals(i4, newCode.getInstructionList().get(3));
+
+    val newCode = execGenerateCodeWithSpilledNode(code, nodeRun);
+    assertEquals(4, newCode.getInstructionList().size());
+    assertEquals(i1, newCode.getInstructionList().get(0));
+    assertEquals(i2, newCode.getInstructionList().get(1));
+    assertEquals(i3, newCode.getInstructionList().get(2));
+    assertEquals(i4, newCode.getInstructionList().get(3));
   }
-  
+
   @Test
   public void testGenerateCodeWithSpilledNode_Standard() {
-	  val r1 = new DexRegister();
-	  val r2 = new DexRegister();
-	  val r3 = new DexRegister();
-	  val r4 = new DexRegister();
-	  
-	  val code = new DexCode(null);
+    val r1 = new DexRegister();
+    val r2 = new DexRegister();
+    val r3 = new DexRegister();
+    val r4 = new DexRegister();
 
-	  val i1 = new DexInstruction_BinaryOp(code, r1, r1, r1, Opcode_BinaryOp.AddInt);
-	  val i2 = new DexInstruction_BinaryOp(code, r4, r2, r2, Opcode_BinaryOp.AddInt); // only in referenced registers
-	  val i3 = new DexInstruction_BinaryOp(code, r3, r4, r4, Opcode_BinaryOp.AddInt); // only in defined registers
-	  val i4 = new DexInstruction_BinaryOp(code, r4, r4, r4, Opcode_BinaryOp.AddInt);
-	  
-	  code.add(i1);
-	  code.add(i2);
-	  code.add(i3);
-	  code.add(i4);
-	  
-	  val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-	  nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r2, GcColorRange.Range_0_255));
-	  nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r3, GcColorRange.Range_0_255));
-	  
-	  val newCode = execGenerateCodeWithSpilledNode(code, nodeRun);
-	  val insns = newCode.getInstructionList();
-	  assertTrue(insns.contains(i1));
-	  assertFalse(insns.contains(i2));
-	  assertFalse(insns.contains(i3));
-	  assertTrue(insns.contains(i4));
+    val code = new DexCode(null);
+
+    val i1 = new DexInstruction_BinaryOp(code, r1, r1, r1, Opcode_BinaryOp.AddInt);
+    val i2 = new DexInstruction_BinaryOp(code, r4, r2, r2, Opcode_BinaryOp.AddInt); // only in referenced registers
+    val i3 = new DexInstruction_BinaryOp(code, r3, r4, r4, Opcode_BinaryOp.AddInt); // only in defined registers
+    val i4 = new DexInstruction_BinaryOp(code, r4, r4, r4, Opcode_BinaryOp.AddInt);
+
+    code.add(i1);
+    code.add(i2);
+    code.add(i3);
+    code.add(i4);
+
+    val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r2, GcColorRange.Range_0_255));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r3, GcColorRange.Range_0_255));
+
+    val newCode = execGenerateCodeWithSpilledNode(code, nodeRun);
+    val insns = newCode.getInstructionList();
+    assertTrue(insns.contains(i1));
+    assertFalse(insns.contains(i2));
+    assertFalse(insns.contains(i3));
+    assertTrue(insns.contains(i4));
   }
 
   // REMOVE GAPS FROM COLORING

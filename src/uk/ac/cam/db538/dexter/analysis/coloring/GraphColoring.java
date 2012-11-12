@@ -50,10 +50,10 @@ public class GraphColoring {
       } catch (GraphUncolorableException e) {
         if (getStrictestColorRange(e.getProblematicNodeRun()) == GcColorRange.Range_0_65535)
           throw new RuntimeException(e);
-        
+
         for (val reg : e.getProblematicNodeRun())
-        	System.out.println("spilling reg " + reg.getValA().getId());
-        
+          System.out.println("spilling reg " + reg.getValA().getId());
+
         ModifiedCode = generateCodeWithSpilledNode(ModifiedCode, e.getProblematicNodeRun());
       }
     }
