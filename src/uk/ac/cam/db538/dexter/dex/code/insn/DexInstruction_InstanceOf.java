@@ -1,11 +1,16 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring.GcColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
@@ -51,4 +56,42 @@ public class DexInstruction_InstanceOf extends DexInstruction {
     return "instance-of v" + RegTo.getId() + ", v" + RegFrom.getId() +
            ", " + Value.getDescriptor();
   }
+
+@Override
+public Set<GcRangeConstraint> gcRangeConstraints() {
+	val set = new HashSet<GcRangeConstraint>();
+	set.add(new GcRangeConstraint(RegTo, GcColorRange.Range_0_15));
+	set.add(new GcRangeConstraint(RegFrom, GcColorRange.Range_0_15));
+	return set;
+}
+
+@Override
+public DexCodeElement[] gcAddTemporaries() {
+    val code = getMethodCode();
+
+    val tempTo = new DexRegister();
+	val tempFrom = new DexRegister();
+	
+	return new DexCodeElement[] {
+            new DexInstruction_Move(code, tempFrom, RegFrom, false),
+            new DexInstruction_InstanceOf(code, tempTo, tempFrom, Value),
+            new DexInstruction_Move(code, RegTo, tempTo, false)
+	};
+}
+
+@Override
+public Set<DexRegister> lvaDefinedRegisters() {
+	val set = new HashSet<DexRegister>();
+	set.add(RegTo);
+	return set;
+}
+
+@Override
+public Set<DexRegister> lvaReferencedRegisters() {
+	val set = new HashSet<DexRegister>();
+	set.add(RegFrom);
+	return set;
+}
+  
+  
 }

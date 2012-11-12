@@ -1,5 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction12x;
@@ -72,12 +75,16 @@ public class DexInstruction_Move extends DexInstruction {
   }
 
   @Override
-  public DexRegister[] lvaDefinedRegisters() {
-    return new DexRegister[] { RegTo };
+  public Set<DexRegister> lvaDefinedRegisters() {
+    val regs = new HashSet<DexRegister>();
+    regs.add(RegTo);
+    return regs;
   }
 
   @Override
-  public DexRegister[] lvaReferencedRegisters() {
-    return new DexRegister[] { RegFrom };
+  public Set<DexRegister> lvaReferencedRegisters() {
+    val regs = new HashSet<DexRegister>();
+    regs.add(RegFrom);
+    return regs;
   }
 }

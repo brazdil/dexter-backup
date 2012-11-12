@@ -1,5 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import lombok.Getter;
 import lombok.val;
 
@@ -96,7 +99,9 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
-  public DexRegister[] lvaDefinedRegisters() {
-    return new DexRegister[] { RegTo };
+  public Set<DexRegister> lvaDefinedRegisters() {
+    val regs = new HashSet<DexRegister>();
+    regs.add(RegTo);
+    return regs;
   }
 }

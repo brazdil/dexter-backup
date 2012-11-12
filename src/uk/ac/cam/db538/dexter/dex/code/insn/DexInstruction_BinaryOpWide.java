@@ -1,9 +1,13 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring.GcColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -139,12 +143,63 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   }
 
   @Override
-  public DexRegister[] lvaDefinedRegisters() {
-    return new DexRegister[] { RegTarget1, RegTarget2 };
+  public Set<DexRegister> lvaDefinedRegisters() {
+    val regs = new HashSet<DexRegister>();
+    regs.add(RegTarget1);
+    regs.add(RegTarget2);
+    return regs;
   }
 
   @Override
-  public DexRegister[] lvaReferencedRegisters() {
-    return new DexRegister[] { RegSourceA1, RegSourceA2, RegSourceB1, RegSourceB2 };
+  public Set<DexRegister> lvaReferencedRegisters() {
+    val regs = new HashSet<DexRegister>();
+    regs.add(RegSourceA1);
+    regs.add(RegSourceA2);
+    regs.add(RegSourceB1);
+    regs.add(RegSourceB2);
+    return regs;
   }
+
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    val set = new HashSet<GcRangeConstraint>();
+    set.add(new GcRangeConstraint(RegTarget1, GcColorRange.Range_0_255));
+    set.add(new GcRangeConstraint(RegSourceA1, GcColorRange.Range_0_255));
+    set.add(new GcRangeConstraint(RegSourceB1, GcColorRange.Range_0_255));
+    return set;
+  }
+
+  @Override
+  public Set<GcFollowConstraint> gcFollowConstraints() {
+    val set = new HashSet<GcFollowConstraint>();
+    set.add(new GcFollowConstraint(RegTarget1, RegTarget2));
+    set.add(new GcFollowConstraint(RegSourceA1, RegSourceA2));
+    set.add(new GcFollowConstraint(RegSourceB1, RegSourceB2));
+    return set;
+  }
+
+  @Override
+  public DexCodeElement[] gcAddTemporaries() {
+    val code = getMethodCode();
+
+    val tempTarget1 = new DexRegister();
+    val tempTarget2 = new DexRegister();
+    val tempSourceA1 = new DexRegister();
+    val tempSourceA2 = new DexRegister();
+    val tempSourceB1 = new DexRegister();
+    val tempSourceB2 = new DexRegister();
+
+    return new DexCodeElement[] {
+             new DexInstruction_Move(code, tempSourceA1, RegSourceA1, false),
+             new DexInstruction_Move(code, tempSourceA2, RegSourceA2, false),
+             new DexInstruction_Move(code, tempSourceB1, RegSourceB1, false),
+             new DexInstruction_Move(code, tempSourceB2, RegSourceB2, false),
+             new DexInstruction_BinaryOpWide(code, tempTarget1, tempTarget2, tempSourceA1, tempSourceA2, tempSourceB1, tempSourceB2, InsnOpcode),
+             new DexInstruction_Move(code, RegTarget1, tempTarget1, false),
+             new DexInstruction_Move(code, RegTarget2, tempTarget2, false)
+           };
+  }
+
+
 }
+

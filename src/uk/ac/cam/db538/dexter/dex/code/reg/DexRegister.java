@@ -7,6 +7,10 @@ public class DexRegister {
 
   @Getter private final Integer Id;
 
+  public DexRegister() {
+    Id = null;
+  }
+
   public DexRegister(Integer id) {
     Id = id;
   }

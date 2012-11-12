@@ -1,8 +1,13 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import lombok.Getter;
 import lombok.val;
+import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring.GcColorRange;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 public abstract class DexCodeElement {
 
@@ -54,11 +59,37 @@ public abstract class DexCodeElement {
 
   // LIVE VARIABLE ANALYSIS
 
-  public DexRegister[] lvaDefinedRegisters() {
-    return new DexRegister[0];
+  public Set<DexRegister> lvaDefinedRegisters() {
+    return new HashSet<DexRegister>();
   }
 
-  public DexRegister[] lvaReferencedRegisters() {
-    return new DexRegister[0];
+  public Set<DexRegister> lvaReferencedRegisters() {
+    return new HashSet<DexRegister>();
+  }
+
+  // GRAPH COLORING
+
+  public static class GcRangeConstraint extends Pair<DexRegister, GcColorRange> {
+    public GcRangeConstraint(DexRegister valA, GcColorRange valB) {
+      super(valA, valB);
+    }
+  }
+
+  public static class GcFollowConstraint extends Pair<DexRegister, DexRegister> {
+    public GcFollowConstraint(DexRegister valA, DexRegister valB) {
+      super(valA, valB);
+    }
+  }
+
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    return new HashSet<GcRangeConstraint>();
+  }
+
+  public Set<GcFollowConstraint> gcFollowConstraints() {
+    return new HashSet<GcFollowConstraint>();
+  }
+
+  public DexCodeElement[] gcAddTemporaries() {
+    return new DexCodeElement[] { this };
   }
 }

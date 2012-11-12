@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.analysis;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -52,8 +51,8 @@ public class LiveVarAnalysis {
           int insnLiveOut_PrevSize = insnLiveOut.size();
 
           insnLiveOut.addAll(insnLiveIn);
-          insnLiveOut.removeAll(Arrays.asList(insn.lvaDefinedRegisters()));
-          insnLiveOut.addAll(Arrays.asList(insn.lvaReferencedRegisters()));
+          insnLiveOut.removeAll(insn.lvaDefinedRegisters());
+          insnLiveOut.addAll(insn.lvaReferencedRegisters());
 
           if (insnLiveOut_PrevSize < insnLiveOut.size())
             somethingChanged = true;

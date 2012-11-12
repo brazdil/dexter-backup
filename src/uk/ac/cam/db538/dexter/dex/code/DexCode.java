@@ -1,9 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -13,6 +15,7 @@ import lombok.val;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.Code.Instruction;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring.GcColorRange;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
@@ -118,8 +121,8 @@ public class DexCode {
 
   public void add(DexCodeElement elem) {
     InstructionList.add(elem);
-    UsedRegisters.addAll(Arrays.asList(elem.lvaDefinedRegisters()));
-    UsedRegisters.addAll(Arrays.asList(elem.lvaReferencedRegisters()));
+    UsedRegisters.addAll(elem.lvaDefinedRegisters());
+    UsedRegisters.addAll(elem.lvaReferencedRegisters());
   }
 
   public void addAll(DexCodeElement[] elems) {
@@ -138,7 +141,7 @@ public class DexCode {
   public DexCode instrument() {
     val newCode = new DexCode(ParsingState.getCache());
     val taintRegs = new DexCode_InstrumentationState(this);
-    for (val elem : InstructionList) {
+    for (val elem : getInstructionList()) {
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
         newCode.addAll(insn.instrument(taintRegs));
@@ -146,6 +149,85 @@ public class DexCode {
         newCode.add(elem);
     }
     return newCode;
+  }
+
+  public Map<DexRegister, GcColorRange> getRangeConstraints() {
+    val allConstraints = new HashMap<DexRegister, GcColorRange>();
+
+    for (val insn : getInstructionList()) {
+      val insnConstraints = insn.gcRangeConstraints();
+
+      for (val constraint : insnConstraints) {
+        val register = constraint.getValA();
+        val range = constraint.getValB();
+
+        val savedRange = allConstraints.get(register);
+        if (savedRange == null || savedRange.ordinal() > range.ordinal())
+          allConstraints.put(register, range);
+      }
+    }
+
+    return allConstraints;
+  }
+
+  public Set<LinkedList<DexRegister>> getFollowConstraints() {
+    val allConstraints = new HashSet<LinkedList<DexRegister>>();
+
+    // create a single-element run for each register
+    for (val reg : getUsedRegisters()) {
+      val newRun = new LinkedList<DexRegister>();
+      newRun.add(reg);
+      allConstraints.add(newRun);
+    }
+
+    // connect runs into larger ones based on the constraints
+    // given by instructions
+    for (val insn : getInstructionList()) {
+      for (val constraint : insn.gcFollowConstraints()) {
+        // we've gotten a constraint...
+        // this means: color(reg2) = color(reg1) + 1
+        val reg1 = constraint.getValA();
+        val reg2 = constraint.getValB();
+
+        // find runs containing reg1 and reg2
+        LinkedList<DexRegister> run1 = null, run2 = null;
+        for (val run : allConstraints) {
+          if (run.contains(reg1))
+            run1 = run;
+          if (run.contains(reg2))
+            run2 = run;
+        }
+
+        // if registers are in the same run, they must be following each other,
+        // so the loop can continue
+        if (run1 == run2) {
+          val loc1 = run1.indexOf(reg1);
+          val loc2 = run1.indexOf(reg2);
+
+          if (loc1 + 1 == loc2)
+            continue;
+          else
+            throw new RuntimeException("Getting follow-constraints of code failed (inconsistent constraints)");
+        }
+
+        // we need to connect the two runs, so reg1 must be the last element
+        // of run1, and reg2 must be the first element of run2
+        if (run1.peekLast() != reg1 || run2.peekFirst() != reg2)
+          throw new RuntimeException("Getting follow-constraints of code failed (inconsistent constraints)");
+
+        // all is fine now => connect the two runs
+        val connectedRun = new LinkedList<DexRegister>();
+        connectedRun.addAll(run1);
+        connectedRun.addAll(run2);
+        allConstraints.add(connectedRun);
+
+        // remove original runs from the set of constraints
+        allConstraints.remove(run1);
+        allConstraints.remove(run2);
+      }
+    }
+
+    return allConstraints;
   }
 
   public List<Instruction> assembleBytecode(RegisterAllocation regAlloc) throws InstructionAssemblyException {

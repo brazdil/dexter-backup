@@ -2,6 +2,7 @@ package uk.ac.cam.db538.dexter.dex.code;
 
 import static org.junit.Assert.*;
 
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
 import lombok.val;
@@ -9,6 +10,11 @@ import lombok.val;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpWide;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 public class DexCodeTest {
 
@@ -106,5 +112,160 @@ public class DexCodeTest {
 
     code.add(elem3);
     code.insertAfter(elem1, elem2);
+  }
+
+  private static void addFollowConstraint(DexRegister r1, DexRegister r2, DexCode code) {
+    code.add(new DexInstruction_BinaryOpWide(code, r1, r2, r1, r2, r1, r2, Opcode_BinaryOpWide.AddLong));
+  }
+
+  @Test
+  public void testGetFollowConstraints_Empty() {
+    val code = new DexCode(null);
+    val constraints = code.getFollowConstraints();
+    assertTrue(constraints.isEmpty());
+  }
+
+  @Test
+  public void testGetFollowConstraints_NoConstraints() {
+    val code = new DexCode(null);
+
+    val r1 = new DexRegister(1);
+    val r2 = new DexRegister(2);
+    val r3 = new DexRegister(3);
+
+    code.add(new DexInstruction_BinaryOp(code, r1, r2, r3, Opcode_BinaryOp.AddInt));
+
+    val constraints = code.getFollowConstraints();
+    assertEquals(3, constraints.size());
+
+    val run1 = new LinkedList<DexRegister>();
+    run1.add(r1);
+    val run2 = new LinkedList<DexRegister>();
+    run2.add(r2);
+    val run3 = new LinkedList<DexRegister>();
+    run3.add(r3);
+
+    assertTrue(constraints.contains(run1));
+    assertTrue(constraints.contains(run2));
+    assertTrue(constraints.contains(run3));
+  }
+
+  @Test
+  public void testGetFollowConstraints_SingleConstraint() {
+    val code = new DexCode(null);
+
+    val r1 = new DexRegister(1);
+    val r2 = new DexRegister(2);
+    val r3 = new DexRegister(3);
+
+    code.add(new DexInstruction_BinaryOp(code, r1, r2, r3, Opcode_BinaryOp.AddInt));
+    addFollowConstraint(r1, r2, code);
+
+    val constraints = code.getFollowConstraints();
+    assertEquals(2, constraints.size());
+
+    val run1 = new LinkedList<DexRegister>();
+    run1.add(r1);
+    run1.add(r2);
+    val run2 = new LinkedList<DexRegister>();
+    run2.add(r3);
+
+    assertTrue(constraints.contains(run1));
+    assertTrue(constraints.contains(run2));
+  }
+
+  @Test
+  public void testGetFollowConstraints_SingleConstraintMultipleTimes() {
+    val code = new DexCode(null);
+
+    val r1 = new DexRegister(1);
+    val r2 = new DexRegister(2);
+    val r3 = new DexRegister(3);
+
+    code.add(new DexInstruction_BinaryOp(code, r1, r2, r3, Opcode_BinaryOp.AddInt));
+    addFollowConstraint(r1, r2, code);
+    addFollowConstraint(r1, r2, code);
+
+    val constraints = code.getFollowConstraints();
+    assertEquals(2, constraints.size());
+
+    val run1 = new LinkedList<DexRegister>();
+    run1.add(r1);
+    run1.add(r2);
+    val run2 = new LinkedList<DexRegister>();
+    run2.add(r3);
+
+    assertTrue(constraints.contains(run1));
+    assertTrue(constraints.contains(run2));
+  }
+
+  @Test
+  public void testGetFollowConstraints_ChainingConstraints() {
+    val code = new DexCode(null);
+
+    val r1 = new DexRegister(1);
+    val r2 = new DexRegister(2);
+    val r3 = new DexRegister(3);
+    val r4 = new DexRegister(4);
+
+    addFollowConstraint(r1, r2, code);
+    addFollowConstraint(r2, r3, code);
+    addFollowConstraint(r3, r4, code);
+
+    val constraints = code.getFollowConstraints();
+    assertEquals(1, constraints.size());
+
+    val run1 = new LinkedList<DexRegister>();
+    run1.add(r1);
+    run1.add(r2);
+    run1.add(r3);
+    run1.add(r4);
+
+    assertTrue(constraints.contains(run1));
+  }
+
+  @Test(expected=RuntimeException.class)
+  public void testGetFollowConstraints_Inconsistency_ClashingConstraints() {
+    val code = new DexCode(null);
+
+    val r1 = new DexRegister(1);
+    val r2 = new DexRegister(2);
+    val r3 = new DexRegister(3);
+
+    addFollowConstraint(r1, r2, code);
+    addFollowConstraint(r1, r3, code);
+
+    code.getFollowConstraints();
+  }
+
+  @Test(expected=RuntimeException.class)
+  public void testGetFollowConstraints_Inconsistency_ClashingConstraints_OppositeDirection() {
+    val code = new DexCode(null);
+
+    val r1 = new DexRegister(1);
+    val r2 = new DexRegister(2);
+    val r3 = new DexRegister(3);
+
+    addFollowConstraint(r1, r3, code);
+    addFollowConstraint(r2, r3, code);
+
+    code.getFollowConstraints();
+  }
+
+  @Test(expected=RuntimeException.class)
+  public void testGetFollowConstraints_Inconsistency_ClashingConstraints_WithinRun() {
+    val code = new DexCode(null);
+
+    val r1 = new DexRegister(1);
+    val r2 = new DexRegister(2);
+    val r3 = new DexRegister(3);
+    val r4 = new DexRegister(4);
+
+    addFollowConstraint(r1, r2, code);
+    addFollowConstraint(r2, r3, code);
+    addFollowConstraint(r3, r4, code);
+    addFollowConstraint(r1, r4, code);
+
+    code.getFollowConstraints();
   }
 }

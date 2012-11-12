@@ -1,5 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import lombok.Getter;
 import lombok.val;
 
@@ -7,6 +10,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring.GcColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -96,12 +100,42 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   @Override
-  public DexRegister[] lvaDefinedRegisters() {
-    return new DexRegister[] { RegTarget };
+  public Set<DexRegister> lvaDefinedRegisters() {
+    val regs = new HashSet<DexRegister>();
+    regs.add(RegTarget);
+    return regs;
   }
 
   @Override
-  public DexRegister[] lvaReferencedRegisters() {
-    return new DexRegister[] { RegSourceA, RegSourceB };
+  public Set<DexRegister> lvaReferencedRegisters() {
+    val regs = new HashSet<DexRegister>();
+    regs.add(RegSourceA);
+    regs.add(RegSourceB);
+    return regs;
+  }
+
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    val set = new HashSet<GcRangeConstraint>();
+    set.add(new GcRangeConstraint(RegTarget, GcColorRange.Range_0_255));
+    set.add(new GcRangeConstraint(RegSourceA, GcColorRange.Range_0_255));
+    set.add(new GcRangeConstraint(RegSourceB, GcColorRange.Range_0_255));
+    return set;
+  }
+
+  @Override
+  public DexCodeElement[] gcAddTemporaries() {
+    val code = getMethodCode();
+
+    val tempTarget = new DexRegister();
+    val tempSourceA = new DexRegister();
+    val tempSourceB = new DexRegister();
+
+    return new DexCodeElement[] {
+             new DexInstruction_Move(code, tempSourceA, RegSourceA, false),
+             new DexInstruction_Move(code, tempSourceB, RegSourceB, false),
+             new DexInstruction_BinaryOp(code, tempTarget, tempSourceA, tempSourceB, InsnOpcode),
+             new DexInstruction_Move(code, RegTarget, tempTarget, false)
+           };
   }
 }
