@@ -468,40 +468,40 @@ public class GraphColoring_PrivateFunctionsTest {
     execGenerateColors(nodeRun, forbiddenColors);
   }
 
-//  @Test
-//  public void testGenerateColors_Colorable_Range_0_65535() throws Throwable {
-//    val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-//    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-//    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-//
-//    val forbiddenColors1 = new HashSet<Integer>();
-//    for (int i = 0; i <= 45000; ++i)
-//      forbiddenColors1.add(i);
-//    assertEquals(45001, execGenerateColors(nodeRun, forbiddenColors1));
-//
-//    val forbiddenColors2 = new HashSet<Integer>();
-//    for (int i = 0; i <= 200; ++i)
-//      forbiddenColors2.add(i);
-//    for (int i = 250; i <= 65535; ++i)
-//      forbiddenColors2.add(i);
-//
-//    assertEquals(201, execGenerateColors(nodeRun, forbiddenColors2));
-//  }
-//
-//  @Test(expected=GraphUncolorableException.class)
-//  public void testGenerateColors_Uncolorable_Range_0_65535() throws Throwable {
-//    val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-//    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-//    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-//
-//    val forbiddenColors = new HashSet<Integer>();
-//    for (int i = 0; i <= 254; ++i)
-//      forbiddenColors.add(i);
-//    for (int i = 256; i <= 65534; ++i)
-//      forbiddenColors.add(i);
-//
-//    execGenerateColors(nodeRun, forbiddenColors);
-//  }
+  @Test
+  public void testGenerateColors_Colorable_Range_0_65535() throws Throwable {
+    val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
+
+    val forbiddenColors1 = new HashSet<Integer>();
+    for (int i = 0; i <= 45000; ++i)
+      forbiddenColors1.add(i);
+    assertEquals(45001, execGenerateColors(nodeRun, forbiddenColors1));
+
+    val forbiddenColors2 = new HashSet<Integer>();
+    for (int i = 0; i <= 200; ++i)
+      forbiddenColors2.add(i);
+    for (int i = 250; i <= 65535; ++i)
+      forbiddenColors2.add(i);
+
+    assertEquals(201, execGenerateColors(nodeRun, forbiddenColors2));
+  }
+
+  @Test(expected=GraphUncolorableException.class)
+  public void testGenerateColors_Uncolorable_Range_0_65535() throws Throwable {
+    val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
+
+    val forbiddenColors = new HashSet<Integer>();
+    for (int i = 0; i <= 254; ++i)
+      forbiddenColors.add(i);
+    for (int i = 256; i <= 65534; ++i)
+      forbiddenColors.add(i);
+
+    execGenerateColors(nodeRun, forbiddenColors);
+  }
 
   // CONTAINS ANY OF NODES
 

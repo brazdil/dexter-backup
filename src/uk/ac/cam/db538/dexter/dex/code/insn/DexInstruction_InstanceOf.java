@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jf.dexlib.TypeIdItem;
@@ -66,17 +67,12 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] gcAddTemporaries() {
-    val code = getMethodCode();
-
-    val tempTo = new DexRegister();
-    val tempFrom = new DexRegister();
-
-    return new DexCodeElement[] {
-             new DexInstruction_Move(code, tempFrom, RegFrom, false),
-             new DexInstruction_InstanceOf(code, tempTo, tempFrom, Value),
-             new DexInstruction_Move(code, RegTo, tempTo, false)
-           };
+  public DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return new DexInstruction_InstanceOf(
+             getMethodCode(),
+             mapping.get(RegTo),
+             mapping.get(RegFrom),
+             Value);
   }
 
   @Override

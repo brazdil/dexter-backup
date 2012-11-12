@@ -51,9 +51,6 @@ public class GraphColoring {
         if (getStrictestColorRange(e.getProblematicNodeRun()) == GcColorRange.Range_0_65535)
           throw new RuntimeException(e);
 
-        for (val reg : e.getProblematicNodeRun())
-          System.out.println("spilling reg " + reg.getValA().getId());
-
         ModifiedCode = generateCodeWithSpilledNode(ModifiedCode, e.getProblematicNodeRun());
       }
     }
@@ -219,9 +216,14 @@ public class GraphColoring {
 
   private static DexCode generateCodeWithSpilledNode(DexCode currentCode, LinkedList<Pair<DexRegister, GcColorRange>> nodeRun) {
     val newCode = new DexCode(null);
+
+    val spilledRegs = new HashSet<DexRegister>();
+    for (val node : nodeRun)
+      spilledRegs.add(node.getValA());
+
     for (val insn : currentCode.getInstructionList()) {
       if (containsAnyOfNodes(insn.lvaReferencedRegisters(), nodeRun) || containsAnyOfNodes(insn.lvaDefinedRegisters(), nodeRun))
-        newCode.addAll(insn.gcAddTemporaries());
+        newCode.addAll(insn.gcAddTemporaries(spilledRegs));
       else
         newCode.add(insn);
     }

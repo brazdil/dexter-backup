@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -124,18 +125,12 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] gcAddTemporaries() {
-    val code = getMethodCode();
-
-    val tempTarget = new DexRegister();
-    val tempSourceA = new DexRegister();
-    val tempSourceB = new DexRegister();
-
-    return new DexCodeElement[] {
-             new DexInstruction_Move(code, tempSourceA, RegSourceA, false),
-             new DexInstruction_Move(code, tempSourceB, RegSourceB, false),
-             new DexInstruction_BinaryOp(code, tempTarget, tempSourceA, tempSourceB, InsnOpcode),
-             new DexInstruction_Move(code, RegTarget, tempTarget, false)
-           };
+  public DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return new DexInstruction_BinaryOp(
+             getMethodCode(),
+             mapping.get(RegTarget),
+             mapping.get(RegSourceA),
+             mapping.get(RegSourceB),
+             InsnOpcode);
   }
 }

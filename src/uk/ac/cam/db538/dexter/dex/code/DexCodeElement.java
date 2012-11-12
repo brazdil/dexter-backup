@@ -1,11 +1,16 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring.GcColorRange;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -67,6 +72,13 @@ public abstract class DexCodeElement {
     return new HashSet<DexRegister>();
   }
 
+  public final Set<DexRegister> lvaUsedRegisters() {
+    val set = new HashSet<DexRegister>();
+    set.addAll(lvaDefinedRegisters());
+    set.addAll(lvaReferencedRegisters());
+    return set;
+  }
+
   // GRAPH COLORING
 
   public static class GcRangeConstraint extends Pair<DexRegister, GcColorRange> {
@@ -89,7 +101,31 @@ public abstract class DexCodeElement {
     return new HashSet<GcFollowConstraint>();
   }
 
-  public DexCodeElement[] gcAddTemporaries() {
-    return new DexCodeElement[] { this };
+  public final List<DexCodeElement> gcAddTemporaries(Set<DexRegister> spilledRegs) {
+    val tempMapping = new HashMap<DexRegister, DexRegister>();
+
+    for (val usedReg : lvaUsedRegisters())
+      if (spilledRegs.contains(usedReg))
+        tempMapping.put(usedReg, new DexRegister());
+      else
+        tempMapping.put(usedReg, usedReg);
+
+    val referencedRegs = lvaReferencedRegisters();
+    val definedRegs = lvaDefinedRegisters();
+
+    val newElem = new LinkedList<DexCodeElement>();
+    for (val spilledReg : spilledRegs)
+      if (referencedRegs.contains(spilledReg))
+        newElem.add(new DexInstruction_Move(MethodCode, tempMapping.get(spilledReg), spilledReg, false));
+    newElem.add(gcReplaceWithTemporaries(tempMapping));
+    for (val spilledReg : spilledRegs)
+      if (definedRegs.contains(spilledReg))
+        newElem.add(new DexInstruction_Move(MethodCode, spilledReg, tempMapping.get(spilledReg), false));
+
+    return newElem;
+  }
+
+  public DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return this; // TODO: replace with abstract!!!
   }
 }

@@ -86,7 +86,8 @@ public class GraphColoring_ActualSituationsTest {
     assertTrue(cY != cZ);
   }
 
-  private static int SpillingRegNum = 17;
+  private static int SpillingRegCount = 22;
+  private static int SpillingRegCount_ExpectedSpilledRegs = SpillingRegCount - 16;
 
   @Test
   public void testNeedsSpilling() {
@@ -94,23 +95,28 @@ public class GraphColoring_ActualSituationsTest {
     val code = new DexCode(cache);
 
     // generate registers
-    val regs = new DexRegister[SpillingRegNum];
-    for (int i = 0; i < SpillingRegNum; ++i)
+    val regs = new DexRegister[SpillingRegCount];
+    for (int i = 0; i < SpillingRegCount; ++i)
       regs[i] = new DexRegister(i);
 
     // clash them all
-    for (int i = 0; i < SpillingRegNum; ++i)
-      for (int j = i + 1; j < SpillingRegNum; ++j)
+    for (int i = 0; i < SpillingRegCount; ++i)
+      for (int j = i + 1; j < SpillingRegCount; ++j)
         genClash(code, regs[i], regs[j]);
 
     // constraint them to 4 bits
-    for (int i = 0; i < SpillingRegNum; ++i)
+    for (int i = 0; i < SpillingRegCount; ++i)
       gen4bitRangeConstraint(code, regs[i], cache);
 
     val coloring = new GraphColoring(code);
     val newCode = coloring.getModifiedCode();
 
-    for (val insn : newCode.getInstructionList())
-      System.out.println(insn.getOriginalAssembly());
+    // should have increased the number of registers
+    assertEquals((SpillingRegCount_ExpectedSpilledRegs + 1) * SpillingRegCount, newCode.getUsedRegisters().size());
+
+    // check that there are no clashes
+    for (int i = 0; i < SpillingRegCount; ++i)
+      for (int j = i + 1; j < SpillingRegCount; ++j)
+        assertFalse(coloring.getColor(regs[i]) == coloring.getColor(regs[j]));
   }
 }

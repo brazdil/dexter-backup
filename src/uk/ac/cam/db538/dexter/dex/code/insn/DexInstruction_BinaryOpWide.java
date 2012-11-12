@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jf.dexlib.Code.Instruction;
@@ -179,27 +180,16 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] gcAddTemporaries() {
-    val code = getMethodCode();
-
-    val tempTarget1 = new DexRegister();
-    val tempTarget2 = new DexRegister();
-    val tempSourceA1 = new DexRegister();
-    val tempSourceA2 = new DexRegister();
-    val tempSourceB1 = new DexRegister();
-    val tempSourceB2 = new DexRegister();
-
-    return new DexCodeElement[] {
-             new DexInstruction_Move(code, tempSourceA1, RegSourceA1, false),
-             new DexInstruction_Move(code, tempSourceA2, RegSourceA2, false),
-             new DexInstruction_Move(code, tempSourceB1, RegSourceB1, false),
-             new DexInstruction_Move(code, tempSourceB2, RegSourceB2, false),
-             new DexInstruction_BinaryOpWide(code, tempTarget1, tempTarget2, tempSourceA1, tempSourceA2, tempSourceB1, tempSourceB2, InsnOpcode),
-             new DexInstruction_Move(code, RegTarget1, tempTarget1, false),
-             new DexInstruction_Move(code, RegTarget2, tempTarget2, false)
-           };
+  public DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return new DexInstruction_BinaryOpWide(
+             getMethodCode(),
+             mapping.get(RegTarget1),
+             mapping.get(RegTarget2),
+             mapping.get(RegSourceA1),
+             mapping.get(RegSourceA2),
+             mapping.get(RegSourceB1),
+             mapping.get(RegSourceB2),
+             InsnOpcode);
   }
-
-
 }
 

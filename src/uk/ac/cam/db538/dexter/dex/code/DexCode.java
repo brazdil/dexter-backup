@@ -121,11 +121,15 @@ public class DexCode {
 
   public void add(DexCodeElement elem) {
     InstructionList.add(elem);
-    UsedRegisters.addAll(elem.lvaDefinedRegisters());
-    UsedRegisters.addAll(elem.lvaReferencedRegisters());
+    UsedRegisters.addAll(elem.lvaUsedRegisters());
   }
 
   public void addAll(DexCodeElement[] elems) {
+    for (val elem : elems)
+      add(elem);
+  }
+
+  public void addAll(List<DexCodeElement> elems) {
     for (val elem : elems)
       add(elem);
   }
