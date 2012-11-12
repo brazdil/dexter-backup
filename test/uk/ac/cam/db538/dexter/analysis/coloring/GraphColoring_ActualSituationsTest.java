@@ -113,6 +113,7 @@ public class GraphColoring_ActualSituationsTest {
 
     // should have increased the number of registers
     assertEquals((SpillingRegCount_ExpectedSpilledRegs + 1) * SpillingRegCount, newCode.getUsedRegisters().size());
+    assertEquals(SpillingRegCount + 2, coloring.getNumberOfColorsUsed()); // needs two distinct temp registers
 
     // check that there are no clashes
     for (int i = 0; i < SpillingRegCount; ++i)

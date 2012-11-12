@@ -31,6 +31,7 @@ public class GraphColoring {
 
   @Getter private DexCode ModifiedCode;
   private Map<DexRegister, Integer> Coloring;
+  private int ColorsUsed;
 
   public GraphColoring(DexCode code) {
     Code = code;
@@ -56,6 +57,8 @@ public class GraphColoring {
     }
 
     Coloring = removeGapsFromColoring(Coloring);
+    val colorsSet = new HashSet<Integer>(Coloring.values());
+    ColorsUsed = colorsSet.size();
   }
 
   private static Map<DexRegister, Integer> generateColoring(ClashGraph clashGraph, Map<DexRegister, GcColorRange> nodeRanges, Set<LinkedList<DexRegister>> nodeFollowUps) throws GraphUncolorableException {
@@ -261,5 +264,9 @@ public class GraphColoring {
       return color;
     else
       throw new RuntimeException("Asked for coloring of an unexistent node");
+  }
+
+  public int getNumberOfColorsUsed() {
+    return ColorsUsed;
   }
 }
