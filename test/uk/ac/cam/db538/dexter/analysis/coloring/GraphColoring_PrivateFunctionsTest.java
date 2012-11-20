@@ -7,7 +7,6 @@ import static org.junit.Assert.fail;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -126,11 +125,11 @@ public class GraphColoring_PrivateFunctionsTest {
   // GET COLORS USED BY RUN NEIGHBOURS
 
   @SuppressWarnings("unchecked")
-  private static Set<Integer> execGetColorsUsedByRunNeighbours(LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, Map<DexRegister, Integer> coloringState, ClashGraph clashGraph) {
+  private static Map<DexRegister, Set<Integer>> execGetColorsUsedByRunNeighbours(LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, Map<DexRegister, Integer> coloringState, ClashGraph clashGraph) {
     try {
       Method m = GraphColoring.class.getDeclaredMethod("getColorsUsedByRunNeighbours", LinkedList.class, Map.class, ClashGraph.class);
       m.setAccessible(true);
-      return (Set<Integer>) m.invoke(null, nodeRun, coloringState, clashGraph);
+      return (Map<DexRegister, Set<Integer>>) m.invoke(null, nodeRun, coloringState, clashGraph);
     } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
       e.printStackTrace(System.err);
       fail("Couldn't execute method: " + e.getClass().getSimpleName());
@@ -155,39 +154,53 @@ public class GraphColoring_PrivateFunctionsTest {
     val r4 = new DexRegister();
     val r5 = new DexRegister();
     val r6 = new DexRegister();
+    val r7 = new DexRegister();
 
-
-    // put r1 and r2 into the same run
+    // put r1, r2, r3 into the same run
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
     nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r1, GcColorRange.Range_0_15));
     nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r2, GcColorRange.Range_0_15));
     nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r3, GcColorRange.Range_0_15));
 
-    // let r1 clash with r4, r2 with r5 and r3 with r6
+    // let r1 clash with r4,r7, r2 with r5 and r3 with r6
     val code = new DexCode(null);
     code.add(new DexInstruction_BinaryOp(code, r1, r1, r4, Opcode_BinaryOp.AddInt));
+    code.add(new DexInstruction_ReturnVoid(code));
+    code.add(new DexInstruction_BinaryOp(code, r1, r1, r7, Opcode_BinaryOp.AddInt));
     code.add(new DexInstruction_ReturnVoid(code));
     code.add(new DexInstruction_BinaryOp(code, r2, r2, r5, Opcode_BinaryOp.AddInt));
     code.add(new DexInstruction_ReturnVoid(code));
     code.add(new DexInstruction_BinaryOp(code, r3, r3, r6, Opcode_BinaryOp.AddInt));
 
-    // set colors for r4 and r5, but not r6
+    // set colors for r4,r7 and r5, but not r6
     val coloringState = new HashMap<DexRegister, Integer>();
     coloringState.put(r4, 12);
     coloringState.put(r5, 24);
+    coloringState.put(r7, 9);
 
     // check the outcome
     val usedColors = execGetColorsUsedByRunNeighbours(nodeRun, coloringState, new ClashGraph(code));
     assertEquals(2, usedColors.size());
-    assertTrue(usedColors.contains(12));
-    assertTrue(usedColors.contains(24));
+
+    val usedColors1 = usedColors.get(r1);
+    val usedColors2 = usedColors.get(r2);
+    val usedColors3 = usedColors.get(r3);
+
+    assertEquals(2, usedColors1.size());
+    assertTrue(usedColors1.contains(12));
+    assertTrue(usedColors1.contains(9));
+
+    assertEquals(1, usedColors2.size());
+    assertTrue(usedColors2.contains(24));
+
+    assertEquals(null, usedColors3);
   }
 
   // FIRST UNUSED HIGHER OR EQUAL COLOR
 
-  private static int execFirstUnusedHigherOrEqualColor(int color, ArrayList<Integer> sortedColors) {
+  private static int execFirstUnusedHigherOrEqualColor(int color, int[] sortedColors) {
     try {
-      Method m = GraphColoring.class.getDeclaredMethod("firstUnusedHigherOrEqualColor", int.class, ArrayList.class);
+      Method m = GraphColoring.class.getDeclaredMethod("firstUnusedHigherOrEqualColor", int.class, int[].class);
       m.setAccessible(true);
       return (Integer) m.invoke(null, color, sortedColors);
     } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
@@ -199,19 +212,19 @@ public class GraphColoring_PrivateFunctionsTest {
 
   @Test
   public void testFirstUnusedHigherOrEqualColor_Higher() {
-    val sortedArray = new ArrayList<Integer>();
-    sortedArray.add(2);
-    sortedArray.add(3);
-    sortedArray.add(4);
+	    val sortedArray = new int[3];
+	    sortedArray[0] = 2;
+	    sortedArray[1] = 3;
+	    sortedArray[2] = 4;
 
     assertEquals(5, execFirstUnusedHigherOrEqualColor(2, sortedArray));
   }
 
   @Test
   public void testFirstUnusedHigherOrEqualColor_Equal() {
-    val sortedArray = new ArrayList<Integer>();
-    sortedArray.add(3);
-    sortedArray.add(4);
+	    val sortedArray = new int[2];
+	    sortedArray[0] = 3;
+	    sortedArray[1] = 4;
 
     assertEquals(2, execFirstUnusedHigherOrEqualColor(2, sortedArray));
     assertEquals(5, execFirstUnusedHigherOrEqualColor(5, sortedArray));
@@ -219,19 +232,19 @@ public class GraphColoring_PrivateFunctionsTest {
 
   @Test
   public void testFirstUnusedHigherOrEqualColor_Overflow() {
-    val sortedArray = new ArrayList<Integer>();
-    sortedArray.add(65533);
-    sortedArray.add(65534);
-    sortedArray.add(65535);
+	    val sortedArray = new int[3];
+	    sortedArray[0] = 65533;
+	    sortedArray[1] = 65534;
+	    sortedArray[2] = 65535;
 
     assertEquals(-1, execFirstUnusedHigherOrEqualColor(65533, sortedArray));
   }
 
   // NEXT USED HIGHER COLOR
 
-  private static int execNextUsedHigherColor(int color, ArrayList<Integer> sortedColors) {
+  private static int execNextUsedHigherColor(int color, int[] sortedColors) {
     try {
-      Method m = GraphColoring.class.getDeclaredMethod("nextUsedHigherColor", int.class, ArrayList.class);
+      Method m = GraphColoring.class.getDeclaredMethod("nextUsedHigherColor", int.class, int[].class);
       m.setAccessible(true);
       return (Integer) m.invoke(null, color, sortedColors);
     } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
@@ -243,10 +256,10 @@ public class GraphColoring_PrivateFunctionsTest {
 
   @Test
   public void testNextUsedHigherColor_Standard() {
-    val sortedArray = new ArrayList<Integer>();
-    sortedArray.add(2);
-    sortedArray.add(36);
-    sortedArray.add(48);
+    val sortedArray = new int[3];
+    sortedArray[0] = 2;
+    sortedArray[1] = 36;
+    sortedArray[2] = 48;
 
     assertEquals(2, execNextUsedHigherColor(0, sortedArray));
     assertEquals(2, execNextUsedHigherColor(1, sortedArray));
@@ -261,10 +274,10 @@ public class GraphColoring_PrivateFunctionsTest {
 
   @Test
   public void testFirstUnusedHigherColor_HittingMax() {
-    val sortedArray = new ArrayList<Integer>();
-    sortedArray.add(2);
-    sortedArray.add(36);
-    sortedArray.add(70000);
+	    val sortedArray = new int[3];
+	    sortedArray[0] = 2;
+	    sortedArray[1] = 36;
+	    sortedArray[2] = 70000;
 
     assertEquals(65536, execNextUsedHigherColor(36, sortedArray));
     assertEquals(65536, execNextUsedHigherColor(37, sortedArray));
@@ -272,9 +285,9 @@ public class GraphColoring_PrivateFunctionsTest {
 
   // GENERATE COLORS IN RANGE
 
-  private static int execGenerateColorsInRange(int low, int high, LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, ArrayList<Integer> sortedForbiddenColors) throws Throwable {
+  private static int execGenerateColorsInRange(int low, int high, LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, Map<DexRegister, int[]> sortedForbiddenColors) throws Throwable {
     try {
-      Method m = GraphColoring.class.getDeclaredMethod("generateColorsInRange", int.class, int.class, LinkedList.class, ArrayList.class);
+      Method m = GraphColoring.class.getDeclaredMethod("generateColorsInRange", int.class, int.class, LinkedList.class, Map.class);
       m.setAccessible(true);
       return (Integer) m.invoke(null, low, high, nodeRun, sortedForbiddenColors);
     } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
@@ -288,108 +301,180 @@ public class GraphColoring_PrivateFunctionsTest {
 
   @Test(expected=GraphUncolorableException.class)
   public void testGenerateColorsInRange_Uncolorable_MaxOverflow() throws Throwable {
+    val node1 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
 
-    val sortedArray = new ArrayList<Integer>();
-    sortedArray.add(65533);
-    sortedArray.add(65534);
-    sortedArray.add(65535);
+    val sortedArray = new int[3];
+    sortedArray[0] = 65533;
+    sortedArray[1] = 65534;
+    sortedArray[2] = 65535;
 
-    execGenerateColorsInRange(65534, 70000, nodeRun, sortedArray);
+    val sortedMap = new HashMap<DexRegister, int[]>();
+    sortedMap.put(node1, sortedArray);
+
+    execGenerateColorsInRange(65534, 70000, nodeRun, sortedMap);
   }
 
   @Test(expected=GraphUncolorableException.class)
   public void testGenerateColorsInRange_Uncolorable_HighOverflow() throws Throwable {
+    val node1 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
 
-    val sortedArray = new ArrayList<Integer>();
-    sortedArray.add(2);
-    sortedArray.add(3);
-    sortedArray.add(4);
+    val sortedArray = new int[3];
+    sortedArray[0] = 2;
+    sortedArray[1] = 3;
+    sortedArray[2] = 4;
 
-    execGenerateColorsInRange(3, 4, nodeRun, sortedArray);
+    val sortedMap = new HashMap<DexRegister, int[]>();
+    sortedMap.put(node1, sortedArray);
+
+    execGenerateColorsInRange(3, 4, nodeRun, sortedMap);
   }
 
   @Test(expected=GraphUncolorableException.class)
   public void testGenerateColorsInRange_Uncolorable_Constraints_0_15() throws Throwable {
+    val node1 = new DexRegister();
+    val node2 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_15));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node2, GcColorRange.Range_0_15));
 
-    val sortedArray = new ArrayList<Integer>();
-    sortedArray.add(12);
-    sortedArray.add(13);
-    sortedArray.add(14);
+    val sortedArray1 = new int[3];
+    sortedArray1[0] = 12;
+    sortedArray1[1] = 13;
+    sortedArray1[2] = 14;
 
-    execGenerateColorsInRange(12, 255, nodeRun, sortedArray);
+    val sortedArray2 = new int[3];
+    sortedArray2[0] = 14;
+    sortedArray2[1] = 17;
+    sortedArray2[2] = 18;
+
+    val sortedMap = new HashMap<DexRegister, int[]>();
+    sortedMap.put(node1, sortedArray1);
+    sortedMap.put(node2, sortedArray2);
+
+    execGenerateColorsInRange(12, 255, nodeRun, sortedMap);
   }
 
   @Test(expected=GraphUncolorableException.class)
   public void testGenerateColorsInRange_Uncolorable_Constraints_0_255() throws Throwable {
+    val node1 = new DexRegister();
+    val node2 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_255));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node2, GcColorRange.Range_0_255));
 
-    val sortedArray = new ArrayList<Integer>();
-    sortedArray.add(252);
-    sortedArray.add(253);
-    sortedArray.add(254);
+    val sortedArray1 = new int[3];
+    sortedArray1[0] = 252;
+    sortedArray1[1] = 253;
+    sortedArray1[2] = 254;
 
-    execGenerateColorsInRange(252, 300, nodeRun, sortedArray);
+    val sortedArray2 = new int[3];
+    sortedArray2[0] = 254;
+    sortedArray2[1] = 257;
+    sortedArray2[2] = 258;
+
+    val sortedMap = new HashMap<DexRegister, int[]>();
+    sortedMap.put(node1, sortedArray1);
+    sortedMap.put(node2, sortedArray2);
+
+    execGenerateColorsInRange(252, 300, nodeRun, sortedMap);
   }
 
   @Test(expected=GraphUncolorableException.class)
   public void testGenerateColorsInRange_Uncolorable_Constraints_0_65535() throws Throwable {
+    val node1 = new DexRegister();
+    val node2 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node2, GcColorRange.Range_0_65535));
 
-    val sortedArray = new ArrayList<Integer>();
-    sortedArray.add(65532);
-    sortedArray.add(65533);
-    sortedArray.add(65534);
+    val sortedArray = new int[3];
+    sortedArray[0] = 65532;
+    sortedArray[1] = 65533;
+    sortedArray[2] = 65534;
 
-    execGenerateColorsInRange(65532, 70000, nodeRun, sortedArray);
+    val sortedMap = new HashMap<DexRegister, int[]>();
+    sortedMap.put(node1, sortedArray);
+    sortedMap.put(node2, sortedArray);
+
+    execGenerateColorsInRange(65532, 70000, nodeRun, sortedMap);
   }
 
   @Test
   public void testGenerateColorsInRange_Colorable_FitsFirstGap() throws Throwable {
+    val node1 = new DexRegister();
+    val node2 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node2, GcColorRange.Range_0_65535));
 
-    val sortedArray = new ArrayList<Integer>();
-    sortedArray.add(2);
-    sortedArray.add(5);
-    sortedArray.add(8);
-    sortedArray.add(9);
+    val sortedArray1 = new int[5];
+    sortedArray1[0] = 2;
+    sortedArray1[1] = 4;
+    sortedArray1[2] = 5;
+    sortedArray1[3] = 8;
+    sortedArray1[4] = 9;
+    
+    val sortedArray2 = new int[5];
+    sortedArray2[0] = 2;
+    sortedArray2[1] = 3;
+    sortedArray2[2] = 5;
+    sortedArray2[3] = 8;
+    sortedArray2[4] = 9;
 
-    assertEquals(3, execGenerateColorsInRange(2, 10, nodeRun, sortedArray));
+    val sortedMap = new HashMap<DexRegister, int[]>();
+    sortedMap.put(node1, sortedArray1);
+    sortedMap.put(node2, sortedArray2);
+
+    assertEquals(3, execGenerateColorsInRange(2, 10, nodeRun, sortedMap));
   }
 
   @Test
   public void testGenerateColorsInRange_Colorable_TooLongForFirstGap() throws Throwable {
+    val node1 = new DexRegister();
+    val node2 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node2, GcColorRange.Range_0_65535));
 
-    val sortedArray = new ArrayList<Integer>();
-    sortedArray.add(2);
-    sortedArray.add(4);
-    sortedArray.add(5);
-    sortedArray.add(8);
-    sortedArray.add(9);
+    val sortedArray1 = new int[6];
+    sortedArray1[0] = 2;
+    sortedArray1[1] = 4;
+    sortedArray1[2] = 5;
+    sortedArray1[3] = 7;
+    sortedArray1[4] = 8;
+    sortedArray1[5] = 9;
+    
+    val sortedArray2 = new int[6];
+    sortedArray2[0] = 2;
+    sortedArray2[1] = 4;
+    sortedArray2[2] = 5;
+    sortedArray2[3] = 6;
+    sortedArray2[4] = 8;
+    sortedArray2[5] = 9;
 
-    assertEquals(6, execGenerateColorsInRange(2, 10, nodeRun, sortedArray));
+    val sortedMap = new HashMap<DexRegister, int[]>();
+    sortedMap.put(node1, sortedArray1);
+    sortedMap.put(node2, sortedArray2);
+
+    assertEquals(6, execGenerateColorsInRange(2, 10, nodeRun, sortedMap));
   }
 
   // GENERATE COLORS
 
-  private static int execGenerateColors(LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, Set<Integer> forbiddenColors) throws Throwable {
+  private static int execGenerateColors(LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, Map<DexRegister, Set<Integer>> forbiddenColors) throws Throwable {
     try {
-      Method m = GraphColoring.class.getDeclaredMethod("generateColors", LinkedList.class, Set.class);
+      Method m = GraphColoring.class.getDeclaredMethod("generateColors", LinkedList.class, Map.class);
       m.setAccessible(true);
       return (Integer) m.invoke(null, nodeRun, forbiddenColors);
     } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
@@ -403,14 +488,21 @@ public class GraphColoring_PrivateFunctionsTest {
 
   @Test
   public void testGenerateColors_Colorable_Range_0_15() throws Throwable {
+    val node1 = new DexRegister();
+    val node2 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_15));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node2, GcColorRange.Range_0_15));
 
     val forbiddenColors1 = new HashSet<Integer>();
     forbiddenColors1.add(2);
     forbiddenColors1.add(3);
-    assertEquals(0, execGenerateColors(nodeRun, forbiddenColors1));
+    val forbiddenMap1 = new HashMap<DexRegister, Set<Integer>>();
+    forbiddenMap1.put(node1, forbiddenColors1);
+    forbiddenMap1.put(node2, forbiddenColors1);
+
+    assertEquals(0, execGenerateColors(nodeRun, forbiddenMap1));
 
     val forbiddenColors2 = new HashSet<Integer>();
     forbiddenColors2.add(1);
@@ -418,89 +510,128 @@ public class GraphColoring_PrivateFunctionsTest {
     forbiddenColors2.add(3);
     forbiddenColors2.add(5);
     forbiddenColors2.add(6);
+    val forbiddenMap2 = new HashMap<DexRegister, Set<Integer>>();
+    forbiddenMap2.put(node1, forbiddenColors2);
+    forbiddenMap2.put(node2, forbiddenColors2);
 
-    assertEquals(7, execGenerateColors(nodeRun, forbiddenColors2));
+    assertEquals(7, execGenerateColors(nodeRun, forbiddenMap2));
   }
 
   @Test(expected=GraphUncolorableException.class)
   public void testGenerateColors_Uncolorable_Range_0_15() throws Throwable {
+    val node1 = new DexRegister();
+    val node2 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_15));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node2, GcColorRange.Range_0_15));
 
     val forbiddenColors = new HashSet<Integer>();
     for (int i = 0; i <= 14; ++i)
       forbiddenColors.add(i);
+    val forbiddenMap = new HashMap<DexRegister, Set<Integer>>();
+    forbiddenMap.put(node1, forbiddenColors);
+    forbiddenMap.put(node2, forbiddenColors);
 
-    execGenerateColors(nodeRun, forbiddenColors);
+    execGenerateColors(nodeRun, forbiddenMap);
   }
 
   @Test
   public void testGenerateColors_Colorable_Range_0_255() throws Throwable {
+    val node1 = new DexRegister();
+    val node2 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_255));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node2, GcColorRange.Range_0_255));
 
     val forbiddenColors1 = new HashSet<Integer>();
     for (int i = 0; i <= 248; ++i)
       forbiddenColors1.add(i);
-    assertEquals(249, execGenerateColors(nodeRun, forbiddenColors1));
+    val forbiddenMap1 = new HashMap<DexRegister, Set<Integer>>();
+    forbiddenMap1.put(node1, forbiddenColors1);
+    forbiddenMap1.put(node2, forbiddenColors1);
+    assertEquals(249, execGenerateColors(nodeRun, forbiddenMap1));
 
     val forbiddenColors2 = new HashSet<Integer>();
     forbiddenColors2.add(0);
     forbiddenColors2.add(1);
     for (int i = 14; i <= 300; ++i)
       forbiddenColors2.add(i);
+    val forbiddenMap2 = new HashMap<DexRegister, Set<Integer>>();
+    forbiddenMap2.put(node1, forbiddenColors2);
+    forbiddenMap2.put(node2, forbiddenColors2);
 
-    assertEquals(2, execGenerateColors(nodeRun, forbiddenColors2));
+    assertEquals(2, execGenerateColors(nodeRun, forbiddenMap2));
   }
 
   @Test(expected=GraphUncolorableException.class)
   public void testGenerateColors_Uncolorable_Range_0_255() throws Throwable {
+    val node1 = new DexRegister();
+    val node2 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_255));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node2, GcColorRange.Range_0_255));
 
     val forbiddenColors = new HashSet<Integer>();
     for (int i = 0; i <= 254; ++i)
       forbiddenColors.add(i);
+    val forbiddenMap = new HashMap<DexRegister, Set<Integer>>();
+    forbiddenMap.put(node1, forbiddenColors);
+    forbiddenMap.put(node2, forbiddenColors);
 
-    execGenerateColors(nodeRun, forbiddenColors);
+    execGenerateColors(nodeRun, forbiddenMap);
   }
 
   @Test
   public void testGenerateColors_Colorable_Range_0_65535() throws Throwable {
+    val node1 = new DexRegister();
+    val node2 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node2, GcColorRange.Range_0_65535));
 
     val forbiddenColors1 = new HashSet<Integer>();
     for (int i = 0; i <= 45000; ++i)
       forbiddenColors1.add(i);
-    assertEquals(45001, execGenerateColors(nodeRun, forbiddenColors1));
+    val forbiddenMap1 = new HashMap<DexRegister, Set<Integer>>();
+    forbiddenMap1.put(node1, forbiddenColors1);
+    forbiddenMap1.put(node2, forbiddenColors1);
+    assertEquals(45001, execGenerateColors(nodeRun, forbiddenMap1));
 
     val forbiddenColors2 = new HashSet<Integer>();
     for (int i = 0; i <= 200; ++i)
       forbiddenColors2.add(i);
     for (int i = 250; i <= 65535; ++i)
       forbiddenColors2.add(i);
+    val forbiddenMap2 = new HashMap<DexRegister, Set<Integer>>();
+    forbiddenMap2.put(node1, forbiddenColors2);
+    forbiddenMap2.put(node2, forbiddenColors2);
 
-    assertEquals(201, execGenerateColors(nodeRun, forbiddenColors2));
+    assertEquals(201, execGenerateColors(nodeRun, forbiddenMap2));
   }
 
   @Test(expected=GraphUncolorableException.class)
   public void testGenerateColors_Uncolorable_Range_0_65535() throws Throwable {
+    val node1 = new DexRegister();
+    val node2 = new DexRegister();
+
     val nodeRun = new LinkedList<Pair<DexRegister, GcColorRange>>();
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
-    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(new DexRegister(), GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node1, GcColorRange.Range_0_65535));
+    nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(node2, GcColorRange.Range_0_65535));
 
     val forbiddenColors = new HashSet<Integer>();
     for (int i = 0; i <= 254; ++i)
       forbiddenColors.add(i);
     for (int i = 256; i <= 65534; ++i)
       forbiddenColors.add(i);
+    val forbiddenMap = new HashMap<DexRegister, Set<Integer>>();
+    forbiddenMap.put(node1, forbiddenColors);
+    forbiddenMap.put(node2, forbiddenColors);
 
-    execGenerateColors(nodeRun, forbiddenColors);
+    execGenerateColors(nodeRun, forbiddenMap);
   }
 
   // CONTAINS ANY OF NODES

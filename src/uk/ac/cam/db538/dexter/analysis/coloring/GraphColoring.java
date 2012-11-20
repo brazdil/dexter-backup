@@ -1,8 +1,7 @@
 package uk.ac.cam.db538.dexter.analysis.coloring;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -119,24 +118,46 @@ public class GraphColoring {
     return strictest;
   }
 
-  private static Set<Integer> getColorsUsedByRunNeighbours(LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, Map<DexRegister, Integer> coloringState, ClashGraph clashGraph) {
-    val colors = new HashSet<Integer>();
+  private static Map<DexRegister, Set<Integer>> getColorsUsedByRunNeighbours(LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, Map<DexRegister, Integer> coloringState, ClashGraph clashGraph) {
+    val colors = new HashMap<DexRegister, Set<Integer>>();
 
-    for (val node : nodeRun) {
-      for (val neighbour : clashGraph.getNodeNeighbours(node.getValA())) {
+    for (val nodeEntry : nodeRun) {
+      val node = nodeEntry.getValA();
+      val nodeColors = new HashSet<Integer>();
+
+      for (val neighbour : clashGraph.getNodeNeighbours(node)) {
         val neighbourColor = coloringState.get(neighbour);
         if (neighbourColor != null)
-          colors.add(neighbourColor);
+          nodeColors.add(neighbourColor);
       }
+
+      if (!nodeColors.isEmpty())
+        colors.put(node, nodeColors);
     }
 
     return colors;
   }
 
-  private static int generateColors(LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, Set<Integer> forbiddenColors) throws GraphUncolorableException {
+  private static Map<DexRegister, int[]> sortColors(Map<DexRegister, Set<Integer>> colors) {
+    val sortedColors = new HashMap<DexRegister, int[]>();
+    for (val entry : colors.entrySet()) {
+      val entryElems = entry.getValue();
+      val sortedEntry = new int[entryElems.size()];
+      
+      int i = 0;
+      for (val elem : entryElems)
+    	  sortedEntry[i++] = elem;
+      
+      Arrays.sort(sortedEntry);
+      sortedColors.put(entry.getKey(), sortedEntry);
+    }
+    
+    return sortedColors;
+  }
+
+  private static int generateColors(LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, Map<DexRegister, Set<Integer>> forbiddenColors) throws GraphUncolorableException {
     val strictestRunRange = getStrictestColorRange(nodeRun);
-    val sortedForbiddenColors = new ArrayList<Integer>(forbiddenColors);
-    Collections.sort(sortedForbiddenColors);
+    val sortedForbiddenColors = sortColors(forbiddenColors);
 
     // start looking for the colors in the strictest range enforced by the nodes
     // if that fails, try extending it to even stricter ranges
@@ -159,25 +180,43 @@ public class GraphColoring {
     }
   }
 
-  private static int generateColorsInRange(int low, int high, LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, ArrayList<Integer> sortedForbiddenColors) throws GraphUncolorableException {
+  private static boolean colorRangeAvailable(int firstColor, LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, Map<DexRegister, int[]> sortedForbiddenColors) {
+    int currentColor = firstColor;
+
+    for (val nodeEntry : nodeRun) {
+      val node = nodeEntry.getValA();
+      val nodeForbiddenColors = sortedForbiddenColors.get(node);
+
+      if (Arrays.binarySearch(nodeForbiddenColors, currentColor) >= 0) // if currentColor is in the array
+        return false;
+      else
+        currentColor++;
+    }
+
+    return true;
+  }
+
+  private static int generateColorsInRange(int low, int high, LinkedList<Pair<DexRegister, GcColorRange>> nodeRun, Map<DexRegister, int[]> sortedForbiddenColors) throws GraphUncolorableException {
+    val firstNode = nodeRun.getFirst().getValA();
+    val firstNodeForbiddenColors = sortedForbiddenColors.get(firstNode);
+
     while (true) {
-      // find a starting position, i.e. color that is inside the range
-      // and there is enough space before the next color for the whole run
+      // find a starting position, i.e. color assignable to the first node
+      // of the run, such that all the others are assignable too
 
-      val color = firstUnusedHigherOrEqualColor(low, sortedForbiddenColors);
-      if (color == -1 || color > high)
+      val firstColor = firstUnusedHigherOrEqualColor(low, firstNodeForbiddenColors);
+      if (firstColor == -1 || firstColor > high)
         throw new GraphUncolorableException(nodeRun);
-      val nextUsedColor = nextUsedHigherColor(color, sortedForbiddenColors);
 
-      if (nextUsedColor - color < nodeRun.size()) {
-        low = nextUsedColor;
+      if (!colorRangeAvailable(firstColor, nodeRun, sortedForbiddenColors)) {
+        low = nextUsedHigherColor(firstColor, firstNodeForbiddenColors);
         continue;
       }
 
       // now check that the constraints are satisfied
       int i = 0;
       for (val node : nodeRun) {
-        val nodeColor = color + i;
+        val nodeColor = firstColor + i;
         val nodeRange = node.getValB();
 
         if ((nodeRange == GcColorRange.Range_0_15 && nodeColor > 15) ||
@@ -189,12 +228,12 @@ public class GraphColoring {
       }
 
       // if they are, return the first color
-      return color;
+      return firstColor;
     }
   }
 
-  private static int firstUnusedHigherOrEqualColor(int color, ArrayList<Integer> sortedColors) {
-    while (sortedColors.contains(color))
+  private static int firstUnusedHigherOrEqualColor(int color, int[] sortedColors) {
+    while (Arrays.binarySearch(sortedColors, color) >= 0)
       color++;
 
     if (color >= MaxColor)
@@ -203,7 +242,7 @@ public class GraphColoring {
       return color;
   }
 
-  private static int nextUsedHigherColor(int color, ArrayList<Integer> sortedColors) {
+  private static int nextUsedHigherColor(int color, int[] sortedColors) {
     for (val arrayColor : sortedColors)
       if (arrayColor > color)
         return arrayColor > MaxColor ? MaxColor : arrayColor;
