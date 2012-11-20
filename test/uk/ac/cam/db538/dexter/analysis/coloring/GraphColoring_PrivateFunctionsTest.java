@@ -212,19 +212,19 @@ public class GraphColoring_PrivateFunctionsTest {
 
   @Test
   public void testFirstUnusedHigherOrEqualColor_Higher() {
-	    val sortedArray = new int[3];
-	    sortedArray[0] = 2;
-	    sortedArray[1] = 3;
-	    sortedArray[2] = 4;
+    val sortedArray = new int[3];
+    sortedArray[0] = 2;
+    sortedArray[1] = 3;
+    sortedArray[2] = 4;
 
     assertEquals(5, execFirstUnusedHigherOrEqualColor(2, sortedArray));
   }
 
   @Test
   public void testFirstUnusedHigherOrEqualColor_Equal() {
-	    val sortedArray = new int[2];
-	    sortedArray[0] = 3;
-	    sortedArray[1] = 4;
+    val sortedArray = new int[2];
+    sortedArray[0] = 3;
+    sortedArray[1] = 4;
 
     assertEquals(2, execFirstUnusedHigherOrEqualColor(2, sortedArray));
     assertEquals(5, execFirstUnusedHigherOrEqualColor(5, sortedArray));
@@ -232,10 +232,10 @@ public class GraphColoring_PrivateFunctionsTest {
 
   @Test
   public void testFirstUnusedHigherOrEqualColor_Overflow() {
-	    val sortedArray = new int[3];
-	    sortedArray[0] = 65533;
-	    sortedArray[1] = 65534;
-	    sortedArray[2] = 65535;
+    val sortedArray = new int[3];
+    sortedArray[0] = 65533;
+    sortedArray[1] = 65534;
+    sortedArray[2] = 65535;
 
     assertEquals(-1, execFirstUnusedHigherOrEqualColor(65533, sortedArray));
   }
@@ -274,10 +274,10 @@ public class GraphColoring_PrivateFunctionsTest {
 
   @Test
   public void testFirstUnusedHigherColor_HittingMax() {
-	    val sortedArray = new int[3];
-	    sortedArray[0] = 2;
-	    sortedArray[1] = 36;
-	    sortedArray[2] = 70000;
+    val sortedArray = new int[3];
+    sortedArray[0] = 2;
+    sortedArray[1] = 36;
+    sortedArray[2] = 70000;
 
     assertEquals(65536, execNextUsedHigherColor(36, sortedArray));
     assertEquals(65536, execNextUsedHigherColor(37, sortedArray));
@@ -423,7 +423,7 @@ public class GraphColoring_PrivateFunctionsTest {
     sortedArray1[2] = 5;
     sortedArray1[3] = 8;
     sortedArray1[4] = 9;
-    
+
     val sortedArray2 = new int[5];
     sortedArray2[0] = 2;
     sortedArray2[1] = 3;
@@ -454,7 +454,7 @@ public class GraphColoring_PrivateFunctionsTest {
     sortedArray1[3] = 7;
     sortedArray1[4] = 8;
     sortedArray1[5] = 9;
-    
+
     val sortedArray2 = new int[6];
     sortedArray2[0] = 2;
     sortedArray2[1] = 4;

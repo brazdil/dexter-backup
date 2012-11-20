@@ -143,15 +143,15 @@ public class GraphColoring {
     for (val entry : colors.entrySet()) {
       val entryElems = entry.getValue();
       val sortedEntry = new int[entryElems.size()];
-      
+
       int i = 0;
       for (val elem : entryElems)
-    	  sortedEntry[i++] = elem;
-      
+        sortedEntry[i++] = elem;
+
       Arrays.sort(sortedEntry);
       sortedColors.put(entry.getKey(), sortedEntry);
     }
-    
+
     return sortedColors;
   }
 
@@ -187,7 +187,7 @@ public class GraphColoring {
       val node = nodeEntry.getValA();
       val nodeForbiddenColors = sortedForbiddenColors.get(node);
 
-      if (Arrays.binarySearch(nodeForbiddenColors, currentColor) >= 0) // if currentColor is in the array
+      if (nodeForbiddenColors != null && Arrays.binarySearch(nodeForbiddenColors, currentColor) >= 0) // if currentColor is in the array
         return false;
       else
         currentColor++;
@@ -233,8 +233,9 @@ public class GraphColoring {
   }
 
   private static int firstUnusedHigherOrEqualColor(int color, int[] sortedColors) {
-    while (Arrays.binarySearch(sortedColors, color) >= 0)
-      color++;
+    if (sortedColors != null)
+      while (Arrays.binarySearch(sortedColors, color) >= 0)
+        color++;
 
     if (color >= MaxColor)
       return -1;
