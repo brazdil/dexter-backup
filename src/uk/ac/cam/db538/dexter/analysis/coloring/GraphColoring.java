@@ -309,8 +309,8 @@ public class GraphColoring {
   public int getNumberOfColorsUsed() {
     return ColorsUsed;
   }
-  
+
   public Map<DexRegister, Integer> getColoring() {
-	  return Coloring;
+    return Coloring;
   }
 }

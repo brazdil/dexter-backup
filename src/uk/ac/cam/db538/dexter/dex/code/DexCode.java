@@ -231,9 +231,9 @@ public class DexCode {
 
     return allConstraints;
   }
-  
+
   public List<Instruction> assembleBytecode(Map<DexRegister, Integer> regAlloc) throws InstructionAssemblyException {
-	val bytecode = new LinkedList<Instruction>();
+    val bytecode = new LinkedList<Instruction>();
 
     // place labels here; let every instruction tell you
     // the longest it can possibly get to pick the right

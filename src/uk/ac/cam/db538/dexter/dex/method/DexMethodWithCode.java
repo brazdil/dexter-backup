@@ -58,14 +58,14 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   @Override
   protected CodeItem generateCodeItem(DexFile outFile) {
-	  // do register allocation
-	  // note that this changes the code itself
-	  // (adds temporaries, inserts move instructions)
-	  val codeColoring = new GraphColoring(Code);
-	  val modifiedCode = codeColoring.getModifiedCode();
-	  val registerAllocation = codeColoring.getColoring();
-	  val registerCount = codeColoring.getNumberOfColorsUsed();
-	  
+    // do register allocation
+    // note that this changes the code itself
+    // (adds temporaries, inserts move instructions)
+    val codeColoring = new GraphColoring(Code);
+    val modifiedCode = codeColoring.getModifiedCode();
+    val registerAllocation = codeColoring.getColoring();
+    val registerCount = codeColoring.getNumberOfColorsUsed();
+
     int inWords = 0;
     if (!isStatic())
       inWords += DexClassType.NumberOfRegisters;
@@ -86,7 +86,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     System.out.println("  regCount = " + registerCount);
     System.out.println("  inWords = " + inWords);
     System.out.println("  outWords = " + outWords);
-    
+
     return CodeItem.internCodeItem(outFile, registerCount, inWords, outWords, debugInfo, instructions, tries, encodedCatchHandlers);
   }
 }
