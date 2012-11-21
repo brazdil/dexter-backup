@@ -5,9 +5,9 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/lombok.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.10.jar"/>
-	<classpathentry kind="lib" path="lib/smali-1.4.1-dev.jar"/>
 	<classpathentry kind="lib" path="lib/WebLookAndFeel-1.4-dev.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/zeus-jscl-1.70.jar"/>
+	<classpathentry kind="lib" path="lib/smali-1.4.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
