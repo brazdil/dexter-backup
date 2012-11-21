@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.dex.code.reg;
+package uk.ac.cam.db538.dexter.dex.code;
 
 import uk.ac.cam.db538.dexter.utils.Cache;
 import lombok.Getter;

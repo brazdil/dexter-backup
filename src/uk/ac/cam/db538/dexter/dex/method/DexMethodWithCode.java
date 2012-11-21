@@ -15,10 +15,10 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
-import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocator_Append;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
@@ -58,10 +58,14 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   @Override
   protected CodeItem generateCodeItem(DexFile outFile) {
-    val registerList = Code.getUsedRegisters();
-    val registerAllocation = (new RegisterAllocator_Append()).allocate(registerList);
-    val registerCount = registerList.size();
-
+	  // do register allocation
+	  // note that this changes the code itself
+	  // (adds temporaries, inserts move instructions)
+	  val codeColoring = new GraphColoring(Code);
+	  val modifiedCode = codeColoring.getModifiedCode();
+	  val registerAllocation = codeColoring.getColoring();
+	  val registerCount = codeColoring.getNumberOfColorsUsed();
+	  
     int inWords = 0;
     if (!isStatic())
       inWords += DexClassType.NumberOfRegisters;
@@ -72,12 +76,17 @@ public abstract class DexMethodWithCode extends DexMethod {
 
     DebugInfoItem debugInfo = null;
 
-    List<Instruction> instructions = Code.assembleBytecode(registerAllocation);
+    List<Instruction> instructions = modifiedCode.assembleBytecode(registerAllocation);
 
     List<TryItem> tries = null;
 
     List<EncodedCatchHandler> encodedCatchHandlers = null;
 
+    System.out.println("Creating code item for " + this.getName());
+    System.out.println("  regCount = " + registerCount);
+    System.out.println("  inWords = " + inWords);
+    System.out.println("  outWords = " + outWords);
+    
     return CodeItem.internCodeItem(outFile, registerCount, inWords, outWords, debugInfo, instructions, tries, encodedCatchHandlers);
   }
 }

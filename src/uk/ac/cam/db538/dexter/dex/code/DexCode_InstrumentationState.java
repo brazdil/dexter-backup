@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lombok.val;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 public class DexCode_InstrumentationState {
   private final Map<DexRegister, DexRegister> RegisterMap;

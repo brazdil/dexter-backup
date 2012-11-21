@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.analysis.ClashGraph;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class GraphColoring {
@@ -308,5 +308,9 @@ public class GraphColoring {
 
   public int getNumberOfColorsUsed() {
     return ColorsUsed;
+  }
+  
+  public Map<DexRegister, Integer> getColoring() {
+	  return Coloring;
   }
 }

@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
 public class DexInstruction_BinaryOpWide_Test {
 

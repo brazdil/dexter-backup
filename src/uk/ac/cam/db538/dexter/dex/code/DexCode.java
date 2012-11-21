@@ -52,8 +52,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class DexCode {
@@ -233,9 +231,9 @@ public class DexCode {
 
     return allConstraints;
   }
-
-  public List<Instruction> assembleBytecode(RegisterAllocation regAlloc) throws InstructionAssemblyException {
-    val bytecode = new LinkedList<Instruction>();
+  
+  public List<Instruction> assembleBytecode(Map<DexRegister, Integer> regAlloc) throws InstructionAssemblyException {
+	val bytecode = new LinkedList<Instruction>();
 
     // place labels here; let every instruction tell you
     // the longest it can possibly get to pick the right

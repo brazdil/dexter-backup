@@ -14,7 +14,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpWide;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 public class DexCodeTest {
 

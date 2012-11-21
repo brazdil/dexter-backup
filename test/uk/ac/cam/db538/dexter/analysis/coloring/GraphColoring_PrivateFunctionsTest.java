@@ -21,10 +21,10 @@ import org.junit.Test;
 import uk.ac.cam.db538.dexter.analysis.ClashGraph;
 import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring.GcColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class GraphColoring_PrivateFunctionsTest {

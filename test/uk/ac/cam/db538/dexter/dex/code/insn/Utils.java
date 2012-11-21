@@ -1,5 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
@@ -7,11 +13,8 @@ import org.jf.dexlib.Code.Instruction;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
-
-import static org.junit.Assert.*;
 
 public class Utils {
 
@@ -50,8 +53,8 @@ public class Utils {
       assertEquals(output[i], insnList.get(i).getOriginalAssembly());
   }
 
-  static RegisterAllocation genRegAlloc(DexRegister ... regs) {
-    val regAlloc = new RegisterAllocation();
+  static Map<DexRegister, Integer> genRegAlloc(DexRegister ... regs) {
+    val regAlloc = new HashMap<DexRegister, Integer>();
     for (val reg : regs)
       regAlloc.put(reg, reg.getId());
     return regAlloc;

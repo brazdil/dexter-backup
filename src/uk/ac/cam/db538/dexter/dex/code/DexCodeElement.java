@@ -11,7 +11,6 @@ import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring.GcColorRange;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public abstract class DexCodeElement {

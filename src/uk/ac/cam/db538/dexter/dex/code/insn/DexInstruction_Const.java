@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -15,10 +16,9 @@ import org.jf.dexlib.Code.Format.Instruction31i;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
 public class DexInstruction_Const extends DexInstruction {
 
@@ -83,7 +83,7 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(RegisterAllocation regAlloc) {
+  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc) {
     int rTo = regAlloc.get(RegTo);
 
     if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Signed(Value, 4))

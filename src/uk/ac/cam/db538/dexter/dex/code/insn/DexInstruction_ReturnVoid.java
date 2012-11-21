@@ -1,5 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Map;
+
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10x;
@@ -7,7 +9,7 @@ import org.jf.dexlib.Code.Format.Instruction10x;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
-import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
 public class DexInstruction_ReturnVoid extends DexInstruction {
 
@@ -28,7 +30,7 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(RegisterAllocation regAlloc) {
+  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc) {
     return new Instruction[] {
              new Instruction10x(Opcode.RETURN_VOID)
            };

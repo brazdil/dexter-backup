@@ -16,8 +16,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.reg.RegisterAllocation;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
 public class DexInstruction_BinaryOp extends DexInstruction {
 
@@ -86,7 +85,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(RegisterAllocation regAlloc)
+  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc)
   throws InstructionAssemblyException {
     int rTarget = regAlloc.get(RegTarget);
     int rSourceA = regAlloc.get(RegSourceA);
