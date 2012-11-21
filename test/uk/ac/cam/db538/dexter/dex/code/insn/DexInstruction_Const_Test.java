@@ -11,9 +11,9 @@ import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction31i;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.Utils;
 
 public class DexInstruction_Const_Test {
 
@@ -186,7 +186,7 @@ public class DexInstruction_Const_Test {
   public void testInstrument() {
     val reg1 = new DexRegister(0);
     val reg2 = new DexRegister(1);
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
     code.add(new DexInstruction_Const(null, reg1, 1));
     code.add(new DexInstruction_Const(null, reg2, 0xdec0ded));
 

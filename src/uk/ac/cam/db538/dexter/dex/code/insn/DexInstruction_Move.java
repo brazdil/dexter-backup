@@ -1,7 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+
+import lombok.Getter;
+import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
@@ -12,9 +16,6 @@ import org.jf.dexlib.Code.Format.Instruction32x;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_Move extends DexInstruction {
 
@@ -86,5 +87,30 @@ public class DexInstruction_Move extends DexInstruction {
     val regs = new HashSet<DexRegister>();
     regs.add(RegFrom);
     return regs;
+  }
+
+  @Override
+  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc) {
+    int rTo = regAlloc.get(RegTo);
+    int rFrom = regAlloc.get(RegFrom);
+
+    if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Unsigned(rFrom, 4))
+      return new Instruction[] {
+               ObjectMoving ?
+               new Instruction12x(Opcode.MOVE_OBJECT, (byte) rTo, (byte) rFrom) :
+               new Instruction12x(Opcode.MOVE, (byte) rTo, (byte) rFrom)
+             };
+    else if (fitsIntoBits_Unsigned(rTo, 8))
+      return new Instruction[] {
+               ObjectMoving ?
+               new Instruction22x(Opcode.MOVE_OBJECT_FROM16, (short) rTo, rFrom) :
+               new Instruction22x(Opcode.MOVE_FROM16, (short) rTo, rFrom)
+             };
+    else
+      return new Instruction[] {
+               ObjectMoving ?
+               new Instruction32x(Opcode.MOVE_OBJECT_16, rTo, rFrom) :
+               new Instruction32x(Opcode.MOVE_16, rTo, rFrom)
+             };
   }
 }

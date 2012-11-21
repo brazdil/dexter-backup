@@ -8,6 +8,7 @@ import org.jf.dexlib.Code.Format.Instruction10x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
@@ -27,6 +28,11 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "return-void";
+  }
+
+  @Override
+  public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
+    return new DexCodeElement[] { this };
   }
 
   @Override

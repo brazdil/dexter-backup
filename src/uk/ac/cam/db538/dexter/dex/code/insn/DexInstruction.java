@@ -19,14 +19,13 @@ public abstract class DexInstruction extends DexCodeElement {
   // INSTRUCTION INSTRUMENTATION
 
   public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
-    return new DexCodeElement[] { this };
+    throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have instrumentation implemented");
   }
-
 
   // ASSEMBLING
 
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc) throws InstructionAssemblyException {
-    return new Instruction[] { };
+  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc) {
+    throw new UnsupportedOperationException("Instruction doesn't have assembling implemented");
   }
 
   protected Instruction[] throwCannotAssembleException() {

@@ -85,8 +85,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc)
-  throws InstructionAssemblyException {
+  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc) {
     int rTarget = regAlloc.get(RegTarget);
     int rSourceA = regAlloc.get(RegSourceA);
     int rSourceB = regAlloc.get(RegSourceB);

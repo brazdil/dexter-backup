@@ -16,6 +16,8 @@ import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 import org.junit.Test;
 
+import uk.ac.cam.db538.dexter.dex.code.Utils;
+
 public class DexInstruction_MethodCall_Test {
 
   @Test

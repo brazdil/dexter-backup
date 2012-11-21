@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.dex.code.insn;
+package uk.ac.cam.db538.dexter.dex.code;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -18,7 +18,7 @@ import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class Utils {
 
-  static DexCodeElement parseAndCompare(Instruction insn, String output) {
+  public static DexCodeElement parseAndCompare(Instruction insn, String output) {
     DexCode code;
     try {
       code = new DexCode(new Instruction[] { insn }, new DexParsingCache());
@@ -37,7 +37,7 @@ public class Utils {
     return insnInsn;
   }
 
-  static void parseAndCompare(Instruction[] insns, String[] output) {
+  public static void parseAndCompare(Instruction[] insns, String[] output) {
     DexCode code;
     try {
       code = new DexCode(insns, new DexParsingCache());
@@ -53,22 +53,22 @@ public class Utils {
       assertEquals(output[i], insnList.get(i).getOriginalAssembly());
   }
 
-  static Map<DexRegister, Integer> genRegAlloc(DexRegister ... regs) {
+  public static Map<DexRegister, Integer> genRegAlloc(DexRegister ... regs) {
     val regAlloc = new HashMap<DexRegister, Integer>();
     for (val reg : regs)
       regAlloc.put(reg, reg.getId());
     return regAlloc;
   }
 
-  static long numFitsInto_Signed(int bits) {
+  public static long numFitsInto_Signed(int bits) {
     return (1L << (bits - 1)) - 1;
   }
 
-  static int numFitsInto_Unsigned(int bits) {
+  public static int numFitsInto_Unsigned(int bits) {
     return (1 << bits) - 1;
   }
 
-  static void instrumentAndCompare(DexCode code, String[] output) {
+  public static void instrumentAndCompare(DexCode code, String[] output) {
     val insnList = code.instrument().getInstructionList();
     assertEquals(output.length, insnList.size());
     for (int i = 0; i < output.length; ++i)

@@ -10,9 +10,9 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.Utils;
 
 public class DexInstruction_BinaryOpWide_Test {
 
@@ -360,7 +360,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val reg3 = new DexRegister(3);
     val reg4 = new DexRegister(4);
     val reg5 = new DexRegister(5);
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
     code.add(new DexInstruction_BinaryOpWide(null, reg0, reg1, reg2, reg3, reg4, reg5, Opcode_BinaryOpWide.SubLong));
 
     Utils.instrumentAndCompare(
