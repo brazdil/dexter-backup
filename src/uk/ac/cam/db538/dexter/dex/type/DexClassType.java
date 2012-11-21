@@ -16,10 +16,8 @@ public class DexClassType extends DexReferenceType {
     return descriptor;
   }
 
-  public static final int NumberOfRegisters = 1;
-
   public DexClassType(String descriptor) {
-    super(checkDescriptor(descriptor), descriptor.substring(1, descriptor.length() - 1).replace('/', '.'), NumberOfRegisters);
+    super(checkDescriptor(descriptor), descriptor.substring(1, descriptor.length() - 1).replace('/', '.'));
 
     val prettyName = getPrettyName();
     int lastDot = prettyName.lastIndexOf('.');

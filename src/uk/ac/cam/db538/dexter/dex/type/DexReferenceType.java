@@ -4,8 +4,10 @@ import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 
 public abstract class DexReferenceType extends DexRegisterType {
 
-  public DexReferenceType(String descriptor, String prettyName, int registers) {
-    super(descriptor, prettyName, registers);
+  public static final DexRegisterTypeSize TypeSize = DexRegisterTypeSize.SINGLE;
+
+  public DexReferenceType(String descriptor, String prettyName) {
+    super(descriptor, prettyName, TypeSize);
   }
 
   public static DexReferenceType parse(String typeDescriptor, DexParsingCache cache) throws UnknownTypeException {

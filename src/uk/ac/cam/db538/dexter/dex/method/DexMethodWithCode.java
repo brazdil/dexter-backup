@@ -68,7 +68,7 @@ public abstract class DexMethodWithCode extends DexMethod {
 
     int inWords = 0;
     if (!isStatic())
-      inWords += DexClassType.NumberOfRegisters;
+      inWords += DexClassType.TypeSize.getRegisterCount();
     for (val param : this.getArgumentTypes())
       inWords += param.getRegisters();
 

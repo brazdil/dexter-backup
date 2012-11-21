@@ -7,8 +7,8 @@ import lombok.val;
 
 public abstract class DexPrimitiveType extends DexRegisterType {
 
-  public DexPrimitiveType(String descriptor, String prettyName, int registers) {
-    super(descriptor, prettyName, registers);
+  public DexPrimitiveType(String descriptor, String prettyName, DexRegisterTypeSize typeSize) {
+    super(descriptor, prettyName, typeSize);
   }
 
   /*
@@ -40,49 +40,49 @@ public abstract class DexPrimitiveType extends DexRegisterType {
 
   public static class DexByte extends DexPrimitiveType {
     public DexByte() {
-      super("B", "byte", 1);
+      super("B", "byte", DexRegisterTypeSize.SINGLE);
     }
   }
 
   public static class DexBoolean extends DexPrimitiveType {
     public DexBoolean() {
-      super("Z", "boolean", 1);
+      super("Z", "boolean", DexRegisterTypeSize.SINGLE);
     }
   }
 
   public static class DexShort extends DexPrimitiveType {
     public DexShort() {
-      super("S", "short", 1);
+      super("S", "short", DexRegisterTypeSize.SINGLE);
     }
   }
 
   public static class DexChar extends DexPrimitiveType {
     public DexChar() {
-      super("C", "char", 1);
+      super("C", "char", DexRegisterTypeSize.SINGLE);
     }
   }
 
   public static class DexInteger extends DexPrimitiveType {
     public DexInteger() {
-      super("I", "int", 1);
+      super("I", "int", DexRegisterTypeSize.SINGLE);
     }
   }
 
   public static class DexLong extends DexPrimitiveType {
     public DexLong() {
-      super("J", "long", 2);
+      super("J", "long", DexRegisterTypeSize.WIDE);
     }
   }
 
   public static class DexFloat extends DexPrimitiveType {
     public DexFloat() {
-      super("F", "float", 1);
+      super("F", "float", DexRegisterTypeSize.SINGLE);
     }
   }
 
   public static class DexDouble extends DexPrimitiveType {
     public DexDouble() {
-      super("D", "double", 2);
+      super("D", "double", DexRegisterTypeSize.WIDE);
     }
   }
 }

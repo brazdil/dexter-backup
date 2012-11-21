@@ -11,8 +11,7 @@ public class DexArrayType extends DexReferenceType {
 
   public DexArrayType(DexRegisterType elementType) {
     super("[" + elementType.getDescriptor(),
-          elementType.getPrettyName() + "[]",
-          1);
+          elementType.getPrettyName() + "[]");
     ElementType = elementType;
   }
 

@@ -1,15 +1,29 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import lombok.Getter;
 
 public abstract class DexRegisterType extends DexType {
 
-  @Getter private final int Registers;
+  public static enum DexRegisterTypeSize {
+    SINGLE,
+    WIDE;
 
-  public DexRegisterType(String descriptor, String prettyName, int registers) {
+    public int getRegisterCount() {
+      switch (this) {
+      case SINGLE:
+        return 1;
+      case WIDE:
+        return 2;
+      }
+      throw new RuntimeException("Unknown register size");
+    }
+  }
+
+  private final DexRegisterTypeSize TypeSize;
+
+  public DexRegisterType(String descriptor, String prettyName, DexRegisterTypeSize typeSize) {
     super(descriptor, prettyName);
-    Registers = registers;
+    TypeSize = typeSize;
   }
 
   public static DexRegisterType parse(String typeDescriptor, DexParsingCache cache) throws UnknownTypeException {
@@ -24,5 +38,13 @@ public abstract class DexRegisterType extends DexType {
     }
 
     throw new UnknownTypeException(typeDescriptor);
+  }
+
+  public boolean isWide() {
+    return TypeSize == DexRegisterTypeSize.WIDE;
+  }
+
+  public int getRegisters() {
+    return TypeSize.getRegisterCount();
   }
 }
