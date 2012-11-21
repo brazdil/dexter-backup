@@ -13,7 +13,9 @@ import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.analysis.ClashGraph;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class GraphColoring {
@@ -258,7 +260,7 @@ public class GraphColoring {
   }
 
   private static DexCode generateCodeWithSpilledNode(DexCode currentCode, LinkedList<Pair<DexRegister, GcColorRange>> nodeRun) {
-    val newCode = new DexCode(null);
+    val newInstructions = new NoDuplicatesList<DexCodeElement>();
 
     val spilledRegs = new HashSet<DexRegister>();
     for (val node : nodeRun)
@@ -266,11 +268,12 @@ public class GraphColoring {
 
     for (val insn : currentCode.getInstructionList()) {
       if (containsAnyOfNodes(insn.lvaReferencedRegisters(), nodeRun) || containsAnyOfNodes(insn.lvaDefinedRegisters(), nodeRun))
-        newCode.addAll(insn.gcAddTemporaries(spilledRegs));
+        newInstructions.addAll(insn.gcAddTemporaries(spilledRegs));
       else
-        newCode.add(insn);
+        newInstructions.add(insn);
     }
-    return newCode;
+
+    return new DexCode(currentCode, newInstructions);
   }
 
   private static Map<DexRegister, Integer> removeGapsFromColoring(Map<DexRegister, Integer> oldColoring) {

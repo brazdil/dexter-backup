@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import lombok.Getter;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 
 public abstract class DexRegisterType extends DexType {
@@ -19,7 +20,7 @@ public abstract class DexRegisterType extends DexType {
     }
   }
 
-  private final DexRegisterTypeSize TypeSize;
+  @Getter private final DexRegisterTypeSize TypeSize;
 
   public DexRegisterType(String descriptor, String prettyName, DexRegisterTypeSize typeSize) {
     super(descriptor, prettyName);

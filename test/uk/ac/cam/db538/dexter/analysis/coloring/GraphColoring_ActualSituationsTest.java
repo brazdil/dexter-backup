@@ -28,7 +28,7 @@ public class GraphColoring_ActualSituationsTest {
 
   @Test
   public void testNoSpilling() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val rA = new DexRegister(0);
     val rB = new DexRegister(1);
@@ -92,7 +92,7 @@ public class GraphColoring_ActualSituationsTest {
   @Test
   public void testNeedsSpilling() {
     val cache = new DexParsingCache();
-    val code = new DexCode(cache);
+    val code = new DexCode();
 
     // generate registers
     val regs = new DexRegister[SpillingRegCount];

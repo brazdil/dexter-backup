@@ -32,6 +32,12 @@ public class NoDuplicatesList<E> extends LinkedList<E> {
     return true;
   }
 
+  public boolean addAll(E[] c) {
+    for (val e : c)
+      add(e);
+    return true;
+  }
+
   @Override
   public boolean addAll(int index, Collection<? extends E> c) {
     for (val e : c)

@@ -19,10 +19,10 @@ import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
+import uk.ac.cam.db538.dexter.utils.Algorithm;
 
 public abstract class DexMethodWithCode extends DexMethod {
 
@@ -40,9 +40,9 @@ public abstract class DexMethodWithCode extends DexMethod {
   public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, InstructionParsingException {
     super(parent, methodInfo);
     if (methodInfo.codeItem == null)
-      Code = new DexCode(parent.getParentFile().getParsingCache());
+      Code = new DexCode();
     else
-      Code = new DexCode(methodInfo.codeItem.getInstructions(), parent.getParentFile().getParsingCache());
+      Code = new DexCode(methodInfo.codeItem, this.getArgumentTypes(), this.isStatic(), parent.getParentFile().getParsingCache());
     Direct = methodInfo.isDirect();
   }
 
@@ -66,27 +66,24 @@ public abstract class DexMethodWithCode extends DexMethod {
     val registerAllocation = codeColoring.getColoring();
     val registerCount = codeColoring.getNumberOfColorsUsed();
 
-    int inWords = 0;
-    if (!isStatic())
-      inWords += DexClassType.TypeSize.getRegisterCount();
-    for (val param : this.getArgumentTypes())
-      inWords += param.getRegisters();
+    int inWords = Algorithm.countParamWords(getArgumentTypes(), isStatic());
+    int registerAndParamCount = registerCount + inWords;
 
     int outWords = 0; // TODO: finish (max inWords of methods called inside the code)
 
     DebugInfoItem debugInfo = null;
 
-    List<Instruction> instructions = modifiedCode.assembleBytecode(registerAllocation);
+    List<Instruction> instructions = modifiedCode.assembleBytecode(registerAllocation, registerCount);
 
     List<TryItem> tries = null;
 
     List<EncodedCatchHandler> encodedCatchHandlers = null;
 
     System.out.println("Creating code item for " + this.getName());
-    System.out.println("  regCount = " + registerCount);
+    System.out.println("  regCount = " + registerAndParamCount);
     System.out.println("  inWords = " + inWords);
     System.out.println("  outWords = " + outWords);
 
-    return CodeItem.internCodeItem(outFile, registerCount, inWords, outWords, debugInfo, instructions, tries, encodedCatchHandlers);
+    return CodeItem.internCodeItem(outFile, registerAndParamCount, inWords, outWords, debugInfo, instructions, tries, encodedCatchHandlers);
   }
 }

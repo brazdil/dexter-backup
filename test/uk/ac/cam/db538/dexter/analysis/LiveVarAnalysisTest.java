@@ -6,8 +6,6 @@ import lombok.val;
 
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.analysis.LiveVarAnalysis;
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -23,7 +21,7 @@ public class LiveVarAnalysisTest {
 
   @Test
   public void testSingleBlock() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val r0 = new DexRegister(0);
     val r1 = new DexRegister(1);
@@ -60,7 +58,7 @@ public class LiveVarAnalysisTest {
 
   @Test
   public void testBranchingBlocks() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val r0 = new DexRegister(0);
     val r1 = new DexRegister(1);
@@ -124,7 +122,7 @@ public class LiveVarAnalysisTest {
 
   @Test
   public void testLoopingBlock() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val r0 = new DexRegister(0);
     val r1 = new DexRegister(1);

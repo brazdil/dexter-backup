@@ -129,8 +129,13 @@ public class MainWindow {
       val dex = tab.getOpenedFile();
       doModal("Instrumenting " + dex.getFilename().getName(), new Thread(new Runnable() {
         public void run() {
-          dex.instrument();
-          tab.getTreeListener().valueChanged(null);
+          try {
+            dex.instrument();
+            tab.getTreeListener().valueChanged(null);
+          } catch (Throwable e) {
+            JMessage.showErrorMessage(Frame, "A problem occurred while instrumenting file \"" + dex.getFilename().getName() + "\".", e);
+            return;
+          }
         }
       }));
     }

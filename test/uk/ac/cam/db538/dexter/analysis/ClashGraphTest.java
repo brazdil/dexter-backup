@@ -1,11 +1,12 @@
 package uk.ac.cam.db538.dexter.analysis;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import lombok.val;
 
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
@@ -16,7 +17,7 @@ public class ClashGraphTest {
 
   @Test
   public void testNoClashes() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val r0 = new DexRegister(0);
     val r1 = new DexRegister(1);
@@ -32,7 +33,7 @@ public class ClashGraphTest {
 
   @Test
   public void testSingleClash() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val r0 = new DexRegister(0);
     val r1 = new DexRegister(1);
@@ -53,7 +54,7 @@ public class ClashGraphTest {
 
   @Test
   public void testUndirectedEdges() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val r0 = new DexRegister(0);
     val r1 = new DexRegister(1);
@@ -73,7 +74,7 @@ public class ClashGraphTest {
 
   @Test
   public void testRemoveLowestDegreeNode() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val r0 = new DexRegister(0);
     val r1 = new DexRegister(1);

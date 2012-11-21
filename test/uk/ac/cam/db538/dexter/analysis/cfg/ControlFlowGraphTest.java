@@ -6,7 +6,6 @@ import lombok.val;
 
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -20,7 +19,7 @@ public class ControlFlowGraphTest {
 
   @Test
   public void testBlockRecognition_Empty() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val cfg = new ControlFlowGraph(code);
     val start = cfg.getStartBlock();
@@ -35,7 +34,7 @@ public class ControlFlowGraphTest {
 
   @Test
   public void testBlockRecognition_SingleInsn() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
     val insnReturn = new DexInstruction_ReturnVoid(code);
     code.add(insnReturn);
 
@@ -61,7 +60,7 @@ public class ControlFlowGraphTest {
 
   @Test
   public void testBlockRecognition_MoreBlocks() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
     val r0 = new DexRegister(0);
     val r1 = new DexRegister(1);
     val r2 = new DexRegister(2);

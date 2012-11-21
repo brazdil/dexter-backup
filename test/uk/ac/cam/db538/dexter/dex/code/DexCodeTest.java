@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
@@ -9,7 +10,6 @@ import lombok.val;
 
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
@@ -19,7 +19,7 @@ public class DexCodeTest {
 
   @Test
   public void testInsertBefore_Middle() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val elem1 = new DexLabel(code, 1);
     val elem2 = new DexLabel(code, 2);
@@ -37,7 +37,7 @@ public class DexCodeTest {
 
   @Test
   public void testInsertBefore_First() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val elem1 = new DexLabel(code, 1);
     val elem2 = new DexLabel(code, 2);
@@ -55,7 +55,7 @@ public class DexCodeTest {
 
   @Test(expected=NoSuchElementException.class)
   public void testInsertBefore_NotFound() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val elem1 = new DexLabel(code, 1);
     val elem2 = new DexLabel(code, 2);
@@ -67,7 +67,7 @@ public class DexCodeTest {
 
   @Test
   public void testInsertAfter_Middle() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val elem1 = new DexLabel(code, 1);
     val elem2 = new DexLabel(code, 2);
@@ -85,7 +85,7 @@ public class DexCodeTest {
 
   @Test
   public void testInsertBefore_Last() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val elem1 = new DexLabel(code, 1);
     val elem2 = new DexLabel(code, 2);
@@ -103,7 +103,7 @@ public class DexCodeTest {
 
   @Test(expected=NoSuchElementException.class)
   public void testInsertAfter_NotFound() {
-    val code = new DexCode(new DexParsingCache());
+    val code = new DexCode();
 
     val elem1 = new DexLabel(code, 1);
     val elem2 = new DexLabel(code, 2);
@@ -119,14 +119,14 @@ public class DexCodeTest {
 
   @Test
   public void testGetFollowConstraints_Empty() {
-    val code = new DexCode(null);
+    val code = new DexCode();
     val constraints = code.getFollowConstraints();
     assertTrue(constraints.isEmpty());
   }
 
   @Test
   public void testGetFollowConstraints_NoConstraints() {
-    val code = new DexCode(null);
+    val code = new DexCode();
 
     val r1 = new DexRegister(1);
     val r2 = new DexRegister(2);
@@ -151,7 +151,7 @@ public class DexCodeTest {
 
   @Test
   public void testGetFollowConstraints_SingleConstraint() {
-    val code = new DexCode(null);
+    val code = new DexCode();
 
     val r1 = new DexRegister(1);
     val r2 = new DexRegister(2);
@@ -175,7 +175,7 @@ public class DexCodeTest {
 
   @Test
   public void testGetFollowConstraints_SingleConstraintMultipleTimes() {
-    val code = new DexCode(null);
+    val code = new DexCode();
 
     val r1 = new DexRegister(1);
     val r2 = new DexRegister(2);
@@ -200,7 +200,7 @@ public class DexCodeTest {
 
   @Test
   public void testGetFollowConstraints_ChainingConstraints() {
-    val code = new DexCode(null);
+    val code = new DexCode();
 
     val r1 = new DexRegister(1);
     val r2 = new DexRegister(2);
@@ -225,7 +225,7 @@ public class DexCodeTest {
 
   @Test(expected=RuntimeException.class)
   public void testGetFollowConstraints_Inconsistency_ClashingConstraints() {
-    val code = new DexCode(null);
+    val code = new DexCode();
 
     val r1 = new DexRegister(1);
     val r2 = new DexRegister(2);
@@ -239,7 +239,7 @@ public class DexCodeTest {
 
   @Test(expected=RuntimeException.class)
   public void testGetFollowConstraints_Inconsistency_ClashingConstraints_OppositeDirection() {
-    val code = new DexCode(null);
+    val code = new DexCode();
 
     val r1 = new DexRegister(1);
     val r2 = new DexRegister(2);
@@ -253,7 +253,7 @@ public class DexCodeTest {
 
   @Test(expected=RuntimeException.class)
   public void testGetFollowConstraints_Inconsistency_ClashingConstraints_WithinRun() {
-    val code = new DexCode(null);
+    val code = new DexCode();
 
     val r1 = new DexRegister(1);
     val r2 = new DexRegister(2);

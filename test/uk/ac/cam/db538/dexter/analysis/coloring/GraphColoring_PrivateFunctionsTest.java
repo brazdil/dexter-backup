@@ -163,7 +163,7 @@ public class GraphColoring_PrivateFunctionsTest {
     nodeRun.add(new Pair<DexRegister, GraphColoring.GcColorRange>(r3, GcColorRange.Range_0_15));
 
     // let r1 clash with r4,r7, r2 with r5 and r3 with r6
-    val code = new DexCode(null);
+    val code = new DexCode();
     code.add(new DexInstruction_BinaryOp(code, r1, r1, r4, Opcode_BinaryOp.AddInt));
     code.add(new DexInstruction_ReturnVoid(code));
     code.add(new DexInstruction_BinaryOp(code, r1, r1, r7, Opcode_BinaryOp.AddInt));
@@ -692,7 +692,7 @@ public class GraphColoring_PrivateFunctionsTest {
     val r3 = new DexRegister();
     val r4 = new DexRegister();
 
-    val code = new DexCode(null);
+    val code = new DexCode();
 
     val i1 = new DexInstruction_BinaryOp(code, r1, r1, r1, Opcode_BinaryOp.AddInt);
     val i2 = new DexInstruction_BinaryOp(code, r2, r2, r2, Opcode_BinaryOp.AddInt);
@@ -723,7 +723,7 @@ public class GraphColoring_PrivateFunctionsTest {
     val r3 = new DexRegister();
     val r4 = new DexRegister();
 
-    val code = new DexCode(null);
+    val code = new DexCode();
 
     val i1 = new DexInstruction_BinaryOp(code, r1, r1, r1, Opcode_BinaryOp.AddInt);
     val i2 = new DexInstruction_BinaryOp(code, r4, r2, r2, Opcode_BinaryOp.AddInt); // only in referenced registers

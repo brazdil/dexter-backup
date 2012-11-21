@@ -52,38 +52,65 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType.DexRegisterTypeSize;
+import uk.ac.cam.db538.dexter.utils.Algorithm;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class DexCode {
 
   @Getter private final NoDuplicatesList<DexCodeElement> InstructionList;
-  @Getter private final NoDuplicatesList<DexRegister> ParameterMapping;
+  @Getter private final NoDuplicatesList<DexRegister> ParameterRegisters;
+  @Getter private final NoDuplicatesList<DexCodeElement> ParameterMoveInstructions;
   @Getter private final Set<DexRegister> UsedRegisters;
 
-  private final DexCode_ParsingState ParsingState;
-
-  public DexCode(DexParsingCache cache) {
+  // creates completely empty code
+  public DexCode() {
     InstructionList = new NoDuplicatesList<DexCodeElement>();
-    ParameterMapping = new NoDuplicatesList<DexRegister>();
-    ParsingState = new DexCode_ParsingState(cache, this);
     UsedRegisters = new HashSet<DexRegister>();
+    ParameterRegisters = new NoDuplicatesList<DexRegister>();
+    ParameterMoveInstructions = new NoDuplicatesList<DexCodeElement>();
   }
 
-  public DexCode(CodeItem methodInfo, DexParsingCache cache) throws InstructionParsingException {
-    this(methodInfo.getInstructions(), cache);
-
-    val regCount = methodInfo.getRegisterCount();
-    val paramCount = methodInfo.getInWords();
-
-    // store parameter mapping
-    // index in the list is the index of the parameter
-    for (int i = regCount - paramCount; i < regCount; ++i)
-      ParameterMapping.add(ParsingState.getRegister(i));
+  // creates a copy without instructions
+  private DexCode(DexCode oldCode) {
+    InstructionList = new NoDuplicatesList<DexCodeElement>();
+    UsedRegisters = new HashSet<DexRegister>();
+    ParameterRegisters = oldCode.ParameterRegisters;
+    ParameterMoveInstructions = oldCode.ParameterMoveInstructions;
   }
 
-  public DexCode(Instruction[] instructions, DexParsingCache cache) {
-    this(cache);
+  // creates a copy wit instruction replacement
+  public DexCode(DexCode oldCode, NoDuplicatesList<DexCodeElement> codeReplacement) {
+    this(oldCode);
+    this.addAll(codeReplacement);
+  }
 
+  private void insertParamMove(DexRegisterTypeSize paramTypeSize, boolean referenceType, int index, DexCode_ParsingState parsingState) {
+    switch (paramTypeSize) {
+    case SINGLE:
+      val paramReg = new DexRegister(); // this register will be put after all the registers used in the code
+      val moveToReg = parsingState.getRegister(index); // content of the param will be moved to this register
+
+      ParameterRegisters.add(paramReg);
+      ParameterMoveInstructions.add(new DexInstruction_Move(this, moveToReg, paramReg, referenceType));
+      break;
+    case WIDE:
+      val paramReg1 = new DexRegister(); // this register will be put after all the registers used in the code
+      val paramReg2 = new DexRegister(); // this register will be put after all the registers used in the code
+      val moveToReg1 = parsingState.getRegister(index); // content of the param will be moved to this register
+      val moveToReg2 = parsingState.getRegister(index + 1); // content of the param will be moved to this register
+
+      ParameterRegisters.add(paramReg1);
+      ParameterRegisters.add(paramReg2);
+      ParameterMoveInstructions.add(new DexInstruction_MoveWide(this, moveToReg1, moveToReg2, paramReg1, paramReg2));
+      break;
+    }
+  }
+
+  private void parseInstructions(Instruction[] instructions, DexCode_ParsingState parsingState) {
     // What happens here:
     // - each instruction is parsed
     //   - offset of each instruction is stored
@@ -93,11 +120,42 @@ public class DexCode {
     //   the instruction list
 
     for (val insn : instructions) {
-      val parsedInsn = parseInstruction(insn, ParsingState);
-      ParsingState.addInstruction(insn.getSize(0), parsedInsn);
+      val parsedInsn = parseInstruction(insn, parsingState);
+      parsingState.addInstruction(insn.getSize(0), parsedInsn);
     }
 
-    ParsingState.placeLabels();
+    parsingState.placeLabels();
+  }
+
+  public DexCode(CodeItem methodInfo, List<DexRegisterType> paramTypes, boolean isStatic, DexParsingCache cache) throws InstructionParsingException {
+    this();
+
+    val parsingState = new DexCode_ParsingState(cache, this);
+    parseInstructions(methodInfo.getInstructions(), parsingState);
+
+    val regCount = methodInfo.getRegisterCount();
+    val paramCount = Algorithm.countParamWords(paramTypes, isStatic);
+
+    // store parameter mapping
+    // index in the list is the index of the parameter
+    int i = regCount - paramCount;
+    if (!isStatic) {
+      val typeSize = DexClassType.TypeSize;
+      insertParamMove(typeSize, true, i, parsingState);
+      i += typeSize.getRegisterCount();
+    }
+    for (val paramType : paramTypes) {
+      val typeSize = paramType.getTypeSize();
+      insertParamMove(typeSize, paramType instanceof DexReferenceType, i, parsingState);
+      i += typeSize.getRegisterCount();
+    }
+  }
+
+  // called internally and from tests
+  // should not be called directly in real life
+  DexCode(Instruction[] instructions, DexParsingCache cache) {
+    this();
+    parseInstructions(instructions, new DexCode_ParsingState(cache, this));
   }
 
   private int findElement(DexCodeElement elem) {
@@ -141,7 +199,7 @@ public class DexCode {
   }
 
   public DexCode instrument() {
-    val newCode = new DexCode(ParsingState.getCache());
+    val newCode = new NoDuplicatesList<DexCodeElement>();
     val taintRegs = new DexCode_InstrumentationState(this);
     for (val elem : getInstructionList()) {
       if (elem instanceof DexInstruction) {
@@ -150,7 +208,7 @@ public class DexCode {
       } else
         newCode.add(elem);
     }
-    return newCode;
+    return new DexCode(this, newCode);
   }
 
   public Map<DexRegister, GcColorRange> getRangeConstraints() {
@@ -232,17 +290,29 @@ public class DexCode {
     return allConstraints;
   }
 
-  public List<Instruction> assembleBytecode(Map<DexRegister, Integer> regAlloc) throws InstructionAssemblyException {
+  public List<Instruction> assembleBytecode(Map<DexRegister, Integer> regAlloc, int regCount) throws InstructionAssemblyException {
     val bytecode = new LinkedList<Instruction>();
+
+    // extend code and register allocation with parameters
+    val regAllocWithParams = new HashMap<DexRegister, Integer>(regAlloc);
+    int i = regCount;
+    for (val paramReg : ParameterRegisters)
+      regAllocWithParams.put(paramReg, i++);
+
+    val insnListWithParams = new NoDuplicatesList<DexCodeElement>();
+    insnListWithParams.addAll(ParameterMoveInstructions);
+    insnListWithParams.addAll(InstructionList);
 
     // place labels here; let every instruction tell you
     // the longest it can possibly get to pick the right
     // format of jumps
 
-    for (val elem : InstructionList)
+    // assemble each instruction
+
+    for (val elem : insnListWithParams)
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
-        bytecode.addAll(Arrays.asList(insn.assembleBytecode(regAlloc)));
+        bytecode.addAll(Arrays.asList(insn.assembleBytecode(regAllocWithParams)));
       }
 
     return bytecode;
