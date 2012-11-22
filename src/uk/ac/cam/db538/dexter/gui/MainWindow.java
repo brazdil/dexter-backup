@@ -132,6 +132,7 @@ public class MainWindow {
           try {
             dex.instrument();
             tab.getTreeListener().valueChanged(null);
+            tab.updateClassTree();
           } catch (Throwable e) {
             JMessage.showErrorMessage(Frame, "A problem occurred while instrumenting file \"" + tab.getOpenedFile_Filename() + "\".", e);
             return;

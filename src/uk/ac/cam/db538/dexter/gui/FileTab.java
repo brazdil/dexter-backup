@@ -9,7 +9,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 
-
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.Dex;
@@ -30,7 +29,7 @@ public class FileTab extends WebSplitPane {
   private final ClassPanel SelectedClassPanel;
   private final MethodPanel SelectedMethodPanel;
 
-  @Getter private final TreeSelectionListener TreeListener;
+  @Getter private TreeSelectionListener TreeListener;
 
   public FileTab(Dex file, String filename) {
     super();
@@ -46,7 +45,12 @@ public class FileTab extends WebSplitPane {
     SelectedClassPanel = new ClassPanel();
     SelectedMethodPanel = new MethodPanel();
 
-    // create list of classes
+    updateClassTree();
+  }
+
+  public void updateClassTree() {
+    val splitPane = this;
+
     val classTreeRoot = new DefaultMutableTreeNode(OpenedFile_Filename);
     addClassesToTree(classTreeRoot, OpenedFile.getClasses());
     val classTree = new WebTree(classTreeRoot);
@@ -54,9 +58,6 @@ public class FileTab extends WebSplitPane {
     classTree.setVisibleRowCount(4);
     classTree.setCellRenderer(new ClassTreeRenderer());
     javax.swing.ToolTipManager.sharedInstance().registerComponent(classTree);
-    val classTreeScroll = new WebScrollPane(classTree);
-    classTreeScroll.setMinimumSize(new Dimension(300, 200));
-    splitPane.setLeftComponent(classTreeScroll);
 
     // set selection listener
     classTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -78,6 +79,10 @@ public class FileTab extends WebSplitPane {
       }
     };
     classTree.addTreeSelectionListener(TreeListener);
+
+    val classTreeScroll = new WebScrollPane(classTree);
+    classTreeScroll.setMinimumSize(new Dimension(300, 200));
+    splitPane.setLeftComponent(classTreeScroll);
   }
 
   static String getDisplayName(DefaultMutableTreeNode node) {
