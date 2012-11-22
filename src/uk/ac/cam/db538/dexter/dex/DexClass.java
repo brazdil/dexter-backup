@@ -32,8 +32,8 @@ public class DexClass {
   @Getter private final DexClassType Type;
   @Getter private final DexClassType SuperType;
   @Getter private final Set<AccessFlags> AccessFlagSet;
-  @Getter private final Set<DexField> Fields;
-  @Getter private final Set<DexMethod> Methods;
+  @Getter protected final Set<DexField> Fields;
+  @Getter protected final Set<DexMethod> Methods;
   @Getter private final Set<DexClassType> Interfaces;
   @Getter private final String SourceFile;
 

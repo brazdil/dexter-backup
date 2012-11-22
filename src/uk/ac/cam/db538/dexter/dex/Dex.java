@@ -18,6 +18,8 @@ import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 public class Dex {
 
   @Getter private final List<DexClass> Classes;
+  @Getter private DexClass ObjectTaintClass;
+
   @Getter private final DexParsingCache ParsingCache;
 
   public Dex() {
@@ -35,8 +37,12 @@ public class Dex {
   }
 
   public void instrument() {
+    ObjectTaintClass = new DexClass_ObjectTaint(this);
+
     for (val cls : Classes)
       cls.instrument();
+
+    Classes.add(ObjectTaintClass);
   }
 
   public void writeToFile(File filename) throws IOException {

@@ -30,4 +30,8 @@ public abstract class Cache<K, V> {
   }
 
   protected abstract V createNewEntry(K key);
+
+  public boolean contains(K key) {
+    return CacheMap.containsKey(key);
+  }
 }

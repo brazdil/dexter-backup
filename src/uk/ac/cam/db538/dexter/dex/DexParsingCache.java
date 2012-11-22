@@ -21,4 +21,8 @@ public class DexParsingCache {
   public DexArrayType getArrayType(String desc) {
     return ArrayTypes.getCachedEntry(desc);
   }
+
+  public boolean classTypeExists(String desc) {
+    return ClassTypes.contains(desc);
+  }
 }
