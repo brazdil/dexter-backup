@@ -4,33 +4,32 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
-import java.util.LinkedList;
+
+import lombok.Getter;
+import lombok.val;
 
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
-
-import lombok.Getter;
-import lombok.val;
+import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class Dex {
-
-  @Getter private final DexFile OriginalFile;
-  @Getter private final File Filename;
 
   @Getter private final List<DexClass> Classes;
   @Getter private final DexParsingCache ParsingCache;
 
-  public Dex(File filename) throws IOException, UnknownTypeException, InstructionParsingException {
-    OriginalFile = new DexFile(filename);
-    Filename = filename;
-
+  public Dex() {
+    Classes = new NoDuplicatesList<DexClass>();
     ParsingCache = new DexParsingCache();
+  }
 
-    Classes = new LinkedList<DexClass>();
-    val dexClsInfos = OriginalFile.ClassDefsSection.getItems();
+  public Dex(File filename) throws IOException, UnknownTypeException, InstructionParsingException {
+    this();
+
+    val originalFile = new DexFile(filename);
+    val dexClsInfos = originalFile.ClassDefsSection.getItems();
     for (val dexClsInfo : dexClsInfos)
       Classes.add(new DexClass(this, dexClsInfo));
   }

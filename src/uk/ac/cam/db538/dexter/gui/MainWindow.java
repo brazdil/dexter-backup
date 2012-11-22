@@ -107,7 +107,7 @@ public class MainWindow {
       doModal("Loading " + file.getName(), new Thread(new Runnable() {
         public void run() {
           try {
-            val splitPane = new FileTab(new Dex(file));
+            val splitPane = new FileTab(new Dex(file), file.getName());
             TabbedPane.addTab(file.getName(), splitPane);
           } catch (Throwable e) {
             JMessage.showErrorMessage(Frame, "A problem occurred while loading file \"" + file.getName() + "\".", e);
@@ -127,13 +127,13 @@ public class MainWindow {
 
       val tab = (FileTab) selected;
       val dex = tab.getOpenedFile();
-      doModal("Instrumenting " + dex.getFilename().getName(), new Thread(new Runnable() {
+      doModal("Instrumenting " + tab.getOpenedFile_Filename(), new Thread(new Runnable() {
         public void run() {
           try {
             dex.instrument();
             tab.getTreeListener().valueChanged(null);
           } catch (Throwable e) {
-            JMessage.showErrorMessage(Frame, "A problem occurred while instrumenting file \"" + dex.getFilename().getName() + "\".", e);
+            JMessage.showErrorMessage(Frame, "A problem occurred while instrumenting file \"" + tab.getOpenedFile_Filename() + "\".", e);
             return;
           }
         }

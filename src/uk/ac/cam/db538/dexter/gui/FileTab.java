@@ -25,15 +25,17 @@ public class FileTab extends WebSplitPane {
   private static final long serialVersionUID = -2012258240775133554L;
 
   @Getter private final Dex OpenedFile;
+  @Getter private final String OpenedFile_Filename;
 
   private final ClassPanel SelectedClassPanel;
   private final MethodPanel SelectedMethodPanel;
 
   @Getter private final TreeSelectionListener TreeListener;
 
-  public FileTab(Dex file) {
+  public FileTab(Dex file, String filename) {
     super();
     OpenedFile = file;
+    OpenedFile_Filename = filename;
 
     val splitPane = this;
 
@@ -45,7 +47,7 @@ public class FileTab extends WebSplitPane {
     SelectedMethodPanel = new MethodPanel();
 
     // create list of classes
-    val classTreeRoot = new DefaultMutableTreeNode(OpenedFile.getFilename().getName());
+    val classTreeRoot = new DefaultMutableTreeNode(OpenedFile_Filename);
     addClassesToTree(classTreeRoot, OpenedFile.getClasses());
     val classTree = new WebTree(classTreeRoot);
     classTree.setShowsRootHandles(true);
