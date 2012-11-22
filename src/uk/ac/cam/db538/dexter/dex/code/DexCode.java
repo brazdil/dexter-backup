@@ -15,8 +15,10 @@ import lombok.val;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.Code.Instruction;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring.GcColorRange;
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
+import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.DexCodeElement.GcFollowConstraint;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
@@ -211,8 +213,8 @@ public class DexCode {
     return new DexCode(this, newCode);
   }
 
-  public Map<DexRegister, GcColorRange> getRangeConstraints() {
-    val allConstraints = new HashMap<DexRegister, GcColorRange>();
+  public Map<DexRegister, ColorRange> getRangeConstraints() {
+    val allConstraints = new HashMap<DexRegister, ColorRange>();
 
     for (val insn : getInstructionList()) {
       val insnConstraints = insn.gcRangeConstraints();
@@ -230,64 +232,72 @@ public class DexCode {
     return allConstraints;
   }
 
-  public Set<LinkedList<DexRegister>> getFollowConstraints() {
-    val allConstraints = new HashSet<LinkedList<DexRegister>>();
+  private static void processFollowConstraint(GcFollowConstraint constraint, Map<DexRegister, NodeRun> allConstraints) {
+    // we've gotten a constraint...
+    // this means: color(reg2) = color(reg1) + 1
+    val reg1 = constraint.getValA();
+    val reg2 = constraint.getValB();
+
+    // find runs containing reg1 and reg2
+    val run1 = allConstraints.get(reg1);
+    val run2 = allConstraints.get(reg2);
+
+    // if registers are in the same run, they must be following each other,
+    // so the loop can continue
+    if (run1 == run2) {
+      val loc1 = run1.indexOf(reg1);
+      val loc2 = run1.indexOf(reg2);
+
+      if (loc1 + 1 == loc2)
+        return;
+      else
+        throw new RuntimeException("Getting follow-constraints of code failed (inconsistent constraints)");
+    }
+
+    // we need to connect the two runs, so reg1 must be the last element
+    // of run1, and reg2 must be the first element of run2
+    if (run1.peekLast() != reg1 || run2.peekFirst() != reg2)
+      throw new RuntimeException("Getting follow-constraints of code failed (inconsistent constraints)");
+
+    // all is fine now => connect the two runs
+    val connectedRun = new NodeRun();
+    connectedRun.addAll(run1);
+    connectedRun.addAll(run2);
+
+    // store the new connected run with all its nodes
+    for (val node : connectedRun)
+      allConstraints.put(node, connectedRun);
+  }
+
+  public Map<DexRegister, NodeRun> getFollowRuns() {
+    val allConstraints = new HashMap<DexRegister, NodeRun>();
 
     // create a single-element run for each register
     for (val reg : getUsedRegisters()) {
-      val newRun = new LinkedList<DexRegister>();
+      val newRun = new NodeRun();
       newRun.add(reg);
-      allConstraints.add(newRun);
+      allConstraints.put(reg, newRun);
+    }
+
+    // add constraints for parameters
+    DexRegister prevParam = null;
+    for (val currentParam : ParameterRegisters) {
+      if (prevParam != null)
+        processFollowConstraint(new GcFollowConstraint(prevParam, currentParam), allConstraints);
+      prevParam = currentParam;
     }
 
     // connect runs into larger ones based on the constraints
     // given by instructions
-    for (val insn : getInstructionList()) {
-      for (val constraint : insn.gcFollowConstraints()) {
-        // we've gotten a constraint...
-        // this means: color(reg2) = color(reg1) + 1
-        val reg1 = constraint.getValA();
-        val reg2 = constraint.getValB();
-
-        // find runs containing reg1 and reg2
-        LinkedList<DexRegister> run1 = null, run2 = null;
-        for (val run : allConstraints) {
-          if (run.contains(reg1))
-            run1 = run;
-          if (run.contains(reg2))
-            run2 = run;
-        }
-
-        // if registers are in the same run, they must be following each other,
-        // so the loop can continue
-        if (run1 == run2) {
-          val loc1 = run1.indexOf(reg1);
-          val loc2 = run1.indexOf(reg2);
-
-          if (loc1 + 1 == loc2)
-            continue;
-          else
-            throw new RuntimeException("Getting follow-constraints of code failed (inconsistent constraints)");
-        }
-
-        // we need to connect the two runs, so reg1 must be the last element
-        // of run1, and reg2 must be the first element of run2
-        if (run1.peekLast() != reg1 || run2.peekFirst() != reg2)
-          throw new RuntimeException("Getting follow-constraints of code failed (inconsistent constraints)");
-
-        // all is fine now => connect the two runs
-        val connectedRun = new LinkedList<DexRegister>();
-        connectedRun.addAll(run1);
-        connectedRun.addAll(run2);
-        allConstraints.add(connectedRun);
-
-        // remove original runs from the set of constraints
-        allConstraints.remove(run1);
-        allConstraints.remove(run2);
-      }
-    }
+    for (val insn : getInstructionList())
+      for (val constraint : insn.gcFollowConstraints())
+        processFollowConstraint(constraint, allConstraints);
 
     return allConstraints;
+  }
+
+  public DexRegister getLastParamRegister() {
+    return ParameterRegisters.peekLast(); // will return null for no params
   }
 
   public List<Instruction> assembleBytecode(Map<DexRegister, Integer> regAlloc, int regCount) throws InstructionAssemblyException {
@@ -299,9 +309,9 @@ public class DexCode {
     for (val paramReg : ParameterRegisters)
       regAllocWithParams.put(paramReg, i++);
 
-    val insnListWithParams = new NoDuplicatesList<DexCodeElement>();
-    insnListWithParams.addAll(ParameterMoveInstructions);
-    insnListWithParams.addAll(InstructionList);
+//    val insnListWithParams = new NoDuplicatesList<DexCodeElement>();
+//    insnListWithParams.addAll(ParameterMoveInstructions);
+//    insnListWithParams.addAll(InstructionList);
 
     // place labels here; let every instruction tell you
     // the longest it can possibly get to pick the right
@@ -309,7 +319,7 @@ public class DexCode {
 
     // assemble each instruction
 
-    for (val elem : insnListWithParams)
+    for (val elem : InstructionList)
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
         bytecode.addAll(Arrays.asList(insn.assembleBytecode(regAllocWithParams)));

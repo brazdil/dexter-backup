@@ -64,7 +64,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     val codeColoring = new GraphColoring(Code);
     val modifiedCode = codeColoring.getModifiedCode();
     val registerAllocation = codeColoring.getColoring();
-    val registerCount = codeColoring.getNumberOfColorsUsed();
+    val registerCount = codeColoring.getColorsUsed();
 
     int inWords = Algorithm.countParamWords(getArgumentTypes(), isStatic());
     int registerAndParamCount = registerCount + inWords;

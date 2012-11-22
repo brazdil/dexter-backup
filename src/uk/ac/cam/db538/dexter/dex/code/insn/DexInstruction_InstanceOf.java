@@ -9,7 +9,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring.GcColorRange;
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
@@ -61,8 +61,8 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     val set = new HashSet<GcRangeConstraint>();
-    set.add(new GcRangeConstraint(RegTo, GcColorRange.Range_0_15));
-    set.add(new GcRangeConstraint(RegFrom, GcColorRange.Range_0_15));
+    set.add(new GcRangeConstraint(RegTo, ColorRange.Range_0_15));
+    set.add(new GcRangeConstraint(RegFrom, ColorRange.Range_0_15));
     return set;
   }
 

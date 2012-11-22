@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -9,7 +10,7 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
-import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring.GcColorRange;
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -80,8 +81,8 @@ public abstract class DexCodeElement {
 
   // GRAPH COLORING
 
-  public static class GcRangeConstraint extends Pair<DexRegister, GcColorRange> {
-    public GcRangeConstraint(DexRegister valA, GcColorRange valB) {
+  public static class GcRangeConstraint extends Pair<DexRegister, ColorRange> {
+    public GcRangeConstraint(DexRegister valA, ColorRange valB) {
       super(valA, valB);
     }
   }
@@ -100,7 +101,7 @@ public abstract class DexCodeElement {
     return new HashSet<GcFollowConstraint>();
   }
 
-  public final List<DexCodeElement> gcAddTemporaries(Set<DexRegister> spilledRegs) {
+  public final List<DexCodeElement> gcAddTemporaries(Collection<DexRegister> spilledRegs) {
     val tempMapping = new HashMap<DexRegister, DexRegister>();
 
     for (val usedReg : lvaUsedRegisters())

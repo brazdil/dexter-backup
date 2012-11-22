@@ -3,13 +3,13 @@ package uk.ac.cam.db538.dexter.dex.code;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
 import lombok.val;
 
 import org.junit.Test;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
@@ -120,7 +120,7 @@ public class DexCodeTest {
   @Test
   public void testGetFollowConstraints_Empty() {
     val code = new DexCode();
-    val constraints = code.getFollowConstraints();
+    val constraints = code.getFollowRuns();
     assertTrue(constraints.isEmpty());
   }
 
@@ -134,19 +134,19 @@ public class DexCodeTest {
 
     code.add(new DexInstruction_BinaryOp(code, r1, r2, r3, Opcode_BinaryOp.AddInt));
 
-    val constraints = code.getFollowConstraints();
-    assertEquals(3, constraints.size());
+    val constraints = code.getFollowRuns();
+    assertEquals(3, constraints.values().size());
 
-    val run1 = new LinkedList<DexRegister>();
+    val run1 = new NodeRun();
     run1.add(r1);
-    val run2 = new LinkedList<DexRegister>();
+    val run2 = new NodeRun();
     run2.add(r2);
-    val run3 = new LinkedList<DexRegister>();
+    val run3 = new NodeRun();
     run3.add(r3);
 
-    assertTrue(constraints.contains(run1));
-    assertTrue(constraints.contains(run2));
-    assertTrue(constraints.contains(run3));
+    assertTrue(constraints.values().contains(run1));
+    assertTrue(constraints.values().contains(run2));
+    assertTrue(constraints.values().contains(run3));
   }
 
   @Test
@@ -160,17 +160,17 @@ public class DexCodeTest {
     code.add(new DexInstruction_BinaryOp(code, r1, r2, r3, Opcode_BinaryOp.AddInt));
     addFollowConstraint(r1, r2, code);
 
-    val constraints = code.getFollowConstraints();
-    assertEquals(2, constraints.size());
+    val constraints = code.getFollowRuns();
 
-    val run1 = new LinkedList<DexRegister>();
+    val run1 = new NodeRun();
     run1.add(r1);
     run1.add(r2);
-    val run2 = new LinkedList<DexRegister>();
+    val run2 = new NodeRun();
     run2.add(r3);
 
-    assertTrue(constraints.contains(run1));
-    assertTrue(constraints.contains(run2));
+    assertEquals(run1, constraints.get(r1));
+    assertEquals(run1, constraints.get(r2));
+    assertEquals(run2, constraints.get(r3));
   }
 
   @Test
@@ -185,17 +185,17 @@ public class DexCodeTest {
     addFollowConstraint(r1, r2, code);
     addFollowConstraint(r1, r2, code);
 
-    val constraints = code.getFollowConstraints();
-    assertEquals(2, constraints.size());
+    val constraints = code.getFollowRuns();
 
-    val run1 = new LinkedList<DexRegister>();
+    val run1 = new NodeRun();
     run1.add(r1);
     run1.add(r2);
-    val run2 = new LinkedList<DexRegister>();
+    val run2 = new NodeRun();
     run2.add(r3);
 
-    assertTrue(constraints.contains(run1));
-    assertTrue(constraints.contains(run2));
+    assertEquals(run1, constraints.get(r1));
+    assertEquals(run1, constraints.get(r2));
+    assertEquals(run2, constraints.get(r3));
   }
 
   @Test
@@ -211,16 +211,18 @@ public class DexCodeTest {
     addFollowConstraint(r2, r3, code);
     addFollowConstraint(r3, r4, code);
 
-    val constraints = code.getFollowConstraints();
-    assertEquals(1, constraints.size());
+    val constraints = code.getFollowRuns();
 
-    val run1 = new LinkedList<DexRegister>();
+    val run1 = new NodeRun();
     run1.add(r1);
     run1.add(r2);
     run1.add(r3);
     run1.add(r4);
 
-    assertTrue(constraints.contains(run1));
+    assertEquals(run1, constraints.get(r1));
+    assertEquals(run1, constraints.get(r2));
+    assertEquals(run1, constraints.get(r3));
+    assertEquals(run1, constraints.get(r4));
   }
 
   @Test(expected=RuntimeException.class)
@@ -234,7 +236,7 @@ public class DexCodeTest {
     addFollowConstraint(r1, r2, code);
     addFollowConstraint(r1, r3, code);
 
-    code.getFollowConstraints();
+    code.getFollowRuns();
   }
 
   @Test(expected=RuntimeException.class)
@@ -248,7 +250,7 @@ public class DexCodeTest {
     addFollowConstraint(r1, r3, code);
     addFollowConstraint(r2, r3, code);
 
-    code.getFollowConstraints();
+    code.getFollowRuns();
   }
 
   @Test(expected=RuntimeException.class)
@@ -265,6 +267,6 @@ public class DexCodeTest {
     addFollowConstraint(r3, r4, code);
     addFollowConstraint(r1, r4, code);
 
-    code.getFollowConstraints();
+    code.getFollowRuns();
   }
 }

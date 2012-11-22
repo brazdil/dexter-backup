@@ -11,7 +11,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring.GcColorRange;
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -116,9 +116,9 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     val set = new HashSet<GcRangeConstraint>();
-    set.add(new GcRangeConstraint(RegTarget, GcColorRange.Range_0_255));
-    set.add(new GcRangeConstraint(RegSourceA, GcColorRange.Range_0_255));
-    set.add(new GcRangeConstraint(RegSourceB, GcColorRange.Range_0_255));
+    set.add(new GcRangeConstraint(RegTarget, ColorRange.Range_0_255));
+    set.add(new GcRangeConstraint(RegSourceA, ColorRange.Range_0_255));
+    set.add(new GcRangeConstraint(RegSourceB, ColorRange.Range_0_255));
     return set;
   }
 
