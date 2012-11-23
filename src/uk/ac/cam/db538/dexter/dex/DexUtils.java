@@ -8,7 +8,7 @@ import lombok.val;
 
 import org.jf.dexlib.Util.AccessFlags;
 
-public class Utils {
+public class DexUtils {
 
   public static Set<AccessFlags> getNonNullAccessFlagSet(Set<AccessFlags> accessFlags) {
     return (accessFlags == null) ? EnumSet.noneOf(AccessFlags.class) : accessFlags;
