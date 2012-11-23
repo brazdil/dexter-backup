@@ -125,7 +125,7 @@ public abstract class DexCodeElement {
     return newElem;
   }
 
-  public DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return this; // TODO: replace with abstract!!!
   }
 }

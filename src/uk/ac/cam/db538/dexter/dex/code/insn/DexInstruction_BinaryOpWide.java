@@ -179,7 +179,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_BinaryOpWide(
              getMethodCode(),
              mapping.get(RegTarget1),

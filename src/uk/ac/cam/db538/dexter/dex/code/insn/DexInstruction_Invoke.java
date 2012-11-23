@@ -1,8 +1,10 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
@@ -12,8 +14,10 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
@@ -147,6 +151,10 @@ public class DexInstruction_Invoke extends DexInstruction {
     return str.toString();
   }
 
+  private boolean assemblesToRange() {
+    return ArgumentRegisters.size() > 5;
+  }
+
   @Override
   public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
     int[] r = new int[ArgumentRegisters.size()];
@@ -155,22 +163,7 @@ public class DexInstruction_Invoke extends DexInstruction {
 
     val methodItem = cache.getMethod(ClassType, MethodPrototype, MethodName);
 
-    if (r.length <= 5) {
-      for (int regNum : r)
-        if (!fitsIntoBits_Unsigned(regNum, 4))
-          return throwCannotAssembleException("Register numbers don't fit into 4 bits");
-
-      return new Instruction[] {
-               new Instruction35c(Opcode_Invoke.convertStandard(CallType),
-                                  r.length,
-                                  (byte) ((r.length >= 1) ? r[0] : 0),
-                                  (byte) ((r.length >= 2) ? r[1] : 0),
-                                  (byte) ((r.length >= 3) ? r[2] : 0),
-                                  (byte) ((r.length >= 4) ? r[3] : 0),
-                                  (byte) ((r.length >= 5) ? r[4] : 0),
-                                  methodItem)
-             };
-    } else {
+    if (assemblesToRange()) {
       if (!fitsIntoBits_Unsigned(r.length, 8))
         return throwCannotAssembleException("Too many argument registers");
 
@@ -185,8 +178,65 @@ public class DexInstruction_Invoke extends DexInstruction {
                                   firstReg,
                                   methodItem)
              };
-    }
+    } else {
+      for (int regNum : r)
+        if (!fitsIntoBits_Unsigned(regNum, 4))
+          return throwCannotAssembleException("Register numbers don't fit into 4 bits");
 
+      return new Instruction[] {
+               new Instruction35c(Opcode_Invoke.convertStandard(CallType),
+                                  r.length,
+                                  (byte) ((r.length >= 1) ? r[0] : 0),
+                                  (byte) ((r.length >= 2) ? r[1] : 0),
+                                  (byte) ((r.length >= 3) ? r[2] : 0),
+                                  (byte) ((r.length >= 4) ? r[3] : 0),
+                                  (byte) ((r.length >= 5) ? r[4] : 0),
+                                  methodItem)
+             };
+    }
   }
 
+  @Override
+  public Set<DexRegister> lvaReferencedRegisters() {
+    return new HashSet<DexRegister>(ArgumentRegisters);
+  }
+
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    val set = new HashSet<GcRangeConstraint>();
+
+    if (!assemblesToRange())
+      for(val argReg : ArgumentRegisters)
+        set.add(new GcRangeConstraint(argReg, ColorRange.Range_0_15));
+
+    return set;
+  }
+
+  @Override
+  public Set<GcFollowConstraint> gcFollowConstraints() {
+    val set = new HashSet<GcFollowConstraint>();
+
+    if (assemblesToRange()) {
+      DexRegister previous = null;
+      for(val current : ArgumentRegisters) {
+        if (previous != null)
+          set.add(new GcFollowConstraint(previous, current));
+        previous = current;
+      }
+    }
+
+    return set;
+  }
+
+  @Override
+  protected DexCodeElement gcReplaceWithTemporaries(
+    Map<DexRegister, DexRegister> mapping) {
+    val newArgRegs = new LinkedList<DexRegister>();
+    for (val argReg : ArgumentRegisters) {
+      val mapReg = mapping.get(argReg);
+      newArgRegs.add(mapReg == null ? argReg : mapReg);
+    }
+
+    return new DexInstruction_Invoke(getMethodCode(), ClassType, MethodName, MethodPrototype, newArgRegs, CallType);
+  }
 }

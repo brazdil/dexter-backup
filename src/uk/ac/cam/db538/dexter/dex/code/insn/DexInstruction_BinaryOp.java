@@ -124,7 +124,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_BinaryOp(
              getMethodCode(),
              mapping.get(RegTarget),

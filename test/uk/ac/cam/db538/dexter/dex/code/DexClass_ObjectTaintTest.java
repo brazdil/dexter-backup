@@ -8,7 +8,6 @@ import org.jf.dexlib.Util.AccessFlags;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.dex.DexField;
 
 public class DexClass_ObjectTaintTest {
 
