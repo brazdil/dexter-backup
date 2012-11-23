@@ -28,11 +28,11 @@ public abstract class DexInstruction extends DexCodeElement {
     throw new UnsupportedOperationException("Instruction doesn't have assembling implemented");
   }
 
-  protected Instruction[] throwCannotAssembleException() {
+  protected final Instruction[] throwCannotAssembleException() {
     throw new InstructionAssemblyException("Cannot assemble instruction: " + getOriginalAssembly());
   }
 
-  protected Instruction[] throwWideRegistersExpected() {
+  protected final Instruction[] throwWideRegistersExpected() {
     throw new InstructionAssemblyException("Wide registers badly aligned with instruction: " + getOriginalAssembly());
   }
 
