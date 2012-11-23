@@ -23,7 +23,7 @@ import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexPurelyVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexClass {
@@ -44,7 +44,7 @@ public class DexClass {
     ParentFile = parent;
     Type = type;
     SuperType = superType;
-    AccessFlagSet = Utils.getNonNullAccessFlagSet(accessFlags);
+    AccessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
     Fields = (fields == null) ? new HashSet<DexField>() : fields;
     Methods = (methods == null) ? new HashSet<DexMethod>() : methods;
     Interfaces = (interfaces == null) ? new HashSet<DexClassType>() : interfaces;
@@ -55,7 +55,7 @@ public class DexClass {
     this(parent,
          DexClassType.parse(clsInfo.getClassType().getTypeDescriptor(), parent.getParsingCache()),
          DexClassType.parse(clsInfo.getSuperclass().getTypeDescriptor(), parent.getParsingCache()),
-         Utils.getAccessFlagSet(AccessFlags.getAccessFlagsForClass(clsInfo.getAccessFlags())),
+         DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForClass(clsInfo.getAccessFlags())),
          null,
          null,
          null,
@@ -136,10 +136,10 @@ public class DexClass {
   public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
     val classType = cache.getType(Type);
     val superType = cache.getType(SuperType);
-    val accessFlags = Utils.assembleAccessFlags(AccessFlagSet);
+    val accessFlags = DexUtils.assembleAccessFlags(AccessFlagSet);
     val interfaces = (Interfaces.isEmpty())
                      ? null
-                     : cache.getTypeList(new ArrayList<DexType>(Interfaces));
+                     : cache.getTypeList(new ArrayList<DexRegisterType>(Interfaces));
     val sourceFile = (SourceFile == null)
                      ? null
                      : cache.getStringConstant(SourceFile);

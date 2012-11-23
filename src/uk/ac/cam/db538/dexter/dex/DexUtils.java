@@ -6,6 +6,8 @@ import java.util.Set;
 
 import lombok.val;
 
+import org.jf.dexlib.DexFile;
+import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.Util.AccessFlags;
 
 public class DexUtils {
@@ -27,5 +29,9 @@ public class DexUtils {
     for (val flag : accessFlags)
       result |= flag.getValue();
     return result;
+  }
+
+  public static StringIdItem assembleString(String str, DexFile dexFile) {
+    return StringIdItem.internStringIdItem(dexFile, str);
   }
 }

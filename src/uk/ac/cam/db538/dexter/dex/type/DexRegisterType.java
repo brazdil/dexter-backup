@@ -22,7 +22,7 @@ public abstract class DexRegisterType extends DexType {
 
   @Getter private final DexRegisterTypeSize TypeSize;
 
-  public DexRegisterType(String descriptor, String prettyName, DexRegisterTypeSize typeSize) {
+  protected DexRegisterType(String descriptor, String prettyName, DexRegisterTypeSize typeSize) {
     super(descriptor, prettyName);
     TypeSize = typeSize;
   }

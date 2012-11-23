@@ -7,7 +7,7 @@ import lombok.val;
 
 public abstract class DexPrimitiveType extends DexRegisterType {
 
-  public DexPrimitiveType(String descriptor, String prettyName, DexRegisterTypeSize typeSize) {
+  protected DexPrimitiveType(String descriptor, String prettyName, DexRegisterTypeSize typeSize) {
     super(descriptor, prettyName, typeSize);
   }
 

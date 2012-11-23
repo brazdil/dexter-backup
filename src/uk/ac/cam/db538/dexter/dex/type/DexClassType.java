@@ -16,7 +16,7 @@ public class DexClassType extends DexReferenceType {
     return descriptor;
   }
 
-  public DexClassType(String descriptor) {
+  protected DexClassType(String descriptor) {
     super(checkDescriptor(descriptor), descriptor.substring(1, descriptor.length() - 1).replace('/', '.'));
 
     val prettyName = getPrettyName();

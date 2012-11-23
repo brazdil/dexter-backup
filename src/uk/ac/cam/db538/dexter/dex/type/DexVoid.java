@@ -2,7 +2,7 @@ package uk.ac.cam.db538.dexter.dex.type;
 
 public class DexVoid extends DexType {
 
-  public DexVoid() {
+  protected DexVoid() {
     super("V", "void");
   }
 

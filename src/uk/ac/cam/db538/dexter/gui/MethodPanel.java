@@ -73,11 +73,11 @@ public class MethodPanel extends InfoPanel {
     this.setBreadcrumbs(method.getParentClass().getType().getPrettyName() + "." + method.getName());
     fieldName.setText(method.getName());
     fieldParentClass.setText(method.getParentClass().getType().getPrettyName());
-    fieldReturnType.setText(method.getReturnType().getPrettyName());
+    fieldReturnType.setText(method.getPrototype().getReturnType().getPrettyName());
 
     boolean first = true;
     val params = new StringBuilder();
-    for (val param : method.getArgumentTypes()) {
+    for (val param : method.getPrototype().getArgumentTypes()) {
       if (first)
         first = false;
       else

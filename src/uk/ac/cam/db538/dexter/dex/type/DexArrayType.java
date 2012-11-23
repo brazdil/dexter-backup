@@ -9,7 +9,7 @@ public class DexArrayType extends DexReferenceType {
 
   @Getter private final DexRegisterType ElementType;
 
-  public DexArrayType(DexRegisterType elementType) {
+  protected DexArrayType(DexRegisterType elementType) {
     super("[" + elementType.getDescriptor(),
           elementType.getPrettyName() + "[]");
     ElementType = elementType;

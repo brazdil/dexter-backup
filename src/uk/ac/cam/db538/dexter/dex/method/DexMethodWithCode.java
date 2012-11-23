@@ -16,11 +16,10 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring;
+import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 import uk.ac.cam.db538.dexter.utils.Algorithm;
 
@@ -30,9 +29,9 @@ public abstract class DexMethodWithCode extends DexMethod {
   @Getter private final boolean Direct;
 
   public DexMethodWithCode(DexClass parent, String name, Set<AccessFlags> accessFlags,
-                           DexType returnType, List<DexRegisterType> parameterTypes,
+                           DexPrototype prototype,
                            DexCode code, boolean direct) {
-    super(parent, name, accessFlags, returnType, parameterTypes);
+    super(parent, name, accessFlags, prototype);
     Code = code;
     Direct = direct;
   }
@@ -42,7 +41,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     if (methodInfo.codeItem == null)
       Code = new DexCode();
     else
-      Code = new DexCode(methodInfo.codeItem, this.getArgumentTypes(), this.isStatic(), parent.getParentFile().getParsingCache());
+      Code = new DexCode(methodInfo.codeItem, this.getPrototype().getArgumentTypes(), this.isStatic(), parent.getParentFile().getParsingCache());
     Direct = methodInfo.isDirect();
   }
 
@@ -57,7 +56,7 @@ public abstract class DexMethodWithCode extends DexMethod {
   }
 
   @Override
-  protected CodeItem generateCodeItem(DexFile outFile) {
+  protected CodeItem generateCodeItem(DexFile outFile, DexAssemblingCache cache) {
     // do register allocation
     // note that this changes the code itself
     // (adds temporaries, inserts move instructions)
@@ -66,14 +65,14 @@ public abstract class DexMethodWithCode extends DexMethod {
     val registerAllocation = codeColoring.getColoring();
     val registerCount = codeColoring.getColorsUsed();
 
-    int inWords = Algorithm.countParamWords(getArgumentTypes(), isStatic());
+    int inWords = Algorithm.countParamWords(this.getPrototype().getArgumentTypes(), isStatic());
     int registerAndParamCount = registerCount + inWords;
 
     int outWords = 0; // TODO: finish (max inWords of methods called inside the code)
 
     DebugInfoItem debugInfo = null;
 
-    List<Instruction> instructions = modifiedCode.assembleBytecode(registerAllocation, registerCount, outFile);
+    List<Instruction> instructions = modifiedCode.assembleBytecode(registerAllocation, registerCount, cache);
 
     List<TryItem> tries = null;
 

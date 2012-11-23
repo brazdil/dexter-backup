@@ -1,7 +1,6 @@
 package uk.ac.cam.db538.dexter.dex;
 
 import java.util.EnumSet;
-import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
@@ -9,12 +8,10 @@ import lombok.val;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
-import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
+import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 
@@ -80,8 +77,9 @@ public class DexClass_ObjectTaint extends DexClass {
     return new DexDirectMethod(this,
                                "<clinit>",
                                EnumSet.of(AccessFlags.STATIC, AccessFlags.CONSTRUCTOR),
-                               DexType.parse("V", cache), // return value
-                               null, // parameters
+                               new DexPrototype(
+                                 DexType.parse("V", cache), // return value
+                                 null), // parameters
                                code);
   }
 
@@ -94,8 +92,9 @@ public class DexClass_ObjectTaint extends DexClass {
     return new DexDirectMethod(this,
                                "<init>",
                                EnumSet.of(AccessFlags.PRIVATE, AccessFlags.CONSTRUCTOR),
-                               DexType.parse("V", cache), // return value
-                               null, // parameters
+                               new DexPrototype(
+                                 DexType.parse("V", cache), // return value
+                                 null), // parameters
                                code);
   }
 }

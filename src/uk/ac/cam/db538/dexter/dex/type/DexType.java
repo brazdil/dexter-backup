@@ -18,7 +18,7 @@ public abstract class DexType {
   @Getter private final String Descriptor;
   @Getter private final String PrettyName;
 
-  public DexType(String descriptor, String prettyName) {
+  protected DexType(String descriptor, String prettyName) {
     Descriptor = descriptor;
     PrettyName = prettyName;
   }
@@ -41,10 +41,10 @@ public abstract class DexType {
     };
   }
 
-  public static Cache<List<DexType>, TypeListItem> createAssemblingCacheForLists(final DexAssemblingCache cache, final DexFile outFile) {
-    return new Cache<List<DexType>, TypeListItem>() {
+  public static Cache<List<DexRegisterType>, TypeListItem> createAssemblingCacheForLists(final DexAssemblingCache cache, final DexFile outFile) {
+    return new Cache<List<DexRegisterType>, TypeListItem>() {
       @Override
-      protected TypeListItem createNewEntry(List<DexType> typeList) {
+      protected TypeListItem createNewEntry(List<DexRegisterType> typeList) {
         val dexTypeList = new ArrayList<TypeIdItem>(typeList.size());
         for (val type : typeList)
           dexTypeList.add(cache.getType(type));

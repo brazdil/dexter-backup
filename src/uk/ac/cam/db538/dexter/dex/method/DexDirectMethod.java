@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.method;
 
-import java.util.List;
 import java.util.Set;
 
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
@@ -9,8 +8,6 @@ import org.jf.dexlib.Util.AccessFlags;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexDirectMethod extends DexMethodWithCode {
@@ -21,8 +18,7 @@ public class DexDirectMethod extends DexMethodWithCode {
   }
 
   public DexDirectMethod(DexClass parent, String name,
-                         Set<AccessFlags> accessFlags, DexType returnType,
-                         List<DexRegisterType> parameterTypes, DexCode code) {
-    super(parent, name, accessFlags, returnType, parameterTypes, code, true);
+                         Set<AccessFlags> accessFlags, DexPrototype prototype, DexCode code) {
+    super(parent, name, accessFlags, prototype, code, true);
   }
 }

@@ -7,12 +7,12 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.val;
 
-import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
+import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -86,7 +86,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexFile dexFile) {
+  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
     int rTarget = regAlloc.get(RegTarget);
     int rSourceA = regAlloc.get(RegSourceA);
     int rSourceB = regAlloc.get(RegSourceB);

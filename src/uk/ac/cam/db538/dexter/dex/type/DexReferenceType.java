@@ -6,7 +6,7 @@ public abstract class DexReferenceType extends DexRegisterType {
 
   public static final DexRegisterTypeSize TypeSize = DexRegisterTypeSize.SINGLE;
 
-  public DexReferenceType(String descriptor, String prettyName) {
+  protected DexReferenceType(String descriptor, String prettyName) {
     super(descriptor, prettyName, TypeSize);
   }
 

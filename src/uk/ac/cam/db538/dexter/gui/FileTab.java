@@ -100,7 +100,7 @@ public class FileTab extends WebSplitPane {
       str.append("(");
 
       boolean first = true;
-      for (val type : f.getArgumentTypes()) {
+      for (val type : f.getPrototype().getArgumentTypes()) {
         if (first)
           first = false;
         else
@@ -109,7 +109,7 @@ public class FileTab extends WebSplitPane {
       }
 
       str.append(") : ");
-      str.append(f.getReturnType().getPrettyName());
+      str.append(f.getPrototype().getReturnType().getPrettyName());
 
       return str.toString();
     } else

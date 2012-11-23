@@ -13,11 +13,11 @@ import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.CodeItem;
-import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
+import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement.GcFollowConstraint;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
@@ -301,7 +301,7 @@ public class DexCode {
     return ParameterRegisters.peekLast(); // will return null for no params
   }
 
-  public List<Instruction> assembleBytecode(Map<DexRegister, Integer> regAlloc, int regCount, DexFile dexFile) throws InstructionAssemblyException {
+  public List<Instruction> assembleBytecode(Map<DexRegister, Integer> regAlloc, int regCount, DexAssemblingCache cache) throws InstructionAssemblyException {
     val bytecode = new LinkedList<Instruction>();
 
     // extend code and register allocation with parameters
@@ -323,7 +323,7 @@ public class DexCode {
     for (val elem : InstructionList)
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
-        bytecode.addAll(Arrays.asList(insn.assembleBytecode(regAllocWithParams, dexFile)));
+        bytecode.addAll(Arrays.asList(insn.assembleBytecode(regAllocWithParams, cache)));
       }
 
     return bytecode;

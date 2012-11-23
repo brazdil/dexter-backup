@@ -7,37 +7,31 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.val;
 
-import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
 import org.jf.dexlib.Code.Instruction;
-import org.jf.dexlib.Code.Format.Instruction12x;
-import org.jf.dexlib.Code.Format.Instruction23x;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
+import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.dex.type.DexType;
 
 public class DexInstruction_Invoke extends DexInstruction {
 
   @Getter private final DexClassType ClassType;
   @Getter private final String MethodName;
-  @Getter private final DexType ReturnType;
-  @Getter private final List<DexRegisterType> ArgumentTypes;
+  @Getter private final DexPrototype MethodPrototype;
   @Getter private final List<DexRegister> ArgumentRegisters;
   @Getter private final Opcode_Invoke CallType;
 
-  public DexInstruction_Invoke(DexCode methodCode, DexClassType classType, String methodName, DexType returnType, List<DexRegisterType> argumentTypes, List<DexRegister> argumentRegisters, Opcode_Invoke callType) {
+  public DexInstruction_Invoke(DexCode methodCode, DexClassType classType, String methodName, DexPrototype prototype, List<DexRegister> argumentRegisters, Opcode_Invoke callType) {
     super(methodCode);
     ClassType = classType;
     MethodName = methodName;
-    ReturnType = returnType;
-    ArgumentTypes = argumentTypes;
+    MethodPrototype = prototype;
     ArgumentRegisters = argumentRegisters;
     CallType = callType;
 
@@ -89,8 +83,7 @@ public class DexInstruction_Invoke extends DexInstruction {
     ClassType = parsingState.getCache().getClassType(methodInfo.getContainingClass().getTypeDescriptor());
 
     MethodName = methodInfo.getMethodName().getStringValue();
-    ReturnType = DexMethod.parseReturnType(methodInfo.getPrototype().getReturnType(), cache);
-    ArgumentTypes = DexMethod.parseArgumentTypes(methodInfo.getPrototype().getParameters(), cache);
+    MethodPrototype = new DexPrototype(methodInfo.getPrototype(), cache);
 
     CallType = Opcode_Invoke.convert(insn.opcode);
 
@@ -100,7 +93,7 @@ public class DexInstruction_Invoke extends DexInstruction {
   private void checkArguments() {
     // check that the number of registers is correct
     int expectedRegisterCount = (CallType == Opcode_Invoke.Static) ? 0 : 1;
-    for (val argType : ArgumentTypes)
+    for (val argType : MethodPrototype.getArgumentTypes())
       expectedRegisterCount += argType.getRegisters();
     if (expectedRegisterCount != ArgumentRegisters.size())
       throw new InstructionArgumentException("Wrong number of arguments given to a method call");
@@ -151,33 +144,33 @@ public class DexInstruction_Invoke extends DexInstruction {
     return str.toString();
   }
 
+  @Override
+  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
+    int[] r = new int[ArgumentRegisters.size()];
+    for (int i = 0; i < r.length; ++i)
+      r[i] = regAlloc.get(ArgumentRegisters.get(i));
 
-//  @Override
-//  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexFile dexFile) {
-//	  int[] r = new int[ArgumentRegisters.size()];
-//	  for (int i = 0; i < r.length; ++i)
-//		  r[i] = regAlloc.get(ArgumentRegisters.get(i));
-//
-//	  MethodIdItem.internMethodIdItem(dexFile, classType, methodPrototype, methodName)
-//
-//	  if (r.length <= 5) {
-//		  for (int regNum : r)
-//			  if (!fitsIntoBits_Unsigned(regNum, 4))
-//				  return throwCannotAssembleException();
-//
-//		  return new Instruction[] {
-////				  new Instruction35c(Opcode_Invoke.convertStandard(CallType),
-////						  r.length,
-////						  (r.length >= 1) ? r[0] : 0,
-////						  (r.length >= 2) ? r[1] : 0,
-////								  (r.length >= 3) ? r[2] : 0,
-////										  (r.length >= 4) ? r[3] : 0,
-////												  (r.length >= 5) ? r[4] : 0,
-////
-////						  regD, regE, regF, regG, regA, referencedItem)
-//		  };
-//	  }
-//
-//  }
+    val methodItem = cache.getMethod(ClassType, MethodPrototype, MethodName);
+
+    if (r.length <= 5) {
+      for (int regNum : r)
+        if (!fitsIntoBits_Unsigned(regNum, 4))
+          return throwCannotAssembleException();
+
+      return new Instruction[] {
+               new Instruction35c(Opcode_Invoke.convertStandard(CallType),
+                                  r.length,
+                                  (byte) ((r.length >= 1) ? r[0] : 0),
+                                  (byte) ((r.length >= 2) ? r[1] : 0),
+                                  (byte) ((r.length >= 3) ? r[2] : 0),
+                                  (byte) ((r.length >= 4) ? r[3] : 0),
+                                  (byte) ((r.length >= 5) ? r[4] : 0),
+                                  methodItem)
+             };
+    } else {
+      return null;
+    }
+
+  }
 
 }
