@@ -29,8 +29,8 @@ public abstract class DexInstruction extends DexCodeElement {
     throw new UnsupportedOperationException("Instruction doesn't have assembling implemented");
   }
 
-  protected final Instruction[] throwCannotAssembleException() {
-    throw new InstructionAssemblyException("Cannot assemble instruction: " + getOriginalAssembly());
+  protected final Instruction[] throwCannotAssembleException(String reason) {
+    throw new InstructionAssemblyException("Cannot assemble instruction: " + getOriginalAssembly() + " (" + reason + ")");
   }
 
   protected final Instruction[] throwWideRegistersExpected() {

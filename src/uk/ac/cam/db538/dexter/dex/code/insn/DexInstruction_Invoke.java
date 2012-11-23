@@ -97,6 +97,9 @@ public class DexInstruction_Invoke extends DexInstruction {
       expectedRegisterCount += argType.getRegisters();
     if (expectedRegisterCount != ArgumentRegisters.size())
       throw new InstructionArgumentException("Wrong number of arguments given to a method call");
+
+    if (ArgumentRegisters.size() > 255)
+      throw new InstructionArgumentException("Too many argument registers given to a method call");
   }
 
   @Override
@@ -155,7 +158,7 @@ public class DexInstruction_Invoke extends DexInstruction {
     if (r.length <= 5) {
       for (int regNum : r)
         if (!fitsIntoBits_Unsigned(regNum, 4))
-          return throwCannotAssembleException();
+          return throwCannotAssembleException("Register numbers don't fit into 4 bits");
 
       return new Instruction[] {
                new Instruction35c(Opcode_Invoke.convertStandard(CallType),
@@ -168,7 +171,20 @@ public class DexInstruction_Invoke extends DexInstruction {
                                   methodItem)
              };
     } else {
-      return null;
+      if (!fitsIntoBits_Unsigned(r.length, 8))
+        return throwCannotAssembleException("Too many argument registers");
+
+      val firstReg = r[0];
+      for (int i = 1; i < r.length; ++i)
+        if (!(r[i] == r[i - 1] + 1))
+          return throwCannotAssembleException("Argument registers don't form an interval");
+
+      return new Instruction[] {
+               new Instruction3rc(Opcode_Invoke.convertRange(CallType),
+                                  (short) r.length,
+                                  firstReg,
+                                  methodItem)
+             };
     }
 
   }

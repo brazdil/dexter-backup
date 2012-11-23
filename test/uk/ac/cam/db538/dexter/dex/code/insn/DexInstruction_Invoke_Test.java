@@ -2,6 +2,7 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -227,6 +228,28 @@ public class DexInstruction_Invoke_Test {
                               new DexPrototype(DexType.parse("V", cache), params),
                               regs,
                               Opcode_Invoke.Direct);
+  }
+
+  @Test(expected=InstructionArgumentException.class)
+  public void testCheckArguments_TooManyArgRegs() {
+    val cache = new DexParsingCache();
+
+    int paramCount = 256; // > 5
+    val params = new ArrayList<DexRegisterType>(paramCount);
+    val r = new DexRegister[paramCount];
+
+    for (int i = 0; i < paramCount; ++i) {
+      params.add(DexRegisterType.parse("I", cache));
+      r[i] = new DexRegister();
+    }
+
+    new DexInstruction_Invoke(
+      new DexCode(),
+      DexClassType.parse("Lcom.test;", cache),
+      "myMethod",
+      new DexPrototype(DexType.parse("V", cache), params),
+      Arrays.asList(r),
+      Opcode_Invoke.Static);
   }
 
   @Test
@@ -487,6 +510,277 @@ public class DexInstruction_Invoke_Test {
     regAlloc.put(r[2], 2);
     regAlloc.put(r[3], 9);
     regAlloc.put(r[4], 15);
+
+    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+  }
+
+  @Test
+  public void testAssemble_Invoke_Standard_Static() {
+    val cache = new DexParsingCache();
+    val params = Arrays.asList(new DexRegisterType[] {
+                                 DexRegisterType.parse("I", cache)
+                               });
+    val r = new DexRegister[] {
+      new DexRegister()
+    };
+
+    val insn = new DexInstruction_Invoke(
+      new DexCode(),
+      DexClassType.parse("Lcom.test;", cache),
+      "myMethod",
+      new DexPrototype(DexType.parse("V", cache), params),
+      Arrays.asList(r),
+      Opcode_Invoke.Static);
+
+    val regAlloc = new HashMap<DexRegister, Integer>();
+    regAlloc.put(r[0], 3);
+
+    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    assertEquals(1, asm.length);
+
+    val asm0 = asm[0];
+    assertTrue(asm0 instanceof Instruction35c);
+
+    val asm35c = (Instruction35c) asm0;
+    assertEquals(Opcode.INVOKE_STATIC, asm35c.opcode);
+  }
+
+  @Test
+  public void testAssemble_Invoke_Standard_Direct() {
+    val cache = new DexParsingCache();
+    val params = Arrays.asList(new DexRegisterType[] {
+                                 DexRegisterType.parse("I", cache)
+                               });
+    val r = new DexRegister[] {
+      new DexRegister(),
+      new DexRegister()
+    };
+
+    val insn = new DexInstruction_Invoke(
+      new DexCode(),
+      DexClassType.parse("Lcom.test;", cache),
+      "myMethod",
+      new DexPrototype(DexType.parse("V", cache), params),
+      Arrays.asList(r),
+      Opcode_Invoke.Direct);
+
+    val regAlloc = new HashMap<DexRegister, Integer>();
+    regAlloc.put(r[0], 3);
+    regAlloc.put(r[1], 7);
+
+    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    assertEquals(1, asm.length);
+
+    val asm0 = asm[0];
+    assertTrue(asm0 instanceof Instruction35c);
+
+    val asm35c = (Instruction35c) asm0;
+    assertEquals(Opcode.INVOKE_DIRECT, asm35c.opcode);
+  }
+
+  @Test
+  public void testAssemble_Invoke_Standard_Virtual() {
+    val cache = new DexParsingCache();
+    val params = Arrays.asList(new DexRegisterType[] {
+                                 DexRegisterType.parse("I", cache)
+                               });
+    val r = new DexRegister[] {
+      new DexRegister(),
+      new DexRegister()
+    };
+
+    val insn = new DexInstruction_Invoke(
+      new DexCode(),
+      DexClassType.parse("Lcom.test;", cache),
+      "myMethod",
+      new DexPrototype(DexType.parse("V", cache), params),
+      Arrays.asList(r),
+      Opcode_Invoke.Virtual);
+
+    val regAlloc = new HashMap<DexRegister, Integer>();
+    regAlloc.put(r[0], 3);
+    regAlloc.put(r[1], 7);
+
+    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    assertEquals(1, asm.length);
+
+    val asm0 = asm[0];
+    assertTrue(asm0 instanceof Instruction35c);
+
+    val asm35c = (Instruction35c) asm0;
+    assertEquals(Opcode.INVOKE_VIRTUAL, asm35c.opcode);
+  }
+
+  @Test
+  public void testAssemble_Invoke_Standard_Interface() {
+    val cache = new DexParsingCache();
+    val params = Arrays.asList(new DexRegisterType[] {
+                                 DexRegisterType.parse("I", cache)
+                               });
+    val r = new DexRegister[] {
+      new DexRegister(),
+      new DexRegister()
+    };
+
+    val insn = new DexInstruction_Invoke(
+      new DexCode(),
+      DexClassType.parse("Lcom.test;", cache),
+      "myMethod",
+      new DexPrototype(DexType.parse("V", cache), params),
+      Arrays.asList(r),
+      Opcode_Invoke.Interface);
+
+    val regAlloc = new HashMap<DexRegister, Integer>();
+    regAlloc.put(r[0], 3);
+    regAlloc.put(r[1], 7);
+
+    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    assertEquals(1, asm.length);
+
+    val asm0 = asm[0];
+    assertTrue(asm0 instanceof Instruction35c);
+
+    val asm35c = (Instruction35c) asm0;
+    assertEquals(Opcode.INVOKE_INTERFACE, asm35c.opcode);
+  }
+
+  @Test
+  public void testAssemble_Invoke_Standard_Super() {
+    val cache = new DexParsingCache();
+    val params = Arrays.asList(new DexRegisterType[] {
+                                 DexRegisterType.parse("I", cache)
+                               });
+    val r = new DexRegister[] {
+      new DexRegister(),
+      new DexRegister()
+    };
+
+    val insn = new DexInstruction_Invoke(
+      new DexCode(),
+      DexClassType.parse("Lcom.test;", cache),
+      "myMethod",
+      new DexPrototype(DexType.parse("V", cache), params),
+      Arrays.asList(r),
+      Opcode_Invoke.Super);
+
+    val regAlloc = new HashMap<DexRegister, Integer>();
+    regAlloc.put(r[0], 3);
+    regAlloc.put(r[1], 7);
+
+    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    assertEquals(1, asm.length);
+
+    val asm0 = asm[0];
+    assertTrue(asm0 instanceof Instruction35c);
+
+    val asm35c = (Instruction35c) asm0;
+    assertEquals(Opcode.INVOKE_SUPER, asm35c.opcode);
+  }
+
+  @Test
+  public void testAssemble_Invoke_Range_Short() {
+    val cache = new DexParsingCache();
+
+    int paramCount = 6; // > 5
+    val params = new ArrayList<DexRegisterType>(paramCount);
+    val r = new DexRegister[paramCount];
+
+    for (int i = 0; i < paramCount; ++i) {
+      params.add(DexRegisterType.parse("I", cache));
+      r[i] = new DexRegister();
+    }
+
+    val insn = new DexInstruction_Invoke(
+      new DexCode(),
+      DexClassType.parse("Lcom.test;", cache),
+      "myMethod",
+      new DexPrototype(DexType.parse("V", cache), params),
+      Arrays.asList(r),
+      Opcode_Invoke.Static);
+
+    int firstReg = 65536 - paramCount;
+    val regAlloc = new HashMap<DexRegister, Integer>();
+    for (int i = 0; i < paramCount; ++i)
+      regAlloc.put(r[i], firstReg + i);
+
+    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    assertEquals(1, asm.length);
+
+    val asm0 = asm[0];
+    assertTrue(asm0 instanceof Instruction3rc);
+
+    val asm3rc = (Instruction3rc) asm0;
+    assertEquals(r.length, asm3rc.getRegCount());
+    assertEquals(paramCount, asm3rc.getRegCount());
+    assertEquals(firstReg, asm3rc.getStartRegister());
+  }
+
+  @Test
+  public void testAssemble_Invoke_Range_Long() {
+    val cache = new DexParsingCache();
+
+    int paramCount = 255; // > 5
+    val params = new ArrayList<DexRegisterType>(paramCount);
+    val r = new DexRegister[paramCount];
+
+    for (int i = 0; i < paramCount; ++i) {
+      params.add(DexRegisterType.parse("I", cache));
+      r[i] = new DexRegister();
+    }
+
+    val insn = new DexInstruction_Invoke(
+      new DexCode(),
+      DexClassType.parse("Lcom.test;", cache),
+      "myMethod",
+      new DexPrototype(DexType.parse("V", cache), params),
+      Arrays.asList(r),
+      Opcode_Invoke.Static);
+
+    int firstReg = 65536 - paramCount;
+    val regAlloc = new HashMap<DexRegister, Integer>();
+    for (int i = 0; i < paramCount; ++i)
+      regAlloc.put(r[i], firstReg + i);
+
+    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    assertEquals(1, asm.length);
+
+    val asm0 = asm[0];
+    assertTrue(asm0 instanceof Instruction3rc);
+
+    val asm3rc = (Instruction3rc) asm0;
+    assertEquals(r.length, asm3rc.getRegCount());
+    assertEquals(paramCount, asm3rc.getRegCount());
+    assertEquals(firstReg, asm3rc.getStartRegister());
+  }
+
+  @Test(expected=InstructionAssemblyException.class)
+  public void testAssemble_Invoke_Range_WrongAllocation() {
+    val cache = new DexParsingCache();
+
+    int paramCount = 10; // > 5
+    val params = new ArrayList<DexRegisterType>(paramCount);
+    val r = new DexRegister[paramCount];
+
+    for (int i = 0; i < paramCount; ++i) {
+      params.add(DexRegisterType.parse("I", cache));
+      r[i] = new DexRegister();
+    }
+
+    val insn = new DexInstruction_Invoke(
+      new DexCode(),
+      DexClassType.parse("Lcom.test;", cache),
+      "myMethod",
+      new DexPrototype(DexType.parse("V", cache), params),
+      Arrays.asList(r),
+      Opcode_Invoke.Static);
+
+    int firstReg = 65536 - paramCount;
+    val regAlloc = new HashMap<DexRegister, Integer>();
+    for (int i = 0; i < paramCount; ++i)
+      regAlloc.put(r[i], firstReg + i);
+
+    // move one register out of the sequence
+    regAlloc.put(r[paramCount - 2], firstReg - 2);
 
     insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
   }

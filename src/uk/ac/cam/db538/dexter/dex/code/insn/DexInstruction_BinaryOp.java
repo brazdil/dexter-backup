@@ -96,7 +96,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
     else if (fitsIntoBits_Unsigned(rTarget, 8) && fitsIntoBits_Unsigned(rSourceA, 8) && fitsIntoBits_Unsigned(rSourceB, 8))
       return new Instruction[] { new Instruction23x(Opcode_BinaryOp.convert(InsnOpcode), (short) rTarget, (short) rSourceA, (short) rSourceB)	};
     else
-      return throwCannotAssembleException();
+      return throwCannotAssembleException("No suitable instruction format found");
   }
 
   @Override
