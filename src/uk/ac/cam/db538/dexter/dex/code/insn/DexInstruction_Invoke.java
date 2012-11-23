@@ -36,7 +36,7 @@ public class DexInstruction_Invoke extends DexInstruction {
     ClassType = classType;
     MethodName = methodName;
     MethodPrototype = prototype;
-    ArgumentRegisters = argumentRegisters;
+    ArgumentRegisters = argumentRegisters == null ? new LinkedList<DexRegister>() : argumentRegisters;
     CallType = callType;
 
     checkArguments();

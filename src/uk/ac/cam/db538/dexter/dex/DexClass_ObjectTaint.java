@@ -8,7 +8,9 @@ import lombok.val;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
@@ -85,9 +87,15 @@ public class DexClass_ObjectTaint extends DexClass {
 
   private DexMethod genMethod_Init(DexParsingCache cache) {
     val code = new DexCode();
-    // val rObjectMap = new DexRegister();
-    // code.add(new DexInstruction_NewInstance(code, rObjectMap, (DexClassType) fieldObjectMap.getType()));
+//    code.add(new DexInstruction_Invoke(code,
+//    		DexClassType.parse("Ljava/lang/Object;", cache),
+//    		"<init>",
+//    		new DexPrototype(DexType.parse("V", cache), null),
+//    		null, // no argument registers
+//    		Opcode_Invoke.Direct));
     code.add(new DexInstruction_ReturnVoid(code));
+
+    // TODO: add parameter-register mapping
 
     return new DexDirectMethod(this,
                                "<init>",
