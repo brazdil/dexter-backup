@@ -22,7 +22,7 @@ public class DexDirectMethod extends DexMethodWithCode {
 
   public DexDirectMethod(DexClass parent, String name,
                          Set<AccessFlags> accessFlags, DexType returnType,
-                         List<DexRegisterType> parameterTypes, DexCode code, boolean direct) {
-    super(parent, name, accessFlags, returnType, parameterTypes, code, direct);
+                         List<DexRegisterType> parameterTypes, DexCode code) {
+    super(parent, name, accessFlags, returnType, parameterTypes, code, true);
   }
 }

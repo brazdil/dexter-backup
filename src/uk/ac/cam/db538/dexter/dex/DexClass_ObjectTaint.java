@@ -3,28 +3,49 @@ package uk.ac.cam.db538.dexter.dex;
 import java.util.EnumSet;
 import java.util.Set;
 
+import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
+import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
 
 public class DexClass_ObjectTaint extends DexClass {
 
+  @Getter private final DexField Field_ObjectMap;
+  @Getter private final DexMethod Method_Clinit;
+  @Getter private final DexMethod Method_Init;
+
   public DexClass_ObjectTaint(Dex parent) {
     super(parent,
+          // class type
           generateClassType(parent),
-          DexClassType.parse(ObjectTaintClass_SuperType, parent.getParsingCache()),
-          ObjectTaintClass_ClassAccessFlags,
+          // super type
+          DexClassType.parse("Ljava/lang/Object;", parent.getParsingCache()),
+          // access flags
+          EnumSet.of(AccessFlags.PUBLIC, AccessFlags.FINAL),
           null, // fields
           null, // methods
           null, // interfaces
           null); // source file
 
     val cache = parent.getParsingCache();
-    Fields.add(generateClassField_ObjectMap(cache));
+
+    Field_ObjectMap = genField_ObjectMap(cache);
+    Fields.add(Field_ObjectMap);
+
+    Method_Init = genMethod_Init(cache);
+    Method_Clinit = genMethod_Clinit(cache);
+    Methods.add(Method_Init);
+    Methods.add(Method_Clinit);
   }
 
   /*
@@ -36,33 +57,45 @@ public class DexClass_ObjectTaint extends DexClass {
     String desc;
     long suffix = 0;
     do {
-      desc = "L" + ObjectTaintClass_ClassBaseName + suffix + ";";
+      desc = "Lt/$" + suffix + ";";
       suffix++;
     } while (cache.classTypeExists(desc));
 
-    return cache.getClassType(desc);
+    return DexClassType.parse(desc, cache);
   }
 
-  private DexField generateClassField_ObjectMap(DexParsingCache cache) {
+  private DexField genField_ObjectMap(DexParsingCache cache) {
     return new DexField(this,
-                        ObjectTaintClass_FieldObjectMap_Name,
-                        cache.getClassType(ObjectTaintClass_FieldObjectMap_TypeName),
-                        ObjectTaintClass_FieldObjectMap_AccessFlags);
+                        "obj_map",
+                        DexClassType.parse("Ljava/util/WeakHashMap;", cache),
+                        EnumSet.of(AccessFlags.PRIVATE, AccessFlags.STATIC, AccessFlags.FINAL));
   }
 
-//  private DexMethod generateClassMethod_StaticInitializer(DexParsingCache cache) {
-//	  val code = new DexCode();
-//
-//  }
+  private DexMethod genMethod_Clinit(DexParsingCache cache) {
+    val code = new DexCode();
+    // val rObjectMap = new DexRegister();
+    // code.add(new DexInstruction_NewInstance(code, rObjectMap, (DexClassType) fieldObjectMap.getType()));
+    code.add(new DexInstruction_ReturnVoid(code));
 
-  // CONSTANTS
+    return new DexDirectMethod(this,
+                               "<clinit>",
+                               EnumSet.of(AccessFlags.STATIC, AccessFlags.CONSTRUCTOR),
+                               DexType.parse("V", cache), // return value
+                               null, // parameters
+                               code);
+  }
 
-  private static final String ObjectTaintClass_ClassBaseName = "t/$";
-  private static final String ObjectTaintClass_SuperType = "Ljava/lang/Object;";
-  private static final Set<AccessFlags> ObjectTaintClass_ClassAccessFlags = EnumSet.of(AccessFlags.PUBLIC, AccessFlags.FINAL);
+  private DexMethod genMethod_Init(DexParsingCache cache) {
+    val code = new DexCode();
+    // val rObjectMap = new DexRegister();
+    // code.add(new DexInstruction_NewInstance(code, rObjectMap, (DexClassType) fieldObjectMap.getType()));
+    code.add(new DexInstruction_ReturnVoid(code));
 
-  private static final String ObjectTaintClass_FieldObjectMap_Name = "obj_map";
-  private static final String ObjectTaintClass_FieldObjectMap_TypeName = "Ljava/util/WeakHashMap;";
-  private static final Set<AccessFlags> ObjectTaintClass_FieldObjectMap_AccessFlags = EnumSet.of(AccessFlags.PRIVATE, AccessFlags.STATIC, AccessFlags.FINAL);
-
+    return new DexDirectMethod(this,
+                               "<init>",
+                               EnumSet.of(AccessFlags.PRIVATE, AccessFlags.CONSTRUCTOR),
+                               DexType.parse("V", cache), // return value
+                               null, // parameters
+                               code);
+  }
 }

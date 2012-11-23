@@ -18,7 +18,7 @@ import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 public class Dex {
 
   @Getter private final List<DexClass> Classes;
-  @Getter private DexClass ObjectTaintClass;
+  @Getter private DexClass_ObjectTaint ObjectTaintClass;
 
   @Getter private final DexParsingCache ParsingCache;
 
