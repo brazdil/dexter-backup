@@ -67,7 +67,7 @@ public class DexInstruction_Const_Test {
 
     val insn = new DexInstruction_Const(null, reg, lit);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction11n);
 
@@ -87,7 +87,7 @@ public class DexInstruction_Const_Test {
 
     val insn = new DexInstruction_Const(null, reg, lit);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction21s);
 
@@ -107,7 +107,7 @@ public class DexInstruction_Const_Test {
 
     val insn = new DexInstruction_Const(null, reg, lit);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction21s);
 
@@ -128,7 +128,7 @@ public class DexInstruction_Const_Test {
 
     val insn = new DexInstruction_Const(null, reg, lit);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction21h);
 
@@ -148,7 +148,7 @@ public class DexInstruction_Const_Test {
 
     val insn = new DexInstruction_Const(null, reg, lit);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction31i);
 
@@ -167,7 +167,7 @@ public class DexInstruction_Const_Test {
     val regAlloc = Utils.genRegAlloc(reg);
 
     val insn = new DexInstruction_Const(null, reg, lit);
-    insn.assembleBytecode(regAlloc);
+    insn.assembleBytecode(regAlloc, null);
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -179,7 +179,7 @@ public class DexInstruction_Const_Test {
     val regAlloc = Utils.genRegAlloc(reg);
 
     val insn = new DexInstruction_Const(null, reg, lit);
-    insn.assembleBytecode(regAlloc);
+    insn.assembleBytecode(regAlloc, null);
   }
 
   @Test

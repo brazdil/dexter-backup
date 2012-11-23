@@ -73,7 +73,7 @@ public abstract class DexMethodWithCode extends DexMethod {
 
     DebugInfoItem debugInfo = null;
 
-    List<Instruction> instructions = modifiedCode.assembleBytecode(registerAllocation, registerCount);
+    List<Instruction> instructions = modifiedCode.assembleBytecode(registerAllocation, registerCount, outFile);
 
     List<TryItem> tries = null;
 

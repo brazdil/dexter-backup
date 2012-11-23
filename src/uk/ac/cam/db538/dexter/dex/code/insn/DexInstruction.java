@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Map;
 
+import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -24,7 +25,7 @@ public abstract class DexInstruction extends DexCodeElement {
 
   // ASSEMBLING
 
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc) {
+  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexFile dex) {
     throw new UnsupportedOperationException("Instruction doesn't have assembling implemented");
   }
 

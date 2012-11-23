@@ -2,12 +2,16 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import lombok.Getter;
 import lombok.val;
 
+import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
 import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Format.Instruction12x;
+import org.jf.dexlib.Code.Format.Instruction23x;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
@@ -147,5 +151,33 @@ public class DexInstruction_Invoke extends DexInstruction {
     return str.toString();
   }
 
+
+//  @Override
+//  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexFile dexFile) {
+//	  int[] r = new int[ArgumentRegisters.size()];
+//	  for (int i = 0; i < r.length; ++i)
+//		  r[i] = regAlloc.get(ArgumentRegisters.get(i));
+//
+//	  MethodIdItem.internMethodIdItem(dexFile, classType, methodPrototype, methodName)
+//
+//	  if (r.length <= 5) {
+//		  for (int regNum : r)
+//			  if (!fitsIntoBits_Unsigned(regNum, 4))
+//				  return throwCannotAssembleException();
+//
+//		  return new Instruction[] {
+////				  new Instruction35c(Opcode_Invoke.convertStandard(CallType),
+////						  r.length,
+////						  (r.length >= 1) ? r[0] : 0,
+////						  (r.length >= 2) ? r[1] : 0,
+////								  (r.length >= 3) ? r[2] : 0,
+////										  (r.length >= 4) ? r[3] : 0,
+////												  (r.length >= 5) ? r[4] : 0,
+////
+////						  regD, regE, regF, regG, regA, referencedItem)
+//		  };
+//	  }
+//
+//  }
 
 }

@@ -7,6 +7,7 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.val;
 
+import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
@@ -122,7 +123,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc) {
+  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexFile dexFile) {
     int rTarget1 = regAlloc.get(RegTarget1);
     int rTarget2 = regAlloc.get(RegTarget2);
     int rSourceA1 = regAlloc.get(RegSourceA1);

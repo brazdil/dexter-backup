@@ -110,7 +110,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val insn = new DexInstruction_BinaryOp(null, regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction23x);
 
@@ -133,7 +133,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val insn = new DexInstruction_BinaryOp(null, regTarget, regTarget, regSourceB, Opcode_BinaryOp.OrInt);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction12x);
 
@@ -155,7 +155,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val insn = new DexInstruction_BinaryOp(null, regTarget, regTarget, regSourceB, Opcode_BinaryOp.OrInt);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction23x);
 
@@ -178,7 +178,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val insn = new DexInstruction_BinaryOp(null, regTarget, regTarget, regSourceB, Opcode_BinaryOp.OrInt);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction23x);
 
@@ -203,7 +203,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val insn = new DexInstruction_BinaryOp(null, regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
 
-    insn.assembleBytecode(regAlloc);
+    insn.assembleBytecode(regAlloc, null);
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -220,7 +220,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val insn = new DexInstruction_BinaryOp(null, regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
 
-    insn.assembleBytecode(regAlloc);
+    insn.assembleBytecode(regAlloc, null);
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -237,7 +237,7 @@ public class DexInstruction_BinaryOp_Test {
 
     val insn = new DexInstruction_BinaryOp(null, regTarget, regSourceA, regSourceB, Opcode_BinaryOp.OrInt);
 
-    insn.assembleBytecode(regAlloc);
+    insn.assembleBytecode(regAlloc, null);
   }
 
   @Test

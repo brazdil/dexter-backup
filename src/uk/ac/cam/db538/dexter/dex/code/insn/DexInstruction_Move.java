@@ -7,6 +7,7 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.val;
 
+import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction12x;
@@ -90,7 +91,7 @@ public class DexInstruction_Move extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc) {
+  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexFile dexFile) {
     int rTo = regAlloc.get(RegTo);
     int rFrom = regAlloc.get(RegFrom);
 

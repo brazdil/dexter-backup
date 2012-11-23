@@ -7,6 +7,7 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.val;
 
+import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11n;
@@ -83,7 +84,7 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc) {
+  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexFile dexFile) {
     int rTo = regAlloc.get(RegTo);
 
     if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Signed(Value, 4))

@@ -28,7 +28,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexType;
 public class DexInstruction_Invoke_Test {
 
   @Test
-  public void testParse_MethodCall_Standard_RegisterParsing_Static() throws InstructionParsingException {
+  public void testParse_Invoke_Standard_RegisterParsing_Static() throws InstructionParsingException {
     val file = new DexFile();
     val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
     val returnType = TypeIdItem.internTypeIdItem(file, "V");
@@ -56,7 +56,7 @@ public class DexInstruction_Invoke_Test {
   }
 
   @Test
-  public void testParse_MethodCall_Standard_RegisterParsing_NonStatic() throws InstructionParsingException {
+  public void testParse_Invoke_Standard_RegisterParsing_NonStatic() throws InstructionParsingException {
     val file = new DexFile();
     val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
     val returnType = TypeIdItem.internTypeIdItem(file, "V");
@@ -83,7 +83,7 @@ public class DexInstruction_Invoke_Test {
   }
 
   @Test
-  public void testParse_MethodCall_Standard_CallTypes() throws InstructionParsingException {
+  public void testParse_Invoke_Standard_CallTypes() throws InstructionParsingException {
     val file = new DexFile();
     val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
     val returnType = TypeIdItem.internTypeIdItem(file, "V");
@@ -114,7 +114,7 @@ public class DexInstruction_Invoke_Test {
   }
 
   @Test
-  public void testParse_MethodCall_Range() throws InstructionParsingException {
+  public void testParse_Invoke_Range() throws InstructionParsingException {
     val file = new DexFile();
     val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
     val returnType = TypeIdItem.internTypeIdItem(file, "V");
@@ -217,6 +217,32 @@ public class DexInstruction_Invoke_Test {
                                new DexRegister(),
                                new DexRegister(),
                                // new DexRegister()
+                             });
+
+    new DexInstruction_Invoke(new DexCode(),
+                              DexClassType.parse("Lcom.test;", cache),
+                              "myMethod",
+                              DexType.parse("V", cache),
+                              params,
+                              regs,
+                              Opcode_Invoke.Direct);
+  }
+
+  @Test
+  public void testAssemble_Invoke_Standard() {
+    val cache = new DexParsingCache();
+    val params = Arrays.asList(new DexRegisterType[] {
+                                 DexRegisterType.parse("I", cache),
+                                 DexRegisterType.parse("I", cache),
+                                 DexRegisterType.parse("I", cache),
+                                 DexRegisterType.parse("I", cache)
+                               });
+    val regs = Arrays.asList(new DexRegister[] {
+                               new DexRegister(),
+                               new DexRegister(),
+                               new DexRegister(),
+                               new DexRegister(),
+                               new DexRegister()
                              });
 
     new DexInstruction_Invoke(new DexCode(),

@@ -135,7 +135,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction23x);
 
@@ -160,7 +160,7 @@ public class DexInstruction_BinaryOpWide_Test {
 
     val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2, regTarget1, regTarget2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction12x);
 
@@ -184,7 +184,7 @@ public class DexInstruction_BinaryOpWide_Test {
 
     val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2, regTarget1, regTarget2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction23x);
 
@@ -209,7 +209,7 @@ public class DexInstruction_BinaryOpWide_Test {
 
     val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2, regTarget1, regTarget2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
-    val asm = insn.assembleBytecode(regAlloc);
+    val asm = insn.assembleBytecode(regAlloc, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction23x);
 
@@ -239,7 +239,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
-    insn.assembleBytecode(regAlloc);
+    insn.assembleBytecode(regAlloc, null);
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -261,7 +261,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
-    insn.assembleBytecode(regAlloc);
+    insn.assembleBytecode(regAlloc, null);
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -283,7 +283,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
-    insn.assembleBytecode(regAlloc);
+    insn.assembleBytecode(regAlloc, null);
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -305,7 +305,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
-    insn.assembleBytecode(regAlloc);
+    insn.assembleBytecode(regAlloc, null);
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -327,7 +327,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
-    insn.assembleBytecode(regAlloc);
+    insn.assembleBytecode(regAlloc, null);
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -349,7 +349,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val insn = new DexInstruction_BinaryOpWide(null, regTarget1, regTarget2,
         regSourceA1, regSourceA2, regSourceB1, regSourceB2, Opcode_BinaryOpWide.OrLong);
 
-    insn.assembleBytecode(regAlloc);
+    insn.assembleBytecode(regAlloc, null);
   }
 
   @Test

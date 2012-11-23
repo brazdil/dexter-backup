@@ -24,7 +24,7 @@ public class DexInstruction_ReturnVoid_Test {
   public void testAssemble() {
     val insn = new DexInstruction_ReturnVoid(null);
 
-    val asm = insn.assembleBytecode(null);
+    val asm = insn.assembleBytecode(null, null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction10x);
 
