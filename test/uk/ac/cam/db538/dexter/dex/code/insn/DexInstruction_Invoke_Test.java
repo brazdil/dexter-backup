@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 
 import lombok.val;
@@ -16,9 +17,15 @@ import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 import org.junit.Test;
 
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.Utils;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
 
-public class DexInstruction_MethodCall_Test {
+public class DexInstruction_Invoke_Test {
 
   @Test
   public void testParse_MethodCall_Standard_RegisterParsing_Static() throws InstructionParsingException {
@@ -123,9 +130,102 @@ public class DexInstruction_MethodCall_Test {
     val methodItem = MethodIdItem.internMethodIdItem(file, classType, protoItem, methodName);
 
     Utils.parseAndCompare(
-      new Instruction3rc(Opcode.INVOKE_STATIC_RANGE, (short) 10, 48000 , methodItem),
-      "invoke-static com.test.myMethod(v48000, v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009)"
+      new Instruction[] {
+        new Instruction3rc(Opcode.INVOKE_STATIC_RANGE, (short) 10, 48000 , methodItem),
+        new Instruction3rc(Opcode.INVOKE_VIRTUAL_RANGE, (short) 11, 48000 , methodItem),
+        new Instruction3rc(Opcode.INVOKE_DIRECT_RANGE, (short) 11, 48000 , methodItem),
+        new Instruction3rc(Opcode.INVOKE_SUPER_RANGE, (short) 11, 48000 , methodItem),
+        new Instruction3rc(Opcode.INVOKE_INTERFACE_RANGE, (short) 11, 48000 , methodItem)
+      }, new String[] {
+        "invoke-static com.test.myMethod(v48000, v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009)",
+        "invoke-virtual com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)",
+        "invoke-direct com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)",
+        "invoke-super com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)",
+        "invoke-interface com.test.myMethod{v48000}(v48001, v48002, v48003, v48004, v48005, v48006, v48007, v48008, v48009, v48010)"
+      }
     );
+  }
+
+  @Test
+  public void testCheckArguments_Static_Correct() {
+    val cache = new DexParsingCache();
+    val params = Arrays.asList(new DexRegisterType[] {
+                                 DexRegisterType.parse("J", cache)
+                               });
+    val regs = Arrays.asList(new DexRegister[] {
+                               new DexRegister(),
+                               new DexRegister()
+                             });
+
+    new DexInstruction_Invoke(new DexCode(),
+                              DexClassType.parse("Lcom.test;", cache),
+                              "myMethod",
+                              DexType.parse("V", cache),
+                              params,
+                              regs,
+                              Opcode_Invoke.Static);
+  }
+
+  @Test(expected=InstructionArgumentException.class)
+  public void testCheckArguments_Static_Incorrect() {
+    val cache = new DexParsingCache();
+    val params = Arrays.asList(new DexRegisterType[] {
+                                 DexRegisterType.parse("J", cache)
+                               });
+    val regs = Arrays.asList(new DexRegister[] {
+                               new DexRegister(),
+                               // new DexRegister()
+                             });
+
+    new DexInstruction_Invoke(new DexCode(),
+                              DexClassType.parse("Lcom.test;", cache),
+                              "myMethod",
+                              DexType.parse("V", cache),
+                              params,
+                              regs,
+                              Opcode_Invoke.Static);
+  }
+
+  @Test
+  public void testCheckArguments_Direct_Correct() {
+    val cache = new DexParsingCache();
+    val params = Arrays.asList(new DexRegisterType[] {
+                                 DexRegisterType.parse("J", cache)
+                               });
+    val regs = Arrays.asList(new DexRegister[] {
+                               new DexRegister(),
+                               new DexRegister(),
+                               new DexRegister()
+                             });
+
+    new DexInstruction_Invoke(new DexCode(),
+                              DexClassType.parse("Lcom.test;", cache),
+                              "myMethod",
+                              DexType.parse("V", cache),
+                              params,
+                              regs,
+                              Opcode_Invoke.Direct);
+  }
+
+  @Test(expected=InstructionArgumentException.class)
+  public void testCheckArguments_Direct_Incorrect() {
+    val cache = new DexParsingCache();
+    val params = Arrays.asList(new DexRegisterType[] {
+                                 DexRegisterType.parse("J", cache)
+                               });
+    val regs = Arrays.asList(new DexRegister[] {
+                               new DexRegister(),
+                               new DexRegister(),
+                               // new DexRegister()
+                             });
+
+    new DexInstruction_Invoke(new DexCode(),
+                              DexClassType.parse("Lcom.test;", cache),
+                              "myMethod",
+                              DexType.parse("V", cache),
+                              params,
+                              regs,
+                              Opcode_Invoke.Direct);
   }
 }
 

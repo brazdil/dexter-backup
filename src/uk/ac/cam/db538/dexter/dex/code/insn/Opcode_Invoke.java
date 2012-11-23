@@ -1,13 +1,13 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-public enum Opcode_MethodCall {
+public enum Opcode_Invoke {
   Virtual,
   Super,
   Direct,
   Static,
   Interface;
 
-  public static Opcode_MethodCall convert(org.jf.dexlib.Code.Opcode opcode) {
+  public static Opcode_Invoke convert(org.jf.dexlib.Code.Opcode opcode) {
     switch (opcode) {
     case INVOKE_VIRTUAL:
     case INVOKE_VIRTUAL_RANGE:

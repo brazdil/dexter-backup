@@ -35,7 +35,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MethodCall;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveException;
@@ -436,7 +436,7 @@ public class DexCode {
     case INVOKE_DIRECT_RANGE:
     case INVOKE_STATIC_RANGE:
     case INVOKE_INTERFACE_RANGE:
-      return new DexInstruction_MethodCall(this, insn, parsingState);
+      return new DexInstruction_Invoke(this, insn, parsingState);
 
     case NEG_INT:
     case NOT_INT:
