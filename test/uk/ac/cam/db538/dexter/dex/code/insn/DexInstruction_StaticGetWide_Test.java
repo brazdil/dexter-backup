@@ -70,20 +70,41 @@ public class DexInstruction_StaticGetWide_Test {
   }
 
   @Test(expected=InstructionAssemblyException.class)
-  public void testAssemble_StaticGet_WrongAllocation() {
+  public void testAssemble_StaticGetWide_WrongAllocation_Register() {
     val cache = new DexParsingCache();
 
     val regNTo = Utils.numFitsInto_Unsigned(9);
-    val regTo = new DexRegister(regNTo);
-    val regAlloc = Utils.genRegAlloc(regTo);
+    val regTo1 = new DexRegister(regNTo);
+    val regTo2 = new DexRegister(regNTo + 1);
+    val regAlloc = Utils.genRegAlloc(regTo1, regTo2);
 
-    val insn = new DexInstruction_StaticGet(
+    val insn = new DexInstruction_StaticGetWide(
       null,
-      regTo,
+      regTo1,
+      regTo2,
       DexClassType.parse("Lcom/test/SomeClass;", cache),
-      DexRegisterType.parse("Ljava/lang/String;", cache),
-      "AwesomeField",
-      Opcode_GetPut.Object);
+      DexRegisterType.parse("J", cache),
+      "AwesomeField");
+
+    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+  }
+
+  @Test(expected=InstructionAssemblyException.class)
+  public void testAssemble_StaticGetWide_WrongAllocation_FollowUp() {
+    val cache = new DexParsingCache();
+
+    val regNTo = Utils.numFitsInto_Unsigned(8);
+    val regTo1 = new DexRegister(regNTo);
+    val regTo2 = new DexRegister(regNTo - 1);
+    val regAlloc = Utils.genRegAlloc(regTo1, regTo2);
+
+    val insn = new DexInstruction_StaticGetWide(
+      null,
+      regTo1,
+      regTo2,
+      DexClassType.parse("Lcom/test/SomeClass;", cache),
+      DexRegisterType.parse("J", cache),
+      "AwesomeField");
 
     insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
   }
