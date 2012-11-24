@@ -59,37 +59,37 @@ public abstract class DexMethodWithCode extends DexMethod {
     val prototype = this.getPrototype();
     val isStatic = this.isStatic();
     val clazz = this.getParentClass();
-    
+
     // create the parameter-register mappings
     val regCount = methodInfo.codeItem.getRegisterCount();
     val paramCount = prototype.getParameterCount(isStatic);
     for (int i = 0; i < paramCount; ++i) {
-    	val paramRegId = prototype.getParameterRegisterId(i, regCount, isStatic, clazz);
-  	  val paramType = prototype.getParameterType(i, isStatic, clazz);
-	    switch (paramType.getTypeSize()) {
-	    case SINGLE:
-	      addParameterMapping_Single(i, Code.getRegisterByOriginalNumber(paramRegId));
-	      break;
-	    case WIDE:
-	      addParameterMapping_Wide(i, Code.getRegisterByOriginalNumber(paramRegId), Code.getRegisterByOriginalNumber(paramRegId + 1));
-	      break;
-	    }
+      val paramRegId = prototype.getParameterRegisterId(i, regCount, isStatic, clazz);
+      val paramType = prototype.getParameterType(i, isStatic, clazz);
+      switch (paramType.getTypeSize()) {
+      case SINGLE:
+        addParameterMapping_Single(i, Code.getRegisterByOriginalNumber(paramRegId));
+        break;
+      case WIDE:
+        addParameterMapping_Wide(i, Code.getRegisterByOriginalNumber(paramRegId), Code.getRegisterByOriginalNumber(paramRegId + 1));
+        break;
+      }
     }
   }
 
 
-  
-  public void addParameterMapping_Single(int paramIndex, DexRegister codeReg) {
-	  val paramType = this.getPrototype().getParameterType(paramIndex, this.isStatic(), this.getParentClass());	  
-	      val paramReg = ParameterRegisters.get(paramIndex);
-	      ParameterMoveInstructions.add(new DexInstruction_Move(Code, codeReg, paramReg, paramType instanceof DexReferenceType));
-	  }
-  
-  public void addParameterMapping_Wide(int paramIndex, DexRegister codeReg1, DexRegister codeReg2) {
-      val paramReg1 = ParameterRegisters.get(paramIndex);
-      val paramReg2 = ParameterRegisters.get(paramIndex + 1);
 
-      ParameterMoveInstructions.add(new DexInstruction_MoveWide(Code, codeReg1, codeReg2, paramReg1, paramReg2));
+  public void addParameterMapping_Single(int paramIndex, DexRegister codeReg) {
+    val paramType = this.getPrototype().getParameterType(paramIndex, this.isStatic(), this.getParentClass());
+    val paramReg = ParameterRegisters.get(paramIndex);
+    ParameterMoveInstructions.add(new DexInstruction_Move(Code, codeReg, paramReg, paramType instanceof DexReferenceType));
+  }
+
+  public void addParameterMapping_Wide(int paramIndex, DexRegister codeReg1, DexRegister codeReg2) {
+    val paramReg1 = ParameterRegisters.get(paramIndex);
+    val paramReg2 = ParameterRegisters.get(paramIndex + 1);
+
+    ParameterMoveInstructions.add(new DexInstruction_MoveWide(Code, codeReg1, codeReg2, paramReg1, paramReg2));
   }
 
   @Override
@@ -109,19 +109,19 @@ public abstract class DexMethodWithCode extends DexMethod {
     // (adds temporaries, inserts move instructions)
     val codeColoring = new GraphColoring(Code);
     val modifiedCode = codeColoring.getModifiedCode();
-    
+
     // add parameter registers to the register allocation
     val registerAllocation = new HashMap<DexRegister, Integer>(codeColoring.getColoring());
     int registerCount = codeColoring.getColorsUsed();
     val inWords = ParameterRegisters.size();
     if (registerCount >= inWords) {
-    	int startReg = registerCount - inWords;
-    	for (int i = 0; i < inWords; ++i)    		
-    		registerAllocation.put(ParameterRegisters.get(i), startReg + i);
+      int startReg = registerCount - inWords;
+      for (int i = 0; i < inWords; ++i)
+        registerAllocation.put(ParameterRegisters.get(i), startReg + i);
     } else {
-    	for (int i = 0; i < inWords; ++i)
-    		registerAllocation.put(ParameterRegisters.get(i), i);
-    	registerCount = inWords;
+      for (int i = 0; i < inWords; ++i)
+        registerAllocation.put(ParameterRegisters.get(i), i);
+      registerCount = inWords;
     }
 
     List<Instruction> instructions = new LinkedList<Instruction>();

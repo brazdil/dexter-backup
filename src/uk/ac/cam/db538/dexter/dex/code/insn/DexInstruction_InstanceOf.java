@@ -61,8 +61,8 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     val set = new HashSet<GcRangeConstraint>();
-    set.add(new GcRangeConstraint(RegTo, ColorRange.Range_0_15));
-    set.add(new GcRangeConstraint(RegFrom, ColorRange.Range_0_15));
+    set.add(new GcRangeConstraint(RegTo, ColorRange.RANGE_4BIT));
+    set.add(new GcRangeConstraint(RegFrom, ColorRange.RANGE_4BIT));
     return set;
   }
 

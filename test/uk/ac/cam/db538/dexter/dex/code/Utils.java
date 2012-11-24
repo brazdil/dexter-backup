@@ -69,7 +69,7 @@ public class Utils {
   }
 
   public static void instrumentAndCompare(DexCode code, String[] output) {
-	code.instrument();
+    code.instrument();
     val insnList = code.getInstructionList();
     assertEquals(output.length, insnList.size());
     for (int i = 0; i < output.length; ++i)

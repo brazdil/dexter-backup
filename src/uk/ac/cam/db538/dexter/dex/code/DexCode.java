@@ -61,7 +61,7 @@ public class DexCode {
 
   @Getter private final NoDuplicatesList<DexCodeElement> InstructionList;
   @Getter private final Set<DexRegister> UsedRegisters;
-  
+
   // stores information about original register mapping
   // is null for generated code
   private DexCode_ParsingState ParsingInfo = null;
@@ -114,12 +114,12 @@ public class DexCode {
     ParsingInfo = new DexCode_ParsingState(cache, this);
     parseInstructions(instructions, ParsingInfo);
   }
-  
+
   public DexRegister getRegisterByOriginalNumber(int id) {
-	  if (ParsingInfo != null)
-		  return ParsingInfo.getRegister(id);
-	  else
-		  return null;
+    if (ParsingInfo != null)
+      return ParsingInfo.getRegister(id);
+    else
+      return null;
   }
 
   private int findElement(DexCodeElement elem) {
@@ -207,8 +207,8 @@ public class DexCode {
     // if registers are in the same run, they must be following each other,
     // so the loop can continue
     if (run1 == run2) {
-      val loc1 = run1.indexOf(reg1);
-      val loc2 = run1.indexOf(reg2);
+      val loc1 = run1.getIndexOf(reg1);
+      val loc2 = run1.getIndexOf(reg2);
 
       if (loc1 + 1 == loc2)
         return;
@@ -223,11 +223,11 @@ public class DexCode {
 
     // all is fine now => connect the two runs
     val connectedRun = new NodeRun();
-    connectedRun.addAll(run1);
-    connectedRun.addAll(run2);
+    connectedRun.addAll(run1.getNodes());
+    connectedRun.addAll(run2.getNodes());
 
     // store the new connected run with all its nodes
-    for (val node : connectedRun)
+    for (val node : connectedRun.getNodes())
       allConstraints.put(node, connectedRun);
   }
 

@@ -117,9 +117,9 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     val set = new HashSet<GcRangeConstraint>();
-    set.add(new GcRangeConstraint(RegTarget, ColorRange.Range_0_255));
-    set.add(new GcRangeConstraint(RegSourceA, ColorRange.Range_0_255));
-    set.add(new GcRangeConstraint(RegSourceB, ColorRange.Range_0_255));
+    set.add(new GcRangeConstraint(RegTarget, ColorRange.RANGE_8BIT));
+    set.add(new GcRangeConstraint(RegSourceA, ColorRange.RANGE_8BIT));
+    set.add(new GcRangeConstraint(RegSourceB, ColorRange.RANGE_8BIT));
     return set;
   }
 

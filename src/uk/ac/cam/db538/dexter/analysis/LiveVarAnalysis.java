@@ -16,21 +16,20 @@ import uk.ac.cam.db538.dexter.utils.ListReverser;
 
 public class LiveVarAnalysis {
 
-  @Getter private final DexCode Code;
-  private Map<DexCodeElement, Set<DexRegister>> LiveVars;
+  @Getter private final DexCode code;
+  private Map<DexCodeElement, Set<DexRegister>> liveVars;
 
   public LiveVarAnalysis(DexCode code) {
-    Code = code;
-
-    update();
+    this.code = code;
+    generateLVA();
   }
 
-  public void update() {
-    LiveVars = new HashMap<DexCodeElement, Set<DexRegister>>();
-    for (val insn : Code.getInstructionList())
-      LiveVars.put(insn, new HashSet<DexRegister>());
+  private void generateLVA() {
+    liveVars = new HashMap<DexCodeElement, Set<DexRegister>>();
+    for (val insn : code.getInstructionList())
+      liveVars.put(insn, new HashSet<DexRegister>());
 
-    val CFG = new ControlFlowGraph(Code);
+    val CFG = new ControlFlowGraph(code);
     boolean somethingChanged;
     do {
       somethingChanged = false;
@@ -41,13 +40,13 @@ public class LiveVarAnalysis {
         // union of successors's liveOut
         for (val succ : block.getSuccessors())
           if (succ instanceof CfgBasicBlock)
-            insnLiveIn.addAll(LiveVars.get(((CfgBasicBlock) succ).getFirstInstruction()));
+            insnLiveIn.addAll(liveVars.get(((CfgBasicBlock) succ).getFirstInstruction()));
 
         // iterate instructions of the block in reverse order
         // and propagate live var info
         for (val insn : new ListReverser<DexCodeElement>(block.getInstructions())) {
 
-          val insnLiveOut = LiveVars.get(insn);
+          val insnLiveOut = liveVars.get(insn);
           int insnLiveOut_PrevSize = insnLiveOut.size();
 
           insnLiveOut.addAll(insnLiveIn);
@@ -64,7 +63,7 @@ public class LiveVarAnalysis {
   }
 
   public Set<DexRegister> getLiveVarsAt(DexCodeElement insn) {
-    return LiveVars.get(insn);
+    return liveVars.get(insn);
   }
 
 }

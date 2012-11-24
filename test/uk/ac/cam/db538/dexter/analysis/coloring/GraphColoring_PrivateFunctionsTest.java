@@ -96,16 +96,16 @@ public class GraphColoring_PrivateFunctionsTest {
     run23.add(r2);
     run23.add(r3);
 
-    assertEquals(ColorRange.Range_0_65535, n0.getColorRange());
+    assertEquals(ColorRange.RANGE_16BIT, n0.getColorRange());
     assertEquals(run0, n0.getNodeRun());
 
-    assertEquals(ColorRange.Range_0_255, n1.getColorRange());
+    assertEquals(ColorRange.RANGE_8BIT, n1.getColorRange());
     assertEquals(run1, n1.getNodeRun());
 
-    assertEquals(ColorRange.Range_0_255, n2.getColorRange());
+    assertEquals(ColorRange.RANGE_8BIT, n2.getColorRange());
     assertEquals(run23, n2.getNodeRun());
 
-    assertEquals(ColorRange.Range_0_65535, n3.getColorRange());
+    assertEquals(ColorRange.RANGE_16BIT, n3.getColorRange());
     assertEquals(run23, n3.getNodeRun());
   }
 
@@ -204,7 +204,7 @@ public class GraphColoring_PrivateFunctionsTest {
 
   @Test
   public void testGetStrictestColorRange_Empty() {
-    assertEquals(ColorRange.Range_0_65535, execGetStrictestColorRange(new NodeRun(), null));
+    assertEquals(ColorRange.RANGE_16BIT, execGetStrictestColorRange(new NodeRun(), null));
   }
 
   @Test
@@ -217,14 +217,14 @@ public class GraphColoring_PrivateFunctionsTest {
     for (val reg : r)
       nodeRun.add(reg);
 
-    nodeMap.put(r[0], new NodeState(ColorRange.Range_0_65535, nodeRun));
-    nodeMap.put(r[1], new NodeState(ColorRange.Range_0_255, nodeRun));
-    nodeMap.put(r[2], new NodeState(ColorRange.Range_0_15, nodeRun));
-    nodeMap.put(r[3], new NodeState(ColorRange.Range_0_15, nodeRun));
-    nodeMap.put(r[4], new NodeState(ColorRange.Range_0_255, nodeRun));
-    nodeMap.put(r[5], new NodeState(ColorRange.Range_0_65535, nodeRun));
+    nodeMap.put(r[0], new NodeState(ColorRange.RANGE_16BIT, nodeRun));
+    nodeMap.put(r[1], new NodeState(ColorRange.RANGE_8BIT, nodeRun));
+    nodeMap.put(r[2], new NodeState(ColorRange.RANGE_4BIT, nodeRun));
+    nodeMap.put(r[3], new NodeState(ColorRange.RANGE_4BIT, nodeRun));
+    nodeMap.put(r[4], new NodeState(ColorRange.RANGE_8BIT, nodeRun));
+    nodeMap.put(r[5], new NodeState(ColorRange.RANGE_16BIT, nodeRun));
 
-    assertEquals(ColorRange.Range_0_15, execGetStrictestColorRange(nodeRun, nodeMap));
+    assertEquals(ColorRange.RANGE_4BIT, execGetStrictestColorRange(nodeRun, nodeMap));
   }
 
   // CHECK COLOR RANGE AVAILABLE
@@ -249,9 +249,9 @@ public class GraphColoring_PrivateFunctionsTest {
     val nodeRun = new NodeRun(r);
     val nodeMap = new NodeStatesMap();
 
-    nodeMap.put(r[0], new NodeState(ColorRange.Range_0_15, nodeRun, new int[] { 3, 5, 6, 7 }));
-    nodeMap.put(r[1], new NodeState(ColorRange.Range_0_15, nodeRun, new int[] { 3, 4, 6, 7 }));
-    nodeMap.put(r[2], new NodeState(ColorRange.Range_0_15, nodeRun, new int[] { 3, 4, 5, 7 }));
+    nodeMap.put(r[0], new NodeState(ColorRange.RANGE_4BIT, nodeRun, new int[] { 3, 5, 6, 7 }));
+    nodeMap.put(r[1], new NodeState(ColorRange.RANGE_4BIT, nodeRun, new int[] { 3, 4, 6, 7 }));
+    nodeMap.put(r[2], new NodeState(ColorRange.RANGE_4BIT, nodeRun, new int[] { 3, 4, 5, 7 }));
 
     assertTrue(execCheckColorRange(4, nodeRun, nodeMap));
   }
@@ -262,9 +262,9 @@ public class GraphColoring_PrivateFunctionsTest {
     val nodeRun = new NodeRun(r);
     val nodeMap = new NodeStatesMap();
 
-    nodeMap.put(r[0], new NodeState(ColorRange.Range_0_15, nodeRun, new int[] { 3, 5, 6, 7 }));
-    nodeMap.put(r[1], new NodeState(ColorRange.Range_0_15, nodeRun, new int[] { 3, 4, 6, 7 }));
-    nodeMap.put(r[2], new NodeState(ColorRange.Range_0_15, nodeRun, new int[] { 3, 4, 5, 6, 7 }));
+    nodeMap.put(r[0], new NodeState(ColorRange.RANGE_4BIT, nodeRun, new int[] { 3, 5, 6, 7 }));
+    nodeMap.put(r[1], new NodeState(ColorRange.RANGE_4BIT, nodeRun, new int[] { 3, 4, 6, 7 }));
+    nodeMap.put(r[2], new NodeState(ColorRange.RANGE_4BIT, nodeRun, new int[] { 3, 4, 5, 6, 7 }));
 
     assertFalse(execCheckColorRange(4, nodeRun, nodeMap));
   }
@@ -275,9 +275,9 @@ public class GraphColoring_PrivateFunctionsTest {
     val nodeRun = new NodeRun(r);
     val nodeMap = new NodeStatesMap();
 
-    nodeMap.put(r[0], new NodeState(ColorRange.Range_0_15, nodeRun, new int[] { 13, 15, 16 }));
-    nodeMap.put(r[1], new NodeState(ColorRange.Range_0_15, nodeRun, new int[] { 13, 14, 16 }));
-    nodeMap.put(r[2], new NodeState(ColorRange.Range_0_15, nodeRun, new int[] { 13, 14, 15 }));
+    nodeMap.put(r[0], new NodeState(ColorRange.RANGE_4BIT, nodeRun, new int[] { 13, 15, 16 }));
+    nodeMap.put(r[1], new NodeState(ColorRange.RANGE_4BIT, nodeRun, new int[] { 13, 14, 16 }));
+    nodeMap.put(r[2], new NodeState(ColorRange.RANGE_4BIT, nodeRun, new int[] { 13, 14, 15 }));
 
     execCheckColorRange(14, nodeRun, nodeMap);
   }
@@ -311,7 +311,7 @@ public class GraphColoring_PrivateFunctionsTest {
     forbiddenColors[2] = 65535;
 
     val nodeMap = new NodeStatesMap();
-    nodeMap.put(node1, new NodeState(ColorRange.Range_0_65535, nodeRun, forbiddenColors));
+    nodeMap.put(node1, new NodeState(ColorRange.RANGE_16BIT, nodeRun, forbiddenColors));
 
     execGenerateColorsInRange(65534, 70000, nodeRun, nodeMap);
   }
@@ -329,7 +329,7 @@ public class GraphColoring_PrivateFunctionsTest {
     forbiddenColors[2] = 4;
 
     val nodeMap = new NodeStatesMap();
-    nodeMap.put(node1, new NodeState(ColorRange.Range_0_65535, nodeRun, forbiddenColors));
+    nodeMap.put(node1, new NodeState(ColorRange.RANGE_16BIT, nodeRun, forbiddenColors));
 
     execGenerateColorsInRange(3, 4, nodeRun, nodeMap);
   }
@@ -358,8 +358,8 @@ public class GraphColoring_PrivateFunctionsTest {
     sortedArray2[4] = 9;
 
     val nodeMap = new NodeStatesMap();
-    nodeMap.put(node1, new NodeState(ColorRange.Range_0_65535, nodeRun, sortedArray1));
-    nodeMap.put(node2, new NodeState(ColorRange.Range_0_65535, nodeRun, sortedArray2));
+    nodeMap.put(node1, new NodeState(ColorRange.RANGE_16BIT, nodeRun, sortedArray1));
+    nodeMap.put(node2, new NodeState(ColorRange.RANGE_16BIT, nodeRun, sortedArray2));
 
     assertEquals(3, execGenerateColorsInRange(2, 10, nodeRun, nodeMap));
   }
@@ -388,8 +388,8 @@ public class GraphColoring_PrivateFunctionsTest {
     sortedArray2[4] = 9;
 
     val nodeMap = new NodeStatesMap();
-    nodeMap.put(node1, new NodeState(ColorRange.Range_0_65535, nodeRun, sortedArray1));
-    nodeMap.put(node2, new NodeState(ColorRange.Range_0_65535, nodeRun, sortedArray2));
+    nodeMap.put(node1, new NodeState(ColorRange.RANGE_16BIT, nodeRun, sortedArray1));
+    nodeMap.put(node2, new NodeState(ColorRange.RANGE_16BIT, nodeRun, sortedArray2));
 
     assertEquals(6, execGenerateColorsInRange(2, 10, nodeRun, nodeMap));
   }
@@ -416,13 +416,13 @@ public class GraphColoring_PrivateFunctionsTest {
     val nodeRun = new NodeRun(r);
 
     val nodeMap = new NodeStatesMap();
-    nodeMap.put(r[0], new NodeState(ColorRange.Range_0_65535, nodeRun, new int[] { 2, 3 }));
-    nodeMap.put(r[1], new NodeState(ColorRange.Range_0_15, nodeRun, new int[] { 2, 3 }));
+    nodeMap.put(r[0], new NodeState(ColorRange.RANGE_16BIT, nodeRun, new int[] { 2, 3 }));
+    nodeMap.put(r[1], new NodeState(ColorRange.RANGE_4BIT, nodeRun, new int[] { 2, 3 }));
 
     assertEquals(0, execGenerateRunFirstColor(nodeRun, nodeMap));
 
-    nodeMap.put(r[0], new NodeState(ColorRange.Range_0_65535, nodeRun, new int[] { 1, 2, 3, 5, 6 }));
-    nodeMap.put(r[1], new NodeState(ColorRange.Range_0_15, nodeRun, new int[] { 1, 2, 3, 4, 5, 6 }));
+    nodeMap.put(r[0], new NodeState(ColorRange.RANGE_16BIT, nodeRun, new int[] { 1, 2, 3, 5, 6 }));
+    nodeMap.put(r[1], new NodeState(ColorRange.RANGE_4BIT, nodeRun, new int[] { 1, 2, 3, 4, 5, 6 }));
 
     assertEquals(7, execGenerateRunFirstColor(nodeRun, nodeMap));
   }
@@ -437,14 +437,14 @@ public class GraphColoring_PrivateFunctionsTest {
       forbiddenColors[i] = i;
 
     val nodeMap = new NodeStatesMap();
-    nodeMap.put(r[0], new NodeState(ColorRange.Range_0_65535, nodeRun, forbiddenColors));
-    nodeMap.put(r[1], new NodeState(ColorRange.Range_0_15, nodeRun, forbiddenColors));
+    nodeMap.put(r[0], new NodeState(ColorRange.RANGE_16BIT, nodeRun, forbiddenColors));
+    nodeMap.put(r[1], new NodeState(ColorRange.RANGE_4BIT, nodeRun, forbiddenColors));
 
     execGenerateRunFirstColor(nodeRun, nodeMap);
   }
 
   @Test
-  public void testGenerateColors_Colorable_Range_0_255() throws Throwable {
+  public void testGenerateColors_Colorable_RANGE_8BIT() throws Throwable {
     val r = genRegisters(2);
     val nodeRun = new NodeRun(r);
 
@@ -453,8 +453,8 @@ public class GraphColoring_PrivateFunctionsTest {
       forbiddenColors1[i] = i;
 
     val nodeMap = new NodeStatesMap();
-    nodeMap.put(r[0], new NodeState(ColorRange.Range_0_65535, nodeRun, forbiddenColors1));
-    nodeMap.put(r[1], new NodeState(ColorRange.Range_0_255, nodeRun, forbiddenColors1));
+    nodeMap.put(r[0], new NodeState(ColorRange.RANGE_16BIT, nodeRun, forbiddenColors1));
+    nodeMap.put(r[1], new NodeState(ColorRange.RANGE_8BIT, nodeRun, forbiddenColors1));
 
     assertEquals(249, execGenerateRunFirstColor(nodeRun, nodeMap));
 
@@ -464,14 +464,14 @@ public class GraphColoring_PrivateFunctionsTest {
     for (int i = 2; i < forbiddenColors2.length; ++i)
       forbiddenColors2[i] = i + 14;
 
-    nodeMap.put(r[0], new NodeState(ColorRange.Range_0_65535, nodeRun, forbiddenColors2));
-    nodeMap.put(r[1], new NodeState(ColorRange.Range_0_255, nodeRun, forbiddenColors2));
+    nodeMap.put(r[0], new NodeState(ColorRange.RANGE_16BIT, nodeRun, forbiddenColors2));
+    nodeMap.put(r[1], new NodeState(ColorRange.RANGE_8BIT, nodeRun, forbiddenColors2));
 
     assertEquals(2, execGenerateRunFirstColor(nodeRun, nodeMap));
   }
 
   @Test(expected=GraphUncolorableException.class)
-  public void testGenerateColors_Uncolorable_Range_0_255() throws Throwable {
+  public void testGenerateColors_Uncolorable_RANGE_8BIT() throws Throwable {
     val r = genRegisters(2);
     val nodeRun = new NodeRun(r);
 
@@ -480,14 +480,14 @@ public class GraphColoring_PrivateFunctionsTest {
       forbiddenColors[i] = i;
 
     val nodeMap = new NodeStatesMap();
-    nodeMap.put(r[0], new NodeState(ColorRange.Range_0_65535, nodeRun, forbiddenColors));
-    nodeMap.put(r[1], new NodeState(ColorRange.Range_0_255, nodeRun, forbiddenColors));
+    nodeMap.put(r[0], new NodeState(ColorRange.RANGE_16BIT, nodeRun, forbiddenColors));
+    nodeMap.put(r[1], new NodeState(ColorRange.RANGE_8BIT, nodeRun, forbiddenColors));
 
     execGenerateRunFirstColor(nodeRun, nodeMap);
   }
 
   @Test
-  public void testGenerateColors_Colorable_Range_0_65535() throws Throwable {
+  public void testGenerateColors_Colorable_RANGE_16BIT() throws Throwable {
     val r = genRegisters(2);
     val nodeRun = new NodeRun(r);
 
@@ -496,14 +496,14 @@ public class GraphColoring_PrivateFunctionsTest {
       forbiddenColors1[i] = i;
 
     val nodeMap = new NodeStatesMap();
-    nodeMap.put(r[0], new NodeState(ColorRange.Range_0_65535, nodeRun, forbiddenColors1));
-    nodeMap.put(r[1], new NodeState(ColorRange.Range_0_65535, nodeRun, forbiddenColors1));
+    nodeMap.put(r[0], new NodeState(ColorRange.RANGE_16BIT, nodeRun, forbiddenColors1));
+    nodeMap.put(r[1], new NodeState(ColorRange.RANGE_16BIT, nodeRun, forbiddenColors1));
 
     assertEquals(1000, execGenerateRunFirstColor(nodeRun, nodeMap));
   }
 
   @Test(expected=GraphUncolorableException.class)
-  public void testGenerateColors_Uncolorable_Range_0_65535() throws Throwable {
+  public void testGenerateColors_Uncolorable_RANGE_16BIT() throws Throwable {
     val r = genRegisters(2);
     val nodeRun = new NodeRun(r);
 
@@ -512,8 +512,8 @@ public class GraphColoring_PrivateFunctionsTest {
       forbiddenColors1[i] = i;
 
     val nodeMap = new NodeStatesMap();
-    nodeMap.put(r[0], new NodeState(ColorRange.Range_0_65535, nodeRun, forbiddenColors1));
-    nodeMap.put(r[1], new NodeState(ColorRange.Range_0_65535, nodeRun, forbiddenColors1));
+    nodeMap.put(r[0], new NodeState(ColorRange.RANGE_16BIT, nodeRun, forbiddenColors1));
+    nodeMap.put(r[1], new NodeState(ColorRange.RANGE_16BIT, nodeRun, forbiddenColors1));
 
     execGenerateRunFirstColor(nodeRun, nodeMap);
   }
@@ -703,8 +703,8 @@ public class GraphColoring_PrivateFunctionsTest {
     code.add(i4);
 
     val nodeRun = new NodeRun();
-    nodeRun.add(r2); // new Pair<DexRegister, ColorRange>(r2, ColorRange.Range_0_255));
-    nodeRun.add(r3); // new Pair<DexRegister, ColorRange>(r3, ColorRange.Range_0_255));
+    nodeRun.add(r2); // new Pair<DexRegister, ColorRange>(r2, ColorRange.RANGE_8BIT));
+    nodeRun.add(r3); // new Pair<DexRegister, ColorRange>(r3, ColorRange.RANGE_8BIT));
 
     val newCode = execGenerateCodeWithSpilledNode(code, nodeRun);
     val insns = newCode.getInstructionList();

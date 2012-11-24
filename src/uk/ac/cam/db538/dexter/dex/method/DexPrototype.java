@@ -50,53 +50,53 @@ public class DexPrototype {
   }
 
   private int countParamWords(boolean isStatic) {
-	    int totalWords = 0;
-	    if (!isStatic)
-	      totalWords += DexClassType.TypeSize.getRegisterCount();
-	    for (val param : ParameterTypes)
-	      totalWords += param.getRegisters();
-	    return totalWords;
-	  }
-  
-  public int getParameterCount(boolean isStatic) {
-	  return ParameterTypes.size() + (isStatic ? 0 : 1);
+    int totalWords = 0;
+    if (!isStatic)
+      totalWords += DexClassType.TypeSize.getRegisterCount();
+    for (val param : ParameterTypes)
+      totalWords += param.getRegisters();
+    return totalWords;
   }
-  
-  public int getParameterRegisterId(int paramId, int registerCount, boolean isStatic, DexClass clazz) {
-	  int regId = registerCount - getParameterCount(isStatic);
-	  if (paramId == 0)
-		  return regId;
-	  else if (!isStatic) {
-		  regId += clazz.getType().getRegisters();
-		  paramId--;
-	  }
 
-	  for (int i = 0; i < paramId; ++i)
-		  regId = ParameterTypes.get(i).getRegisters();
-	  
-	  return regId;
+  public int getParameterCount(boolean isStatic) {
+    return ParameterTypes.size() + (isStatic ? 0 : 1);
   }
-  
+
+  public int getParameterRegisterId(int paramId, int registerCount, boolean isStatic, DexClass clazz) {
+    int regId = registerCount - getParameterCount(isStatic);
+    if (paramId == 0)
+      return regId;
+    else if (!isStatic) {
+      regId += clazz.getType().getRegisters();
+      paramId--;
+    }
+
+    for (int i = 0; i < paramId; ++i)
+      regId = ParameterTypes.get(i).getRegisters();
+
+    return regId;
+  }
+
   public DexRegisterType getParameterType(int paramId, boolean isStatic, DexClass clazz) {
-	  if (!isStatic) {
-		  if (paramId == 0)
-			  return clazz.getType();
-		  else
-			  paramId--;
-	  }
-	  return ParameterTypes.get(paramId);
+    if (!isStatic) {
+      if (paramId == 0)
+        return clazz.getType();
+      else
+        paramId--;
+    }
+    return ParameterTypes.get(paramId);
   }
 
   public NoDuplicatesList<DexRegister> generateParameterRegisters(boolean isStatic) {
-	  val regs = new NoDuplicatesList<DexRegister>();
-	  
-	  val paramWords = this.countParamWords(isStatic);
-	  for (int i = 0; i < paramWords; ++i)
-		  regs.add(new DexRegister());
-	  
-	  return regs;
+    val regs = new NoDuplicatesList<DexRegister>();
+
+    val paramWords = this.countParamWords(isStatic);
+    for (int i = 0; i < paramWords; ++i)
+      regs.add(new DexRegister());
+
+    return regs;
   }
-  
+
   public static Cache<DexPrototype, ProtoIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
     return new Cache<DexPrototype, ProtoIdItem>() {
       @Override

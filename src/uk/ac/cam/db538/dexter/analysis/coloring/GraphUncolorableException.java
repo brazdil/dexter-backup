@@ -6,10 +6,10 @@ public class GraphUncolorableException extends Exception {
 
   private static final long serialVersionUID = -6108162928298175177L;
 
-  @Getter private final NodeRun ProblematicNodeRun;
+  @Getter private final NodeRun problematicNodeRun;
 
   public GraphUncolorableException(NodeRun nodeRun) {
     super();
-    ProblematicNodeRun = nodeRun;
+    problematicNodeRun = nodeRun;
   }
 }

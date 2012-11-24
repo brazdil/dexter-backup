@@ -88,27 +88,27 @@ public class DexClass_ObjectTaint extends DexClass {
   }
 
   private DexMethod genMethod_Init(DexParsingCache cache) {
-	val rThis = new DexRegister(0); // argument only for GUI here
+    val rThis = new DexRegister(0); // argument only for GUI here
 
-	val code = new DexCode();
+    val code = new DexCode();
     code.add(new DexInstruction_Invoke(code,
-    		DexClassType.parse("Ljava/lang/Object;", cache),
-    		"<init>",
-    		new DexPrototype(DexType.parse("V", cache), null),
-    		Arrays.asList(new DexRegister[] { rThis }),
-    		Opcode_Invoke.Direct));
+                                       DexClassType.parse("Ljava/lang/Object;", cache),
+                                       "<init>",
+                                       new DexPrototype(DexType.parse("V", cache), null),
+                                       Arrays.asList(new DexRegister[] { rThis }),
+                                       Opcode_Invoke.Direct));
     code.add(new DexInstruction_ReturnVoid(code));
 
     val method = new DexDirectMethod(this,
-                               "<init>",
-                               EnumSet.of(AccessFlags.PRIVATE, AccessFlags.CONSTRUCTOR),
-                               new DexPrototype(
-                                 DexType.parse("V", cache), // return value
-                                 null), // parameters
-                               code);
-    
+                                     "<init>",
+                                     EnumSet.of(AccessFlags.PRIVATE, AccessFlags.CONSTRUCTOR),
+                                     new DexPrototype(
+                                       DexType.parse("V", cache), // return value
+                                       null), // parameters
+                                     code);
+
     method.addParameterMapping_Single(0, rThis);
-    
+
     return method;
   }
 }

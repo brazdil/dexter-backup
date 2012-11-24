@@ -1,18 +1,18 @@
 package uk.ac.cam.db538.dexter.analysis.coloring;
 
 public enum ColorRange {
-  Range_0_15,
-  Range_0_255,
-  Range_0_65535;
+  RANGE_4BIT,
+  RANGE_8BIT,
+  RANGE_16BIT;
 
   public boolean isInRange(int i) {
     switch (this) {
-    case Range_0_15:
+    case RANGE_4BIT:
       return i >= 0 && i <= 15;
-    case Range_0_255:
+    case RANGE_8BIT:
       return i >= 0 && i <= 255;
     default:
-    case Range_0_65535:
+    case RANGE_16BIT:
       return i >= 0 && i <= 65535;
     }
   }

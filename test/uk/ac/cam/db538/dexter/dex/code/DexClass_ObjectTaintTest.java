@@ -16,7 +16,7 @@ public class DexClass_ObjectTaintTest {
     val dex = new Dex();
     dex.instrument();
 
-    val clsTaint = dex.getObjectTaintClass();
+    val clsTaint = dex.getClass_ObjectTaint();
     val clsTaint_Type = clsTaint.getType();
 
     assertEquals("Lt/$0;", clsTaint_Type.getDescriptor());
@@ -33,7 +33,7 @@ public class DexClass_ObjectTaintTest {
 
     dex.instrument();
 
-    val clsTaint = dex.getObjectTaintClass();
+    val clsTaint = dex.getClass_ObjectTaint();
     val clsTaint_Type = clsTaint.getType();
 
     assertEquals("Lt/$1;", clsTaint_Type.getDescriptor());
@@ -44,7 +44,7 @@ public class DexClass_ObjectTaintTest {
     val dex = new Dex();
     dex.instrument();
 
-    val clsTaint = dex.getObjectTaintClass();
+    val clsTaint = dex.getClass_ObjectTaint();
     val field = clsTaint.getField_ObjectMap();
 
     assertTrue(field != null);
@@ -58,7 +58,7 @@ public class DexClass_ObjectTaintTest {
     val dex = new Dex();
     dex.instrument();
 
-    val clsTaint = dex.getObjectTaintClass();
+    val clsTaint = dex.getClass_ObjectTaint();
     val method = clsTaint.getMethod_Clinit();
 
     assertTrue(method != null);
@@ -73,7 +73,7 @@ public class DexClass_ObjectTaintTest {
     val dex = new Dex();
     dex.instrument();
 
-    val clsTaint = dex.getObjectTaintClass();
+    val clsTaint = dex.getClass_ObjectTaint();
     val method = clsTaint.getMethod_Init();
 
     assertTrue(method != null);

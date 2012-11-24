@@ -2,6 +2,7 @@ package uk.ac.cam.db538.dexter.analysis.coloring;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -18,36 +19,36 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class GraphColoring {
 
-  private static final int MaxColor = 65536;
+  private static final int MAX_COLOR = 65536;
 
-  @Getter private final DexCode Code;
+  @Getter private final DexCode code;
 
-  @Getter private DexCode ModifiedCode;
-  @Getter private Map<DexRegister, Integer> Coloring;
-  @Getter private int ColorsUsed;
+  @Getter private DexCode modifiedCode;
+  private Map<DexRegister, Integer> coloring;
+  @Getter private int colorsUsed;
 
   public GraphColoring(DexCode code) {
-    Code = code;
-    update();
+    this.code = code;
+    generateGC();
   }
 
-  public void update() {
-    ModifiedCode = Code;
+  private void generateGC() {
+    modifiedCode = code;
     boolean colored = false;
     while (!colored) {
-      val nodeMap = generateNodeStates(ModifiedCode);
+      val nodeMap = generateNodeStates(modifiedCode);
       try {
-        colorGraph(nodeMap, new ClashGraph(ModifiedCode));
+        colorGraph(nodeMap, new ClashGraph(modifiedCode));
         val result = generateUngappedColoring(nodeMap);
 
-        Coloring = result.getValA();
-        ColorsUsed = result.getValB();
+        coloring = result.getValA();
+        colorsUsed = result.getValB();
 
         colored = true;
       } catch (GraphUncolorableException e) {
-        if (getStrictestColorRange(e.getProblematicNodeRun(), nodeMap) == ColorRange.Range_0_65535)
+        if (getStrictestColorRange(e.getProblematicNodeRun(), nodeMap) == ColorRange.RANGE_16BIT)
           throw new RuntimeException(e);
-        ModifiedCode = generateCodeWithSpilledNode(ModifiedCode, e.getProblematicNodeRun());
+        modifiedCode = generateCodeWithSpilledNode(modifiedCode, e.getProblematicNodeRun());
       }
     }
   }
@@ -62,7 +63,7 @@ public class GraphColoring {
     for (val node : registers) {
       ColorRange range = rangeConstraints.get(node);
       if (range == null)
-        range = ColorRange.Range_0_65535;
+        range = ColorRange.RANGE_16BIT;
       val nodeRun = followRuns.get(node);
 
       nodeMap.put(node, new NodeState(range, nodeRun));
@@ -99,7 +100,7 @@ public class GraphColoring {
 
   private static void generateRunForbiddenColors(NodeRun nodeRun, NodeStatesMap nodeMap, ClashGraph clashGraph) {
     // for each of the nodes in the node's run
-    for (val node : nodeRun) {
+    for (val node : nodeRun.getNodes()) {
       // find the union of colors assigned to its neighbours
       val nodeColors = new HashSet<Integer>();
       for (val neighbour : clashGraph.getNodeNeighbours(node)) {
@@ -122,18 +123,18 @@ public class GraphColoring {
 
   private static void generateRunColoring(NodeRun nodeRun, NodeStatesMap nodeMap) throws GraphUncolorableException {
     int color = generateRunFirstColor(nodeRun, nodeMap);
-    for (val node : nodeRun)
+    for (val node : nodeRun.getNodes())
       nodeMap.get(node).setColor(color++);
   }
 
   private static void removeRunFromStack(NodeRun nodeRun, NodeStatesMap nodeMap, Stack<DexRegister> nodeStack) {
-    for (val node : nodeRun)
+    for (val node : nodeRun.getNodes())
       nodeStack.remove(node);
   }
 
   private static ColorRange getStrictestColorRange(NodeRun nodeRun, NodeStatesMap nodeMap) {
-    ColorRange strictest = ColorRange.Range_0_65535;
-    for (val node : nodeRun) {
+    ColorRange strictest = ColorRange.RANGE_16BIT;
+    for (val node : nodeRun.getNodes()) {
       val nodeRange = nodeMap.get(node).getColorRange();
       if (nodeRange.ordinal() < strictest.ordinal())
         strictest = nodeRange;
@@ -146,15 +147,15 @@ public class GraphColoring {
     // start looking for the colors in the strictest range enforced by the nodes
     // if that fails, try extending it to even stricter ranges
     switch (getStrictestColorRange(nodeRun, nodeMap)) {
-    case Range_0_15:
+    case RANGE_4BIT:
       return generateColorsInRange(0, 15, nodeRun, nodeMap);
-    case Range_0_255:
+    case RANGE_8BIT:
       try {
         return generateColorsInRange(16, 255, nodeRun, nodeMap);
       } catch (GraphUncolorableException e) {
         return generateColorsInRange(0, 255, nodeRun, nodeMap);
       }
-    case Range_0_65535:
+    case RANGE_16BIT:
     default:
       try {
         return generateColorsInRange(256, 65535, nodeRun, nodeMap);
@@ -193,7 +194,7 @@ public class GraphColoring {
   private static boolean checkColorRange(int firstColor, NodeRun nodeRun, NodeStatesMap nodeMap) throws GraphUncolorableException {
     int currentColor = firstColor;
 
-    for (val node : nodeRun) {
+    for (val node : nodeRun.getNodes()) {
       val nodeEntry = nodeMap.get(node);
       val nodeForbiddenColors = nodeEntry.getForbiddenColors();
       val nodeRange = nodeEntry.getColorRange();
@@ -213,7 +214,7 @@ public class GraphColoring {
     while (Arrays.binarySearch(sortedColors, color) >= 0)
       color++;
 
-    if (color >= MaxColor)
+    if (color >= MAX_COLOR)
       return -1;
     else
       return color;
@@ -222,12 +223,12 @@ public class GraphColoring {
   private static int nextUsedHigherColor(int color, int[] sortedColors) {
     for (val arrayColor : sortedColors)
       if (arrayColor > color)
-        return arrayColor > MaxColor ? MaxColor : arrayColor;
-    return MaxColor;
+        return arrayColor > MAX_COLOR ? MAX_COLOR : arrayColor;
+    return MAX_COLOR;
   }
 
   private static boolean containsAnyOfNodes(Collection<DexRegister> collection, NodeRun nodeRun) {
-    for (val node : nodeRun)
+    for (val node : nodeRun.getNodes())
       if (collection.contains(node))
         return true;
     return false;
@@ -238,7 +239,7 @@ public class GraphColoring {
 
     for (val insn : currentCode.getInstructionList()) {
       if (containsAnyOfNodes(insn.lvaUsedRegisters(), nodeRun))
-        newInstructions.addAll(insn.gcAddTemporaries(nodeRun));
+        newInstructions.addAll(insn.gcAddTemporaries(nodeRun.getNodes()));
       else
         newInstructions.add(insn);
     }
@@ -273,8 +274,12 @@ public class GraphColoring {
     return new Pair<Map<DexRegister, Integer>, Integer>(coloring, colorsUsed);
   }
 
+  public Map<DexRegister, Integer> getColoring() {
+    return Collections.unmodifiableMap(coloring);
+  }
+
   public int getColor(DexRegister node) {
-    val color = Coloring.get(node);
+    val color = coloring.get(node);
     if (color != null)
       return color;
     else

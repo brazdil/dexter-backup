@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.dex;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.Getter;
@@ -17,14 +18,14 @@ import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class Dex {
 
-  @Getter private final List<DexClass> Classes;
-  @Getter private DexClass_ObjectTaint ObjectTaintClass;
+  private final List<DexClass> classes;
+  @Getter private DexClass_ObjectTaint class_ObjectTaint;
 
-  @Getter private final DexParsingCache ParsingCache;
+  @Getter private final DexParsingCache parsingCache;
 
   public Dex() {
-    Classes = new NoDuplicatesList<DexClass>();
-    ParsingCache = new DexParsingCache();
+    classes = new NoDuplicatesList<DexClass>();
+    parsingCache = new DexParsingCache();
   }
 
   public Dex(File filename) throws IOException, UnknownTypeException, InstructionParsingException {
@@ -33,16 +34,20 @@ public class Dex {
     val originalFile = new DexFile(filename);
     val dexClsInfos = originalFile.ClassDefsSection.getItems();
     for (val dexClsInfo : dexClsInfos)
-      Classes.add(new DexClass(this, dexClsInfo));
+      classes.add(new DexClass(this, dexClsInfo));
+  }
+
+  public List<DexClass> getClasses() {
+    return Collections.unmodifiableList(classes);
   }
 
   public void instrument() {
-    ObjectTaintClass = new DexClass_ObjectTaint(this);
+    class_ObjectTaint = new DexClass_ObjectTaint(this);
 
-    for (val cls : Classes)
+    for (val cls : classes)
       cls.instrument();
 
-    Classes.add(ObjectTaintClass);
+    classes.add(class_ObjectTaint);
   }
 
   public void writeToFile(File filename) throws IOException {
@@ -50,7 +55,7 @@ public class Dex {
     val out = new ByteArrayAnnotatedOutput();
 
     val asmCache = new DexAssemblingCache(outFile);
-    for (val cls : Classes)
+    for (val cls : classes)
       cls.writeToFile(outFile, asmCache);
 
     outFile.place();

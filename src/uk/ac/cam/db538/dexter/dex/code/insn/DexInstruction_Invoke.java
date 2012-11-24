@@ -207,7 +207,7 @@ public class DexInstruction_Invoke extends DexInstruction {
 
     if (!assemblesToRange())
       for(val argReg : ArgumentRegisters)
-        set.add(new GcRangeConstraint(argReg, ColorRange.Range_0_15));
+        set.add(new GcRangeConstraint(argReg, ColorRange.RANGE_4BIT));
 
     return set;
   }
