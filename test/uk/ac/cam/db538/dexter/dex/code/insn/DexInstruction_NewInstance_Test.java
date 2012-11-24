@@ -21,8 +21,8 @@ public class DexInstruction_NewInstance_Test {
   @Test
   public void testParse_NewInstance() throws InstructionParsingException {
     Utils.parseAndCompare(
-      new Instruction21c(Opcode.NEW_INSTANCE, (short) 236, Utils.getTypeItem("Ljava.lang.String;")),
-      "new-instance v236, Ljava.lang.String;");
+      new Instruction21c(Opcode.NEW_INSTANCE, (short) 236, Utils.getTypeItem("Ljava/lang/String;")),
+      "new-instance v236, Ljava/lang/String;");
   }
 
   @Test
@@ -33,7 +33,7 @@ public class DexInstruction_NewInstance_Test {
     val regTo = new DexRegister(regNTo);
     val regAlloc = Utils.genRegAlloc(regTo);
 
-    val insn = new DexInstruction_NewInstance(null, regTo, DexClassType.parse("Ljava.lang.Object;", cache));
+    val insn = new DexInstruction_NewInstance(null, regTo, DexClassType.parse("Ljava/lang/Object;", cache));
 
     val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
     assertEquals(1, asm.length);
@@ -41,7 +41,7 @@ public class DexInstruction_NewInstance_Test {
 
     val asmInsn = (Instruction21c) asm[0];
     assertEquals(regNTo, asmInsn.getRegisterA());
-    assertEquals("Ljava.lang.Object;", ((TypeIdItem) asmInsn.getReferencedItem()).getTypeDescriptor());
+    assertEquals("Ljava/lang/Object;", ((TypeIdItem) asmInsn.getReferencedItem()).getTypeDescriptor());
   }
 
   @Test(expected=InstructionAssemblyException.class)
