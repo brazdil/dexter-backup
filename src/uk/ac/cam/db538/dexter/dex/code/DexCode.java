@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -9,7 +10,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.CodeItem;
@@ -59,29 +59,43 @@ import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class DexCode {
 
-  @Getter private final NoDuplicatesList<DexCodeElement> InstructionList;
-  @Getter private final Set<DexRegister> UsedRegisters;
+  private final NoDuplicatesList<DexCodeElement> instructionList;
+  private final Set<DexRegister> usedRegisters;
 
   // stores information about original register mapping
-  // is null for generated code
-  private DexCode_ParsingState ParsingInfo = null;
+  // is null for run-time generated code
+  private DexCode_ParsingState parsingInfo = null;
 
   // creates completely empty code
   public DexCode() {
-    InstructionList = new NoDuplicatesList<DexCodeElement>();
-    UsedRegisters = new HashSet<DexRegister>();
+    instructionList = new NoDuplicatesList<DexCodeElement>();
+    usedRegisters = new HashSet<DexRegister>();
   }
 
   // creates a copy without instructions
   private DexCode(DexCode oldCode) {
-    InstructionList = new NoDuplicatesList<DexCodeElement>();
-    UsedRegisters = new HashSet<DexRegister>();
+    instructionList = new NoDuplicatesList<DexCodeElement>();
+    usedRegisters = new HashSet<DexRegister>();
   }
 
   // creates a copy wit instruction replacement
   public DexCode(DexCode oldCode, NoDuplicatesList<DexCodeElement> codeReplacement) {
     this(oldCode);
     this.addAll(codeReplacement);
+  }
+
+  public DexCode(CodeItem methodInfo, DexParsingCache cache) throws InstructionParsingException {
+    this();
+    parsingInfo = new DexCode_ParsingState(cache, this);
+    parseInstructions(methodInfo.getInstructions(), parsingInfo);
+  }
+
+  // called internally and from tests
+  // should not be called directly in real life
+  DexCode(Instruction[] instructions, DexParsingCache cache) {
+    this();
+    parsingInfo = new DexCode_ParsingState(cache, this);
+    parseInstructions(instructions, parsingInfo);
   }
 
   private void parseInstructions(Instruction[] instructions, DexCode_ParsingState parsingState) {
@@ -101,23 +115,17 @@ public class DexCode {
     parsingState.placeLabels();
   }
 
-  public DexCode(CodeItem methodInfo, DexParsingCache cache) throws InstructionParsingException {
-    this();
-    ParsingInfo = new DexCode_ParsingState(cache, this);
-    parseInstructions(methodInfo.getInstructions(), ParsingInfo);
+  public List<DexCodeElement> getInstructionList() {
+    return Collections.unmodifiableList(instructionList);
   }
 
-  // called internally and from tests
-  // should not be called directly in real life
-  DexCode(Instruction[] instructions, DexParsingCache cache) {
-    this();
-    ParsingInfo = new DexCode_ParsingState(cache, this);
-    parseInstructions(instructions, ParsingInfo);
+  public Set<DexRegister> getUsedRegisters() {
+    return Collections.unmodifiableSet(usedRegisters);
   }
 
   public DexRegister getRegisterByOriginalNumber(int id) {
-    if (ParsingInfo != null)
-      return ParsingInfo.getRegister(id);
+    if (parsingInfo != null)
+      return parsingInfo.getRegister(id);
     else
       return null;
   }
@@ -125,7 +133,7 @@ public class DexCode {
   private int findElement(DexCodeElement elem) {
     int index = 0;
     boolean found = false;
-    for (val e : InstructionList) {
+    for (val e : instructionList) {
       if (e.equals(elem)) {
         found = true;
         break;
@@ -140,8 +148,8 @@ public class DexCode {
   }
 
   public void add(DexCodeElement elem) {
-    InstructionList.add(elem);
-    UsedRegisters.addAll(elem.lvaUsedRegisters());
+    instructionList.add(elem);
+    usedRegisters.addAll(elem.lvaUsedRegisters());
   }
 
   public void addAll(DexCodeElement[] elems) {
@@ -155,17 +163,17 @@ public class DexCode {
   }
 
   public void insertBefore(DexCodeElement elem, DexCodeElement before) {
-    InstructionList.add(findElement(before), elem);
+    instructionList.add(findElement(before), elem);
   }
 
   public void insertAfter(DexCodeElement elem, DexCodeElement after) {
-    InstructionList.add(findElement(after) + 1, elem);
+    instructionList.add(findElement(after) + 1, elem);
   }
 
   public DexCode instrument() {
     val newCode = new NoDuplicatesList<DexCodeElement>();
     val taintRegs = new DexCode_InstrumentationState(this);
-    for (val elem : getInstructionList()) {
+    for (val elem : instructionList) {
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
         newCode.addAll(insn.instrument(taintRegs));
@@ -178,7 +186,7 @@ public class DexCode {
   public Map<DexRegister, ColorRange> getRangeConstraints() {
     val allConstraints = new HashMap<DexRegister, ColorRange>();
 
-    for (val insn : getInstructionList()) {
+    for (val insn : instructionList) {
       val insnConstraints = insn.gcRangeConstraints();
 
       for (val constraint : insnConstraints) {
@@ -235,7 +243,7 @@ public class DexCode {
     val allConstraints = new HashMap<DexRegister, NodeRun>();
 
     // create a single-element run for each register
-    for (val reg : getUsedRegisters()) {
+    for (val reg : usedRegisters) {
       val newRun = new NodeRun();
       newRun.add(reg);
       allConstraints.put(reg, newRun);
@@ -243,7 +251,7 @@ public class DexCode {
 
     // connect runs into larger ones based on the constraints
     // given by instructions
-    for (val insn : getInstructionList())
+    for (val insn : instructionList)
       for (val constraint : insn.gcFollowConstraints())
         processFollowConstraint(constraint, allConstraints);
 
@@ -258,7 +266,7 @@ public class DexCode {
     // format of jumps
 
     // assemble each instruction
-    for (val elem : InstructionList)
+    for (val elem : instructionList)
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
         bytecode.addAll(Arrays.asList(insn.assembleBytecode(regAlloc, cache)));

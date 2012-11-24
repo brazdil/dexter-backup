@@ -6,11 +6,11 @@ import java.util.Map;
 import lombok.val;
 
 public class DexCode_InstrumentationState {
-  private final Map<DexRegister, DexRegister> RegisterMap;
-  private final int IdOffset;
+  private final Map<DexRegister, DexRegister> registerMap;
+  private final int idOffset;
 
   public DexCode_InstrumentationState(DexCode code) {
-    RegisterMap = new HashMap<DexRegister, DexRegister>();
+    registerMap = new HashMap<DexRegister, DexRegister>();
 
     // find the maximal register id in the code
     // this is strictly for GUI purposes
@@ -23,14 +23,14 @@ public class DexCode_InstrumentationState {
       if (id != null && maxId < id)
         maxId = id;
     }
-    IdOffset = maxId + 1;
+    idOffset = maxId + 1;
   }
 
   public DexRegister getTaintRegister(DexRegister reg) {
-    val taintReg = RegisterMap.get(reg);
+    val taintReg = registerMap.get(reg);
     if (taintReg == null) {
-      val newReg = new DexRegister(reg.getId() + IdOffset);
-      RegisterMap.put(reg, newReg);
+      val newReg = new DexRegister(reg.getId() + idOffset);
+      registerMap.put(reg, newReg);
       return newReg;
     } else
       return taintReg;

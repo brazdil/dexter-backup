@@ -16,16 +16,16 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 
 public abstract class DexCodeElement {
 
-  @Getter private DexCode MethodCode;
+  @Getter private DexCode methodCode;
 
   public DexCodeElement(DexCode methodCode) {
-    MethodCode = methodCode;
+    this.methodCode = methodCode;
   }
 
   public abstract String getOriginalAssembly();
 
   protected DexCodeElement getNextCodeElement() {
-    val insns = MethodCode.getInstructionList();
+    val insns = methodCode.getInstructionList();
 
     int location = insns.indexOf(this);
     if (location < 0) // sanity check, should never happen
@@ -116,11 +116,11 @@ public abstract class DexCodeElement {
     val newElem = new LinkedList<DexCodeElement>();
     for (val spilledReg : spilledRegs)
       if (referencedRegs.contains(spilledReg))
-        newElem.add(new DexInstruction_Move(MethodCode, tempMapping.get(spilledReg), spilledReg, false));
+        newElem.add(new DexInstruction_Move(methodCode, tempMapping.get(spilledReg), spilledReg, false));
     newElem.add(gcReplaceWithTemporaries(tempMapping));
     for (val spilledReg : spilledRegs)
       if (definedRegs.contains(spilledReg))
-        newElem.add(new DexInstruction_Move(MethodCode, spilledReg, tempMapping.get(spilledReg), false));
+        newElem.add(new DexInstruction_Move(methodCode, spilledReg, tempMapping.get(spilledReg), false));
 
     return newElem;
   }

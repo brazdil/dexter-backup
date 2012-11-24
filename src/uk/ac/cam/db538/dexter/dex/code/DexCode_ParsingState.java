@@ -11,57 +11,52 @@ import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexCode_ParsingState {
-  private final Cache<Integer, DexRegister> RegisterIdCache;
-  private final Cache<Long, DexLabel> LabelOffsetCache;
-  private final Map<Long, DexInstruction> InstructionOffsetMap;
-  private long CurrentOffset;
-  @Getter private final DexParsingCache Cache;
-  @Getter private final DexCode Code;
+  private final Cache<Integer, DexRegister> registerIdCache;
+  private final Cache<Long, DexLabel> labelOffsetCache;
+  private final Map<Long, DexInstruction> instructionOffsetMap;
+  private long currentOffset;
+  @Getter private final DexParsingCache cache;
+  @Getter private final DexCode code;
 
   public DexCode_ParsingState(DexParsingCache cache, DexCode code) {
-    RegisterIdCache = DexRegister.createCache();
-    LabelOffsetCache = new Cache<Long, DexLabel>() {
-      @Override
-      protected DexLabel createNewEntry(Long absoluteOffset) {
-        return new DexLabel(Code, absoluteOffset);
-      }
-    };
+    this.registerIdCache = DexRegister.createCache();
+    this.labelOffsetCache = DexLabel.createCache(code);
 
-    InstructionOffsetMap = new HashMap<Long, DexInstruction>();
-    Cache = cache;
-    CurrentOffset = 0L;
-    Code = code;
+    this.instructionOffsetMap = new HashMap<Long, DexInstruction>();
+    this.cache = cache;
+    this.currentOffset = 0L;
+    this.code = code;
   }
 
   public DexRegister getRegister(int id) {
-    return RegisterIdCache.getCachedEntry(id);
+    return registerIdCache.getCachedEntry(id);
   }
 
   public boolean containsRegisterId(int id) {
-    return RegisterIdCache.contains(id);
+    return registerIdCache.contains(id);
   }
 
   public DexLabel getLabel(long insnOffset) {
-    long absoluteOffset = CurrentOffset + insnOffset;
-    return LabelOffsetCache.getCachedEntry(absoluteOffset);
+    long absoluteOffset = currentOffset + insnOffset;
+    return labelOffsetCache.getCachedEntry(absoluteOffset);
   }
 
   public void addInstruction(long size, DexInstruction insn) {
-    InstructionOffsetMap.put(CurrentOffset, insn);
-    CurrentOffset += size;
-    Code.add(insn);
+    instructionOffsetMap.put(currentOffset, insn);
+    currentOffset += size;
+    code.add(insn);
   }
 
   public void placeLabels() throws InstructionParsingException {
-    for (val entry : LabelOffsetCache.entrySet()) {
+    for (val entry : labelOffsetCache.entrySet()) {
       val labelOffset = entry.getKey();
-      val insnAtOffset = InstructionOffsetMap.get(labelOffset);
+      val insnAtOffset = instructionOffsetMap.get(labelOffset);
       if (insnAtOffset == null)
         throw new InstructionParsingException(
           "Label could not be placed (non-existent offset " + labelOffset + ")");
       else {
         val label = entry.getValue();
-        Code.insertBefore(label, insnAtOffset);
+        code.insertBefore(label, insnAtOffset);
       }
     }
   }
