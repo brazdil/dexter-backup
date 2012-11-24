@@ -50,6 +50,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGetWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
@@ -381,6 +382,9 @@ public class DexCode {
     case SGET_CHAR:
     case SGET_SHORT:
       return new DexInstruction_StaticGet(this, insn, parsingState);
+
+    case SGET_WIDE:
+      return new DexInstruction_StaticGetWide(this, insn, parsingState);
 
     case INVOKE_VIRTUAL:
     case INVOKE_SUPER:
