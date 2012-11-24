@@ -37,7 +37,7 @@ public class GraphColoring {
     while (!colored) {
       val nodeMap = generateNodeStates(ModifiedCode);
       try {
-        colorGraph(nodeMap, new ClashGraph(ModifiedCode), ModifiedCode.getLastParamRegister());
+        colorGraph(nodeMap, new ClashGraph(ModifiedCode));
         val result = generateUngappedColoring(nodeMap);
 
         Coloring = result.getValA();
@@ -71,7 +71,7 @@ public class GraphColoring {
     return nodeMap;
   }
 
-  private static void colorGraph(NodeStatesMap nodeMap, ClashGraph clashGraph, DexRegister lastNode) throws GraphUncolorableException {
+  private static void colorGraph(NodeStatesMap nodeMap, ClashGraph clashGraph) throws GraphUncolorableException {
     // must not modify the clashGraph !
 
     val nodeStack = createNodeStack(clashGraph);

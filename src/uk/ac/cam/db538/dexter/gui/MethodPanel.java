@@ -77,7 +77,7 @@ public class MethodPanel extends InfoPanel {
 
     boolean first = true;
     val params = new StringBuilder();
-    for (val param : method.getPrototype().getArgumentTypes()) {
+    for (val param : method.getPrototype().getParameterTypes()) {
       if (first)
         first = false;
       else

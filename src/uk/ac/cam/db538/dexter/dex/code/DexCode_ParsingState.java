@@ -36,6 +36,10 @@ public class DexCode_ParsingState {
   public DexRegister getRegister(int id) {
     return RegisterIdCache.getCachedEntry(id);
   }
+  
+  public boolean containsRegisterId(int id) {
+	  return RegisterIdCache.contains(id);
+  }
 
   public DexLabel getLabel(long insnOffset) {
     long absoluteOffset = CurrentOffset + insnOffset;

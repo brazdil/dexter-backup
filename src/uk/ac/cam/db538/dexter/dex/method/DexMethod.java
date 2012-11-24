@@ -35,7 +35,6 @@ public abstract class DexMethod {
     Prototype = prototype;
   }
 
-
   public DexMethod(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, InstructionParsingException {
     this(parent,
          methodInfo.method.getMethodName().getStringValue(),

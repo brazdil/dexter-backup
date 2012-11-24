@@ -97,7 +97,7 @@ public class DexInstruction_Invoke extends DexInstruction {
   private void checkArguments() {
     // check that the number of registers is correct
     int expectedRegisterCount = (CallType == Opcode_Invoke.Static) ? 0 : 1;
-    for (val argType : MethodPrototype.getArgumentTypes())
+    for (val argType : MethodPrototype.getParameterTypes())
       expectedRegisterCount += argType.getRegisters();
     if (expectedRegisterCount != ArgumentRegisters.size())
       throw new InstructionArgumentException("Wrong number of arguments given to a method call");
