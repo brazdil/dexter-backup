@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -65,11 +66,11 @@ public abstract class DexCodeElement {
   // LIVE VARIABLE ANALYSIS
 
   public Set<DexRegister> lvaDefinedRegisters() {
-    return new HashSet<DexRegister>();
+    return Collections.emptySet();
   }
 
   public Set<DexRegister> lvaReferencedRegisters() {
-    return new HashSet<DexRegister>();
+    return Collections.emptySet();
   }
 
   public final Set<DexRegister> lvaUsedRegisters() {
@@ -94,11 +95,11 @@ public abstract class DexCodeElement {
   }
 
   public Set<GcRangeConstraint> gcRangeConstraints() {
-    return new HashSet<GcRangeConstraint>();
+    return Collections.emptySet();
   }
 
   public Set<GcFollowConstraint> gcFollowConstraints() {
-    return new HashSet<GcFollowConstraint>();
+    return Collections.emptySet();
   }
 
   public final List<DexCodeElement> gcAddTemporaries(Collection<DexRegister> spilledRegs) {
