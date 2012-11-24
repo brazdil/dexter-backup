@@ -58,12 +58,12 @@ public class DexInstruction_BinaryOpWide_Test {
     val insn = (DexInstruction_BinaryOpWide)
                Utils.parseAndCompare(new Instruction23x(Opcode.ADD_LONG, (short) 2, (short) 12, (short) 112),
                                      "add-long v2, v12, v112");
-    assertEquals(Integer.valueOf(2), insn.getRegTarget1().getId());
-    assertEquals(Integer.valueOf(3), insn.getRegTarget2().getId());
-    assertEquals(Integer.valueOf(12), insn.getRegSourceA1().getId());
-    assertEquals(Integer.valueOf(13), insn.getRegSourceA2().getId());
-    assertEquals(Integer.valueOf(112), insn.getRegSourceB1().getId());
-    assertEquals(Integer.valueOf(113), insn.getRegSourceB2().getId());
+    assertEquals(2, insn.getRegTarget1().getOriginalIndex());
+    assertEquals(3, insn.getRegTarget2().getOriginalIndex());
+    assertEquals(12, insn.getRegSourceA1().getOriginalIndex());
+    assertEquals(13, insn.getRegSourceA2().getOriginalIndex());
+    assertEquals(112, insn.getRegSourceB1().getOriginalIndex());
+    assertEquals(113, insn.getRegSourceB2().getOriginalIndex());
   }
 
   @Test
@@ -108,12 +108,12 @@ public class DexInstruction_BinaryOpWide_Test {
     val insn = (DexInstruction_BinaryOpWide)
                Utils.parseAndCompare(new Instruction12x(Opcode.ADD_LONG_2ADDR, (byte) 3, (byte) 6),
                                      "add-long v3, v3, v6");
-    assertEquals(Integer.valueOf(3), insn.getRegTarget1().getId());
-    assertEquals(Integer.valueOf(4), insn.getRegTarget2().getId());
-    assertEquals(Integer.valueOf(3), insn.getRegSourceA1().getId());
-    assertEquals(Integer.valueOf(4), insn.getRegSourceA2().getId());
-    assertEquals(Integer.valueOf(6), insn.getRegSourceB1().getId());
-    assertEquals(Integer.valueOf(7), insn.getRegSourceB2().getId());
+    assertEquals(3, insn.getRegTarget1().getOriginalIndex());
+    assertEquals(4, insn.getRegTarget2().getOriginalIndex());
+    assertEquals(3, insn.getRegSourceA1().getOriginalIndex());
+    assertEquals(4, insn.getRegSourceA2().getOriginalIndex());
+    assertEquals(6, insn.getRegSourceB1().getOriginalIndex());
+    assertEquals(7, insn.getRegSourceB2().getOriginalIndex());
   }
 
   @Test

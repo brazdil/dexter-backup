@@ -69,7 +69,7 @@ public class DexInstruction_Const extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "const v" + RegTo.getId() + ", #" + Value;
+    return "const v" + RegTo.getOriginalIndexString() + ", #" + Value;
   }
 
   @Override

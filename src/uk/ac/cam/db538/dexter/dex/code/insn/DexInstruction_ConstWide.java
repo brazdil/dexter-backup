@@ -68,6 +68,6 @@ public class DexInstruction_ConstWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "const-wide v" + RegTo1.getId() + ", #" + Value;
+    return "const-wide v" + RegTo1.getOriginalIndexString() + ", #" + Value;
   }
 }

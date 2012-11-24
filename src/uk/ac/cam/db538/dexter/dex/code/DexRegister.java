@@ -1,18 +1,17 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import uk.ac.cam.db538.dexter.utils.Cache;
-import lombok.Getter;
 
 public class DexRegister {
 
-  @Getter private final Integer id;
+  private final Integer originalIndex;
 
   public DexRegister() {
-    this.id = null;
+    this.originalIndex = null;
   }
 
   public DexRegister(Integer id) {
-    this.id = id;
+    this.originalIndex = id;
   }
 
   public static Cache<Integer, DexRegister> createCache() {
@@ -24,11 +23,22 @@ public class DexRegister {
     };
   }
 
+  public int getOriginalIndex() {
+    return originalIndex.intValue();
+  }
+
+  public String getOriginalIndexString() {
+    if (originalIndex == null)
+      return "?";
+    else
+      return originalIndex.toString();
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((id == null) ? 0 : id.hashCode());
+    result = prime * result + ((originalIndex == null) ? 0 : originalIndex.hashCode());
     return result;
   }
 

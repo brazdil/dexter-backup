@@ -43,6 +43,6 @@ public class DexInstruction_ConstClass extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "const-class v" + RegTo.getId() + ", " + Value.getDescriptor();
+    return "const-class v" + RegTo.getOriginalIndexString() + ", " + Value.getDescriptor();
   }
 }

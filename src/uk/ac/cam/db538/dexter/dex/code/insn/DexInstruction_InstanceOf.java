@@ -54,7 +54,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "instance-of v" + RegTo.getId() + ", v" + RegFrom.getId() +
+    return "instance-of v" + RegTo.getOriginalIndexString() + ", v" + RegFrom.getOriginalIndexString() +
            ", " + Value.getDescriptor();
   }
 

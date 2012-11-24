@@ -68,8 +68,8 @@ public class DexInstruction_BinaryOp extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return InsnOpcode.getAssemblyName() + " v" + RegTarget.getId() +
-           ", v" + RegSourceA.getId() + ", v" + RegSourceB.getId();
+    return InsnOpcode.getAssemblyName() + " v" + RegTarget.getOriginalIndexString() +
+           ", v" + RegSourceA.getOriginalIndexString() + ", v" + RegSourceB.getOriginalIndexString();
   }
 
   @Override

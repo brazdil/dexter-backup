@@ -37,6 +37,6 @@ public class DexInstruction_ReturnWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "return-wide v" + RegFrom1.getId();
+    return "return-wide v" + RegFrom1.getOriginalIndexString();
   }
 }

@@ -56,7 +56,7 @@ public class Utils {
   public static Map<DexRegister, Integer> genRegAlloc(DexRegister ... regs) {
     val regAlloc = new HashMap<DexRegister, Integer>();
     for (val reg : regs)
-      regAlloc.put(reg, reg.getId());
+      regAlloc.put(reg, reg.getOriginalIndex());
     return regAlloc;
   }
 

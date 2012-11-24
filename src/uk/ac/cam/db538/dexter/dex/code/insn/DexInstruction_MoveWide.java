@@ -63,6 +63,6 @@ public class DexInstruction_MoveWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "move-wide v" + RegTo1.getId() + ", v" + RegFrom1.getId();
+    return "move-wide v" + RegTo1.getOriginalIndexString() + ", v" + RegFrom1.getOriginalIndexString();
   }
 }

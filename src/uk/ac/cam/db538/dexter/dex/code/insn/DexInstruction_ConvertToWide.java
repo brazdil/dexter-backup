@@ -43,6 +43,6 @@ public class DexInstruction_ConvertToWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return InsnOpcode.getAssemblyName() + " v" + RegTo1.getId() + ", v" + RegFrom.getId();
+    return InsnOpcode.getAssemblyName() + " v" + RegTo1.getOriginalIndexString() + ", v" + RegFrom.getOriginalIndexString();
   }
 }

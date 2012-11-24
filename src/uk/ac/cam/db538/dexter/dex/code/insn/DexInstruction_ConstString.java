@@ -53,6 +53,6 @@ public class DexInstruction_ConstString extends DexInstruction {
     String escapedVal = StringEscapeUtils.escapeJava(StringConstant);
     if (escapedVal.length() > 15)
       escapedVal = escapedVal.substring(0, 15) + "...";
-    return "const-string v" + RegTo.getId() + ", \"" + escapedVal + "\"";
+    return "const-string v" + RegTo.getOriginalIndexString() + ", \"" + escapedVal + "\"";
   }
 }

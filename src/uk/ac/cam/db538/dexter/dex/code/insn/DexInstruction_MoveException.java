@@ -36,6 +36,6 @@ public class DexInstruction_MoveException extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "move-exception v" + RegTo.getId();
+    return "move-exception v" + RegTo.getOriginalIndexString();
   }
 }

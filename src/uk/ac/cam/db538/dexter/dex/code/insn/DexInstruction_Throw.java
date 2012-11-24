@@ -34,6 +34,6 @@ public class DexInstruction_Throw extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "throw v" + RegFrom.getId();
+    return "throw v" + RegFrom.getOriginalIndexString();
   }
 }

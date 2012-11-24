@@ -45,7 +45,7 @@ public class DexInstruction_CheckCast extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "check-cast v" + RegTo.getId() + ", " + Value.getDescriptor();
+    return "check-cast v" + RegTo.getOriginalIndexString() + ", " + Value.getDescriptor();
   }
 
 }

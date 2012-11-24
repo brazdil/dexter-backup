@@ -15,12 +15,10 @@ public class DexCode_InstrumentationState {
     // find the maximal register id in the code
     // this is strictly for GUI purposes
     // actual register allocation happens later;
-    // that said, it still organises the registers
-    // according to this
     int maxId = -1;
     for (val reg : code.getUsedRegisters()) {
-      val id = reg.getId();
-      if (id != null && maxId < id)
+      val id = reg.getOriginalIndex();
+      if (maxId < id)
         maxId = id;
     }
     idOffset = maxId + 1;
@@ -29,7 +27,7 @@ public class DexCode_InstrumentationState {
   public DexRegister getTaintRegister(DexRegister reg) {
     val taintReg = registerMap.get(reg);
     if (taintReg == null) {
-      val newReg = new DexRegister(reg.getId() + idOffset);
+      val newReg = new DexRegister(reg.getOriginalIndex() + idOffset);
       registerMap.put(reg, newReg);
       return newReg;
     } else
