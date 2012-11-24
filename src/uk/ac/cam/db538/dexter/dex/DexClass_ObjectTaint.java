@@ -11,7 +11,9 @@ import org.jf.dexlib.Util.AccessFlags;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
@@ -21,6 +23,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexType;
 
 public class DexClass_ObjectTaint extends DexClass {
 
+  @Getter private final DexClassType field_ObjectMap_Type;
   @Getter private final DexField field_ObjectMap;
   @Getter private final DexMethod method_Clinit;
   @Getter private final DexMethod method_Init;
@@ -40,6 +43,7 @@ public class DexClass_ObjectTaint extends DexClass {
 
     val cache = parent.getParsingCache();
 
+    field_ObjectMap_Type = genFiled_ObjectMap_Type(cache);
     field_ObjectMap = genField_ObjectMap(cache);
     fields.add(field_ObjectMap);
 
@@ -65,17 +69,35 @@ public class DexClass_ObjectTaint extends DexClass {
     return DexClassType.parse(desc, cache);
   }
 
+  private DexClassType genFiled_ObjectMap_Type(DexParsingCache cache) {
+    return DexClassType.parse("Ljava/util/WeakHashMap;", cache);
+  }
+
   private DexField genField_ObjectMap(DexParsingCache cache) {
     return new DexField(this,
                         "obj_map",
-                        DexClassType.parse("Ljava/util/WeakHashMap;", cache),
+                        field_ObjectMap_Type,
                         EnumSet.of(AccessFlags.PRIVATE, AccessFlags.STATIC, AccessFlags.FINAL));
   }
 
   private DexMethod genMethod_Clinit(DexParsingCache cache) {
     val code = new DexCode();
-    // val rObjectMap = new DexRegister();
-    // code.add(new DexInstruction_NewInstance(code, rObjectMap, (DexClassType) fieldObjectMap.getType()));
+//    val rObjectMap = new DexRegister();
+//    code.add(new DexInstruction_NewInstance(code, rObjectMap, field_ObjectMap_Type));
+//    code.add(new DexInstruction_Invoke(code,
+//                                       field_ObjectMap_Type,
+//                                       "<init>",
+//                                       new DexPrototype(
+//                                         DexType.parse("V", cache),
+//                                         null),
+//                                       null,
+//                                       Opcode_Invoke.Direct));
+//    code.add(new DexInstruction_StaticPut(code,
+//    		rObjectMap,
+//    		this.getType(),
+//    		field_ObjectMap_Type,
+//    		field_O
+//    		));
     code.add(new DexInstruction_ReturnVoid(code));
 
     return new DexDirectMethod(this,

@@ -14,6 +14,7 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
+import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
@@ -38,6 +39,21 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
     this.fieldClass = fieldClass;
     this.fieldType = fieldType;
     this.fieldName = fieldName;
+
+    Opcode_GetPutWide.checkTypeIsWide(this.fieldType);
+  }
+
+  public DexInstruction_StaticPutWide(DexCode methodCode, DexRegister from1, DexRegister from2, DexField field) {
+    super(methodCode);
+
+    if (!field.isStatic())
+      throw new InstructionArgumentException("Expected static field");
+
+    this.regFrom1 = from1;
+    this.regFrom2 = from2;
+    this.fieldClass = field.getParentClass().getType();
+    this.fieldType = field.getType();
+    this.fieldName = field.getName();
 
     Opcode_GetPutWide.checkTypeIsWide(this.fieldType);
   }
@@ -99,12 +115,12 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    int rFrom1 = regAlloc.get(regFrom1);
-    int rFrom2 = regAlloc.get(regFrom2);
+    int rTo1 = regAlloc.get(regFrom1);
+    int rTo2 = regAlloc.get(regFrom2);
 
-    if (fitsIntoBits_Unsigned(rFrom1, 8) && rFrom1 + 1 == rFrom2) {
+    if (fitsIntoBits_Unsigned(rTo1, 8) && rTo1 + 1 == rTo2) {
       return new Instruction[] {
-               new Instruction21c(Opcode.SPUT_WIDE, (short) rFrom1, cache.getField(fieldClass, fieldType, fieldName))
+               new Instruction21c(Opcode.SPUT_WIDE, (short) rTo1, cache.getField(fieldClass, fieldType, fieldName))
              };
     } else
       return throwCannotAssembleException("No suitable instruction format found");

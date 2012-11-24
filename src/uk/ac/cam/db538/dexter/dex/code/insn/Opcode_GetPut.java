@@ -131,4 +131,21 @@ public enum Opcode_GetPut {
     if (!typeOK)
       throw new InstructionArgumentException("Source/target type doesn't match the instruction's opcode");
   }
+
+  public static Opcode_GetPut getOpcodeFromType(DexRegisterType type) {
+    if (type instanceof DexReferenceType)
+      return Object;
+    else if (type instanceof DexInteger || type instanceof DexFloat)
+      return IntFloat;
+    else if (type instanceof DexBoolean)
+      return Boolean;
+    else if (type instanceof DexByte)
+      return Byte;
+    else if (type instanceof DexChar)
+      return Char;
+    else if (type instanceof DexShort)
+      return Short;
+    else
+      throw new InstructionArgumentException("Type given to instruction is not supported");
+  }
 }

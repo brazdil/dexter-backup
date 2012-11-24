@@ -13,6 +13,7 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
+import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
@@ -39,6 +40,19 @@ public class DexInstruction_StaticGet extends DexInstruction {
     this.opcode = opcode;
 
     Opcode_GetPut.checkTypeAgainstOpcode(this.fieldType, this.opcode);
+  }
+
+  public DexInstruction_StaticGet(DexCode methodCode, DexRegister to, DexField field) {
+    super(methodCode);
+
+    if (!field.isStatic())
+      throw new InstructionArgumentException("Expected static field");
+
+    this.regTo = to;
+    this.fieldClass = field.getParentClass().getType();
+    this.fieldType = field.getType();
+    this.fieldName = field.getName();
+    this.opcode = Opcode_GetPut.getOpcodeFromType(field.getType());
   }
 
   public DexInstruction_StaticGet(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
