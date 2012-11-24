@@ -62,7 +62,7 @@ public class DexClass_ObjectTaint extends DexClass {
     String desc;
     long suffix = 0;
     do {
-      desc = "Lt/$" + suffix + ";";
+      desc = "L$" + suffix + ";";
       suffix++;
     } while (cache.classTypeExists(desc));
 
