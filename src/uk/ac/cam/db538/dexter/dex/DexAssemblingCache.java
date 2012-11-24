@@ -22,52 +22,52 @@ import uk.ac.cam.db538.dexter.utils.Triple;
 
 public class DexAssemblingCache {
 
-  private final Cache<DexType, TypeIdItem> Types;
-  private final Cache<List<DexRegisterType>, TypeListItem> TypeLists;
-  private final Cache<String, StringIdItem> StringConstants;
-  private final Cache<DexPrototype, ProtoIdItem> Prototypes;
-  private final Cache<Triple<DexClassType, DexRegisterType, String>, FieldIdItem> Fields;
-  private final Cache<Triple<DexClassType, DexPrototype, String>, MethodIdItem> Methods;
+  private final Cache<DexType, TypeIdItem> types;
+  private final Cache<List<DexRegisterType>, TypeListItem> typeLists;
+  private final Cache<String, StringIdItem> stringConstants;
+  private final Cache<DexPrototype, ProtoIdItem> prototypes;
+  private final Cache<Triple<DexClassType, DexRegisterType, String>, FieldIdItem> fields;
+  private final Cache<Triple<DexClassType, DexPrototype, String>, MethodIdItem> methods;
 
   public DexAssemblingCache(final DexFile outFile) {
     val cache = this;
 
-    Types = DexType.createAssemblingCache(this, outFile);
-    TypeLists = DexType.createAssemblingCacheForLists(this, outFile);
+    types = DexType.createAssemblingCache(this, outFile);
+    typeLists = DexType.createAssemblingCacheForLists(this, outFile);
 
-    StringConstants = new Cache<String, StringIdItem>() {
+    stringConstants = new Cache<String, StringIdItem>() {
       @Override
       protected StringIdItem createNewEntry(String constant) {
         return StringIdItem.internStringIdItem(outFile, constant);
       }
     };
 
-    Prototypes = DexPrototype.createAssemblingCache(cache, outFile);
-    Fields = DexField.createAssemblingCache(cache, outFile);
-    Methods = DexMethod.createAssemblingCache(cache, outFile);
+    prototypes = DexPrototype.createAssemblingCache(cache, outFile);
+    fields = DexField.createAssemblingCache(cache, outFile);
+    methods = DexMethod.createAssemblingCache(cache, outFile);
   }
 
   public TypeIdItem getType(DexType key) {
-    return Types.getCachedEntry(key);
+    return types.getCachedEntry(key);
   }
 
   public TypeListItem getTypeList(List<DexRegisterType> key) {
-    return TypeLists.getCachedEntry(key);
+    return typeLists.getCachedEntry(key);
   }
 
   public StringIdItem getStringConstant(String key) {
-    return StringConstants.getCachedEntry(key);
+    return stringConstants.getCachedEntry(key);
   }
 
   public ProtoIdItem getPrototype(DexPrototype prototype) {
-    return Prototypes.getCachedEntry(prototype);
+    return prototypes.getCachedEntry(prototype);
   }
 
   public FieldIdItem getField(DexClassType classType, DexRegisterType fieldType, String name) {
-    return Fields.getCachedEntry(new Triple<DexClassType, DexRegisterType, String>(classType, fieldType, name));
+    return fields.getCachedEntry(new Triple<DexClassType, DexRegisterType, String>(classType, fieldType, name));
   }
 
   public MethodIdItem getMethod(DexClassType classType, DexPrototype methodPrototype, String name) {
-    return Methods.getCachedEntry(new Triple<DexClassType, DexPrototype, String>(classType, methodPrototype, name));
+    return methods.getCachedEntry(new Triple<DexClassType, DexPrototype, String>(classType, methodPrototype, name));
   }
 }

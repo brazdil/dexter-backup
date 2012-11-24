@@ -21,9 +21,9 @@ import uk.ac.cam.db538.dexter.dex.type.DexType;
 
 public class DexClass_ObjectTaint extends DexClass {
 
-  @Getter private final DexField Field_ObjectMap;
-  @Getter private final DexMethod Method_Clinit;
-  @Getter private final DexMethod Method_Init;
+  @Getter private final DexField field_ObjectMap;
+  @Getter private final DexMethod method_Clinit;
+  @Getter private final DexMethod method_Init;
 
   public DexClass_ObjectTaint(Dex parent) {
     super(parent,
@@ -40,13 +40,13 @@ public class DexClass_ObjectTaint extends DexClass {
 
     val cache = parent.getParsingCache();
 
-    Field_ObjectMap = genField_ObjectMap(cache);
-    Fields.add(Field_ObjectMap);
+    field_ObjectMap = genField_ObjectMap(cache);
+    fields.add(field_ObjectMap);
 
-    Method_Init = genMethod_Init(cache);
-    Method_Clinit = genMethod_Clinit(cache);
-    Methods.add(Method_Init);
-    Methods.add(Method_Clinit);
+    method_Init = genMethod_Init(cache);
+    method_Clinit = genMethod_Clinit(cache);
+    methods.add(method_Init);
+    methods.add(method_Clinit);
   }
 
   /*

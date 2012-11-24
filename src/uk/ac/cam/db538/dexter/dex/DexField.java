@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex;
 
+import java.util.Collections;
 import java.util.Set;
 
 import lombok.Getter;
@@ -20,16 +21,16 @@ import uk.ac.cam.db538.dexter.utils.Triple;
 
 public class DexField {
 
-  @Getter @Setter private DexClass ParentClass;
-  @Getter private final String Name;
-  @Getter private final DexRegisterType Type;
-  @Getter private final Set<AccessFlags> AccessFlagSet;
+  @Getter @Setter private DexClass parentClass;
+  @Getter private final String name;
+  @Getter private final DexRegisterType type;
+  private final Set<AccessFlags> accessFlagSet;
 
   public DexField(DexClass parent, String name, DexRegisterType type, Set<AccessFlags> accessFlags) {
-    ParentClass = parent;
-    Name = name;
-    Type = type;
-    AccessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
+    this.parentClass = parent;
+    this.name = name;
+    this.type = type;
+    this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
   }
 
   public DexField(DexClass parent, EncodedField fieldInfo) throws UnknownTypeException {
@@ -39,13 +40,17 @@ public class DexField {
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForField(fieldInfo.accessFlags)));
   }
 
+  public Set<AccessFlags> getAccessFlagSet() {
+    return Collections.unmodifiableSet(accessFlagSet);
+  }
+
   public boolean isStatic() {
-    return AccessFlagSet.contains(AccessFlags.STATIC);
+    return accessFlagSet.contains(AccessFlags.STATIC);
   }
 
   public EncodedField writeToFile(DexFile outFile, DexAssemblingCache cache) {
-    val fieldItem = cache.getField(ParentClass.getType(), Type, Name);
-    val accessFlags = DexUtils.assembleAccessFlags(AccessFlagSet);
+    val fieldItem = cache.getField(parentClass.getType(), type, name);
+    val accessFlags = DexUtils.assembleAccessFlags(accessFlagSet);
 
     return new EncodedField(fieldItem, accessFlags);
   }

@@ -6,23 +6,23 @@ import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexParsingCache {
 
-  private final Cache<String, DexClassType> ClassTypes;
-  private final Cache<String, DexArrayType> ArrayTypes;
+  private final Cache<String, DexClassType> classTypes;
+  private final Cache<String, DexArrayType> arrayTypes;
 
   public DexParsingCache() {
-    ClassTypes = DexClassType.createParsingCache();
-    ArrayTypes = DexArrayType.createParsingCache(this);
+    classTypes = DexClassType.createParsingCache();
+    arrayTypes = DexArrayType.createParsingCache(this);
   }
 
   public DexClassType getClassType(String desc) {
-    return ClassTypes.getCachedEntry(desc);
+    return classTypes.getCachedEntry(desc);
   }
 
   public DexArrayType getArrayType(String desc) {
-    return ArrayTypes.getCachedEntry(desc);
+    return arrayTypes.getCachedEntry(desc);
   }
 
   public boolean classTypeExists(String desc) {
-    return ClassTypes.contains(desc);
+    return classTypes.contains(desc);
   }
 }

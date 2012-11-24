@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -28,27 +29,27 @@ import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexClass {
 
-  @Getter private final Dex ParentFile;
-  @Getter private final DexClassType Type;
-  @Getter private final DexClassType SuperType;
-  @Getter private final Set<AccessFlags> AccessFlagSet;
-  @Getter protected final Set<DexField> Fields;
-  @Getter protected final Set<DexMethod> Methods;
-  @Getter private final Set<DexClassType> Interfaces;
+  @Getter private final Dex parentFile;
+  @Getter private final DexClassType type;
+  @Getter private final DexClassType superType;
+  private final Set<AccessFlags> accessFlagSet;
+  protected final Set<DexField> fields;
+  protected final Set<DexMethod> methods;
+  private final Set<DexClassType> interfaces;
   @Getter private final String SourceFile;
 
   public DexClass(Dex parent, DexClassType type, DexClassType superType,
                   Set<AccessFlags> accessFlags, Set<DexField> fields,
                   Set<DexMethod> methods, Set<DexClassType> interfaces,
                   String sourceFile) {
-    ParentFile = parent;
-    Type = type;
-    SuperType = superType;
-    AccessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
-    Fields = (fields == null) ? new HashSet<DexField>() : fields;
-    Methods = (methods == null) ? new HashSet<DexMethod>() : methods;
-    Interfaces = (interfaces == null) ? new HashSet<DexClassType>() : interfaces;
-    SourceFile = sourceFile;
+    this.parentFile = parent;
+    this.type = type;
+    this.superType = superType;
+    this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
+    this.fields = (fields == null) ? new HashSet<DexField>() : fields;
+    this.methods = (methods == null) ? new HashSet<DexMethod>() : methods;
+    this.interfaces = (interfaces == null) ? new HashSet<DexClassType>() : interfaces;
+    this.SourceFile = sourceFile;
   }
 
   public DexClass(Dex parent, ClassDefItem clsInfo) throws UnknownTypeException, InstructionParsingException {
@@ -63,53 +64,65 @@ public class DexClass {
 
     if (clsInfo.getInterfaces() != null)
       for (val interfaceType : clsInfo.getInterfaces().getTypes())
-        Interfaces.add(parent.getParsingCache().getClassType(interfaceType.getTypeDescriptor()));
+        interfaces.add(parent.getParsingCache().getClassType(interfaceType.getTypeDescriptor()));
 
     val clsData = clsInfo.getClassData();
     if (clsData != null) {
       for (val staticFieldInfo : clsData.getStaticFields())
-        Fields.add(new DexField(this, staticFieldInfo));
+        fields.add(new DexField(this, staticFieldInfo));
       for (val instanceFieldInfo : clsData.getInstanceFields())
-        Fields.add(new DexField(this, instanceFieldInfo));
+        fields.add(new DexField(this, instanceFieldInfo));
 
       for (val directMethodInfo : clsData.getDirectMethods())
-        Methods.add(new DexDirectMethod(this, directMethodInfo));
+        methods.add(new DexDirectMethod(this, directMethodInfo));
       for (val virtualMethodInfo : clsData.getVirtualMethods()) {
         if (virtualMethodInfo.codeItem == null)
-          Methods.add(new DexPurelyVirtualMethod(this, virtualMethodInfo));
+          methods.add(new DexPurelyVirtualMethod(this, virtualMethodInfo));
         else
-          Methods.add(new DexVirtualMethod(this, virtualMethodInfo));
+          methods.add(new DexVirtualMethod(this, virtualMethodInfo));
       }
 
     }
   }
 
+  public Set<AccessFlags> getAccessFlagSet() {
+    return Collections.unmodifiableSet(accessFlagSet);
+  }
+
+  public Set<DexField> getFields() {
+    return Collections.unmodifiableSet(fields);
+  }
+
+  public Set<DexMethod> getMethods() {
+    return Collections.unmodifiableSet(methods);
+  }
+
   public boolean isAbstract() {
-    return AccessFlagSet.contains(AccessFlags.ABSTRACT);
+    return accessFlagSet.contains(AccessFlags.ABSTRACT);
   }
 
   public boolean isAnnotation() {
-    return AccessFlagSet.contains(AccessFlags.ANNOTATION);
+    return accessFlagSet.contains(AccessFlags.ANNOTATION);
   }
 
   public boolean isEnum() {
-    return AccessFlagSet.contains(AccessFlags.ENUM);
+    return accessFlagSet.contains(AccessFlags.ENUM);
   }
 
   public boolean isInterface() {
-    return AccessFlagSet.contains(AccessFlags.INTERFACE);
+    return accessFlagSet.contains(AccessFlags.INTERFACE);
   }
 
   public void addField(DexField f) {
     if (f.getParentClass() != null)
       f.getParentClass().removeField(f);
 
-    Fields.add(f);
+    fields.add(f);
   }
 
   public void removeField(DexField f) {
     if (f.getParentClass() == this) {
-      Fields.remove(f);
+      fields.remove(f);
       f.setParentClass(null);
     }
   }
@@ -118,28 +131,28 @@ public class DexClass {
     if (m.getParentClass() != null)
       m.getParentClass().removeMethod(m);
 
-    Methods.add(m);
+    methods.add(m);
   }
 
   public void removeMethod(DexMethod m) {
     if (m.getParentClass() == this) {
-      Methods.remove(m);
+      methods.remove(m);
       m.setParentClass(null);
     }
   }
 
   public void instrument() {
-    for (val method : Methods)
+    for (val method : methods)
       method.instrument();
   }
 
   public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
-    val classType = cache.getType(Type);
-    val superType = cache.getType(SuperType);
-    val accessFlags = DexUtils.assembleAccessFlags(AccessFlagSet);
-    val interfaces = (Interfaces.isEmpty())
+    val classType = cache.getType(type);
+    val superType = cache.getType(superType);
+    val accessFlags = DexUtils.assembleAccessFlags(accessFlagSet);
+    val interfaces = (interfaces.isEmpty())
                      ? null
-                     : cache.getTypeList(new ArrayList<DexRegisterType>(Interfaces));
+                     : cache.getTypeList(new ArrayList<DexRegisterType>(interfaces));
     val sourceFile = (SourceFile == null)
                      ? null
                      : cache.getStringConstant(SourceFile);
@@ -157,13 +170,13 @@ public class DexClass {
     val directMethods = new LinkedList<EncodedMethod>();
     val virtualMethods = new LinkedList<EncodedMethod>();
 
-    for (val field : Fields)
+    for (val field : fields)
       if (field.isStatic())
         staticFields.add(field.writeToFile(outFile, cache));
       else
         instanceFields.add(field.writeToFile(outFile, cache));
 
-    for (val method : Methods)
+    for (val method : methods)
       if (method instanceof DexDirectMethod)
         directMethods.add(method.writeToFile(outFile, cache));
       else if ((method instanceof DexVirtualMethod) || (method instanceof DexPurelyVirtualMethod))
