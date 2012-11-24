@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.method;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,17 +24,21 @@ import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class DexPrototype {
 
-  @Getter private final DexType ReturnType;
-  @Getter private final List<DexRegisterType> ParameterTypes;
+  @Getter private final DexType returnType;
+  private final List<DexRegisterType> parameterTypes;
 
   public DexPrototype(DexType returnType, List<DexRegisterType> argTypes) {
-    ReturnType = returnType;
-    ParameterTypes = (argTypes == null) ? new LinkedList<DexRegisterType>() : argTypes;
+    this.returnType = returnType;
+    this.parameterTypes = (argTypes == null) ? new LinkedList<DexRegisterType>() : argTypes;
   }
 
   public DexPrototype(ProtoIdItem protoItem, DexParsingCache cache) {
     this(parseReturnType(protoItem.getReturnType(), cache),
          parseArgumentTypes(protoItem.getParameters(), cache));
+  }
+
+  public List<DexRegisterType> getParameterTypes() {
+    return Collections.unmodifiableList(parameterTypes);
   }
 
   private static DexType parseReturnType(TypeIdItem item, DexParsingCache cache) {
@@ -53,13 +58,13 @@ public class DexPrototype {
     int totalWords = 0;
     if (!isStatic)
       totalWords += DexClassType.TypeSize.getRegisterCount();
-    for (val param : ParameterTypes)
+    for (val param : parameterTypes)
       totalWords += param.getRegisters();
     return totalWords;
   }
 
   public int getParameterCount(boolean isStatic) {
-    return ParameterTypes.size() + (isStatic ? 0 : 1);
+    return parameterTypes.size() + (isStatic ? 0 : 1);
   }
 
   public int getParameterRegisterId(int paramId, int registerCount, boolean isStatic, DexClass clazz) {
@@ -72,7 +77,7 @@ public class DexPrototype {
     }
 
     for (int i = 0; i < paramId; ++i)
-      regId = ParameterTypes.get(i).getRegisters();
+      regId = parameterTypes.get(i).getRegisters();
 
     return regId;
   }
@@ -84,7 +89,7 @@ public class DexPrototype {
       else
         paramId--;
     }
-    return ParameterTypes.get(paramId);
+    return parameterTypes.get(paramId);
   }
 
   public NoDuplicatesList<DexRegister> generateParameterRegisters(boolean isStatic) {

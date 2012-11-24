@@ -31,30 +31,31 @@ import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public abstract class DexMethodWithCode extends DexMethod {
 
-  @Getter private DexCode Code;
-  @Getter private final DexCode ParameterMoveInstructions;
-  @Getter private final NoDuplicatesList<DexRegister> ParameterRegisters;
-  @Getter private final boolean Direct;
+  @Getter private DexCode code;
+  @Getter private final boolean direct;
+
+  private final NoDuplicatesList<DexRegister> parameterRegisters;
+  private final DexCode parameterMoveInstructions;
 
   public DexMethodWithCode(DexClass parent, String name, Set<AccessFlags> accessFlags,
                            DexPrototype prototype, DexCode code,
                            boolean direct) {
     super(parent, name, accessFlags, prototype);
-    Code = code;
-    Direct = direct;
-    ParameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
-    ParameterMoveInstructions = new DexCode();
+    this.code = code;
+    this.direct = direct;
+    this.parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
+    this.parameterMoveInstructions = new DexCode();
   }
 
   public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, InstructionParsingException {
     super(parent, methodInfo);
     if (methodInfo.codeItem == null)
-      Code = new DexCode();
+      code = new DexCode();
     else
-      Code = new DexCode(methodInfo.codeItem, parent.getParentFile().getParsingCache());
-    Direct = methodInfo.isDirect();
-    ParameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
-    ParameterMoveInstructions = new DexCode();
+      code = new DexCode(methodInfo.codeItem, parent.getParentFile().getParsingCache());
+    direct = methodInfo.isDirect();
+    parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
+    parameterMoveInstructions = new DexCode();
 
     val prototype = this.getPrototype();
     val isStatic = this.isStatic();
@@ -68,38 +69,36 @@ public abstract class DexMethodWithCode extends DexMethod {
       val paramType = prototype.getParameterType(i, isStatic, clazz);
       switch (paramType.getTypeSize()) {
       case SINGLE:
-        addParameterMapping_Single(i, Code.getRegisterByOriginalNumber(paramRegId));
+        addParameterMapping_Single(i, code.getRegisterByOriginalNumber(paramRegId));
         break;
       case WIDE:
-        addParameterMapping_Wide(i, Code.getRegisterByOriginalNumber(paramRegId), Code.getRegisterByOriginalNumber(paramRegId + 1));
+        addParameterMapping_Wide(i, code.getRegisterByOriginalNumber(paramRegId), code.getRegisterByOriginalNumber(paramRegId + 1));
         break;
       }
     }
   }
 
-
-
   public void addParameterMapping_Single(int paramIndex, DexRegister codeReg) {
     val paramType = this.getPrototype().getParameterType(paramIndex, this.isStatic(), this.getParentClass());
-    val paramReg = ParameterRegisters.get(paramIndex);
-    ParameterMoveInstructions.add(new DexInstruction_Move(Code, codeReg, paramReg, paramType instanceof DexReferenceType));
+    val paramReg = parameterRegisters.get(paramIndex);
+    parameterMoveInstructions.add(new DexInstruction_Move(code, codeReg, paramReg, paramType instanceof DexReferenceType));
   }
 
   public void addParameterMapping_Wide(int paramIndex, DexRegister codeReg1, DexRegister codeReg2) {
-    val paramReg1 = ParameterRegisters.get(paramIndex);
-    val paramReg2 = ParameterRegisters.get(paramIndex + 1);
+    val paramReg1 = parameterRegisters.get(paramIndex);
+    val paramReg2 = parameterRegisters.get(paramIndex + 1);
 
-    ParameterMoveInstructions.add(new DexInstruction_MoveWide(Code, codeReg1, codeReg2, paramReg1, paramReg2));
+    parameterMoveInstructions.add(new DexInstruction_MoveWide(code, codeReg1, codeReg2, paramReg1, paramReg2));
   }
 
   @Override
   public boolean isVirtual() {
-    return !Direct;
+    return !direct;
   }
 
   @Override
   public void instrument() {
-    Code = Code.instrument();
+    code = code.instrument();
   }
 
   @Override
@@ -107,25 +106,25 @@ public abstract class DexMethodWithCode extends DexMethod {
     // do register allocation
     // note that this changes the code itself
     // (adds temporaries, inserts move instructions)
-    val codeColoring = new GraphColoring(Code);
+    val codeColoring = new GraphColoring(code);
     val modifiedCode = codeColoring.getModifiedCode();
 
     // add parameter registers to the register allocation
     val registerAllocation = new HashMap<DexRegister, Integer>(codeColoring.getColoring());
     int registerCount = codeColoring.getColorsUsed();
-    val inWords = ParameterRegisters.size();
+    val inWords = parameterRegisters.size();
     if (registerCount >= inWords) {
       int startReg = registerCount - inWords;
       for (int i = 0; i < inWords; ++i)
-        registerAllocation.put(ParameterRegisters.get(i), startReg + i);
+        registerAllocation.put(parameterRegisters.get(i), startReg + i);
     } else {
       for (int i = 0; i < inWords; ++i)
-        registerAllocation.put(ParameterRegisters.get(i), i);
+        registerAllocation.put(parameterRegisters.get(i), i);
       registerCount = inWords;
     }
 
     List<Instruction> instructions = new LinkedList<Instruction>();
-    instructions.addAll(ParameterMoveInstructions.assembleBytecode(registerAllocation, cache));
+    instructions.addAll(parameterMoveInstructions.assembleBytecode(registerAllocation, cache));
     instructions.addAll(modifiedCode.assembleBytecode(registerAllocation, cache));
 
     List<TryItem> tries = null;

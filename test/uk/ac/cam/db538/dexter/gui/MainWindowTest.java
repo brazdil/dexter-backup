@@ -118,6 +118,9 @@ public class MainWindowTest {
 
     DexRegisterType typeInt = DexRegisterType.parse("I", null);
 
+    val cache = new DexParsingCache();
+    val cls = new DexClass(null, DexClassType.parse("LTestClass;", cache), null, null, null, null, null, null);
+
     val staticField1 = new DexField(null, "a", typeInt, EnumSet.of(AccessFlags.STATIC));
     val staticField2 = new DexField(null, "c", typeInt, EnumSet.of(AccessFlags.STATIC));
     val instanceField1 = new DexField(null, "d", typeInt, null);
@@ -125,8 +128,6 @@ public class MainWindowTest {
 
     val method1 = new DexDirectMethod(null, "a", null, new DexPrototype(typeInt, Arrays.asList(new DexRegisterType[] { typeInt, typeInt })), null);
 
-    val cache = new DexParsingCache();
-    val cls = new DexClass(null, DexClassType.parse("LTestClass;", cache), null, null, null, null, null, null);
     cls.addField(staticField1);
     cls.addField(staticField2);
     cls.addField(instanceField1);

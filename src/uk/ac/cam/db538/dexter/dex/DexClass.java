@@ -114,31 +114,11 @@ public class DexClass {
   }
 
   public void addField(DexField f) {
-    if (f.getParentClass() != null)
-      f.getParentClass().removeField(f);
-
     fields.add(f);
   }
 
-  public void removeField(DexField f) {
-    if (f.getParentClass() == this) {
-      fields.remove(f);
-      f.setParentClass(null);
-    }
-  }
-
   public void addMethod(DexMethod m) {
-    if (m.getParentClass() != null)
-      m.getParentClass().removeMethod(m);
-
     methods.add(m);
-  }
-
-  public void removeMethod(DexMethod m) {
-    if (m.getParentClass() == this) {
-      methods.remove(m);
-      m.setParentClass(null);
-    }
   }
 
   public void instrument() {
