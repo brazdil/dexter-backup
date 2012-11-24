@@ -65,6 +65,44 @@ public enum Opcode_GetPut {
     }
   }
 
+  public static Opcode_GetPut convert_SPUT(org.jf.dexlib.Code.Opcode opcode) {
+    switch (opcode) {
+    case SPUT:
+      return IntFloat;
+    case SPUT_OBJECT:
+      return Object;
+    case SPUT_BOOLEAN:
+      return Boolean;
+    case SPUT_BYTE:
+      return Byte;
+    case SPUT_CHAR:
+      return Char;
+    case SPUT_SHORT:
+      return Short;
+    default:
+      return null;
+    }
+  }
+
+  public static org.jf.dexlib.Code.Opcode convert_SPUT(Opcode_GetPut opcode) {
+    switch (opcode) {
+    case IntFloat:
+      return Opcode.SPUT;
+    case Object:
+      return Opcode.SPUT_OBJECT;
+    case Boolean:
+      return Opcode.SPUT_BOOLEAN;
+    case Byte:
+      return Opcode.SPUT_BYTE;
+    case Char:
+      return Opcode.SPUT_CHAR;
+    case Short:
+      return Opcode.SPUT_SHORT;
+    default:
+      return null;
+    }
+  }
+
   public static void checkTypeAgainstOpcode(DexRegisterType type, Opcode_GetPut opcode) {
     boolean typeOK;
     switch(opcode) {
