@@ -17,18 +17,18 @@ import lombok.val;
 
 public class DexInstruction_IfTest extends DexInstruction {
 
-  @Getter private final DexRegister RegA;
-  @Getter private final DexRegister RegB;
-  @Getter private final DexLabel Target;
-  @Getter private final Opcode_IfTest InsnOpcode;
+  @Getter private final DexRegister regA;
+  @Getter private final DexRegister regB;
+  @Getter private final DexLabel target;
+  @Getter private final Opcode_IfTest insnOpcode;
 
   public DexInstruction_IfTest(DexCode methodCode, DexRegister regA, DexRegister regB, DexLabel target, Opcode_IfTest opcode) {
     super(methodCode);
 
-    RegA = regA;
-    RegB = regB;
-    Target = target;
-    InsnOpcode = opcode;
+    this.regA = regA;
+    this.regB = regB;
+    this.target = target;
+    this.insnOpcode = opcode;
   }
 
   public DexInstruction_IfTest(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -37,10 +37,10 @@ public class DexInstruction_IfTest extends DexInstruction {
     if (insn instanceof Instruction22t && Opcode_IfTest.convert(insn.opcode) != null) {
 
       val insnIfTest = (Instruction22t) insn;
-      RegA = parsingState.getRegister(insnIfTest.getRegisterA());
-      RegB = parsingState.getRegister(insnIfTest.getRegisterB());
-      Target = parsingState.getLabel(insnIfTest.getTargetAddressOffset());
-      InsnOpcode = Opcode_IfTest.convert(insn.opcode);
+      regA = parsingState.getRegister(insnIfTest.getRegisterA());
+      regB = parsingState.getRegister(insnIfTest.getRegisterB());
+      target = parsingState.getLabel(insnIfTest.getTargetAddressOffset());
+      insnOpcode = Opcode_IfTest.convert(insn.opcode);
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -48,8 +48,8 @@ public class DexInstruction_IfTest extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "if-" + InsnOpcode.name() + " v" + RegA.getOriginalIndexString() +
-           ", v" + RegB.getOriginalIndexString() + ", L" + Target.getOriginalAbsoluteOffset();
+    return "if-" + insnOpcode.name() + " v" + regA.getOriginalIndexString() +
+           ", v" + regB.getOriginalIndexString() + ", L" + target.getOriginalAbsoluteOffset();
   }
 
   @Override
@@ -61,15 +61,15 @@ public class DexInstruction_IfTest extends DexInstruction {
   public DexCodeElement[] cfgGetSuccessors() {
     return new DexCodeElement[] {
              getNextCodeElement(),
-             Target
+             target
            };
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     val regs = new HashSet<DexRegister>();
-    regs.add(RegA);
-    regs.add(RegB);
+    regs.add(regA);
+    regs.add(regB);
     return regs;
   }
 }

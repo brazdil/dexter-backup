@@ -16,16 +16,16 @@ import lombok.val;
 
 public class DexInstruction_CheckCast extends DexInstruction {
 
-  @Getter private final DexRegister RegTo;
-  @Getter private final DexReferenceType Value;
+  @Getter private final DexRegister regTo;
+  @Getter private final DexReferenceType value;
 
   // CAREFUL: likely to throw exception
 
   public DexInstruction_CheckCast(DexCode methodCode, DexRegister to, DexReferenceType value) {
     super(methodCode);
 
-    RegTo = to;
-    Value = value;
+    this.regTo = to;
+    this.value = value;
   }
 
   public DexInstruction_CheckCast(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
@@ -34,8 +34,8 @@ public class DexInstruction_CheckCast extends DexInstruction {
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CHECK_CAST) {
 
       val insnCheckCast = (Instruction21c) insn;
-      RegTo = parsingState.getRegister(insnCheckCast.getRegisterA());
-      Value = DexReferenceType.parse(
+      regTo = parsingState.getRegister(insnCheckCast.getRegisterA());
+      value = DexReferenceType.parse(
                 ((TypeIdItem) insnCheckCast.getReferencedItem()).getTypeDescriptor(),
                 parsingState.getCache());
 
@@ -45,7 +45,7 @@ public class DexInstruction_CheckCast extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "check-cast v" + RegTo.getOriginalIndexString() + ", " + Value.getDescriptor();
+    return "check-cast v" + regTo.getOriginalIndexString() + ", " + value.getDescriptor();
   }
 
 }

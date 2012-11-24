@@ -16,8 +16,8 @@ import lombok.val;
 
 public class DexInstruction_ConstString extends DexInstruction {
 
-  @Getter private final DexRegister RegTo;
-  @Getter private final String StringConstant;
+  @Getter private final DexRegister regTo;
+  @Getter private final String stringConstant;
 
   // CAREFUL: need to produce the Jumbo instruction if
   //          the resulting StringDataItem has more than 16-bit id
@@ -25,8 +25,8 @@ public class DexInstruction_ConstString extends DexInstruction {
   public DexInstruction_ConstString(DexCode methodCode, DexRegister to, String value) {
     super(methodCode);
 
-    RegTo = to;
-    StringConstant = value;
+    regTo = to;
+    stringConstant = value;
   }
 
   public DexInstruction_ConstString(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -35,14 +35,14 @@ public class DexInstruction_ConstString extends DexInstruction {
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_STRING) {
 
       val insnConstString = (Instruction21c) insn;
-      RegTo = parsingState.getRegister(insnConstString.getRegisterA());
-      StringConstant = ((StringIdItem) insnConstString.getReferencedItem()).getStringValue();
+      regTo = parsingState.getRegister(insnConstString.getRegisterA());
+      stringConstant = ((StringIdItem) insnConstString.getReferencedItem()).getStringValue();
 
     } else if (insn instanceof Instruction31c && insn.opcode == Opcode.CONST_STRING_JUMBO) {
 
       val insnConstStringJumbo = (Instruction31c) insn;
-      RegTo = parsingState.getRegister(insnConstStringJumbo.getRegisterA());
-      StringConstant = ((StringIdItem) insnConstStringJumbo.getReferencedItem()).getStringValue();
+      regTo = parsingState.getRegister(insnConstStringJumbo.getRegisterA());
+      stringConstant = ((StringIdItem) insnConstStringJumbo.getReferencedItem()).getStringValue();
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -50,9 +50,9 @@ public class DexInstruction_ConstString extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    String escapedVal = StringEscapeUtils.escapeJava(StringConstant);
+    String escapedVal = StringEscapeUtils.escapeJava(stringConstant);
     if (escapedVal.length() > 15)
       escapedVal = escapedVal.substring(0, 15) + "...";
-    return "const-string v" + RegTo.getOriginalIndexString() + ", \"" + escapedVal + "\"";
+    return "const-string v" + regTo.getOriginalIndexString() + ", \"" + escapedVal + "\"";
   }
 }

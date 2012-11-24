@@ -12,16 +12,16 @@ import lombok.val;
 
 public class DexInstruction_Convert extends DexInstruction {
 
-  @Getter private final DexRegister RegTo;
-  @Getter private final DexRegister RegFrom;
-  @Getter private final Opcode_Convert InsnOpcode;
+  @Getter private final DexRegister regTo;
+  @Getter private final DexRegister regFrom;
+  @Getter private final Opcode_Convert insnOpcode;
 
   public DexInstruction_Convert(DexCode methodCode, DexRegister to, DexRegister from, Opcode_Convert opcode) {
     super(methodCode);
 
-    RegTo = to;
-    RegFrom = from;
-    InsnOpcode = opcode;
+    regTo = to;
+    regFrom = from;
+    insnOpcode = opcode;
   }
 
   public DexInstruction_Convert(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -30,9 +30,9 @@ public class DexInstruction_Convert extends DexInstruction {
     if (insn instanceof Instruction12x && Opcode_Convert.convert(insn.opcode) != null) {
 
       val insnConvert = (Instruction12x) insn;
-      RegTo = parsingState.getRegister(insnConvert.getRegisterA());
-      RegFrom = parsingState.getRegister(insnConvert.getRegisterB());
-      InsnOpcode = Opcode_Convert.convert(insn.opcode);
+      regTo = parsingState.getRegister(insnConvert.getRegisterA());
+      regFrom = parsingState.getRegister(insnConvert.getRegisterB());
+      insnOpcode = Opcode_Convert.convert(insn.opcode);
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -40,6 +40,6 @@ public class DexInstruction_Convert extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return InsnOpcode.getAssemblyName() + " v" + RegTo.getOriginalIndexString() + ", v" + RegFrom.getOriginalIndexString();
+    return insnOpcode.getAssemblyName() + " v" + regTo.getOriginalIndexString() + ", v" + regFrom.getOriginalIndexString();
   }
 }

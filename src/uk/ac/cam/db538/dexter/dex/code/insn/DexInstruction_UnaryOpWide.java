@@ -12,19 +12,19 @@ import lombok.val;
 
 public class DexInstruction_UnaryOpWide extends DexInstruction {
 
-  @Getter private final DexRegister RegTo1;
-  @Getter private final DexRegister RegTo2;
-  @Getter private final DexRegister RegFrom1;
-  @Getter private final DexRegister RegFrom2;
-  @Getter private final Opcode_UnaryOpWide InsnOpcode;
+  @Getter private final DexRegister regTo1;
+  @Getter private final DexRegister regTo2;
+  @Getter private final DexRegister regFrom1;
+  @Getter private final DexRegister regFrom2;
+  @Getter private final Opcode_UnaryOpWide insnOpcode;
 
   public DexInstruction_UnaryOpWide(DexCode methodCode, DexRegister to1, DexRegister to2, DexRegister from1, DexRegister from2, Opcode_UnaryOpWide opcode) {
     super(methodCode);
-    RegTo1 = to1;
-    RegTo2 = to2;
-    RegFrom1 = from1;
-    RegFrom2 = from2;
-    InsnOpcode = opcode;
+    regTo1 = to1;
+    regTo2 = to2;
+    regFrom1 = from1;
+    regFrom2 = from2;
+    insnOpcode = opcode;
   }
 
   public DexInstruction_UnaryOpWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -32,11 +32,11 @@ public class DexInstruction_UnaryOpWide extends DexInstruction {
     if (insn instanceof Instruction12x && Opcode_UnaryOpWide.convert(insn.opcode) != null) {
 
       val insnUnaryOp = (Instruction12x) insn;
-      RegTo1 = parsingState.getRegister(insnUnaryOp.getRegisterA());
-      RegTo2 = parsingState.getRegister(insnUnaryOp.getRegisterA() + 1);
-      RegFrom1 = parsingState.getRegister(insnUnaryOp.getRegisterB());
-      RegFrom2 = parsingState.getRegister(insnUnaryOp.getRegisterB() + 1);
-      InsnOpcode = Opcode_UnaryOpWide.convert(insn.opcode);
+      regTo1 = parsingState.getRegister(insnUnaryOp.getRegisterA());
+      regTo2 = parsingState.getRegister(insnUnaryOp.getRegisterA() + 1);
+      regFrom1 = parsingState.getRegister(insnUnaryOp.getRegisterB());
+      regFrom2 = parsingState.getRegister(insnUnaryOp.getRegisterB() + 1);
+      insnOpcode = Opcode_UnaryOpWide.convert(insn.opcode);
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -44,6 +44,6 @@ public class DexInstruction_UnaryOpWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return InsnOpcode.getAssemblyName() + " v" + RegTo1.getOriginalIndexString() + ", v" + RegFrom1.getOriginalIndexString();
+    return insnOpcode.getAssemblyName() + " v" + regTo1.getOriginalIndexString() + ", v" + regFrom1.getOriginalIndexString();
   }
 }

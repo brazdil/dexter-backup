@@ -20,18 +20,18 @@ import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
 public class DexInstruction_Move extends DexInstruction {
 
-  @Getter private final DexRegister RegTo;
-  @Getter private final DexRegister RegFrom;
-  @Getter private final boolean ObjectMoving;
+  @Getter private final DexRegister regTo;
+  @Getter private final DexRegister regFrom;
+  @Getter private final boolean objectMoving;
 
   // CAREFUL: registers can only be allocated to 0-15 regular move !!!
 
   public DexInstruction_Move(DexCode methodCode, DexRegister to, DexRegister from, boolean objectMoving) {
     super(methodCode);
 
-    RegTo = to;
-    RegFrom = from;
-    ObjectMoving = objectMoving;
+    this.regTo = to;
+    this.regFrom = from;
+    this.objectMoving = objectMoving;
   }
 
   public DexInstruction_Move(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -45,7 +45,7 @@ public class DexInstruction_Move extends DexInstruction {
       val insnMove = (Instruction12x) insn;
       regA = insnMove.getRegisterA();
       regB = insnMove.getRegisterB();
-      ObjectMoving = insn.opcode == Opcode.MOVE_OBJECT;
+      objectMoving = insn.opcode == Opcode.MOVE_OBJECT;
 
     } else if (insn instanceof Instruction22x &&
                (insn.opcode == Opcode.MOVE_FROM16 || insn.opcode == Opcode.MOVE_OBJECT_FROM16)) {
@@ -53,7 +53,7 @@ public class DexInstruction_Move extends DexInstruction {
       val insnMoveFrom16 = (Instruction22x) insn;
       regA = insnMoveFrom16.getRegisterA();
       regB = insnMoveFrom16.getRegisterB();
-      ObjectMoving = insn.opcode == Opcode.MOVE_OBJECT_FROM16;
+      objectMoving = insn.opcode == Opcode.MOVE_OBJECT_FROM16;
 
     } else if (insn instanceof Instruction32x &&
                (insn.opcode == Opcode.MOVE_16 || insn.opcode == Opcode.MOVE_OBJECT_16)) {
@@ -61,55 +61,55 @@ public class DexInstruction_Move extends DexInstruction {
       val insnMove16 = (Instruction32x) insn;
       regA = insnMove16.getRegisterA();
       regB = insnMove16.getRegisterB();
-      ObjectMoving = insn.opcode == Opcode.MOVE_OBJECT_16;
+      objectMoving = insn.opcode == Opcode.MOVE_OBJECT_16;
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
 
-    RegTo = parsingState.getRegister(regA);
-    RegFrom = parsingState.getRegister(regB);
+    regTo = parsingState.getRegister(regA);
+    regFrom = parsingState.getRegister(regB);
   }
 
   @Override
   public String getOriginalAssembly() {
-    return "move" + (ObjectMoving ? "-object" : "") +
-           " v" + RegTo.getOriginalIndexString() + ", v" + RegFrom.getOriginalIndexString();
+    return "move" + (objectMoving ? "-object" : "") +
+           " v" + regTo.getOriginalIndexString() + ", v" + regFrom.getOriginalIndexString();
   }
 
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     val regs = new HashSet<DexRegister>();
-    regs.add(RegTo);
+    regs.add(regTo);
     return regs;
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     val regs = new HashSet<DexRegister>();
-    regs.add(RegFrom);
+    regs.add(regFrom);
     return regs;
   }
 
   @Override
   public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    int rTo = regAlloc.get(RegTo);
-    int rFrom = regAlloc.get(RegFrom);
+    int rTo = regAlloc.get(regTo);
+    int rFrom = regAlloc.get(regFrom);
 
     if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Unsigned(rFrom, 4))
       return new Instruction[] {
-               ObjectMoving ?
+               objectMoving ?
                new Instruction12x(Opcode.MOVE_OBJECT, (byte) rTo, (byte) rFrom) :
                new Instruction12x(Opcode.MOVE, (byte) rTo, (byte) rFrom)
              };
     else if (fitsIntoBits_Unsigned(rTo, 8))
       return new Instruction[] {
-               ObjectMoving ?
+               objectMoving ?
                new Instruction22x(Opcode.MOVE_OBJECT_FROM16, (short) rTo, rFrom) :
                new Instruction22x(Opcode.MOVE_FROM16, (short) rTo, rFrom)
              };
     else
       return new Instruction[] {
-               ObjectMoving ?
+               objectMoving ?
                new Instruction32x(Opcode.MOVE_OBJECT_16, rTo, rFrom) :
                new Instruction32x(Opcode.MOVE_16, rTo, rFrom)
              };

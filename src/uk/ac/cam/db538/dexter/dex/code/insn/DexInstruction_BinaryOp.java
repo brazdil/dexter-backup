@@ -25,18 +25,18 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   // registers are equal; for commutative instructions,
   // check the second as well
 
-  @Getter private final DexRegister RegTarget;
-  @Getter private final DexRegister RegSourceA;
-  @Getter private final DexRegister RegSourceB;
-  @Getter private final Opcode_BinaryOp InsnOpcode;
+  @Getter private final DexRegister regTarget;
+  @Getter private final DexRegister regSourceA;
+  @Getter private final DexRegister regSourceB;
+  @Getter private final Opcode_BinaryOp insnOpcode;
 
   public DexInstruction_BinaryOp(DexCode methodCode, DexRegister target, DexRegister sourceA, DexRegister sourceB, Opcode_BinaryOp opcode) {
     super(methodCode);
 
-    RegTarget = target;
-    RegSourceA = sourceA;
-    RegSourceB = sourceB;
-    InsnOpcode = opcode;
+    regTarget = target;
+    regSourceA = sourceA;
+    regSourceB = sourceB;
+    insnOpcode = opcode;
   }
 
   public DexInstruction_BinaryOp(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -60,16 +60,16 @@ public class DexInstruction_BinaryOp extends DexInstruction {
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
 
-    RegTarget = parsingState.getRegister(regA);
-    RegSourceA = parsingState.getRegister(regB);
-    RegSourceB = parsingState.getRegister(regC);
-    InsnOpcode = Opcode_BinaryOp.convert(insn.opcode);
+    regTarget = parsingState.getRegister(regA);
+    regSourceA = parsingState.getRegister(regB);
+    regSourceB = parsingState.getRegister(regC);
+    insnOpcode = Opcode_BinaryOp.convert(insn.opcode);
   }
 
   @Override
   public String getOriginalAssembly() {
-    return InsnOpcode.getAssemblyName() + " v" + RegTarget.getOriginalIndexString() +
-           ", v" + RegSourceA.getOriginalIndexString() + ", v" + RegSourceB.getOriginalIndexString();
+    return insnOpcode.getAssemblyName() + " v" + regTarget.getOriginalIndexString() +
+           ", v" + regSourceA.getOriginalIndexString() + ", v" + regSourceB.getOriginalIndexString();
   }
 
   @Override
@@ -78,23 +78,23 @@ public class DexInstruction_BinaryOp extends DexInstruction {
              this,
              new DexInstruction_BinaryOp(
                this.getMethodCode(),
-               mapping.getTaintRegister(RegTarget),
-               mapping.getTaintRegister(RegSourceA),
-               mapping.getTaintRegister(RegSourceB),
+               mapping.getTaintRegister(regTarget),
+               mapping.getTaintRegister(regSourceA),
+               mapping.getTaintRegister(regSourceB),
                Opcode_BinaryOp.OrInt)
            };
   }
 
   @Override
   public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    int rTarget = regAlloc.get(RegTarget);
-    int rSourceA = regAlloc.get(RegSourceA);
-    int rSourceB = regAlloc.get(RegSourceB);
+    int rTarget = regAlloc.get(regTarget);
+    int rSourceA = regAlloc.get(regSourceA);
+    int rSourceB = regAlloc.get(regSourceB);
 
     if (rTarget == rSourceA && fitsIntoBits_Unsigned(rTarget, 4) && fitsIntoBits_Unsigned(rSourceB, 4))
-      return new Instruction[] { new Instruction12x(Opcode_BinaryOp.convert2addr(InsnOpcode), (byte) rTarget, (byte) rSourceB) };
+      return new Instruction[] { new Instruction12x(Opcode_BinaryOp.convert2addr(insnOpcode), (byte) rTarget, (byte) rSourceB) };
     else if (fitsIntoBits_Unsigned(rTarget, 8) && fitsIntoBits_Unsigned(rSourceA, 8) && fitsIntoBits_Unsigned(rSourceB, 8))
-      return new Instruction[] { new Instruction23x(Opcode_BinaryOp.convert(InsnOpcode), (short) rTarget, (short) rSourceA, (short) rSourceB)	};
+      return new Instruction[] { new Instruction23x(Opcode_BinaryOp.convert(insnOpcode), (short) rTarget, (short) rSourceA, (short) rSourceB)	};
     else
       return throwCannotAssembleException("No suitable instruction format found");
   }
@@ -102,24 +102,24 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     val regs = new HashSet<DexRegister>();
-    regs.add(RegTarget);
+    regs.add(regTarget);
     return regs;
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     val regs = new HashSet<DexRegister>();
-    regs.add(RegSourceA);
-    regs.add(RegSourceB);
+    regs.add(regSourceA);
+    regs.add(regSourceB);
     return regs;
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     val set = new HashSet<GcRangeConstraint>();
-    set.add(new GcRangeConstraint(RegTarget, ColorRange.RANGE_8BIT));
-    set.add(new GcRangeConstraint(RegSourceA, ColorRange.RANGE_8BIT));
-    set.add(new GcRangeConstraint(RegSourceB, ColorRange.RANGE_8BIT));
+    set.add(new GcRangeConstraint(regTarget, ColorRange.RANGE_8BIT));
+    set.add(new GcRangeConstraint(regSourceA, ColorRange.RANGE_8BIT));
+    set.add(new GcRangeConstraint(regSourceB, ColorRange.RANGE_8BIT));
     return set;
   }
 
@@ -127,9 +127,9 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_BinaryOp(
              getMethodCode(),
-             mapping.get(RegTarget),
-             mapping.get(RegSourceA),
-             mapping.get(RegSourceB),
-             InsnOpcode);
+             mapping.get(regTarget),
+             mapping.get(regSourceA),
+             mapping.get(regSourceB),
+             insnOpcode);
   }
 }

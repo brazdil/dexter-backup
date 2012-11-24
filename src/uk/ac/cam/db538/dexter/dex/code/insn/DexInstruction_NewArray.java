@@ -16,16 +16,16 @@ import lombok.val;
 
 public class DexInstruction_NewArray extends DexInstruction {
 
-  @Getter private final DexRegister RegTo;
-  @Getter private final DexRegister RegSize;
-  @Getter private final DexArrayType Value;
+  @Getter private final DexRegister regTo;
+  @Getter private final DexRegister regSize;
+  @Getter private final DexArrayType value;
 
   public DexInstruction_NewArray(DexCode methodCode, DexRegister to, DexRegister size, DexArrayType value) {
     super(methodCode);
 
-    RegTo = to;
-    RegSize = size;
-    Value = value;
+    this.regTo = to;
+    this.regSize = size;
+    this.value = value;
   }
 
   public DexInstruction_NewArray(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
@@ -34,9 +34,9 @@ public class DexInstruction_NewArray extends DexInstruction {
     if (insn instanceof Instruction22c && insn.opcode == Opcode.NEW_ARRAY) {
 
       val insnNewArray = (Instruction22c) insn;
-      RegTo = parsingState.getRegister(insnNewArray.getRegisterA());
-      RegSize = parsingState.getRegister(insnNewArray.getRegisterB());
-      Value = DexArrayType.parse(
+      regTo = parsingState.getRegister(insnNewArray.getRegisterA());
+      regSize = parsingState.getRegister(insnNewArray.getRegisterB());
+      value = DexArrayType.parse(
                 ((TypeIdItem) insnNewArray.getReferencedItem()).getTypeDescriptor(),
                 parsingState.getCache());
 
@@ -46,7 +46,7 @@ public class DexInstruction_NewArray extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "new-array v" + RegTo.getOriginalIndexString() + ", v" + RegSize.getOriginalIndexString() +
-           ", " + Value.getDescriptor();
+    return "new-array v" + regTo.getOriginalIndexString() + ", v" + regSize.getOriginalIndexString() +
+           ", " + value.getDescriptor();
   }
 }

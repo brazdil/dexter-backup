@@ -15,18 +15,18 @@ import lombok.val;
 
 public class DexInstruction_MoveWide extends DexInstruction {
 
-  @Getter private final DexRegister RegTo1;
-  @Getter private final DexRegister RegTo2;
-  @Getter private final DexRegister RegFrom1;
-  @Getter private final DexRegister RegFrom2;
+  @Getter private final DexRegister regTo1;
+  @Getter private final DexRegister regTo2;
+  @Getter private final DexRegister regFrom1;
+  @Getter private final DexRegister regFrom2;
 
   public DexInstruction_MoveWide(DexCode methodCode, DexRegister to1, DexRegister to2, DexRegister from1, DexRegister from2) {
     super(methodCode);
 
-    RegTo1 = to1;
-    RegTo2 = to2;
-    RegFrom1 = from1;
-    RegFrom2 = from2;
+    regTo1 = to1;
+    regTo2 = to2;
+    regFrom1 = from1;
+    regFrom2 = from2;
   }
 
   public DexInstruction_MoveWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -55,14 +55,14 @@ public class DexInstruction_MoveWide extends DexInstruction {
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
 
-    RegTo1 = parsingState.getRegister(regA);
-    RegTo2 = parsingState.getRegister(regA + 1);
-    RegFrom1 = parsingState.getRegister(regB);
-    RegFrom2 = parsingState.getRegister(regB + 1);
+    regTo1 = parsingState.getRegister(regA);
+    regTo2 = parsingState.getRegister(regA + 1);
+    regFrom1 = parsingState.getRegister(regB);
+    regFrom2 = parsingState.getRegister(regB + 1);
   }
 
   @Override
   public String getOriginalAssembly() {
-    return "move-wide v" + RegTo1.getOriginalIndexString() + ", v" + RegFrom1.getOriginalIndexString();
+    return "move-wide v" + regTo1.getOriginalIndexString() + ", v" + regFrom1.getOriginalIndexString();
   }
 }

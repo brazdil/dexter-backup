@@ -15,12 +15,12 @@ import lombok.Getter;
 
 public class DexInstruction_Goto extends DexInstruction {
 
-  @Getter private final DexLabel Target;
+  @Getter private final DexLabel target;
 
   public DexInstruction_Goto(DexCode methodCode, DexLabel target) {
     super(methodCode);
 
-    Target = target;
+    this.target = target;
   }
 
   public DexInstruction_Goto(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -36,12 +36,12 @@ public class DexInstruction_Goto extends DexInstruction {
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
 
-    Target = parsingState.getLabel(targetOffset);
+    target = parsingState.getLabel(targetOffset);
   }
 
   @Override
   public String getOriginalAssembly() {
-    return "goto L" + Target.getOriginalAbsoluteOffset();
+    return "goto L" + target.getOriginalAbsoluteOffset();
   }
 
   @Override
@@ -51,6 +51,6 @@ public class DexInstruction_Goto extends DexInstruction {
 
   @Override
   public DexCodeElement[] cfgGetSuccessors() {
-    return new DexCodeElement[] { Target };
+    return new DexCodeElement[] { target };
   }
 }

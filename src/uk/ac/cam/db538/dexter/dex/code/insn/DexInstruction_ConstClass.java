@@ -16,14 +16,14 @@ import lombok.val;
 
 public class DexInstruction_ConstClass extends DexInstruction {
 
-  @Getter private final DexRegister RegTo;
-  @Getter private final DexReferenceType Value;
+  @Getter private final DexRegister regTo;
+  @Getter private final DexReferenceType value;
 
   public DexInstruction_ConstClass(DexCode methodCode, DexRegister to, DexReferenceType value) {
     super(methodCode);
 
-    RegTo = to;
-    Value = value;
+    this.regTo = to;
+    this.value = value;
   }
 
   public DexInstruction_ConstClass(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
@@ -32,8 +32,8 @@ public class DexInstruction_ConstClass extends DexInstruction {
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_CLASS) {
 
       val insnConstClass = (Instruction21c) insn;
-      RegTo = parsingState.getRegister(insnConstClass.getRegisterA());
-      Value = DexReferenceType.parse(
+      regTo = parsingState.getRegister(insnConstClass.getRegisterA());
+      value = DexReferenceType.parse(
                 ((TypeIdItem) insnConstClass.getReferencedItem()).getTypeDescriptor(),
                 parsingState.getCache());
 
@@ -43,6 +43,6 @@ public class DexInstruction_ConstClass extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "const-class v" + RegTo.getOriginalIndexString() + ", " + Value.getDescriptor();
+    return "const-class v" + regTo.getOriginalIndexString() + ", " + value.getDescriptor();
   }
 }

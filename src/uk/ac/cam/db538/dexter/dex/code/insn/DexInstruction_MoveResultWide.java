@@ -13,14 +13,14 @@ import lombok.val;
 
 public class DexInstruction_MoveResultWide extends DexInstruction {
 
-  @Getter private final DexRegister RegTo1;
-  @Getter private final DexRegister RegTo2;
+  @Getter private final DexRegister regTo1;
+  @Getter private final DexRegister regTo2;
 
   public DexInstruction_MoveResultWide(DexCode methodCode, DexRegister to1, DexRegister to2) {
     super(methodCode);
 
-    RegTo1 = to1;
-    RegTo2 = to2;
+    regTo1 = to1;
+    regTo2 = to2;
   }
 
   public DexInstruction_MoveResultWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -29,8 +29,8 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
     if (insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_RESULT_WIDE) {
 
       val insnMove = (Instruction11x) insn;
-      RegTo1 = parsingState.getRegister(insnMove.getRegisterA());
-      RegTo2 = parsingState.getRegister(insnMove.getRegisterA() + 1);
+      regTo1 = parsingState.getRegister(insnMove.getRegisterA());
+      regTo2 = parsingState.getRegister(insnMove.getRegisterA() + 1);
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -38,6 +38,6 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "move-result-wide v" + RegTo1.getOriginalIndexString();
+    return "move-result-wide v" + regTo1.getOriginalIndexString();
   }
 }

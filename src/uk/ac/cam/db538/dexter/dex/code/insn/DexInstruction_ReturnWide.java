@@ -13,13 +13,13 @@ import lombok.val;
 
 public class DexInstruction_ReturnWide extends DexInstruction {
 
-  @Getter private final DexRegister RegFrom1;
-  @Getter private final DexRegister RegFrom2;
+  @Getter private final DexRegister regFrom1;
+  @Getter private final DexRegister regFrom2;
 
   public DexInstruction_ReturnWide(DexCode methodCode, DexRegister from1, DexRegister from2) {
     super(methodCode);
-    RegFrom1 = from1;
-    RegFrom2 = from2;
+    regFrom1 = from1;
+    regFrom2 = from2;
   }
 
   public DexInstruction_ReturnWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -28,8 +28,8 @@ public class DexInstruction_ReturnWide extends DexInstruction {
     if (insn instanceof Instruction11x && insn.opcode == Opcode.RETURN_WIDE) {
 
       val insnReturnWide = (Instruction11x) insn;
-      RegFrom1 = parsingState.getRegister(insnReturnWide.getRegisterA());
-      RegFrom2 = parsingState.getRegister(insnReturnWide.getRegisterA() + 1);
+      regFrom1 = parsingState.getRegister(insnReturnWide.getRegisterA());
+      regFrom2 = parsingState.getRegister(insnReturnWide.getRegisterA() + 1);
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -37,6 +37,6 @@ public class DexInstruction_ReturnWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "return-wide v" + RegFrom1.getOriginalIndexString();
+    return "return-wide v" + regFrom1.getOriginalIndexString();
   }
 }

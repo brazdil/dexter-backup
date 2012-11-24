@@ -13,16 +13,16 @@ import lombok.val;
 
 public class DexInstruction_IfTestZero extends DexInstruction {
 
-  @Getter private final DexRegister Reg;
-  @Getter private final DexLabel Target;
-  @Getter private final Opcode_IfTestZero InsnOpcode;
+  @Getter private final DexRegister reg;
+  @Getter private final DexLabel target;
+  @Getter private final Opcode_IfTestZero insnOpcode;
 
   public DexInstruction_IfTestZero(DexCode methodCode, DexRegister reg, DexLabel target, Opcode_IfTestZero opcode) {
     super(methodCode);
 
-    Reg = reg;
-    Target = target;
-    InsnOpcode = opcode;
+    this.reg = reg;
+    this.target = target;
+    this.insnOpcode = opcode;
   }
 
   public DexInstruction_IfTestZero(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -31,9 +31,9 @@ public class DexInstruction_IfTestZero extends DexInstruction {
     if (insn instanceof Instruction21t && Opcode_IfTestZero.convert(insn.opcode) != null) {
 
       val insnIfTestZero = (Instruction21t) insn;
-      Reg = parsingState.getRegister(insnIfTestZero.getRegisterA());
-      Target = parsingState.getLabel(insnIfTestZero.getTargetAddressOffset());
-      InsnOpcode = Opcode_IfTestZero.convert(insn.opcode);
+      reg = parsingState.getRegister(insnIfTestZero.getRegisterA());
+      target = parsingState.getLabel(insnIfTestZero.getTargetAddressOffset());
+      insnOpcode = Opcode_IfTestZero.convert(insn.opcode);
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -41,7 +41,7 @@ public class DexInstruction_IfTestZero extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "if-" + InsnOpcode.name() + " v" + Reg.getOriginalIndexString() +
-           ", L" + Target.getOriginalAbsoluteOffset();
+    return "if-" + insnOpcode.name() + " v" + reg.getOriginalIndexString() +
+           ", L" + target.getOriginalAbsoluteOffset();
   }
 }

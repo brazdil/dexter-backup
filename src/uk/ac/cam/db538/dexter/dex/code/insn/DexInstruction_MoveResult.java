@@ -13,14 +13,14 @@ import lombok.val;
 
 public class DexInstruction_MoveResult extends DexInstruction {
 
-  @Getter private final DexRegister RegTo;
-  @Getter private final boolean ObjectMoving;
+  @Getter private final DexRegister regTo;
+  @Getter private final boolean objectMoving;
 
   public DexInstruction_MoveResult(DexCode methodCode, DexRegister to, boolean objectMoving) {
     super(methodCode);
 
-    RegTo = to;
-    ObjectMoving = objectMoving;
+    this.regTo = to;
+    this.objectMoving = objectMoving;
   }
 
   public DexInstruction_MoveResult(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -30,8 +30,8 @@ public class DexInstruction_MoveResult extends DexInstruction {
         (insn.opcode == Opcode.MOVE_RESULT || insn.opcode == Opcode.MOVE_RESULT_OBJECT)) {
 
       val insnMoveResult = (Instruction11x) insn;
-      RegTo = parsingState.getRegister(insnMoveResult.getRegisterA());
-      ObjectMoving = insn.opcode == Opcode.MOVE_RESULT_OBJECT;
+      regTo = parsingState.getRegister(insnMoveResult.getRegisterA());
+      objectMoving = insn.opcode == Opcode.MOVE_RESULT_OBJECT;
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -39,7 +39,7 @@ public class DexInstruction_MoveResult extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "move-result" + (ObjectMoving ? "-object" : "") +
-           " v" + RegTo.getOriginalIndexString();
+    return "move-result" + (objectMoving ? "-object" : "") +
+           " v" + regTo.getOriginalIndexString();
   }
 }

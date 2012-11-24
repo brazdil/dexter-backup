@@ -8,15 +8,15 @@ import lombok.Getter;
 
 public class DexInstruction_Unknown extends DexInstruction {
 
-  @Getter private final String Opcode;
+  @Getter private final String opcode;
 
   public DexInstruction_Unknown(DexCode methodCode, Instruction insn) {
     super(methodCode);
-    Opcode = insn.opcode.name();
+    opcode = insn.opcode.name();
   }
 
   @Override
   public String getOriginalAssembly() {
-    return "??? " + Opcode;
+    return "??? " + opcode;
   }
 }

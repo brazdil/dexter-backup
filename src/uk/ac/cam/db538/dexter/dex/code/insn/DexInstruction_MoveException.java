@@ -13,12 +13,12 @@ import lombok.val;
 
 public class DexInstruction_MoveException extends DexInstruction {
 
-  @Getter private final DexRegister RegTo;
+  @Getter private final DexRegister regTo;
 
   public DexInstruction_MoveException(DexCode methodCode, DexRegister to) {
     super(methodCode);
 
-    RegTo = to;
+    regTo = to;
   }
 
   public DexInstruction_MoveException(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -27,7 +27,7 @@ public class DexInstruction_MoveException extends DexInstruction {
     if (insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_EXCEPTION) {
 
       val insnMoveException = (Instruction11x) insn;
-      RegTo = parsingState.getRegister(insnMoveException.getRegisterA());
+      regTo = parsingState.getRegister(insnMoveException.getRegisterA());
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -36,6 +36,6 @@ public class DexInstruction_MoveException extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "move-exception v" + RegTo.getOriginalIndexString();
+    return "move-exception v" + regTo.getOriginalIndexString();
   }
 }

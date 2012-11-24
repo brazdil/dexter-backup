@@ -22,18 +22,18 @@ import lombok.val;
 
 public class DexInstruction_InstanceOf extends DexInstruction {
 
-  @Getter private final DexRegister RegTo;
-  @Getter private final DexRegister RegFrom;
-  @Getter private final DexReferenceType Value;
+  @Getter private final DexRegister regTo;
+  @Getter private final DexRegister regFrom;
+  @Getter private final DexReferenceType value;
 
   // CAREFUL: likely to throw exception
 
   public DexInstruction_InstanceOf(DexCode methodCode, DexRegister to, DexRegister from, DexReferenceType value) {
     super(methodCode);
 
-    RegTo = to;
-    RegFrom = from;
-    Value = value;
+    this.regTo = to;
+    this.regFrom = from;
+    this.value = value;
   }
 
   public DexInstruction_InstanceOf(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
@@ -42,9 +42,9 @@ public class DexInstruction_InstanceOf extends DexInstruction {
     if (insn instanceof Instruction22c && insn.opcode == Opcode.INSTANCE_OF) {
 
       val insnInstanceOf = (Instruction22c) insn;
-      RegTo = parsingState.getRegister(insnInstanceOf.getRegisterA());
-      RegFrom = parsingState.getRegister(insnInstanceOf.getRegisterB());
-      Value = DexReferenceType.parse(
+      regTo = parsingState.getRegister(insnInstanceOf.getRegisterA());
+      regFrom = parsingState.getRegister(insnInstanceOf.getRegisterB());
+      value = DexReferenceType.parse(
                 ((TypeIdItem) insnInstanceOf.getReferencedItem()).getTypeDescriptor(),
                 parsingState.getCache());
 
@@ -54,15 +54,15 @@ public class DexInstruction_InstanceOf extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "instance-of v" + RegTo.getOriginalIndexString() + ", v" + RegFrom.getOriginalIndexString() +
-           ", " + Value.getDescriptor();
+    return "instance-of v" + regTo.getOriginalIndexString() + ", v" + regFrom.getOriginalIndexString() +
+           ", " + value.getDescriptor();
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     val set = new HashSet<GcRangeConstraint>();
-    set.add(new GcRangeConstraint(RegTo, ColorRange.RANGE_4BIT));
-    set.add(new GcRangeConstraint(RegFrom, ColorRange.RANGE_4BIT));
+    set.add(new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT));
+    set.add(new GcRangeConstraint(regFrom, ColorRange.RANGE_4BIT));
     return set;
   }
 
@@ -70,22 +70,22 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_InstanceOf(
              getMethodCode(),
-             mapping.get(RegTo),
-             mapping.get(RegFrom),
-             Value);
+             mapping.get(regTo),
+             mapping.get(regFrom),
+             value);
   }
 
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     val set = new HashSet<DexRegister>();
-    set.add(RegTo);
+    set.add(regTo);
     return set;
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     val set = new HashSet<DexRegister>();
-    set.add(RegFrom);
+    set.add(regFrom);
     return set;
   }
 

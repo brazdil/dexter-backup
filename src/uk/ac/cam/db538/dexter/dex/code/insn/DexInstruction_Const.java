@@ -23,8 +23,8 @@ import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
 public class DexInstruction_Const extends DexInstruction {
 
-  @Getter private final DexRegister RegTo;
-  @Getter private final long Value;
+  @Getter private final DexRegister regTo;
+  @Getter private final long value;
 
   // CAREFUL: if Value is 32-bit and bottom 16-bits are zero,
   //          turn it into const/high16 instruction
@@ -32,8 +32,8 @@ public class DexInstruction_Const extends DexInstruction {
   public DexInstruction_Const(DexCode methodCode, DexRegister to, long value) {
     super(methodCode);
 
-    RegTo = to;
-    Value = value;
+    this.regTo = to;
+    this.value = value;
   }
 
   public DexInstruction_Const(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
@@ -42,26 +42,26 @@ public class DexInstruction_Const extends DexInstruction {
     if (insn instanceof Instruction11n && insn.opcode == Opcode.CONST_4) {
 
       val insnConst4 = (Instruction11n) insn;
-      RegTo = parsingState.getRegister(insnConst4.getRegisterA());
-      Value = insnConst4.getLiteral();
+      regTo = parsingState.getRegister(insnConst4.getRegisterA());
+      value = insnConst4.getLiteral();
 
     } else if (insn instanceof Instruction21s && insn.opcode == Opcode.CONST_16) {
 
       val insnConst16 = (Instruction21s) insn;
-      RegTo = parsingState.getRegister(insnConst16.getRegisterA());
-      Value = insnConst16.getLiteral();
+      regTo = parsingState.getRegister(insnConst16.getRegisterA());
+      value = insnConst16.getLiteral();
 
     } else if (insn instanceof Instruction31i && insn.opcode == Opcode.CONST) {
 
       val insnConst = (Instruction31i) insn;
-      RegTo = parsingState.getRegister(insnConst.getRegisterA());
-      Value = insnConst.getLiteral();
+      regTo = parsingState.getRegister(insnConst.getRegisterA());
+      value = insnConst.getLiteral();
 
     } else if (insn instanceof Instruction21h && insn.opcode == Opcode.CONST_HIGH16) {
 
       val insnConstHigh16 = (Instruction21h) insn;
-      RegTo = parsingState.getRegister(insnConstHigh16.getRegisterA());
-      Value = insnConstHigh16.getLiteral() << 16;
+      regTo = parsingState.getRegister(insnConstHigh16.getRegisterA());
+      value = insnConstHigh16.getLiteral() << 16;
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -69,7 +69,7 @@ public class DexInstruction_Const extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "const v" + RegTo.getOriginalIndexString() + ", #" + Value;
+    return "const v" + regTo.getOriginalIndexString() + ", #" + value;
   }
 
   @Override
@@ -78,23 +78,23 @@ public class DexInstruction_Const extends DexInstruction {
              this,
              new DexInstruction_Const(
                this.getMethodCode(),
-               mapping.getTaintRegister(RegTo),
-               (Value == 0xdec0ded) ? 1 : 0)
+               mapping.getTaintRegister(regTo),
+               (value == 0xdec0ded) ? 1 : 0)
            };
   }
 
   @Override
   public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    int rTo = regAlloc.get(RegTo);
+    int rTo = regAlloc.get(regTo);
 
-    if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Signed(Value, 4))
-      return new Instruction[] { new Instruction11n(Opcode.CONST_4, (byte) rTo, (byte) Value) };
-    else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoBits_Signed(Value, 16))
-      return new Instruction[] { new Instruction21s(Opcode.CONST_16, (short) rTo, (short) Value) };
-    else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoHighBits_Signed(Value, 16, 16))
-      return new Instruction[] { new Instruction21h(Opcode.CONST_HIGH16, (short) rTo, (short) (Value >> 16)) };
-    else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoBits_Signed(Value, 32))
-      return new Instruction[] { new Instruction31i(Opcode.CONST, (short) rTo, (int) Value) };
+    if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Signed(value, 4))
+      return new Instruction[] { new Instruction11n(Opcode.CONST_4, (byte) rTo, (byte) value) };
+    else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoBits_Signed(value, 16))
+      return new Instruction[] { new Instruction21s(Opcode.CONST_16, (short) rTo, (short) value) };
+    else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoHighBits_Signed(value, 16, 16))
+      return new Instruction[] { new Instruction21h(Opcode.CONST_HIGH16, (short) rTo, (short) (value >> 16)) };
+    else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoBits_Signed(value, 32))
+      return new Instruction[] { new Instruction31i(Opcode.CONST, (short) rTo, (int) value) };
     else
       return throwCannotAssembleException("No suitable instruction format found");
   }
@@ -102,7 +102,7 @@ public class DexInstruction_Const extends DexInstruction {
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     val regs = new HashSet<DexRegister>();
-    regs.add(RegTo);
+    regs.add(regTo);
     return regs;
   }
 }

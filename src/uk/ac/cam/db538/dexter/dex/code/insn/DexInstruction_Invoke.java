@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,19 +26,20 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexInstruction_Invoke extends DexInstruction {
 
-  @Getter private final DexClassType ClassType;
-  @Getter private final String MethodName;
-  @Getter private final DexPrototype MethodPrototype;
-  @Getter private final List<DexRegister> ArgumentRegisters;
-  @Getter private final Opcode_Invoke CallType;
+  @Getter private final DexClassType classType;
+  @Getter private final String methodName;
+  @Getter private final DexPrototype methodPrototype;
+  private final List<DexRegister> argumentRegisters;
+  @Getter private final Opcode_Invoke callType;
 
   public DexInstruction_Invoke(DexCode methodCode, DexClassType classType, String methodName, DexPrototype prototype, List<DexRegister> argumentRegisters, Opcode_Invoke callType) {
     super(methodCode);
-    ClassType = classType;
-    MethodName = methodName;
-    MethodPrototype = prototype;
-    ArgumentRegisters = argumentRegisters == null ? new LinkedList<DexRegister>() : argumentRegisters;
-    CallType = callType;
+
+    this.classType = classType;
+    this.methodName = methodName;
+    this.methodPrototype = prototype;
+    this.argumentRegisters = argumentRegisters == null ? new LinkedList<DexRegister>() : argumentRegisters;
+    this.callType = callType;
 
     checkArguments();
   }
@@ -48,7 +50,7 @@ public class DexInstruction_Invoke extends DexInstruction {
     val cache = parsingState.getCache();
 
     MethodIdItem methodInfo;
-    ArgumentRegisters = new LinkedList<DexRegister>();
+    argumentRegisters = new LinkedList<DexRegister>();
 
     if (insn instanceof Instruction35c && Opcode_Invoke.convert(insn.opcode) != null) {
 
@@ -57,15 +59,15 @@ public class DexInstruction_Invoke extends DexInstruction {
 
       switch (insnInvoke.getRegCount()) {
       case 5:
-        ArgumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterA()));
+        argumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterA()));
       case 4:
-        ArgumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterG()));
+        argumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterG()));
       case 3:
-        ArgumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterF()));
+        argumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterF()));
       case 2:
-        ArgumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterE()));
+        argumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterE()));
       case 1:
-        ArgumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterD()));
+        argumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterD()));
       case 0:
         break;
       default:
@@ -79,48 +81,52 @@ public class DexInstruction_Invoke extends DexInstruction {
 
       val startRegister = insnInvokeRange.getStartRegister();
       for (int i = 0; i < insnInvokeRange.getRegCount(); ++i)
-        ArgumentRegisters.add(parsingState.getRegister(startRegister + i));
+        argumentRegisters.add(parsingState.getRegister(startRegister + i));
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
 
-    ClassType = parsingState.getCache().getClassType(methodInfo.getContainingClass().getTypeDescriptor());
+    classType = parsingState.getCache().getClassType(methodInfo.getContainingClass().getTypeDescriptor());
 
-    MethodName = methodInfo.getMethodName().getStringValue();
-    MethodPrototype = new DexPrototype(methodInfo.getPrototype(), cache);
+    methodName = methodInfo.getMethodName().getStringValue();
+    methodPrototype = new DexPrototype(methodInfo.getPrototype(), cache);
 
-    CallType = Opcode_Invoke.convert(insn.opcode);
+    callType = Opcode_Invoke.convert(insn.opcode);
 
     checkArguments();
   }
 
   private void checkArguments() {
     // check that the number of registers is correct
-    int expectedRegisterCount = (CallType == Opcode_Invoke.Static) ? 0 : 1;
-    for (val argType : MethodPrototype.getParameterTypes())
+    int expectedRegisterCount = (callType == Opcode_Invoke.Static) ? 0 : 1;
+    for (val argType : methodPrototype.getParameterTypes())
       expectedRegisterCount += argType.getRegisters();
-    if (expectedRegisterCount != ArgumentRegisters.size())
+    if (expectedRegisterCount != argumentRegisters.size())
       throw new InstructionArgumentException("Wrong number of arguments given to a method call");
 
-    if (ArgumentRegisters.size() > 255)
+    if (argumentRegisters.size() > 255)
       throw new InstructionArgumentException("Too many argument registers given to a method call");
+  }
+
+  public List<DexRegister> getArgumentRegisters() {
+    return Collections.unmodifiableList(argumentRegisters);
   }
 
   @Override
   public String getOriginalAssembly() {
     val str = new StringBuilder();
     str.append("invoke-");
-    str.append(CallType.name().toLowerCase());
+    str.append(callType.name().toLowerCase());
     str.append(" ");
-    str.append(ClassType.getPrettyName());
+    str.append(classType.getPrettyName());
     str.append(".");
-    str.append(MethodName);
+    str.append(methodName);
 
-    if (CallType == Opcode_Invoke.Static) {
+    if (callType == Opcode_Invoke.Static) {
 
       str.append("(");
       boolean first = true;
-      for (val reg : ArgumentRegisters) {
+      for (val reg : argumentRegisters) {
         if (first) first = false;
         else str.append(", ");
         str.append("v" + reg.getOriginalIndexString());
@@ -132,7 +138,7 @@ public class DexInstruction_Invoke extends DexInstruction {
 
       boolean first = true;
       boolean second = false;
-      for (val reg : ArgumentRegisters) {
+      for (val reg : argumentRegisters) {
         if (second) second = false;
         else if (!first) str.append(", ");
 
@@ -152,16 +158,16 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
 
   private boolean assemblesToRange() {
-    return ArgumentRegisters.size() > 5;
+    return argumentRegisters.size() > 5;
   }
 
   @Override
   public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    int[] r = new int[ArgumentRegisters.size()];
+    int[] r = new int[argumentRegisters.size()];
     for (int i = 0; i < r.length; ++i)
-      r[i] = regAlloc.get(ArgumentRegisters.get(i));
+      r[i] = regAlloc.get(argumentRegisters.get(i));
 
-    val methodItem = cache.getMethod(ClassType, MethodPrototype, MethodName);
+    val methodItem = cache.getMethod(classType, methodPrototype, methodName);
 
     if (assemblesToRange()) {
       if (!fitsIntoBits_Unsigned(r.length, 8))
@@ -173,7 +179,7 @@ public class DexInstruction_Invoke extends DexInstruction {
           return throwCannotAssembleException("Argument registers don't form an interval");
 
       return new Instruction[] {
-               new Instruction3rc(Opcode_Invoke.convertRange(CallType),
+               new Instruction3rc(Opcode_Invoke.convertRange(callType),
                                   (short) r.length,
                                   firstReg,
                                   methodItem)
@@ -184,7 +190,7 @@ public class DexInstruction_Invoke extends DexInstruction {
           return throwCannotAssembleException("Register numbers don't fit into 4 bits");
 
       return new Instruction[] {
-               new Instruction35c(Opcode_Invoke.convertStandard(CallType),
+               new Instruction35c(Opcode_Invoke.convertStandard(callType),
                                   r.length,
                                   (byte) ((r.length >= 1) ? r[0] : 0),
                                   (byte) ((r.length >= 2) ? r[1] : 0),
@@ -198,7 +204,7 @@ public class DexInstruction_Invoke extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
-    return new HashSet<DexRegister>(ArgumentRegisters);
+    return new HashSet<DexRegister>(argumentRegisters);
   }
 
   @Override
@@ -206,7 +212,7 @@ public class DexInstruction_Invoke extends DexInstruction {
     val set = new HashSet<GcRangeConstraint>();
 
     if (!assemblesToRange())
-      for(val argReg : ArgumentRegisters)
+      for(val argReg : argumentRegisters)
         set.add(new GcRangeConstraint(argReg, ColorRange.RANGE_4BIT));
 
     return set;
@@ -218,7 +224,7 @@ public class DexInstruction_Invoke extends DexInstruction {
 
     if (assemblesToRange()) {
       DexRegister previous = null;
-      for(val current : ArgumentRegisters) {
+      for(val current : argumentRegisters) {
         if (previous != null)
           set.add(new GcFollowConstraint(previous, current));
         previous = current;
@@ -232,11 +238,11 @@ public class DexInstruction_Invoke extends DexInstruction {
   protected DexCodeElement gcReplaceWithTemporaries(
     Map<DexRegister, DexRegister> mapping) {
     val newArgRegs = new LinkedList<DexRegister>();
-    for (val argReg : ArgumentRegisters) {
+    for (val argReg : argumentRegisters) {
       val mapReg = mapping.get(argReg);
       newArgRegs.add(mapReg == null ? argReg : mapReg);
     }
 
-    return new DexInstruction_Invoke(getMethodCode(), ClassType, MethodName, MethodPrototype, newArgRegs, CallType);
+    return new DexInstruction_Invoke(getMethodCode(), classType, methodName, methodPrototype, newArgRegs, callType);
   }
 }

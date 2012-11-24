@@ -12,15 +12,15 @@ import lombok.val;
 
 public class DexInstruction_UnaryOp extends DexInstruction {
 
-  @Getter private final DexRegister RegTo;
-  @Getter private final DexRegister RegFrom;
-  @Getter private final Opcode_UnaryOp InsnOpcode;
+  @Getter private final DexRegister regTo;
+  @Getter private final DexRegister regFrom;
+  @Getter private final Opcode_UnaryOp insnOpcode;
 
   public DexInstruction_UnaryOp(DexCode methodCode, DexRegister to, DexRegister from, Opcode_UnaryOp opcode) {
     super(methodCode);
-    RegTo = to;
-    RegFrom = from;
-    InsnOpcode = opcode;
+    regTo = to;
+    regFrom = from;
+    insnOpcode = opcode;
   }
 
   public DexInstruction_UnaryOp(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -28,9 +28,9 @@ public class DexInstruction_UnaryOp extends DexInstruction {
     if (insn instanceof Instruction12x && Opcode_UnaryOp.convert(insn.opcode) != null) {
 
       val insnUnaryOp = (Instruction12x) insn;
-      RegTo = parsingState.getRegister(insnUnaryOp.getRegisterA());
-      RegFrom = parsingState.getRegister(insnUnaryOp.getRegisterB());
-      InsnOpcode = Opcode_UnaryOp.convert(insn.opcode);
+      regTo = parsingState.getRegister(insnUnaryOp.getRegisterA());
+      regFrom = parsingState.getRegister(insnUnaryOp.getRegisterB());
+      insnOpcode = Opcode_UnaryOp.convert(insn.opcode);
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -38,6 +38,6 @@ public class DexInstruction_UnaryOp extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return InsnOpcode.getAssemblyName() + " v" + RegTo.getOriginalIndexString() + ", v" + RegFrom.getOriginalIndexString();
+    return insnOpcode.getAssemblyName() + " v" + regTo.getOriginalIndexString() + ", v" + regFrom.getOriginalIndexString();
   }
 }

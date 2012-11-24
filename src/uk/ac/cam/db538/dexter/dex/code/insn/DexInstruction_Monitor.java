@@ -13,14 +13,14 @@ import lombok.val;
 
 public class DexInstruction_Monitor extends DexInstruction {
 
-  @Getter private final DexRegister Reg;
-  @Getter private final boolean Enter;
+  @Getter private final DexRegister reg;
+  @Getter private final boolean enter;
 
   public DexInstruction_Monitor(DexCode methodCode, DexRegister reg, boolean entering) {
     super(methodCode);
 
-    Reg = reg;
-    Enter = entering;
+    this.reg = reg;
+    this.enter = entering;
   }
 
   public DexInstruction_Monitor(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -30,8 +30,8 @@ public class DexInstruction_Monitor extends DexInstruction {
         (insn.opcode == Opcode.MONITOR_ENTER || insn.opcode == Opcode.MONITOR_EXIT)) {
 
       val insnMonitor = (Instruction11x) insn;
-      Reg = parsingState.getRegister(insnMonitor.getRegisterA());
-      Enter = insn.opcode == Opcode.MONITOR_ENTER;
+      reg = parsingState.getRegister(insnMonitor.getRegisterA());
+      enter = insn.opcode == Opcode.MONITOR_ENTER;
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -39,7 +39,7 @@ public class DexInstruction_Monitor extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "monitor-" + (Enter ? "enter" : "exit") +
-           " v" + Reg.getOriginalIndexString();
+    return "monitor-" + (enter ? "enter" : "exit") +
+           " v" + reg.getOriginalIndexString();
   }
 }

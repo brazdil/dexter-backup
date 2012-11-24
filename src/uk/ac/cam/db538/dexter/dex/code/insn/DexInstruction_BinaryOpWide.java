@@ -25,13 +25,13 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   // registers are equal; for commutative instructions,
   // check the second as well
 
-  @Getter private final DexRegister RegTarget1;
-  @Getter private final DexRegister RegTarget2;
-  @Getter private final DexRegister RegSourceA1;
-  @Getter private final DexRegister RegSourceA2;
-  @Getter private final DexRegister RegSourceB1;
-  @Getter private final DexRegister RegSourceB2;
-  @Getter private final Opcode_BinaryOpWide InsnOpcode;
+  @Getter private final DexRegister regTarget1;
+  @Getter private final DexRegister regTarget2;
+  @Getter private final DexRegister regSourceA1;
+  @Getter private final DexRegister regSourceA2;
+  @Getter private final DexRegister regSourceB1;
+  @Getter private final DexRegister regSourceB2;
+  @Getter private final Opcode_BinaryOpWide insnOpcode;
 
   public DexInstruction_BinaryOpWide(DexCode methodCode,
                                      DexRegister target1, DexRegister target2,
@@ -40,13 +40,13 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
                                      Opcode_BinaryOpWide opcode) {
     super(methodCode);
 
-    RegTarget1 = target1;
-    RegTarget2 = target2;
-    RegSourceA1 = sourceA1;
-    RegSourceA2 = sourceA2;
-    RegSourceB1 = sourceB1;
-    RegSourceB2 = sourceB2;
-    InsnOpcode = opcode;
+    regTarget1 = target1;
+    regTarget2 = target2;
+    regSourceA1 = sourceA1;
+    regSourceA2 = sourceA2;
+    regSourceB1 = sourceB1;
+    regSourceB2 = sourceB2;
+    insnOpcode = opcode;
   }
 
   public DexInstruction_BinaryOpWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -70,29 +70,29 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
 
-    RegTarget1 = parsingState.getRegister(regA);
-    RegTarget2 = parsingState.getRegister(regA + 1);
-    RegSourceA1 = parsingState.getRegister(regB);
-    RegSourceA2 = parsingState.getRegister(regB + 1);
-    RegSourceB1 = parsingState.getRegister(regC);
-    RegSourceB2 = parsingState.getRegister(regC + 1);
-    InsnOpcode = Opcode_BinaryOpWide.convert(insn.opcode);
+    regTarget1 = parsingState.getRegister(regA);
+    regTarget2 = parsingState.getRegister(regA + 1);
+    regSourceA1 = parsingState.getRegister(regB);
+    regSourceA2 = parsingState.getRegister(regB + 1);
+    regSourceB1 = parsingState.getRegister(regC);
+    regSourceB2 = parsingState.getRegister(regC + 1);
+    insnOpcode = Opcode_BinaryOpWide.convert(insn.opcode);
   }
 
   @Override
   public String getOriginalAssembly() {
-    return InsnOpcode.getAssemblyName() + " v" + RegTarget1.getOriginalIndexString() +
-           ", v" + RegSourceA1.getOriginalIndexString() + ", v" + RegSourceB1.getOriginalIndexString();
+    return insnOpcode.getAssemblyName() + " v" + regTarget1.getOriginalIndexString() +
+           ", v" + regSourceA1.getOriginalIndexString() + ", v" + regSourceB1.getOriginalIndexString();
   }
 
   @Override
   public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
-    val taintTarget1 = mapping.getTaintRegister(RegTarget1);
-    val taintTarget2 = mapping.getTaintRegister(RegTarget2);
-    val taintSourceA1 = mapping.getTaintRegister(RegSourceA1);
-    val taintSourceA2 = mapping.getTaintRegister(RegSourceA2);
-    val taintSourceB1 = mapping.getTaintRegister(RegSourceB1);
-    val taintSourceB2 = mapping.getTaintRegister(RegSourceB2);
+    val taintTarget1 = mapping.getTaintRegister(regTarget1);
+    val taintTarget2 = mapping.getTaintRegister(regTarget2);
+    val taintSourceA1 = mapping.getTaintRegister(regSourceA1);
+    val taintSourceA2 = mapping.getTaintRegister(regSourceA2);
+    val taintSourceB1 = mapping.getTaintRegister(regSourceB1);
+    val taintSourceB2 = mapping.getTaintRegister(regSourceB2);
 
     return new DexCodeElement[] {
              this,
@@ -124,20 +124,20 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    int rTarget1 = regAlloc.get(RegTarget1);
-    int rTarget2 = regAlloc.get(RegTarget2);
-    int rSourceA1 = regAlloc.get(RegSourceA1);
-    int rSourceA2 = regAlloc.get(RegSourceA2);
-    int rSourceB1 = regAlloc.get(RegSourceB1);
-    int rSourceB2 = regAlloc.get(RegSourceB2);
+    int rTarget1 = regAlloc.get(regTarget1);
+    int rTarget2 = regAlloc.get(regTarget2);
+    int rSourceA1 = regAlloc.get(regSourceA1);
+    int rSourceA2 = regAlloc.get(regSourceA2);
+    int rSourceB1 = regAlloc.get(regSourceB1);
+    int rSourceB2 = regAlloc.get(regSourceB2);
 
     if (!formWideRegister(rTarget1, rTarget2) || !formWideRegister(rSourceA1, rSourceA2) || !formWideRegister(rSourceB1, rSourceB2))
       return throwWideRegistersExpected();
 
     if (rTarget1 == rSourceA1 && fitsIntoBits_Unsigned(rTarget1, 4) && fitsIntoBits_Unsigned(rSourceB1, 4))
-      return new Instruction[] { new Instruction12x(Opcode_BinaryOpWide.convert2addr(InsnOpcode), (byte) rTarget1, (byte) rSourceB1) };
+      return new Instruction[] { new Instruction12x(Opcode_BinaryOpWide.convert2addr(insnOpcode), (byte) rTarget1, (byte) rSourceB1) };
     else if (fitsIntoBits_Unsigned(rTarget1, 8) && fitsIntoBits_Unsigned(rSourceA1, 8) && fitsIntoBits_Unsigned(rSourceB1, 8))
-      return new Instruction[] { new Instruction23x(Opcode_BinaryOpWide.convert(InsnOpcode), (short) rTarget1, (short) rSourceA1, (short) rSourceB1)	};
+      return new Instruction[] { new Instruction23x(Opcode_BinaryOpWide.convert(insnOpcode), (short) rTarget1, (short) rSourceA1, (short) rSourceB1)	};
     else
       return throwCannotAssembleException("No suitable instruction format found");
   }
@@ -145,36 +145,36 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     val regs = new HashSet<DexRegister>();
-    regs.add(RegTarget1);
-    regs.add(RegTarget2);
+    regs.add(regTarget1);
+    regs.add(regTarget2);
     return regs;
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     val regs = new HashSet<DexRegister>();
-    regs.add(RegSourceA1);
-    regs.add(RegSourceA2);
-    regs.add(RegSourceB1);
-    regs.add(RegSourceB2);
+    regs.add(regSourceA1);
+    regs.add(regSourceA2);
+    regs.add(regSourceB1);
+    regs.add(regSourceB2);
     return regs;
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     val set = new HashSet<GcRangeConstraint>();
-    set.add(new GcRangeConstraint(RegTarget1, ColorRange.RANGE_8BIT));
-    set.add(new GcRangeConstraint(RegSourceA1, ColorRange.RANGE_8BIT));
-    set.add(new GcRangeConstraint(RegSourceB1, ColorRange.RANGE_8BIT));
+    set.add(new GcRangeConstraint(regTarget1, ColorRange.RANGE_8BIT));
+    set.add(new GcRangeConstraint(regSourceA1, ColorRange.RANGE_8BIT));
+    set.add(new GcRangeConstraint(regSourceB1, ColorRange.RANGE_8BIT));
     return set;
   }
 
   @Override
   public Set<GcFollowConstraint> gcFollowConstraints() {
     val set = new HashSet<GcFollowConstraint>();
-    set.add(new GcFollowConstraint(RegTarget1, RegTarget2));
-    set.add(new GcFollowConstraint(RegSourceA1, RegSourceA2));
-    set.add(new GcFollowConstraint(RegSourceB1, RegSourceB2));
+    set.add(new GcFollowConstraint(regTarget1, regTarget2));
+    set.add(new GcFollowConstraint(regSourceA1, regSourceA2));
+    set.add(new GcFollowConstraint(regSourceB1, regSourceB2));
     return set;
   }
 
@@ -182,13 +182,13 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_BinaryOpWide(
              getMethodCode(),
-             mapping.get(RegTarget1),
-             mapping.get(RegTarget2),
-             mapping.get(RegSourceA1),
-             mapping.get(RegSourceA2),
-             mapping.get(RegSourceB1),
-             mapping.get(RegSourceB2),
-             InsnOpcode);
+             mapping.get(regTarget1),
+             mapping.get(regTarget2),
+             mapping.get(regSourceA1),
+             mapping.get(regSourceA2),
+             mapping.get(regSourceB1),
+             mapping.get(regSourceB2),
+             insnOpcode);
   }
 }
 

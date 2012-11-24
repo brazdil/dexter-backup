@@ -13,11 +13,11 @@ import lombok.val;
 
 public class DexInstruction_Throw extends DexInstruction {
 
-  @Getter private final DexRegister RegFrom;
+  @Getter private final DexRegister regFrom;
 
   public DexInstruction_Throw(DexCode methodCode, DexRegister from) {
     super(methodCode);
-    RegFrom = from;
+    regFrom = from;
   }
 
   public DexInstruction_Throw(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -26,7 +26,7 @@ public class DexInstruction_Throw extends DexInstruction {
     if (insn instanceof Instruction11x && insn.opcode == Opcode.THROW) {
 
       val insnThrow = (Instruction11x) insn;
-      RegFrom = parsingState.getRegister(insnThrow.getRegisterA());
+      regFrom = parsingState.getRegister(insnThrow.getRegisterA());
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -34,6 +34,6 @@ public class DexInstruction_Throw extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "throw v" + RegFrom.getOriginalIndexString();
+    return "throw v" + regFrom.getOriginalIndexString();
   }
 }

@@ -16,14 +16,14 @@ import lombok.val;
 
 public class DexInstruction_NewInstance extends DexInstruction {
 
-  @Getter private final DexRegister RegTo;
-  @Getter private final DexClassType Value;
+  @Getter private final DexRegister regTo;
+  @Getter private final DexClassType value;
 
   public DexInstruction_NewInstance(DexCode methodCode, DexRegister to, DexClassType value) {
     super(methodCode);
 
-    RegTo = to;
-    Value = value;
+    this.regTo = to;
+    this.value = value;
   }
 
   public DexInstruction_NewInstance(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
@@ -32,8 +32,8 @@ public class DexInstruction_NewInstance extends DexInstruction {
     if (insn instanceof Instruction21c && insn.opcode == Opcode.NEW_INSTANCE) {
 
       val insnNewInstance = (Instruction21c) insn;
-      RegTo = parsingState.getRegister(insnNewInstance.getRegisterA());
-      Value = DexClassType.parse(
+      regTo = parsingState.getRegister(insnNewInstance.getRegisterA());
+      value = DexClassType.parse(
                 ((TypeIdItem) insnNewInstance.getReferencedItem()).getTypeDescriptor(),
                 parsingState.getCache());
 
@@ -43,6 +43,6 @@ public class DexInstruction_NewInstance extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "new-instance v" + RegTo.getOriginalIndexString() + ", " + Value.getDescriptor();
+    return "new-instance v" + regTo.getOriginalIndexString() + ", " + value.getDescriptor();
   }
 }

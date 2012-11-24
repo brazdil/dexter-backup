@@ -12,18 +12,18 @@ import lombok.val;
 
 public class DexInstruction_ConvertToWide extends DexInstruction {
 
-  @Getter private final DexRegister RegTo1;
-  @Getter private final DexRegister RegTo2;
-  @Getter private final DexRegister RegFrom;
-  @Getter private final Opcode_ConvertToWide InsnOpcode;
+  @Getter private final DexRegister regTo1;
+  @Getter private final DexRegister regTo2;
+  @Getter private final DexRegister regFrom;
+  @Getter private final Opcode_ConvertToWide insnOpcode;
 
   public DexInstruction_ConvertToWide(DexCode methodCode, DexRegister to1, DexRegister to2, DexRegister from, Opcode_ConvertToWide opcode) {
     super(methodCode);
 
-    RegTo1 = to1;
-    RegTo2 = to2;
-    RegFrom = from;
-    InsnOpcode = opcode;
+    regTo1 = to1;
+    regTo2 = to2;
+    regFrom = from;
+    insnOpcode = opcode;
   }
 
   public DexInstruction_ConvertToWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
@@ -32,10 +32,10 @@ public class DexInstruction_ConvertToWide extends DexInstruction {
     if (insn instanceof Instruction12x && Opcode_ConvertToWide.convert(insn.opcode) != null) {
 
       val insnConvert = (Instruction12x) insn;
-      RegTo1 = parsingState.getRegister(insnConvert.getRegisterA());
-      RegTo2 = parsingState.getRegister(insnConvert.getRegisterA() + 1);
-      RegFrom = parsingState.getRegister(insnConvert.getRegisterB());
-      InsnOpcode = Opcode_ConvertToWide.convert(insn.opcode);
+      regTo1 = parsingState.getRegister(insnConvert.getRegisterA());
+      regTo2 = parsingState.getRegister(insnConvert.getRegisterA() + 1);
+      regFrom = parsingState.getRegister(insnConvert.getRegisterB());
+      insnOpcode = Opcode_ConvertToWide.convert(insn.opcode);
 
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
@@ -43,6 +43,6 @@ public class DexInstruction_ConvertToWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return InsnOpcode.getAssemblyName() + " v" + RegTo1.getOriginalIndexString() + ", v" + RegFrom.getOriginalIndexString();
+    return insnOpcode.getAssemblyName() + " v" + regTo1.getOriginalIndexString() + ", v" + regFrom.getOriginalIndexString();
   }
 }
