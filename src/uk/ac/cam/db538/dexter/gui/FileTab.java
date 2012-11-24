@@ -23,18 +23,18 @@ import com.alee.laf.tree.WebTree;
 public class FileTab extends WebSplitPane {
   private static final long serialVersionUID = -2012258240775133554L;
 
-  @Getter private final Dex OpenedFile;
-  @Getter private final String OpenedFile_Filename;
+  @Getter private final Dex openedFile;
+  @Getter private final String openedFile_Filename;
 
-  private final ClassPanel SelectedClassPanel;
-  private final MethodPanel SelectedMethodPanel;
+  private final ClassPanel selectedClassPanel;
+  private final MethodPanel selectedMethodPanel;
 
   @Getter private TreeSelectionListener TreeListener;
 
   public FileTab(Dex file, String filename) {
     super();
-    OpenedFile = file;
-    OpenedFile_Filename = filename;
+    openedFile = file;
+    openedFile_Filename = filename;
 
     val splitPane = this;
 
@@ -42,8 +42,8 @@ public class FileTab extends WebSplitPane {
     splitPane.setContinuousLayout (true);
 
     // create selection panels
-    SelectedClassPanel = new ClassPanel();
-    SelectedMethodPanel = new MethodPanel();
+    selectedClassPanel = new ClassPanel();
+    selectedMethodPanel = new MethodPanel();
 
     updateClassTree();
   }
@@ -51,8 +51,8 @@ public class FileTab extends WebSplitPane {
   public void updateClassTree() {
     val splitPane = this;
 
-    val classTreeRoot = new DefaultMutableTreeNode(OpenedFile_Filename);
-    addClassesToTree(classTreeRoot, OpenedFile.getClasses());
+    val classTreeRoot = new DefaultMutableTreeNode(openedFile_Filename);
+    addClassesToTree(classTreeRoot, openedFile.getClasses());
     val classTree = new WebTree(classTreeRoot);
     classTree.setShowsRootHandles(true);
     classTree.setVisibleRowCount(4);
@@ -69,11 +69,11 @@ public class FileTab extends WebSplitPane {
           val obj = node.getUserObject();
 
           if (obj instanceof DexClass) {
-            splitPane.setRightComponent(SelectedClassPanel);
-            SelectedClassPanel.changeClass((DexClass) obj);
+            splitPane.setRightComponent(selectedClassPanel);
+            selectedClassPanel.changeClass((DexClass) obj);
           } else if (obj instanceof DexMethod) {
-            splitPane.setRightComponent(SelectedMethodPanel);
-            SelectedMethodPanel.changeMethod((DexMethod) obj);
+            splitPane.setRightComponent(selectedMethodPanel);
+            selectedMethodPanel.changeMethod((DexMethod) obj);
           }
         }
       }

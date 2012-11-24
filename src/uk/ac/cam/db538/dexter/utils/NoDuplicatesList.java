@@ -9,19 +9,19 @@ public class NoDuplicatesList<E> extends LinkedList<E> {
 
   private static final long serialVersionUID = -3844134393839278966L;
 
-  private static final RuntimeException DuplicateException = new RuntimeException("Duplicate inserted into NoDuplicatesList");
+  private static final RuntimeException DUPLICATE_EXCEPTION = new RuntimeException("Duplicate inserted into NoDuplicatesList");
 
   @Override
   public boolean add(E e) {
     if (contains(e))
-      throw DuplicateException;
+      throw DUPLICATE_EXCEPTION;
     return super.add(e);
   }
 
   @Override
   public void add(int index, E element) {
     if (contains(element))
-      throw DuplicateException;
+      throw DUPLICATE_EXCEPTION;
     super.add(index, element);
   }
 
@@ -42,7 +42,7 @@ public class NoDuplicatesList<E> extends LinkedList<E> {
   public boolean addAll(int index, Collection<? extends E> c) {
     for (val e : c)
       if (contains(e))
-        throw DuplicateException;
+        throw DUPLICATE_EXCEPTION;
       else
         super.add(index++, e);
     return true;
@@ -51,14 +51,14 @@ public class NoDuplicatesList<E> extends LinkedList<E> {
   @Override
   public void addFirst(E e) {
     if (contains(e))
-      throw DuplicateException;
+      throw DUPLICATE_EXCEPTION;
     super.addFirst(e);
   }
 
   @Override
   public void addLast(E e) {
     if (contains(e))
-      throw DuplicateException;
+      throw DUPLICATE_EXCEPTION;
     super.addLast(e);
   }
 

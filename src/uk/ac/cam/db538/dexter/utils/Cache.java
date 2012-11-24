@@ -5,33 +5,31 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import lombok.Getter;
-
 public abstract class Cache<K, V> {
 
-  @Getter private final Map<K, V> CacheMap;
+  private final Map<K, V> cacheMap;
 
   public Cache() {
-    CacheMap = new HashMap<K, V>();
+    cacheMap = new HashMap<K, V>();
   }
 
   public V getCachedEntry(K key) {
-    V cachedVal = CacheMap.get(key);
+    V cachedVal = cacheMap.get(key);
     if (cachedVal != null)
       return cachedVal;
 
     V newValue = createNewEntry(key);
-    CacheMap.put(key, newValue);
+    cacheMap.put(key, newValue);
     return newValue;
   }
 
   public Set<Entry<K, V>> entrySet() {
-    return CacheMap.entrySet();
+    return cacheMap.entrySet();
   }
 
   protected abstract V createNewEntry(K key);
 
   public boolean contains(K key) {
-    return CacheMap.containsKey(key);
+    return cacheMap.containsKey(key);
   }
 }

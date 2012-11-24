@@ -24,20 +24,20 @@ import com.alee.laf.tabbedpane.WebTabbedPane;
 
 public class MainWindow {
 
-  private JFrame Frame;
-  private JTabbedPane TabbedPane;
+  private JFrame frame;
+  private JTabbedPane tabbedPane;
 
   public MainWindow() {
     initialize();
   }
 
   private void initialize() {
-    Frame = new JFrame("Dexter");
-    Frame.setBounds(100, 100, 800, 600);
-    Frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame = new JFrame("Dexter");
+    frame.setBounds(100, 100, 800, 600);
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    TabbedPane = new WebTabbedPane();
-    Frame.add(TabbedPane);
+    tabbedPane = new WebTabbedPane();
+    frame.add(tabbedPane);
 
     val menubar = new WebMenuBar();
     {
@@ -61,12 +61,12 @@ public class MainWindow {
       }
       menubar.add(menuFile);
     }
-    Frame.setJMenuBar(menubar);
+    frame.setJMenuBar(menubar);
   }
 
   private void doModal(String message, final Thread task) {
     // Load dialog
-    val progress = new WebProgressDialog(Frame, "");
+    val progress = new WebProgressDialog(frame, "");
     progress.setText(message);
     progress.setIndeterminate(true);
     progress.setShowProgressText(false);
@@ -100,7 +100,7 @@ public class MainWindow {
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-      if (FileChooser.showOpenDialog(Frame) != JFileChooser.APPROVE_OPTION)
+      if (FileChooser.showOpenDialog(frame) != JFileChooser.APPROVE_OPTION)
         return;
 
       val file = FileChooser.getSelectedFile();
@@ -108,9 +108,9 @@ public class MainWindow {
         public void run() {
           try {
             val splitPane = new FileTab(new Dex(file), file.getName());
-            TabbedPane.addTab(file.getName(), splitPane);
+            tabbedPane.addTab(file.getName(), splitPane);
           } catch (Throwable e) {
-            JMessage.showErrorMessage(Frame, "A problem occurred while loading file \"" + file.getName() + "\".", e);
+            JMessage.showErrorMessage(frame, "A problem occurred while loading file \"" + file.getName() + "\".", e);
             return;
           }
         }
@@ -121,7 +121,7 @@ public class MainWindow {
   private ActionListener Listener_FileInstrument = new ActionListener() {
     @Override
     public void actionPerformed(ActionEvent arg0) {
-      val selected = TabbedPane.getSelectedComponent();
+      val selected = tabbedPane.getSelectedComponent();
       if (selected == null)
         return;
 
@@ -134,7 +134,7 @@ public class MainWindow {
             tab.getTreeListener().valueChanged(null);
             tab.updateClassTree();
           } catch (Throwable e) {
-            JMessage.showErrorMessage(Frame, "A problem occurred while instrumenting file \"" + tab.getOpenedFile_Filename() + "\".", e);
+            JMessage.showErrorMessage(frame, "A problem occurred while instrumenting file \"" + tab.getOpenedFile_Filename() + "\".", e);
             return;
           }
         }
@@ -146,11 +146,11 @@ public class MainWindow {
 
     @Override
     public void actionPerformed(ActionEvent arg0) {
-      val selected = TabbedPane.getSelectedComponent();
+      val selected = tabbedPane.getSelectedComponent();
       if (selected == null)
         return;
 
-      if (FileChooser.showSaveDialog(Frame) != JFileChooser.APPROVE_OPTION)
+      if (FileChooser.showSaveDialog(frame) != JFileChooser.APPROVE_OPTION)
         return;
 
       val tab = (FileTab) selected;
@@ -161,7 +161,7 @@ public class MainWindow {
           try {
             tab.getOpenedFile().writeToFile(file);
           } catch (Throwable e) {
-            JMessage.showErrorMessage(Frame, "A problem occurred while saving into file \"" + file.getName() + "\".", e);
+            JMessage.showErrorMessage(frame, "A problem occurred while saving into file \"" + file.getName() + "\".", e);
             return;
           }
         }
@@ -176,7 +176,7 @@ public class MainWindow {
       public void run() {
         try {
           MainWindow window = new MainWindow();
-          window.Frame.setVisible(true);
+          window.frame.setVisible(true);
         } catch (Exception e) {
           e.printStackTrace();
         }
