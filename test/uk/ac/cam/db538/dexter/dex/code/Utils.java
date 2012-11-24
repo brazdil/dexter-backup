@@ -9,6 +9,8 @@ import java.util.Map;
 import lombok.val;
 
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.FieldIdItem;
+import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 
@@ -18,13 +20,7 @@ import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 public class Utils {
 
   public static DexCodeElement parseAndCompare(Instruction insn, String output) {
-    DexCode code;
-    try {
-      code = new DexCode(new Instruction[] { insn }, new DexParsingCache());
-    } catch (Throwable e) {
-      fail(e.getClass().getName() + ": " + e.getMessage());
-      return null;
-    }
+    DexCode code = new DexCode(new Instruction[] { insn }, new DexParsingCache());
 
     val insnList = code.getInstructionList();
 
@@ -77,5 +73,13 @@ public class Utils {
 
   public static TypeIdItem getTypeItem(String desc) {
     return TypeIdItem.internTypeIdItem(new DexFile(), desc);
+  }
+
+  public static FieldIdItem getFieldItem(String classTypeName, String fieldTypeName, String fieldName) {
+    val dexFile = new DexFile();
+    val classTypeItem = TypeIdItem.internTypeIdItem(dexFile, classTypeName);
+    val fieldTypeItem = TypeIdItem.internTypeIdItem(dexFile, fieldTypeName);
+    val fieldNameItem = StringIdItem.internStringIdItem(dexFile, fieldName);
+    return FieldIdItem.internFieldIdItem(dexFile, classTypeItem, fieldTypeItem, fieldNameItem);
   }
 }
