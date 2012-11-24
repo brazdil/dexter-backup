@@ -42,15 +42,15 @@ public class DexInstruction_StaticPutWide_Test {
   public void testAssemble_StaticPutWide() {
     val cache = new DexParsingCache();
 
-    val regNTo = Utils.numFitsInto_Unsigned(8);
-    val regTo1 = new DexRegister(regNTo);
-    val regTo2 = new DexRegister(regNTo + 1);
-    val regAlloc = Utils.genRegAlloc(regTo1, regTo2);
+    val regNFrom = Utils.numFitsInto_Unsigned(8);
+    val regFrom1 = new DexRegister(regNFrom);
+    val regFrom2 = new DexRegister(regNFrom + 1);
+    val regAlloc = Utils.genRegAlloc(regFrom1, regFrom2);
 
     val insn = new DexInstruction_StaticPutWide(
       null,
-      regTo1,
-      regTo2,
+      regFrom1,
+      regFrom2,
       DexClassType.parse("Lcom/test/SomeClass;", cache),
       DexRegisterType.parse("D", cache),
       "AwesomeField");
@@ -60,7 +60,7 @@ public class DexInstruction_StaticPutWide_Test {
     assertTrue(asm[0] instanceof Instruction21c);
 
     val asmInsn = (Instruction21c) asm[0];
-    assertEquals(regNTo, asmInsn.getRegisterA());
+    assertEquals(regNFrom, asmInsn.getRegisterA());
     assertEquals(Opcode.SPUT_WIDE, asmInsn.opcode);
 
     val asmInsnRef = (FieldIdItem) asmInsn.getReferencedItem();
@@ -73,15 +73,15 @@ public class DexInstruction_StaticPutWide_Test {
   public void testAssemble_StaticPutWide_WrongAllocation_Register() {
     val cache = new DexParsingCache();
 
-    val regNTo = Utils.numFitsInto_Unsigned(9);
-    val regTo1 = new DexRegister(regNTo);
-    val regTo2 = new DexRegister(regNTo + 1);
-    val regAlloc = Utils.genRegAlloc(regTo1, regTo2);
+    val regNFrom = Utils.numFitsInto_Unsigned(9);
+    val regFrom1 = new DexRegister(regNFrom);
+    val regFrom2 = new DexRegister(regNFrom + 1);
+    val regAlloc = Utils.genRegAlloc(regFrom1, regFrom2);
 
     val insn = new DexInstruction_StaticPutWide(
       null,
-      regTo1,
-      regTo2,
+      regFrom1,
+      regFrom2,
       DexClassType.parse("Lcom/test/SomeClass;", cache),
       DexRegisterType.parse("J", cache),
       "AwesomeField");
@@ -93,15 +93,15 @@ public class DexInstruction_StaticPutWide_Test {
   public void testAssemble_StaticPutWide_WrongAllocation_FollowUp() {
     val cache = new DexParsingCache();
 
-    val regNTo = Utils.numFitsInto_Unsigned(8);
-    val regTo1 = new DexRegister(regNTo);
-    val regTo2 = new DexRegister(regNTo - 1);
-    val regAlloc = Utils.genRegAlloc(regTo1, regTo2);
+    val regNFrom = Utils.numFitsInto_Unsigned(8);
+    val regFrom1 = new DexRegister(regNFrom);
+    val regFrom2 = new DexRegister(regNFrom - 1);
+    val regAlloc = Utils.genRegAlloc(regFrom1, regFrom2);
 
     val insn = new DexInstruction_StaticPutWide(
       null,
-      regTo1,
-      regTo2,
+      regFrom1,
+      regFrom2,
       DexClassType.parse("Lcom/test/SomeClass;", cache),
       DexRegisterType.parse("J", cache),
       "AwesomeField");

@@ -24,17 +24,17 @@ import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_StaticPutWide extends DexInstruction {
 
-  @Getter private final DexRegister regTo1;
-  @Getter private final DexRegister regTo2;
+  @Getter private final DexRegister regFrom1;
+  @Getter private final DexRegister regFrom2;
   @Getter private final DexClassType fieldClass;
   @Getter private final DexRegisterType fieldType;
   @Getter private final String fieldName;
 
-  public DexInstruction_StaticPutWide(DexCode methodCode, DexRegister to1, DexRegister to2, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
+  public DexInstruction_StaticPutWide(DexCode methodCode, DexRegister from1, DexRegister from2, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
     super(methodCode);
 
-    this.regTo1 = to1;
-    this.regTo2 = to2;
+    this.regFrom1 = from1;
+    this.regFrom2 = from2;
     this.fieldClass = fieldClass;
     this.fieldType = fieldType;
     this.fieldName = fieldName;
@@ -49,8 +49,8 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
 
       val insnStaticPut = (Instruction21c) insn;
       val refItem = (FieldIdItem) insnStaticPut.getReferencedItem();
-      regTo1 = parsingState.getRegister(insnStaticPut.getRegisterA());
-      regTo2 = parsingState.getRegister(insnStaticPut.getRegisterA() + 1);
+      regFrom1 = parsingState.getRegister(insnStaticPut.getRegisterA());
+      regFrom2 = parsingState.getRegister(insnStaticPut.getRegisterA() + 1);
       fieldClass = DexClassType.parse(
                      refItem.getContainingClass().getTypeDescriptor(),
                      parsingState.getCache());
@@ -67,44 +67,44 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "sput-wide v" + regTo1.getOriginalIndexString() + ", " + fieldClass.getPrettyName() + "." + fieldName;
+    return "sput-wide v" + regFrom1.getOriginalIndexString() + ", " + fieldClass.getPrettyName() + "." + fieldName;
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     val referencedRegs = new HashSet<DexRegister>();
-    referencedRegs.add(regTo1);
-    referencedRegs.add(regTo2);
+    referencedRegs.add(regFrom1);
+    referencedRegs.add(regFrom2);
     return referencedRegs;
   }
 
   @Override
   public Set<GcFollowConstraint> gcFollowConstraints() {
     val constraints = new HashSet<GcFollowConstraint>();
-    constraints.add(new GcFollowConstraint(regTo1, regTo2));
+    constraints.add(new GcFollowConstraint(regFrom1, regFrom2));
     return constraints;
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     val constraints = new HashSet<GcRangeConstraint>();
-    constraints.add(new GcRangeConstraint(regTo1, ColorRange.RANGE_8BIT));
+    constraints.add(new GcRangeConstraint(regFrom1, ColorRange.RANGE_8BIT));
     return constraints;
   }
 
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_StaticPutWide(getMethodCode(), mapping.get(regTo1), mapping.get(regTo2), fieldClass, fieldType, fieldName);
+    return new DexInstruction_StaticPutWide(getMethodCode(), mapping.get(regFrom1), mapping.get(regFrom2), fieldClass, fieldType, fieldName);
   }
 
   @Override
   public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    int rTo1 = regAlloc.get(regTo1);
-    int rTo2 = regAlloc.get(regTo2);
+    int rFrom1 = regAlloc.get(regFrom1);
+    int rFrom2 = regAlloc.get(regFrom2);
 
-    if (fitsIntoBits_Unsigned(rTo1, 8) && rTo1 + 1 == rTo2) {
+    if (fitsIntoBits_Unsigned(rFrom1, 8) && rFrom1 + 1 == rFrom2) {
       return new Instruction[] {
-               new Instruction21c(Opcode.SPUT_WIDE, (short) rTo1, cache.getField(fieldClass, fieldType, fieldName))
+               new Instruction21c(Opcode.SPUT_WIDE, (short) rFrom1, cache.getField(fieldClass, fieldType, fieldName))
              };
     } else
       return throwCannotAssembleException("No suitable instruction format found");

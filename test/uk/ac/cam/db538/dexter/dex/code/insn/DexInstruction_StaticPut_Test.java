@@ -87,13 +87,13 @@ public class DexInstruction_StaticPut_Test {
   public void testAssemble_StaticPut() {
     val cache = new DexParsingCache();
 
-    val regNTo = Utils.numFitsInto_Unsigned(8);
-    val regTo = new DexRegister(regNTo);
-    val regAlloc = Utils.genRegAlloc(regTo);
+    val regNFrom = Utils.numFitsInto_Unsigned(8);
+    val regFrom = new DexRegister(regNFrom);
+    val regAlloc = Utils.genRegAlloc(regFrom);
 
     val insn = new DexInstruction_StaticPut(
       null,
-      regTo,
+      regFrom,
       DexClassType.parse("Lcom/test/SomeClass;", cache),
       DexRegisterType.parse("Ljava/lang/String;", cache),
       "AwesomeField",
@@ -104,7 +104,7 @@ public class DexInstruction_StaticPut_Test {
     assertTrue(asm[0] instanceof Instruction21c);
 
     val asmInsn = (Instruction21c) asm[0];
-    assertEquals(regNTo, asmInsn.getRegisterA());
+    assertEquals(regNFrom, asmInsn.getRegisterA());
     assertEquals(Opcode.SPUT_OBJECT, asmInsn.opcode);
 
     val asmInsnRef = (FieldIdItem) asmInsn.getReferencedItem();
@@ -117,13 +117,13 @@ public class DexInstruction_StaticPut_Test {
   public void testAssemble_StaticPut_WrongAllocation() {
     val cache = new DexParsingCache();
 
-    val regNTo = Utils.numFitsInto_Unsigned(9);
-    val regTo = new DexRegister(regNTo);
-    val regAlloc = Utils.genRegAlloc(regTo);
+    val regNFrom = Utils.numFitsInto_Unsigned(9);
+    val regFrom = new DexRegister(regNFrom);
+    val regAlloc = Utils.genRegAlloc(regFrom);
 
     val insn = new DexInstruction_StaticPut(
       null,
-      regTo,
+      regFrom,
       DexClassType.parse("Lcom/test/SomeClass;", cache),
       DexRegisterType.parse("Ljava/lang/String;", cache),
       "AwesomeField",

@@ -23,16 +23,16 @@ import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_StaticPut extends DexInstruction {
 
-  @Getter private final DexRegister regTo;
+  @Getter private final DexRegister regFrom;
   @Getter private final DexClassType fieldClass;
   @Getter private final DexRegisterType fieldType;
   @Getter private final String fieldName;
   @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_StaticPut(DexCode methodCode, DexRegister to, DexClassType fieldClass, DexRegisterType fieldType, String fieldName, Opcode_GetPut opcode) {
+  public DexInstruction_StaticPut(DexCode methodCode, DexRegister from, DexClassType fieldClass, DexRegisterType fieldType, String fieldName, Opcode_GetPut opcode) {
     super(methodCode);
 
-    this.regTo = to;
+    this.regFrom = from;
     this.fieldClass = fieldClass;
     this.fieldType = fieldType;
     this.fieldName = fieldName;
@@ -48,7 +48,7 @@ public class DexInstruction_StaticPut extends DexInstruction {
 
       val insnStaticPut = (Instruction21c) insn;
       val refItem = (FieldIdItem) insnStaticPut.getReferencedItem();
-      regTo = parsingState.getRegister(insnStaticPut.getRegisterA());
+      regFrom = parsingState.getRegister(insnStaticPut.getRegisterA());
       fieldClass = DexClassType.parse(
                      refItem.getContainingClass().getTypeDescriptor(),
                      parsingState.getCache());
@@ -66,35 +66,35 @@ public class DexInstruction_StaticPut extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "sput-" + opcode.getAssemblyName() + " v" + regTo.getOriginalIndexString() + ", " + fieldClass.getPrettyName() + "." + fieldName;
+    return "sput-" + opcode.getAssemblyName() + " v" + regFrom.getOriginalIndexString() + ", " + fieldClass.getPrettyName() + "." + fieldName;
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     val referencedRegs = new HashSet<DexRegister>();
-    referencedRegs.add(regTo);
+    referencedRegs.add(regFrom);
     return referencedRegs;
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     val constraints = new HashSet<GcRangeConstraint>();
-    constraints.add(new GcRangeConstraint(regTo, ColorRange.RANGE_8BIT));
+    constraints.add(new GcRangeConstraint(regFrom, ColorRange.RANGE_8BIT));
     return constraints;
   }
 
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_StaticPut(getMethodCode(), mapping.get(regTo), fieldClass, fieldType, fieldName, opcode);
+    return new DexInstruction_StaticPut(getMethodCode(), mapping.get(regFrom), fieldClass, fieldType, fieldName, opcode);
   }
 
   @Override
   public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    int rTo = regAlloc.get(regTo);
+    int rFrom = regAlloc.get(regFrom);
 
-    if (fitsIntoBits_Unsigned(rTo, 8)) {
+    if (fitsIntoBits_Unsigned(rFrom, 8)) {
       return new Instruction[] {
-               new Instruction21c(Opcode_GetPut.convert_SPUT(opcode), (short) rTo, cache.getField(fieldClass, fieldType, fieldName))
+               new Instruction21c(Opcode_GetPut.convert_SPUT(opcode), (short) rFrom, cache.getField(fieldClass, fieldType, fieldName))
              };
     } else
       return throwCannotAssembleException("No suitable instruction format found");
