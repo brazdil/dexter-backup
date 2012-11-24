@@ -82,22 +82,17 @@ public class DexClass_ObjectTaint extends DexClass {
 
   private DexMethod genMethod_Clinit(DexParsingCache cache) {
     val code = new DexCode();
-//    val rObjectMap = new DexRegister();
-//    code.add(new DexInstruction_NewInstance(code, rObjectMap, field_ObjectMap_Type));
-//    code.add(new DexInstruction_Invoke(code,
-//                                       field_ObjectMap_Type,
-//                                       "<init>",
-//                                       new DexPrototype(
-//                                         DexType.parse("V", cache),
-//                                         null),
-//                                       null,
-//                                       Opcode_Invoke.Direct));
-//    code.add(new DexInstruction_StaticPut(code,
-//    		rObjectMap,
-//    		this.getType(),
-//    		field_ObjectMap_Type,
-//    		field_O
-//    		));
+    val rObjectMap = new DexRegister(0); // argument only for GUI here
+    code.add(new DexInstruction_NewInstance(code, rObjectMap, field_ObjectMap_Type));
+    code.add(new DexInstruction_Invoke(code,
+                                       field_ObjectMap_Type,
+                                       "<init>",
+                                       new DexPrototype(
+                                         DexType.parse("V", cache),
+                                         null),
+                                       Arrays.asList(new DexRegister[] { rObjectMap }),
+                                       Opcode_Invoke.Direct));
+    code.add(new DexInstruction_StaticPut(code, rObjectMap, field_ObjectMap));
     code.add(new DexInstruction_ReturnVoid(code));
 
     return new DexDirectMethod(this,
