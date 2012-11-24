@@ -7,8 +7,8 @@ import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexClassType extends DexReferenceType {
 
-  @Getter	private final String ShortName;
-  @Getter	private final String PackageName;
+  @Getter private final String shortName;
+  @Getter private final String packageName;
 
   private static String checkDescriptor(String descriptor) {
     if (!descriptor.startsWith("L") || !descriptor.endsWith(";"))
@@ -16,17 +16,17 @@ public class DexClassType extends DexReferenceType {
     return descriptor;
   }
 
-  protected DexClassType(String descriptor) {
+  private DexClassType(String descriptor) {
     super(checkDescriptor(descriptor), descriptor.substring(1, descriptor.length() - 1).replace('/', '.'));
 
     val prettyName = getPrettyName();
     int lastDot = prettyName.lastIndexOf('.');
     if (lastDot == -1) {
-      ShortName = prettyName;
-      PackageName = null;
+      shortName = prettyName;
+      packageName = null;
     } else {
-      ShortName = prettyName.substring(lastDot + 1);
-      PackageName = prettyName.substring(0, lastDot);
+      shortName = prettyName.substring(lastDot + 1);
+      packageName = prettyName.substring(0, lastDot);
     }
   }
 

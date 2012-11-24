@@ -7,12 +7,12 @@ import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexArrayType extends DexReferenceType {
 
-  @Getter private final DexRegisterType ElementType;
+  @Getter private final DexRegisterType elementType;
 
-  protected DexArrayType(DexRegisterType elementType) {
+  private DexArrayType(DexRegisterType elementType) {
     super("[" + elementType.getDescriptor(),
           elementType.getPrettyName() + "[]");
-    ElementType = elementType;
+    this.elementType = elementType;
   }
 
   public static DexArrayType parse(String typeDescriptor, DexParsingCache cache) {

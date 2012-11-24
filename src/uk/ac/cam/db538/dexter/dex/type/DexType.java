@@ -15,12 +15,12 @@ import lombok.val;
 
 public abstract class DexType {
 
-  @Getter private final String Descriptor;
-  @Getter private final String PrettyName;
+  @Getter private final String descriptor;
+  @Getter private final String prettyName;
 
   protected DexType(String descriptor, String prettyName) {
-    Descriptor = descriptor;
-    PrettyName = prettyName;
+    this.descriptor = descriptor;
+    this.prettyName = prettyName;
   }
 
   public static DexType parse(String typeDescriptor, DexParsingCache cache) throws UnknownTypeException {

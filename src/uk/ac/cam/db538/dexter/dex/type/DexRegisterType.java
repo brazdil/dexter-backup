@@ -20,11 +20,11 @@ public abstract class DexRegisterType extends DexType {
     }
   }
 
-  @Getter private final DexRegisterTypeSize TypeSize;
+  @Getter private final DexRegisterTypeSize typeSize;
 
   protected DexRegisterType(String descriptor, String prettyName, DexRegisterTypeSize typeSize) {
     super(descriptor, prettyName);
-    TypeSize = typeSize;
+    this.typeSize = typeSize;
   }
 
   public static DexRegisterType parse(String typeDescriptor, DexParsingCache cache) throws UnknownTypeException {
@@ -42,10 +42,10 @@ public abstract class DexRegisterType extends DexType {
   }
 
   public boolean isWide() {
-    return TypeSize == DexRegisterTypeSize.WIDE;
+    return typeSize == DexRegisterTypeSize.WIDE;
   }
 
   public int getRegisters() {
-    return TypeSize.getRegisterCount();
+    return typeSize.getRegisterCount();
   }
 }
