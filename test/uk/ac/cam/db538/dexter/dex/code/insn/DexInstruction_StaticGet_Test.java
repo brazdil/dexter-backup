@@ -84,7 +84,7 @@ public class DexInstruction_StaticGet_Test {
   }
 
   @Test
-  public void testAssemble_NewInstance() {
+  public void testAssemble_StaticGet() {
     val cache = new DexParsingCache();
 
     val regNTo = Utils.numFitsInto_Unsigned(8);
