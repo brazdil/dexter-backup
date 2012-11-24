@@ -66,7 +66,7 @@ public class DexInstruction_StaticGet extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "sget-" + opcode.name().toLowerCase() + " v" + regTo.getOriginalIndexString() + ", " + fieldClass.getPrettyName() + "." + fieldName;
+    return "sget-" + opcode.getAssemblyName() + " v" + regTo.getOriginalIndexString() + ", " + fieldClass.getPrettyName() + "." + fieldName;
   }
 
   @Override
