@@ -8,12 +8,11 @@ import java.util.Map;
 
 import lombok.val;
 
+import org.jf.dexlib.DexFile;
+import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class Utils {
@@ -74,5 +73,9 @@ public class Utils {
     assertEquals(output.length, insnList.size());
     for (int i = 0; i < output.length; ++i)
       assertEquals(output[i], insnList.get(i).getOriginalAssembly());
+  }
+
+  public static TypeIdItem getTypeItem(String desc) {
+    return TypeIdItem.internTypeIdItem(new DexFile(), desc);
   }
 }
