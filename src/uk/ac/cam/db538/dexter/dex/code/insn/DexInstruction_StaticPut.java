@@ -70,10 +70,10 @@ public class DexInstruction_StaticPut extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaDefinedRegisters() {
-    val definedRegs = new HashSet<DexRegister>();
-    definedRegs.add(regTo);
-    return definedRegs;
+  public Set<DexRegister> lvaReferencedRegisters() {
+    val referencedRegs = new HashSet<DexRegister>();
+    referencedRegs.add(regTo);
+    return referencedRegs;
   }
 
   @Override

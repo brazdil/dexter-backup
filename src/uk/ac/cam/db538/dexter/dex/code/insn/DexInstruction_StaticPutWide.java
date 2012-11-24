@@ -71,11 +71,11 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaDefinedRegisters() {
-    val definedRegs = new HashSet<DexRegister>();
-    definedRegs.add(regTo1);
-    definedRegs.add(regTo2);
-    return definedRegs;
+  public Set<DexRegister> lvaReferencedRegisters() {
+    val referencedRegs = new HashSet<DexRegister>();
+    referencedRegs.add(regTo1);
+    referencedRegs.add(regTo2);
+    return referencedRegs;
   }
 
   @Override
