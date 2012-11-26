@@ -16,6 +16,7 @@ import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.ClassDefItem.StaticFieldInitializer;
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
@@ -36,7 +37,7 @@ public class DexClass {
   protected final Set<DexField> fields;
   protected final Set<DexMethod> methods;
   private final Set<DexClassType> interfaces;
-  @Getter private final String SourceFile;
+  @Getter private final String sourceFile;
 
   public DexClass(Dex parent, DexClassType type, DexClassType superType,
                   Set<AccessFlags> accessFlags, Set<DexField> fields,
@@ -49,7 +50,7 @@ public class DexClass {
     this.fields = (fields == null) ? new HashSet<DexField>() : fields;
     this.methods = (methods == null) ? new HashSet<DexMethod>() : methods;
     this.interfaces = (interfaces == null) ? new HashSet<DexClassType>() : interfaces;
-    this.SourceFile = sourceFile;
+    this.sourceFile = sourceFile;
   }
 
   public DexClass(Dex parent, ClassDefItem clsInfo) throws UnknownTypeException, InstructionParsingException {
@@ -127,16 +128,16 @@ public class DexClass {
   }
 
   public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
-    val classType = cache.getType(type);
-    val superType = cache.getType(superType);
-    val accessFlags = DexUtils.assembleAccessFlags(accessFlagSet);
-    val interfaces = (interfaces.isEmpty())
-                     ? null
-                     : cache.getTypeList(new ArrayList<DexRegisterType>(interfaces));
-    val sourceFile = (SourceFile == null)
-                     ? null
-                     : cache.getStringConstant(SourceFile);
-    val annotations = (AnnotationDirectoryItem) null; // AnnotationDirectoryItem.internAnnotationDirectoryItem(
+    val asmClassType = cache.getType(type);
+    val asmSuperType = cache.getType(this.superType);
+    val asmAccessFlags = DexUtils.assembleAccessFlags(accessFlagSet);
+    val asmInterfaces = (interfaces.isEmpty())
+                        ? null
+                        : cache.getTypeList(new ArrayList<DexRegisterType>(interfaces));
+    val asmSourceFile = (sourceFile == null)
+                        ? null
+                        : cache.getStringConstant(sourceFile);
+    val asmAnnotations = (AnnotationDirectoryItem) null; // AnnotationDirectoryItem.internAnnotationDirectoryItem(
 //                        outFile,
 //                        AnnotationSetItem.internAnnotationSetItem(
 //                          outFile,
@@ -145,35 +146,35 @@ public class DexClass {
 //                        new LinkedList<MethodAnnotation>(),
 //                        new LinkedList<ParameterAnnotation>());
 
-    val staticFields = new LinkedList<EncodedField>();
-    val instanceFields = new LinkedList<EncodedField>();
-    val directMethods = new LinkedList<EncodedMethod>();
-    val virtualMethods = new LinkedList<EncodedMethod>();
+    val asmStaticFields = new LinkedList<EncodedField>();
+    val asmInstanceFields = new LinkedList<EncodedField>();
+    val asmDirectMethods = new LinkedList<EncodedMethod>();
+    val asmVirtualMethods = new LinkedList<EncodedMethod>();
 
     for (val field : fields)
       if (field.isStatic())
-        staticFields.add(field.writeToFile(outFile, cache));
+        asmStaticFields.add(field.writeToFile(outFile, cache));
       else
-        instanceFields.add(field.writeToFile(outFile, cache));
+        asmInstanceFields.add(field.writeToFile(outFile, cache));
 
     for (val method : methods)
       if (method instanceof DexDirectMethod)
-        directMethods.add(method.writeToFile(outFile, cache));
+        asmDirectMethods.add(method.writeToFile(outFile, cache));
       else if ((method instanceof DexVirtualMethod) || (method instanceof DexPurelyVirtualMethod))
-        virtualMethods.add(method.writeToFile(outFile, cache));
+        asmVirtualMethods.add(method.writeToFile(outFile, cache));
 
     val classData = ClassDataItem.internClassDataItem(
                       outFile,
-                      staticFields,
-                      instanceFields,
-                      directMethods,
-                      virtualMethods);
+                      asmStaticFields,
+                      asmInstanceFields,
+                      asmDirectMethods,
+                      asmVirtualMethods);
 
     val staticFieldInitializers = new LinkedList<StaticFieldInitializer>();
 
     ClassDefItem.internClassDefItem(
-      outFile, classType, accessFlags, superType,
-      interfaces, sourceFile, annotations,
+      outFile, asmClassType, asmAccessFlags, asmSuperType,
+      asmInterfaces, asmSourceFile, asmAnnotations,
       classData, staticFieldInitializers);
   }
 }
