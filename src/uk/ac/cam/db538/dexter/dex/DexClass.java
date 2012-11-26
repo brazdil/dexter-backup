@@ -16,7 +16,6 @@ import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.ClassDefItem.StaticFieldInitializer;
 import org.jf.dexlib.DexFile;
-import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
