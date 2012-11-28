@@ -10,7 +10,7 @@
 	<property name="src.dir"           value="src"/>
 	<property name="src_test.dir"      value="test"/>
 	<property name="res.dir"           value="res"/>
-  <property name="examples.dir"      value="examples"/>
+	<property name="examples.dir"      value="examples"/>
 	<property name="build.dir"         value="build"/>
 	<property name="classes.dir"       value="${build.dir}/classes"/>
 	<property name="classes_test.dir"  value="${build.dir}/tests"/>
@@ -18,7 +18,7 @@
 	<property name="dex.dir"           value="${build.dir}/example_dex"/>
 	<property name="lib.dir"           value="lib"/>
 	<property name="main-class"        value="uk.ac.cam.db538.dexter.gui.MainWindow"/>
-	
+
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar"/>
 	</path>	
@@ -55,16 +55,16 @@
 		</jar>
 	</target>
 	
-  <target name="-compile-example">
-  	<mkdir dir="${dex.dir}" />
-  	<basename property="filename" file="${example-file}" suffix=".smali" />
-    <java classname="org.jf.smali.main" fork="true" failonerror="true" maxmemory="128m">
-      <arg value="--output=${dex.dir}/${filename}.dex"/>
-      <arg value="${example-file}"/>
-      <classpath>
-        <path refid="classpath"/>
-      </classpath>
-    </java>
+	<target name="-compile-example">
+		<mkdir dir="${dex.dir}" />
+		<basename property="filename" file="${example-file}" suffix=".smali" />
+		<java classname="org.jf.smali.main" fork="true" failonerror="true" maxmemory="128m">
+			<arg value="--output=${dex.dir}/${filename}.dex"/>
+			<arg value="${example-file}"/>
+			<classpath>
+				<path refid="classpath"/>
+				</classpath>
+		</java>
 	</target>
 	
 	<target name="compile-examples">
