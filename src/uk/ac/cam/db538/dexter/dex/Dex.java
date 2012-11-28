@@ -1,8 +1,10 @@
 package uk.ac.cam.db538.dexter.dex;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -13,13 +15,14 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class Dex {
 
   private final List<DexClass> classes;
-  @Getter private DexClass_ObjectTaint class_ObjectTaint;
+  @Getter private DexClassType class_ObjectTaint;
 
   @Getter private final DexParsingCache parsingCache;
 
@@ -32,9 +35,75 @@ public class Dex {
     this();
 
     val originalFile = new DexFile(filename);
-    val dexClsInfos = originalFile.ClassDefsSection.getItems();
+    classes.addAll(parseAllClasses(originalFile));
+  }
+
+  private static File getMergeFile() throws IOException {
+    val tempFile = File.createTempFile("dexter", "merge");
+
+    val tempFile_Out = new BufferedOutputStream(new FileOutputStream(tempFile));
+    val mergeResource_In = ClassLoader.getSystemResourceAsStream("uk/ac/cam/db538/dexter/merge/classes.dex");
+
+    val buffer = new byte[1024];
+    int written;
+    while ((written = mergeResource_In.read(buffer)) >= 0)
+      tempFile_Out.write(buffer, 0, written);
+
+    tempFile_Out.close();
+    mergeResource_In.close();
+
+    return tempFile;
+  }
+
+  private List<DexClass> parseAllClasses(DexFile file) {
+    val dexClsInfos = file.ClassDefsSection.getItems();
+    val classList = new ArrayList<DexClass>(dexClsInfos.size());
+
     for (val dexClsInfo : dexClsInfos)
-      classes.add(new DexClass(this, dexClsInfo));
+      classList.add(new DexClass(this, dexClsInfo));
+
+    return classList;
+  }
+
+  /*
+   * Needs to generate a short, but unique class name
+   */
+  private DexClassType generateClassType() {
+    String desc;
+    long suffix = 0;
+    do {
+      desc = "L$" + suffix + ";";
+      suffix++;
+    } while (parsingCache.classTypeExists(desc));
+
+    return DexClassType.parse(desc, parsingCache);
+  }
+
+  private List<DexClass> parseExtraClasses() {
+    // generate names
+    val clsObjTaint = generateClassType();
+    val clsObjTaintEntry = generateClassType();
+
+    // set descriptor replacements
+    parsingCache.setDescriptorReplacement(CLASS_OBJTAINT, clsObjTaint.getDescriptor());
+    parsingCache.setDescriptorReplacement(CLASS_OBJTAINTENTRY, clsObjTaintEntry.getDescriptor());
+
+    // open the merge DEX file
+    DexFile mergeDex;
+    try {
+      mergeDex = new DexFile(getMergeFile());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    // parse the classes
+    val extraClasses = parseAllClasses(mergeDex);
+
+    // remove descriptor replacements
+    parsingCache.removeDescriptorReplacement(CLASS_OBJTAINT);
+    parsingCache.removeDescriptorReplacement(CLASS_OBJTAINTENTRY);
+
+    return extraClasses;
   }
 
   public List<DexClass> getClasses() {
@@ -42,12 +111,12 @@ public class Dex {
   }
 
   public void instrument() {
-    class_ObjectTaint = new DexClass_ObjectTaint(this);
+    val extraClasses = parseExtraClasses();
 
     for (val cls : classes)
       cls.instrument();
 
-    classes.add(class_ObjectTaint);
+    classes.addAll(extraClasses);
   }
 
   public void writeToFile(File filename) throws IOException {
@@ -70,4 +139,7 @@ public class Dex {
     fos.write(bytes);
     fos.close();
   }
+
+  private static final String CLASS_OBJTAINT = "Luk/ac/cam/db538/dexter/merge/ObjectTaintStorage;";
+  private static final String CLASS_OBJTAINTENTRY = "Luk/ac/cam/db538/dexter/merge/ObjectTaintStorage$Entry;";
 }
