@@ -8,7 +8,11 @@ public class ObjectTaintStorage {
   private static Entry[] H; // hash table
   private static int S; // size of the hash table
 
-  public static final void init(int size) {
+  static {
+    init(1024);
+  }
+
+  static final void init(int size) {
     S = size;
     H = new Entry[S];
   }
