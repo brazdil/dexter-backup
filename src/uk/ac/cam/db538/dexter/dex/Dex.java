@@ -42,7 +42,7 @@ public class Dex {
     val tempFile = File.createTempFile("dexter", "merge");
 
     val tempFile_Out = new BufferedOutputStream(new FileOutputStream(tempFile));
-    val mergeResource_In = ClassLoader.getSystemResourceAsStream("uk/ac/cam/db538/dexter/merge/classes.dex");
+    val mergeResource_In = ClassLoader.getSystemResourceAsStream("merge-classes.dex");
 
     val buffer = new byte[1024];
     int written;
