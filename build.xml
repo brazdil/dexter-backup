@@ -18,6 +18,8 @@
 	<property name="dex.dir"           value="${build.dir}/example_dex"/>
 	<property name="lib.dir"           value="lib"/>
 	<property name="main-class"        value="uk.ac.cam.db538.dexter.gui.MainWindow"/>
+	<property name="merges.pkg"        value="uk/ac/cam/db538/dexter/merge"/>
+	<property name="merges.dir"        value="${build.dir}/merges"/>
 
 	<path id="classpath">
 		<fileset dir="${lib.dir}" includes="**/*.jar"/>
@@ -28,12 +30,28 @@
 		<delete dir="${build.dir}"/>
 	</target>
 
-	<target name="compile" depends="compile-examples">
+	<target name="compile" depends="compile-examples,compile-merges">
 		<mkdir dir="${classes.dir}"/>
 		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="yes" includeantruntime="false"/>
+
+		<fileset id="merge-classes" dir="${merges.dir}">
+			<include name="**/*.class" />
+		</fileset>
+		<pathconvert property="merges-list" refid="merge-classes" pathsep=" " />
+
+		<java jar="${lib.dir}/dx.jar" fork="yes">
+                        <arg value="--dex"/>
+                        <arg value="--output=${classes.dir}/${merges.pkg}/classes.dex" />
+			<arg line="${merges.dir}" />
+		</java>
 		<copy todir="${classes.dir}">
 			<fileset dir="${src.dir}" excludes="**/*.java" />
 		</copy>
+	</target>
+
+	<target name="compile-merges">
+		<mkdir dir="${merges.dir}"/>
+		<javac srcdir="${src.dir}/${merges.pkg}" destdir="${merges.dir}" includeantruntime="false" target="1.6" source="1.6"/>
 	</target>
 
 	<target name="compile-test" depends="compile">
@@ -45,7 +63,7 @@
 			</classpath>
 		</javac>
   	</target>
-	
+
 	<target name="jar" depends="compile">
 		<mkdir dir="${jar.dir}"/>
 		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
@@ -63,7 +81,7 @@
 			<arg value="${example-file}"/>
 			<classpath>
 				<path refid="classpath"/>
-				</classpath>
+			</classpath>
 		</java>
 	</target>
 	
