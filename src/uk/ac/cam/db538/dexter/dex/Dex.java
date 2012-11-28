@@ -22,7 +22,7 @@ import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 public class Dex {
 
   private final List<DexClass> classes;
-  @Getter private DexClassType class_ObjectTaint;
+  @Getter private DexClassType objectTaintStorageType;
 
   @Getter private final DexParsingCache parsingCache;
 
@@ -102,6 +102,9 @@ public class Dex {
     // remove descriptor replacements
     parsingCache.removeDescriptorReplacement(CLASS_OBJTAINT);
     parsingCache.removeDescriptorReplacement(CLASS_OBJTAINTENTRY);
+
+    // store Object Taint Storage class type
+    objectTaintStorageType = clsObjTaint;
 
     return extraClasses;
   }
