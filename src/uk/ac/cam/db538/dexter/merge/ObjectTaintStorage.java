@@ -2,6 +2,8 @@ package uk.ac.cam.db538.dexter.merge;
 
 import java.lang.ref.WeakReference;
 
+// TODO: add synchronized !!!
+
 public class ObjectTaintStorage {
   private static Entry[] H; // hash table
   private static int S; // size of the hash table
@@ -18,6 +20,7 @@ public class ObjectTaintStorage {
     // generate hash code and table index
     int objTableIndex = obj.getClass().hashCode() & (S - 1);
 
+//    synchronized (H) {
     Entry currentEntry = H[objTableIndex];
     Entry previousEntry = null;
     while (currentEntry != null) {
@@ -51,6 +54,7 @@ public class ObjectTaintStorage {
         currentEntry = currentEntry.n;
       }
     }
+//    }
 
     return 0;
   }
@@ -62,6 +66,7 @@ public class ObjectTaintStorage {
     // generate hash code and table index
     int objTableIndex = obj.getClass().hashCode() & (S - 1);
 
+//    synchronized (H) {
     // try to update existing entry
     Entry currentEntry = H[objTableIndex];
     Entry previousEntry = null;
@@ -108,6 +113,7 @@ public class ObjectTaintStorage {
       newEntry.n = H[objTableIndex];
       H[objTableIndex] = newEntry;
     }
+//    }
   }
 
   static class Entry {
