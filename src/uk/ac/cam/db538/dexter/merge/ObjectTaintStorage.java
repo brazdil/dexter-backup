@@ -7,6 +7,7 @@ import java.lang.ref.WeakReference;
 public class ObjectTaintStorage {
   private static Entry[] H; // hash table
   private static int S; // size of the hash table
+  private static int M; // module mask
 
   static {
     init(1024);
@@ -14,6 +15,7 @@ public class ObjectTaintStorage {
 
   static final void init(int size) {
     S = size;
+    M = S - 1;
     H = new Entry[S];
   }
 
@@ -22,7 +24,7 @@ public class ObjectTaintStorage {
       return 0;
 
     // generate hash code and table index
-    int objTableIndex = obj.getClass().hashCode() & (S - 1);
+    int objTableIndex = obj.getClass().hashCode() & M;
 
 //    synchronized (H) {
     Entry currentEntry = H[objTableIndex];
@@ -68,7 +70,7 @@ public class ObjectTaintStorage {
       return;
 
     // generate hash code and table index
-    int objTableIndex = obj.getClass().hashCode() & (S - 1);
+    int objTableIndex = obj.getClass().hashCode() & M;
 
 //    synchronized (H) {
     // try to update existing entry
