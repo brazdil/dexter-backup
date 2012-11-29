@@ -21,6 +21,10 @@ import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement.GcFollowConstraint;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPutWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
@@ -424,6 +428,28 @@ public class DexCode {
 
     case IPUT_WIDE:
       return new DexInstruction_InstancePutWide(this, insn, parsingState);
+
+    case AGET:
+    case AGET_OBJECT:
+    case AGET_BOOLEAN:
+    case AGET_BYTE:
+    case AGET_CHAR:
+    case AGET_SHORT:
+      return new DexInstruction_ArrayGet(this, insn, parsingState);
+
+    case AGET_WIDE:
+      return new DexInstruction_ArrayGetWide(this, insn, parsingState);
+
+    case APUT:
+    case APUT_OBJECT:
+    case APUT_BOOLEAN:
+    case APUT_BYTE:
+    case APUT_CHAR:
+    case APUT_SHORT:
+      return new DexInstruction_ArrayPut(this, insn, parsingState);
+
+    case APUT_WIDE:
+      return new DexInstruction_ArrayPutWide(this, insn, parsingState);
 
     case INVOKE_VIRTUAL:
     case INVOKE_SUPER:
