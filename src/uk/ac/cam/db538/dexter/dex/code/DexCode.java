@@ -26,6 +26,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPutWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
@@ -563,6 +564,27 @@ public class DexCode {
     case DIV_DOUBLE_2ADDR:
     case REM_DOUBLE_2ADDR:
       return new DexInstruction_BinaryOpWide(this, insn, parsingState);
+
+    case ADD_INT_LIT16:
+    case ADD_INT_LIT8:
+    case RSUB_INT:
+    case RSUB_INT_LIT8:
+    case MUL_INT_LIT16:
+    case MUL_INT_LIT8:
+    case DIV_INT_LIT16:
+    case DIV_INT_LIT8:
+    case REM_INT_LIT16:
+    case REM_INT_LIT8:
+    case AND_INT_LIT16:
+    case AND_INT_LIT8:
+    case OR_INT_LIT16:
+    case OR_INT_LIT8:
+    case XOR_INT_LIT16:
+    case XOR_INT_LIT8:
+    case SHL_INT_LIT8:
+    case SHR_INT_LIT8:
+    case USHR_INT_LIT8:
+      return new DexInstruction_BinaryOpLiteral(this, insn, parsingState);
 
     default:
       // TODO: throw exception
