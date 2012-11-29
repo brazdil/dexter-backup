@@ -103,6 +103,82 @@ public enum Opcode_GetPut {
     }
   }
 
+  public static Opcode_GetPut convert_IGET(org.jf.dexlib.Code.Opcode opcode) {
+    switch (opcode) {
+    case IGET:
+      return IntFloat;
+    case IGET_OBJECT:
+      return Object;
+    case IGET_BOOLEAN:
+      return Boolean;
+    case IGET_BYTE:
+      return Byte;
+    case IGET_CHAR:
+      return Char;
+    case IGET_SHORT:
+      return Short;
+    default:
+      return null;
+    }
+  }
+
+  public static org.jf.dexlib.Code.Opcode convert_IGET(Opcode_GetPut opcode) {
+    switch (opcode) {
+    case IntFloat:
+      return Opcode.IGET;
+    case Object:
+      return Opcode.IGET_OBJECT;
+    case Boolean:
+      return Opcode.IGET_BOOLEAN;
+    case Byte:
+      return Opcode.IGET_BYTE;
+    case Char:
+      return Opcode.IGET_CHAR;
+    case Short:
+      return Opcode.IGET_SHORT;
+    default:
+      return null;
+    }
+  }
+
+  public static Opcode_GetPut convert_IPUT(org.jf.dexlib.Code.Opcode opcode) {
+    switch (opcode) {
+    case IPUT:
+      return IntFloat;
+    case IPUT_OBJECT:
+      return Object;
+    case IPUT_BOOLEAN:
+      return Boolean;
+    case IPUT_BYTE:
+      return Byte;
+    case IPUT_CHAR:
+      return Char;
+    case IPUT_SHORT:
+      return Short;
+    default:
+      return null;
+    }
+  }
+
+  public static org.jf.dexlib.Code.Opcode convert_IPUT(Opcode_GetPut opcode) {
+    switch (opcode) {
+    case IntFloat:
+      return Opcode.IPUT;
+    case Object:
+      return Opcode.IPUT_OBJECT;
+    case Boolean:
+      return Opcode.IPUT_BOOLEAN;
+    case Byte:
+      return Opcode.IPUT_BYTE;
+    case Char:
+      return Opcode.IPUT_CHAR;
+    case Short:
+      return Opcode.IPUT_SHORT;
+    default:
+      return null;
+    }
+  }
+
   public static void checkTypeAgainstOpcode(DexRegisterType type, Opcode_GetPut opcode) {
     boolean typeOK;
     switch(opcode) {

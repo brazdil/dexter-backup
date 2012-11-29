@@ -35,7 +35,11 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGetWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePutWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
@@ -398,6 +402,28 @@ public class DexCode {
 
     case SPUT_WIDE:
       return new DexInstruction_StaticPutWide(this, insn, parsingState);
+
+    case IGET:
+    case IGET_OBJECT:
+    case IGET_BOOLEAN:
+    case IGET_BYTE:
+    case IGET_CHAR:
+    case IGET_SHORT:
+      return new DexInstruction_InstanceGet(this, insn, parsingState);
+
+    case IGET_WIDE:
+      return new DexInstruction_InstanceGetWide(this, insn, parsingState);
+
+    case IPUT:
+    case IPUT_OBJECT:
+    case IPUT_BOOLEAN:
+    case IPUT_BYTE:
+    case IPUT_CHAR:
+    case IPUT_SHORT:
+      return new DexInstruction_InstancePut(this, insn, parsingState);
+
+    case IPUT_WIDE:
+      return new DexInstruction_InstancePutWide(this, insn, parsingState);
 
     case INVOKE_VIRTUAL:
     case INVOKE_SUPER:
