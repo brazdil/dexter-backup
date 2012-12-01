@@ -26,7 +26,7 @@ public abstract class DexInstruction extends DexCodeElement {
   // ASSEMBLING
 
   public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    throw new UnsupportedOperationException("Instruction doesn't have assembling implemented");
+    throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have assembling implemented");
   }
 
   protected final Instruction[] throwCannotAssembleException(String reason) {
