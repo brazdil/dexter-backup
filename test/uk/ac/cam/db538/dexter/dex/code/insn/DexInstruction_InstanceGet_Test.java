@@ -88,7 +88,7 @@ public class DexInstruction_InstanceGet_Test {
     val cache = new DexParsingCache();
 
     val regNTo = Utils.numFitsInto_Unsigned(4);
-    val regNObj = Utils.numFitsInto_Unsigned(4 - 1);
+    val regNObj = Utils.numFitsInto_Unsigned(4) - 1;
     val regTo = new DexRegister(regNTo);
     val regObj = new DexRegister(regNObj);
     val regAlloc = Utils.genRegAlloc(regTo, regObj);

@@ -88,7 +88,7 @@ public class DexInstruction_InstancePut_Test {
     val cache = new DexParsingCache();
 
     val regNFrom = Utils.numFitsInto_Unsigned(4);
-    val regNObject = Utils.numFitsInto_Unsigned(4 - 1);
+    val regNObject = Utils.numFitsInto_Unsigned(4) - 1;
     val regFrom = new DexRegister(regNFrom);
     val regObject = new DexRegister(regNObject);
     val regAlloc = Utils.genRegAlloc(regFrom, regObject);
@@ -122,7 +122,7 @@ public class DexInstruction_InstancePut_Test {
     val cache = new DexParsingCache();
 
     val regNFrom = Utils.numFitsInto_Unsigned(5);
-    val regNObject = Utils.numFitsInto_Unsigned(4 - 1);
+    val regNObject = Utils.numFitsInto_Unsigned(4) - 1;
     val regFrom = new DexRegister(regNFrom);
     val regObject = new DexRegister(regNObject);
     val regAlloc = Utils.genRegAlloc(regFrom, regObject);

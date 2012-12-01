@@ -41,8 +41,8 @@ public class DexInstruction_ArrayPut_Test {
   @Test
   public void testAssemble_ArrayPut() {
     val regNFrom = Utils.numFitsInto_Unsigned(8);
-    val regNArray = Utils.numFitsInto_Unsigned(8 - 1);
-    val regNIndex = Utils.numFitsInto_Unsigned(8 - 2);
+    val regNArray = Utils.numFitsInto_Unsigned(8) - 1;
+    val regNIndex = Utils.numFitsInto_Unsigned(8) - 2;
     val regFrom = new DexRegister(regNFrom);
     val regArray = new DexRegister(regNArray);
     val regIndex = new DexRegister(regNIndex);
@@ -69,8 +69,8 @@ public class DexInstruction_ArrayPut_Test {
   @Test(expected=InstructionAssemblyException.class)
   public void testAssemble_ArrayPut_RegisterFrom() {
     val regNFrom = Utils.numFitsInto_Unsigned(9);
-    val regNArray = Utils.numFitsInto_Unsigned(8 - 1);
-    val regNIndex = Utils.numFitsInto_Unsigned(8 - 2);
+    val regNArray = Utils.numFitsInto_Unsigned(8) - 1;
+    val regNIndex = Utils.numFitsInto_Unsigned(8) - 2;
     val regFrom = new DexRegister(regNFrom);
     val regArray = new DexRegister(regNArray);
     val regIndex = new DexRegister(regNIndex);
@@ -90,7 +90,7 @@ public class DexInstruction_ArrayPut_Test {
   public void testAssemble_ArrayPut_RegisterArray() {
     val regNFrom = Utils.numFitsInto_Unsigned(8);
     val regNArray = Utils.numFitsInto_Unsigned(9);
-    val regNIndex = Utils.numFitsInto_Unsigned(8 - 2);
+    val regNIndex = Utils.numFitsInto_Unsigned(8) - 2;
     val regFrom = new DexRegister(regNFrom);
     val regArray = new DexRegister(regNArray);
     val regIndex = new DexRegister(regNIndex);
@@ -109,7 +109,7 @@ public class DexInstruction_ArrayPut_Test {
   @Test(expected=InstructionAssemblyException.class)
   public void testAssemble_ArrayPut_RegisterIndex() {
     val regNFrom = Utils.numFitsInto_Unsigned(8);
-    val regNArray = Utils.numFitsInto_Unsigned(8 - 1);
+    val regNArray = Utils.numFitsInto_Unsigned(8) - 1;
     val regNIndex = Utils.numFitsInto_Unsigned(9);
     val regFrom = new DexRegister(regNFrom);
     val regArray = new DexRegister(regNArray);

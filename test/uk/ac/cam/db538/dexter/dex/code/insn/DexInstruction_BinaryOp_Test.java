@@ -210,7 +210,7 @@ public class DexInstruction_BinaryOp_Test {
   public void testAssemble_Binop_SourceARegTooBig() {
     val regNTarget = Utils.numFitsInto_Unsigned(8);
     val regNSourceA = Utils.numFitsInto_Unsigned(9);
-    val regNSourceB = Utils.numFitsInto_Unsigned(8);
+    val regNSourceB = Utils.numFitsInto_Unsigned(8) - 2;
 
     val regTarget = new DexRegister(regNTarget);
     val regSourceA = new DexRegister(regNSourceA);
@@ -226,7 +226,7 @@ public class DexInstruction_BinaryOp_Test {
   @Test(expected=InstructionAssemblyException.class)
   public void testAssemble_Binop_SourceBRegTooBig() {
     val regNTarget = Utils.numFitsInto_Unsigned(8);
-    val regNSourceA = Utils.numFitsInto_Unsigned(8);
+    val regNSourceA = Utils.numFitsInto_Unsigned(8) - 1;
     val regNSourceB = Utils.numFitsInto_Unsigned(9);
 
     val regTarget = new DexRegister(regNTarget);

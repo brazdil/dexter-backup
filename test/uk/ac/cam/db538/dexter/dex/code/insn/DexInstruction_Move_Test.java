@@ -54,7 +54,7 @@ public class DexInstruction_Move_Test {
   @Test
   public void testAssemble_Move() {
     val rTo = Utils.numFitsInto_Unsigned(4);
-    val rFrom = Utils.numFitsInto_Unsigned(4);
+    val rFrom = Utils.numFitsInto_Unsigned(4) - 1;
 
     val regTo = new DexRegister(rTo);
     val regFrom = new DexRegister(rFrom);
@@ -75,7 +75,7 @@ public class DexInstruction_Move_Test {
   @Test
   public void testAssemble_MoveObject() {
     val rTo = Utils.numFitsInto_Unsigned(4);
-    val rFrom = Utils.numFitsInto_Unsigned(4);
+    val rFrom = Utils.numFitsInto_Unsigned(4) - 1;
 
     val regTo = new DexRegister(rTo);
     val regFrom = new DexRegister(rFrom);
@@ -138,7 +138,7 @@ public class DexInstruction_Move_Test {
   @Test
   public void testAssemble_Move16() {
     val rTo = Utils.numFitsInto_Unsigned(9);
-    val rFrom = Utils.numFitsInto_Unsigned(9);
+    val rFrom = Utils.numFitsInto_Unsigned(9) - 1;
 
     val regTo = new DexRegister(rTo);
     val regFrom = new DexRegister(rFrom);
@@ -159,7 +159,7 @@ public class DexInstruction_Move_Test {
   @Test
   public void testAssemble_MoveObject16() {
     val rTo = Utils.numFitsInto_Unsigned(9);
-    val rFrom = Utils.numFitsInto_Unsigned(9);
+    val rFrom = Utils.numFitsInto_Unsigned(9) - 1;
 
     val regTo = new DexRegister(rTo);
     val regFrom = new DexRegister(rFrom);

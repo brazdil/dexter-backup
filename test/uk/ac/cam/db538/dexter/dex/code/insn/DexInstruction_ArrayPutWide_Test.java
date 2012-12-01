@@ -31,8 +31,8 @@ public class DexInstruction_ArrayPutWide_Test {
   @Test
   public void testAssemble_ArrayPutWide() {
     val regNFrom = Utils.numFitsInto_Unsigned(8);
-    val regNArray = Utils.numFitsInto_Unsigned(8 - 1);
-    val regNIndex = Utils.numFitsInto_Unsigned(8 - 2);
+    val regNArray = Utils.numFitsInto_Unsigned(8) - 1;
+    val regNIndex = Utils.numFitsInto_Unsigned(8) - 2;
     val regFrom1 = new DexRegister(regNFrom);
     val regFrom2 = new DexRegister(regNFrom + 1);
     val regArray = new DexRegister(regNArray);
@@ -60,8 +60,8 @@ public class DexInstruction_ArrayPutWide_Test {
   @Test(expected=InstructionAssemblyException.class)
   public void testAssemble_ArrayPutWide_WrongAllocation_RegisterFrom() {
     val regNFrom = Utils.numFitsInto_Unsigned(9);
-    val regNArray = Utils.numFitsInto_Unsigned(8 - 1);
-    val regNIndex = Utils.numFitsInto_Unsigned(8 - 2);
+    val regNArray = Utils.numFitsInto_Unsigned(8) - 1;
+    val regNIndex = Utils.numFitsInto_Unsigned(8) - 2;
     val regFrom1 = new DexRegister(regNFrom);
     val regFrom2 = new DexRegister(regNFrom + 1);
     val regArray = new DexRegister(regNArray);
@@ -82,7 +82,7 @@ public class DexInstruction_ArrayPutWide_Test {
   public void testAssemble_ArrayPutWide_WrongAllocation_RegisterArray() {
     val regNFrom = Utils.numFitsInto_Unsigned(8);
     val regNArray = Utils.numFitsInto_Unsigned(9);
-    val regNIndex = Utils.numFitsInto_Unsigned(8 - 2);
+    val regNIndex = Utils.numFitsInto_Unsigned(8) - 2;
     val regFrom1 = new DexRegister(regNFrom);
     val regFrom2 = new DexRegister(regNFrom + 1);
     val regArray = new DexRegister(regNArray);
@@ -102,7 +102,7 @@ public class DexInstruction_ArrayPutWide_Test {
   @Test(expected=InstructionAssemblyException.class)
   public void testAssemble_ArrayPutWide_WrongAllocation_RegisterIndex() {
     val regNFrom = Utils.numFitsInto_Unsigned(8);
-    val regNArray = Utils.numFitsInto_Unsigned(8 - 1);
+    val regNArray = Utils.numFitsInto_Unsigned(8) - 1;
     val regNIndex = Utils.numFitsInto_Unsigned(9);
     val regFrom1 = new DexRegister(regNFrom);
     val regFrom2 = new DexRegister(regNFrom + 1);
@@ -123,8 +123,8 @@ public class DexInstruction_ArrayPutWide_Test {
   @Test(expected=InstructionAssemblyException.class)
   public void testAssemble_ArrayPutWide_WrongAllocation_FollowUp() {
     val regNFrom = Utils.numFitsInto_Unsigned(8);
-    val regNArray = Utils.numFitsInto_Unsigned(8 - 1);
-    val regNIndex = Utils.numFitsInto_Unsigned(8 - 2);
+    val regNArray = Utils.numFitsInto_Unsigned(8) - 1;
+    val regNIndex = Utils.numFitsInto_Unsigned(8) - 2;
     val regFrom1 = new DexRegister(regNFrom);
     val regFrom2 = new DexRegister(regNFrom + 2);
     val regArray = new DexRegister(regNArray);
