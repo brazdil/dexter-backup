@@ -16,9 +16,9 @@ import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
@@ -162,12 +162,13 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+	val regAlloc = state.getRegisterAllocation();
     int[] r = new int[argumentRegisters.size()];
     for (int i = 0; i < r.length; ++i)
       r[i] = regAlloc.get(argumentRegisters.get(i));
 
-    val methodItem = cache.getMethod(classType, methodPrototype, methodName);
+    val methodItem = state.getCache().getMethod(classType, methodPrototype, methodName);
 
     if (assemblesToRange()) {
       if (!fitsIntoBits_Unsigned(r.length, 8))

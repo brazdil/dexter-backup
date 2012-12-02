@@ -24,7 +24,7 @@ public class DexInstruction_Nop_Test {
   public void testAssemble() {
     val insn = new DexInstruction_Nop(null);
 
-    val asm = insn.assembleBytecode(null, null);
+    val asm = insn.assembleBytecode(null);
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction10x);
 

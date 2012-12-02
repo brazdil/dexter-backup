@@ -11,9 +11,9 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -84,7 +84,8 @@ public class DexInstruction_ArrayGet extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    val regAlloc = state.getRegisterAllocation();
     int rTo = regAlloc.get(regTo);
     int rArray = regAlloc.get(regArray);
     int rIndex = regAlloc.get(regIndex);
@@ -94,6 +95,6 @@ public class DexInstruction_ArrayGet extends DexInstruction {
                new Instruction23x(Opcode_GetPut.convert_AGET(opcode), (short) rTo, (short) rArray, (short) rIndex)
              };
     } else
-      return throwCannotAssembleException("No suitable instruction format found");
+      return throwNoSuitableFormatFound();
   }
 }

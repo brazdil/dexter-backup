@@ -4,22 +4,22 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.val;
+
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_NewInstance extends DexInstruction {
 
@@ -73,12 +73,12 @@ public class DexInstruction_NewInstance extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    int rTo = regAlloc.get(regTo);
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    int rTo = state.getRegisterAllocation().get(regTo);
 
     if (fitsIntoBits_Unsigned(rTo, 8)) {
       return new Instruction[] {
-               new Instruction21c(Opcode.NEW_INSTANCE, (short) rTo, cache.getType(value))
+               new Instruction21c(Opcode.NEW_INSTANCE, (short) rTo, state.getCache().getType(value))
              };
     } else
       return throwCannotAssembleException("No suitable instruction format found");

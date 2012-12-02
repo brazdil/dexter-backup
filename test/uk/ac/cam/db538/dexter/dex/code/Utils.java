@@ -14,6 +14,7 @@ import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 
+import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -53,6 +54,12 @@ public class Utils {
     for (val reg : regs)
       regAlloc.put(reg, reg.getOriginalIndex());
     return regAlloc;
+  }
+  
+  public static DexCode_AssemblingState genAsmState(Map<DexRegister, Integer> regAlloc) {
+	  return new DexCode_AssemblingState(
+			  new DexAssemblingCache(new DexFile()),
+			  regAlloc);
   }
 
   public static long numFitsInto_Signed(int bits) {

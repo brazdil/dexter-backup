@@ -62,7 +62,7 @@ public class DexInstruction_Move_Test {
 
     val insn = new DexInstruction_Move(null, regTo, regFrom, false);
 
-    val asm = insn.assembleBytecode(regAlloc, null);
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction12x);
 
@@ -83,7 +83,7 @@ public class DexInstruction_Move_Test {
 
     val insn = new DexInstruction_Move(null, regTo, regFrom, true);
 
-    val asm = insn.assembleBytecode(regAlloc, null);
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction12x);
 
@@ -104,7 +104,7 @@ public class DexInstruction_Move_Test {
 
     val insn = new DexInstruction_Move(null, regTo, regFrom, false);
 
-    val asm = insn.assembleBytecode(regAlloc, null);
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction22x);
 
@@ -125,7 +125,7 @@ public class DexInstruction_Move_Test {
 
     val insn = new DexInstruction_Move(null, regTo, regFrom, true);
 
-    val asm = insn.assembleBytecode(regAlloc, null);
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction22x);
 
@@ -146,7 +146,7 @@ public class DexInstruction_Move_Test {
 
     val insn = new DexInstruction_Move(null, regTo, regFrom, false);
 
-    val asm = insn.assembleBytecode(regAlloc, null);
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction32x);
 
@@ -167,7 +167,7 @@ public class DexInstruction_Move_Test {
 
     val insn = new DexInstruction_Move(null, regTo, regFrom, true);
 
-    val asm = insn.assembleBytecode(regAlloc, null);
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction32x);
 

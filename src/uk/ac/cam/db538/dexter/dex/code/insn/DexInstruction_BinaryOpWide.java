@@ -12,9 +12,9 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -123,7 +123,8 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+	val regAlloc = state.getRegisterAllocation();
     int rTarget1 = regAlloc.get(regTarget1);
     int rTarget2 = regAlloc.get(regTarget2);
     int rSourceA1 = regAlloc.get(regSourceA1);
@@ -139,7 +140,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
     else if (fitsIntoBits_Unsigned(rTarget1, 8) && fitsIntoBits_Unsigned(rSourceA1, 8) && fitsIntoBits_Unsigned(rSourceB1, 8))
       return new Instruction[] { new Instruction23x(Opcode_BinaryOpWide.convert(insnOpcode), (short) rTarget1, (short) rSourceA1, (short) rSourceB1)	};
     else
-      return throwCannotAssembleException("No suitable instruction format found");
+        return throwNoSuitableFormatFound();
   }
 
   @Override

@@ -4,13 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import lombok.val;
 
-import org.jf.dexlib.DexFile;
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.Utils;
@@ -35,7 +33,7 @@ public class DexInstruction_NewInstance_Test {
 
     val insn = new DexInstruction_NewInstance(null, regTo, DexClassType.parse("Ljava/lang/Object;", cache));
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction21c);
 
@@ -54,6 +52,6 @@ public class DexInstruction_NewInstance_Test {
 
     val insn = new DexInstruction_NewInstance(null, regTo, DexClassType.parse("Ljava.lang.Object;", cache));
 
-    insn.assembleBytecode(regAlloc, null);
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 }

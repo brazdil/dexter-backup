@@ -272,8 +272,9 @@ public class DexCode {
   }
 
   public List<Instruction> assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) throws InstructionAssemblyException {
+    val asmState = new DexCode_AssemblingState(cache, regAlloc);
     val bytecode = new LinkedList<Instruction>();
-
+    
     // place labels here; let every instruction tell you
     // the longest it can possibly get to pick the right
     // format of jumps
@@ -282,7 +283,7 @@ public class DexCode {
     for (val elem : instructionList)
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
-        bytecode.addAll(Arrays.asList(insn.assembleBytecode(regAlloc, cache)));
+        bytecode.addAll(Arrays.asList(insn.assembleBytecode(asmState)));
       }
 
     return bytecode;

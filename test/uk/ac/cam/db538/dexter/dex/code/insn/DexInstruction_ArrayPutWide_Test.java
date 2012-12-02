@@ -4,13 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import lombok.val;
 
-import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction23x;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.Utils;
 
@@ -46,7 +44,7 @@ public class DexInstruction_ArrayPutWide_Test {
       regArray,
       regIndex);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction23x);
 
@@ -75,7 +73,7 @@ public class DexInstruction_ArrayPutWide_Test {
       regArray,
       regIndex);
 
-    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -96,7 +94,7 @@ public class DexInstruction_ArrayPutWide_Test {
       regArray,
       regIndex);
 
-    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -117,7 +115,7 @@ public class DexInstruction_ArrayPutWide_Test {
       regArray,
       regIndex);
 
-    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -138,6 +136,6 @@ public class DexInstruction_ArrayPutWide_Test {
       regArray,
       regIndex);
 
-    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 }

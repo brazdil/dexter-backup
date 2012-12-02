@@ -12,10 +12,10 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -103,14 +103,14 @@ public class DexInstruction_StaticGet extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    int rTo = regAlloc.get(regTo);
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    int rTo = state.getRegisterAllocation().get(regTo);
 
     if (fitsIntoBits_Unsigned(rTo, 8)) {
       return new Instruction[] {
-               new Instruction21c(Opcode_GetPut.convert_SGET(opcode), (short) rTo, cache.getField(fieldClass, fieldType, fieldName))
+               new Instruction21c(Opcode_GetPut.convert_SGET(opcode), (short) rTo, state.getCache().getField(fieldClass, fieldType, fieldName))
              };
     } else
-      return throwCannotAssembleException("No suitable instruction format found");
+      return throwNoSuitableFormatFound();
   }
 }

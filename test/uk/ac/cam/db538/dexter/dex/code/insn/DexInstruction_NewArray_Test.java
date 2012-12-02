@@ -4,13 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import lombok.val;
 
-import org.jf.dexlib.DexFile;
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.Utils;
@@ -37,7 +35,7 @@ public class DexInstruction_NewArray_Test {
 
     val insn = new DexInstruction_NewArray(null, regTo, regSize, DexArrayType.parse("[I", cache));
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction22c);
 
@@ -59,7 +57,7 @@ public class DexInstruction_NewArray_Test {
 
     val insn = new DexInstruction_NewArray(null, regTo, regSize, DexArrayType.parse("[I", cache));
 
-    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -74,6 +72,6 @@ public class DexInstruction_NewArray_Test {
 
     val insn = new DexInstruction_NewArray(null, regTo, regSize, DexArrayType.parse("[I", cache));
 
-    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 }

@@ -13,10 +13,10 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -114,15 +114,19 @@ public class DexInstruction_StaticGetWide extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+	val regAlloc = state.getRegisterAllocation();
     int rTo1 = regAlloc.get(regTo1);
     int rTo2 = regAlloc.get(regTo2);
 
-    if (fitsIntoBits_Unsigned(rTo1, 8) && rTo1 + 1 == rTo2) {
+    if (!formWideRegister(rTo1, rTo2))
+    	return throwWideRegistersExpected();
+    
+    if (fitsIntoBits_Unsigned(rTo1, 8)) {
       return new Instruction[] {
-               new Instruction21c(Opcode.SGET_WIDE, (short) rTo1, cache.getField(fieldClass, fieldType, fieldName))
+               new Instruction21c(Opcode.SGET_WIDE, (short) rTo1, state.getCache().getField(fieldClass, fieldType, fieldName))
              };
     } else
-      return throwCannotAssembleException("No suitable instruction format found");
+      return throwNoSuitableFormatFound();
   }
 }

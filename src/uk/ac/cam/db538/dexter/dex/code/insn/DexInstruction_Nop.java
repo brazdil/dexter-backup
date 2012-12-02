@@ -1,17 +1,14 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
-
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10x;
 
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
 public class DexInstruction_Nop extends DexInstruction {
 
@@ -35,8 +32,7 @@ public class DexInstruction_Nop extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache)
-  throws InstructionAssemblyException {
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) throws InstructionAssemblyException {
     return new Instruction[] {
              new Instruction10x(Opcode.NOP)
            };

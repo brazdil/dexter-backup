@@ -1,15 +1,12 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 
-import java.util.Map;
-
 import org.jf.dexlib.Code.Instruction;
 
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
 public abstract class DexInstruction extends DexCodeElement {
 
@@ -25,13 +22,17 @@ public abstract class DexInstruction extends DexCodeElement {
 
   // ASSEMBLING
 
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
     throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have assembling implemented");
   }
 
   protected final Instruction[] throwCannotAssembleException(String reason) {
-    throw new InstructionAssemblyException("Cannot assemble instruction: " + getOriginalAssembly() + " (" + reason + ")");
+    throw new InstructionAssemblyException("Instruction " + this.getClass().getSimpleName() + " couldn't be assembled (" + reason + ")");
   }
+
+  protected final Instruction[] throwNoSuitableFormatFound() {
+	    return throwCannotAssembleException("No suitable format of instruction found");
+	  }
 
   protected final Instruction[] throwWideRegistersExpected() {
     throw new InstructionAssemblyException("Wide registers badly aligned with instruction: " + getOriginalAssembly());

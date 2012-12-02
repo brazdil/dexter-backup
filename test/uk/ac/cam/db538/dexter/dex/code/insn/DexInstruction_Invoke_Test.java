@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +22,6 @@ import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -268,7 +268,7 @@ public class DexInstruction_Invoke_Test {
 
     val regAlloc = new HashMap<DexRegister, Integer>();
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -299,7 +299,7 @@ public class DexInstruction_Invoke_Test {
     val regAlloc = new HashMap<DexRegister, Integer>();
     regAlloc.put(r[0], 3);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -334,7 +334,7 @@ public class DexInstruction_Invoke_Test {
     regAlloc.put(r[0], 3);
     regAlloc.put(r[1], 8);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -373,7 +373,7 @@ public class DexInstruction_Invoke_Test {
     regAlloc.put(r[1], 8);
     regAlloc.put(r[2], 2);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -416,7 +416,7 @@ public class DexInstruction_Invoke_Test {
     regAlloc.put(r[2], 2);
     regAlloc.put(r[3], 9);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -463,7 +463,7 @@ public class DexInstruction_Invoke_Test {
     regAlloc.put(r[3], 9);
     regAlloc.put(r[4], 15);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -511,7 +511,7 @@ public class DexInstruction_Invoke_Test {
     regAlloc.put(r[3], 9);
     regAlloc.put(r[4], 15);
 
-    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test
@@ -535,7 +535,7 @@ public class DexInstruction_Invoke_Test {
     val regAlloc = new HashMap<DexRegister, Integer>();
     regAlloc.put(r[0], 3);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -568,7 +568,7 @@ public class DexInstruction_Invoke_Test {
     regAlloc.put(r[0], 3);
     regAlloc.put(r[1], 7);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -601,7 +601,7 @@ public class DexInstruction_Invoke_Test {
     regAlloc.put(r[0], 3);
     regAlloc.put(r[1], 7);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -634,7 +634,7 @@ public class DexInstruction_Invoke_Test {
     regAlloc.put(r[0], 3);
     regAlloc.put(r[1], 7);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -667,7 +667,7 @@ public class DexInstruction_Invoke_Test {
     regAlloc.put(r[0], 3);
     regAlloc.put(r[1], 7);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -703,7 +703,7 @@ public class DexInstruction_Invoke_Test {
     for (int i = 0; i < paramCount; ++i)
       regAlloc.put(r[i], firstReg + i);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -741,7 +741,7 @@ public class DexInstruction_Invoke_Test {
     for (int i = 0; i < paramCount; ++i)
       regAlloc.put(r[i], firstReg + i);
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
 
     val asm0 = asm[0];
@@ -782,7 +782,7 @@ public class DexInstruction_Invoke_Test {
     // move one register out of the sequence
     regAlloc.put(r[paramCount - 2], firstReg - 2);
 
-    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 }
 

@@ -4,14 +4,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import lombok.val;
 
-import org.jf.dexlib.DexFile;
 import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.Utils;
@@ -59,7 +57,7 @@ public class DexInstruction_InstanceGetWide_Test {
       DexRegisterType.parse("D", cache),
       "AwesomeField");
 
-    val asm = insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction22c);
 
@@ -94,7 +92,7 @@ public class DexInstruction_InstanceGetWide_Test {
       DexRegisterType.parse("D", cache),
       "AwesomeField");
 
-    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -117,7 +115,7 @@ public class DexInstruction_InstanceGetWide_Test {
       DexRegisterType.parse("D", cache),
       "AwesomeField");
 
-    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -140,6 +138,6 @@ public class DexInstruction_InstanceGetWide_Test {
       DexRegisterType.parse("D", cache),
       "AwesomeField");
 
-    insn.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 }

@@ -12,9 +12,9 @@ import org.jf.dexlib.Code.Format.Instruction22b;
 import org.jf.dexlib.Code.Format.Instruction22s;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
@@ -74,7 +74,8 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+	val regAlloc = state.getRegisterAllocation();
     int rTarget = regAlloc.get(regTarget);
     int rSource = regAlloc.get(regSource);
 
@@ -92,7 +93,7 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
                  new Instruction22s(Opcode_BinaryOpLiteral.convert_lit16(insnOpcode), (byte) rTarget, (byte) rSource, (short) literal)
                };
       } else
-        return throwCannotAssembleException("No suitable instruction format found");
+          return throwNoSuitableFormatFound();
     }
   }
 

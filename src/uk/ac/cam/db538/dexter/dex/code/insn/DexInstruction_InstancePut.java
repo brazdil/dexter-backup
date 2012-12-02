@@ -12,10 +12,10 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -109,15 +109,16 @@ public class DexInstruction_InstancePut extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+	val regAlloc = state.getRegisterAllocation();
     int rFrom = regAlloc.get(regFrom);
     int rObject = regAlloc.get(regObject);
 
     if (fitsIntoBits_Unsigned(rFrom, 4) && fitsIntoBits_Unsigned(rObject, 4)) {
       return new Instruction[] {
-               new Instruction22c(Opcode_GetPut.convert_IPUT(opcode), (byte) rFrom, (byte) rObject, cache.getField(fieldClass, fieldType, fieldName))
+               new Instruction22c(Opcode_GetPut.convert_IPUT(opcode), (byte) rFrom, (byte) rObject, state.getCache().getField(fieldClass, fieldType, fieldName))
              };
     } else
-      return throwCannotAssembleException("No suitable instruction format found");
+        return throwNoSuitableFormatFound();
   }
 }

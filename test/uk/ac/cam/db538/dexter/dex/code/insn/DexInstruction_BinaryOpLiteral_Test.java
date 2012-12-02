@@ -74,7 +74,7 @@ public class DexInstruction_BinaryOpLiteral_Test {
 
     val insn = new DexInstruction_BinaryOpLiteral(null, regTarget, regSource, literal, Opcode_BinaryOpLiteral.Or);
 
-    val asm = insn.assembleBytecode(regAlloc, null);
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction22s);
 
@@ -98,7 +98,7 @@ public class DexInstruction_BinaryOpLiteral_Test {
 
     val insn = new DexInstruction_BinaryOpLiteral(null, regTarget, regSource, literal, Opcode_BinaryOpLiteral.Or);
 
-    insn.assembleBytecode(regAlloc, null);
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -114,7 +114,7 @@ public class DexInstruction_BinaryOpLiteral_Test {
 
     val insn = new DexInstruction_BinaryOpLiteral(null, regTarget, regSource, literal, Opcode_BinaryOpLiteral.Or);
 
-    insn.assembleBytecode(regAlloc, null);
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -130,7 +130,7 @@ public class DexInstruction_BinaryOpLiteral_Test {
 
     val insn = new DexInstruction_BinaryOpLiteral(null, regTarget, regSource, literal, Opcode_BinaryOpLiteral.Shl);
 
-    insn.assembleBytecode(regAlloc, null);
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -146,7 +146,7 @@ public class DexInstruction_BinaryOpLiteral_Test {
 
     val insn = new DexInstruction_BinaryOpLiteral(null, regTarget, regSource, literal, Opcode_BinaryOpLiteral.Shr);
 
-    insn.assembleBytecode(regAlloc, null);
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -162,7 +162,7 @@ public class DexInstruction_BinaryOpLiteral_Test {
 
     val insn = new DexInstruction_BinaryOpLiteral(null, regTarget, regSource, literal, Opcode_BinaryOpLiteral.Ushr);
 
-    insn.assembleBytecode(regAlloc, null);
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test
@@ -178,7 +178,7 @@ public class DexInstruction_BinaryOpLiteral_Test {
 
     val insn = new DexInstruction_BinaryOpLiteral(null, regTarget, regSource, literal, Opcode_BinaryOpLiteral.Or);
 
-    val asm = insn.assembleBytecode(regAlloc, null);
+    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
     assertEquals(1, asm.length);
     assertTrue(asm[0] instanceof Instruction22b);
 
@@ -202,7 +202,7 @@ public class DexInstruction_BinaryOpLiteral_Test {
 
     val insn = new DexInstruction_BinaryOpLiteral(null, regTarget, regSource, literal, Opcode_BinaryOpLiteral.Or);
 
-    insn.assembleBytecode(regAlloc, null);
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -218,6 +218,6 @@ public class DexInstruction_BinaryOpLiteral_Test {
 
     val insn = new DexInstruction_BinaryOpLiteral(null, regTarget, regSource, literal, Opcode_BinaryOpLiteral.Or);
 
-    insn.assembleBytecode(regAlloc, null);
+    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 }

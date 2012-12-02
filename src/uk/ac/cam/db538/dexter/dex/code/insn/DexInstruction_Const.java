@@ -1,7 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -14,9 +13,9 @@ import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction31i;
 
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -84,8 +83,8 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    int rTo = regAlloc.get(regTo);
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    int rTo = state.getRegisterAllocation().get(regTo);
 
     if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Signed(value, 4))
       return new Instruction[] { new Instruction11n(Opcode.CONST_4, (byte) rTo, (byte) value) };
@@ -96,7 +95,7 @@ public class DexInstruction_Const extends DexInstruction {
     else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoBits_Signed(value, 32))
       return new Instruction[] { new Instruction31i(Opcode.CONST, (short) rTo, (int) value) };
     else
-      return throwCannotAssembleException("No suitable instruction format found");
+        return throwNoSuitableFormatFound();
   }
 
   @Override
