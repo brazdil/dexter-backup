@@ -272,19 +272,31 @@ public class DexCode {
   }
 
   public List<Instruction> assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) throws InstructionAssemblyException {
-    val asmState = new DexCode_AssemblingState(cache, regAlloc);
+    val asmState = new DexCode_AssemblingState(this, cache, regAlloc);
     val bytecode = new LinkedList<Instruction>();
-    
-    // place labels here; let every instruction tell you
-    // the longest it can possibly get to pick the right
-    // format of jumps
 
-    // assemble each instruction
-    for (val elem : instructionList)
-      if (elem instanceof DexInstruction) {
-        val insn = (DexInstruction) elem;
-        bytecode.addAll(Arrays.asList(insn.assembleBytecode(asmState)));
+    boolean offsetsChanged;
+    do {
+      bytecode.clear();
+      offsetsChanged = false;
+
+      // assemble each instruction
+      int offset = 0;
+      for (val elem : instructionList) {
+        int previousOffset = asmState.getElementOffsets().get(elem);
+        offsetsChanged |= (offset != previousOffset);
+
+        asmState.setElementOffset(elem, offset);
+
+        if (elem instanceof DexInstruction) {
+          val insn = (DexInstruction) elem;
+          val asm = insn.assembleBytecode(asmState);
+          for (val asmInsn : asm)
+            offset += asmInsn.getSize(0); // argument ignored
+          bytecode.addAll(Arrays.asList(asm));
+        }
       }
+    } while (offsetsChanged);
 
     return bytecode;
   }
