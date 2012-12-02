@@ -110,7 +110,7 @@ public class DexInstruction_InstancePut extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-	val regAlloc = state.getRegisterAllocation();
+    val regAlloc = state.getRegisterAllocation();
     int rFrom = regAlloc.get(regFrom);
     int rObject = regAlloc.get(regObject);
 
@@ -119,6 +119,6 @@ public class DexInstruction_InstancePut extends DexInstruction {
                new Instruction22c(Opcode_GetPut.convert_IPUT(opcode), (byte) rFrom, (byte) rObject, state.getCache().getField(fieldClass, fieldType, fieldName))
              };
     } else
-        return throwNoSuitableFormatFound();
+      return throwNoSuitableFormatFound();
   }
 }

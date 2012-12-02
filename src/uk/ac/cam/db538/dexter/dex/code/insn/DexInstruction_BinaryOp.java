@@ -87,7 +87,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-	val regAlloc = state.getRegisterAllocation();
+    val regAlloc = state.getRegisterAllocation();
     int rTarget = regAlloc.get(regTarget);
     int rSourceA = regAlloc.get(regSourceA);
     int rSourceB = regAlloc.get(regSourceB);
@@ -97,7 +97,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
     else if (fitsIntoBits_Unsigned(rTarget, 8) && fitsIntoBits_Unsigned(rSourceA, 8) && fitsIntoBits_Unsigned(rSourceB, 8))
       return new Instruction[] { new Instruction23x(Opcode_BinaryOp.convert(insnOpcode), (short) rTarget, (short) rSourceA, (short) rSourceB)	};
     else
-        return throwNoSuitableFormatFound();
+      return throwNoSuitableFormatFound();
   }
 
   @Override

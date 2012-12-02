@@ -75,7 +75,7 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-	val regAlloc = state.getRegisterAllocation();
+    val regAlloc = state.getRegisterAllocation();
     int rTarget = regAlloc.get(regTarget);
     int rSource = regAlloc.get(regSource);
 
@@ -93,7 +93,7 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
                  new Instruction22s(Opcode_BinaryOpLiteral.convert_lit16(insnOpcode), (byte) rTarget, (byte) rSource, (short) literal)
                };
       } else
-          return throwNoSuitableFormatFound();
+        return throwNoSuitableFormatFound();
     }
   }
 

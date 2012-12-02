@@ -31,8 +31,8 @@ public abstract class DexInstruction extends DexCodeElement {
   }
 
   protected final Instruction[] throwNoSuitableFormatFound() {
-	    return throwCannotAssembleException("No suitable format of instruction found");
-	  }
+    return throwCannotAssembleException("No suitable format of instruction found");
+  }
 
   protected final Instruction[] throwWideRegistersExpected() {
     throw new InstructionAssemblyException("Wide registers badly aligned with instruction: " + getOriginalAssembly());

@@ -116,7 +116,7 @@ public class DexInstruction_InstanceGet extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-	val regAlloc = state.getRegisterAllocation();
+    val regAlloc = state.getRegisterAllocation();
     int rTo = regAlloc.get(regTo);
     int rObject = regAlloc.get(regObject);
 
@@ -125,6 +125,6 @@ public class DexInstruction_InstanceGet extends DexInstruction {
                new Instruction22c(Opcode_GetPut.convert_IGET(opcode), (byte) rTo, (byte) rObject, state.getCache().getField(fieldClass, fieldType, fieldName))
              };
     } else
-        return throwNoSuitableFormatFound();
+      return throwNoSuitableFormatFound();
   }
 }

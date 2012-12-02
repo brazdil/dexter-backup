@@ -95,7 +95,7 @@ public class DexInstruction_Const extends DexInstruction {
     else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoBits_Signed(value, 32))
       return new Instruction[] { new Instruction31i(Opcode.CONST, (short) rTo, (int) value) };
     else
-        return throwNoSuitableFormatFound();
+      return throwNoSuitableFormatFound();
   }
 
   @Override

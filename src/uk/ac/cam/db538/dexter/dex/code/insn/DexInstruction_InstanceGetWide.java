@@ -127,7 +127,7 @@ public class DexInstruction_InstanceGetWide extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-	val regAlloc = state.getRegisterAllocation();
+    val regAlloc = state.getRegisterAllocation();
     int rTo1 = regAlloc.get(regTo1);
     int rTo2 = regAlloc.get(regTo2);
     int rObject = regAlloc.get(regObject);
@@ -137,6 +137,6 @@ public class DexInstruction_InstanceGetWide extends DexInstruction {
                new Instruction22c(Opcode.IGET_WIDE, (byte) rTo1, (byte) rObject, state.getCache().getField(fieldClass, fieldType, fieldName))
              };
     } else
-        return throwNoSuitableFormatFound();
+      return throwNoSuitableFormatFound();
   }
 }

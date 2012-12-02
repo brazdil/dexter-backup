@@ -55,11 +55,16 @@ public class Utils {
       regAlloc.put(reg, reg.getOriginalIndex());
     return regAlloc;
   }
-  
+
+  public static DexCode_AssemblingState genAsmState(DexCode code, Map<DexRegister, Integer> regAlloc) {
+    return new DexCode_AssemblingState(
+             code,
+             new DexAssemblingCache(new DexFile()),
+             regAlloc);
+  }
+
   public static DexCode_AssemblingState genAsmState(Map<DexRegister, Integer> regAlloc) {
-	  return new DexCode_AssemblingState(
-			  new DexAssemblingCache(new DexFile()),
-			  regAlloc);
+    return genAsmState(null, regAlloc);
   }
 
   public static long numFitsInto_Signed(int bits) {

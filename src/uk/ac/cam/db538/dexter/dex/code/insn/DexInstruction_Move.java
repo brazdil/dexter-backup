@@ -91,7 +91,7 @@ public class DexInstruction_Move extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-	val regAlloc = state.getRegisterAllocation();
+    val regAlloc = state.getRegisterAllocation();
     int rTo = regAlloc.get(regTo);
     int rFrom = regAlloc.get(regFrom);
 

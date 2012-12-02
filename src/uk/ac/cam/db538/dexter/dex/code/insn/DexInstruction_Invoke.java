@@ -163,7 +163,7 @@ public class DexInstruction_Invoke extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-	val regAlloc = state.getRegisterAllocation();
+    val regAlloc = state.getRegisterAllocation();
     int[] r = new int[argumentRegisters.size()];
     for (int i = 0; i < r.length; ++i)
       r[i] = regAlloc.get(argumentRegisters.get(i));

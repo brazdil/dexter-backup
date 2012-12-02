@@ -94,20 +94,20 @@ public class DexInstruction_ArrayGetWide extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-	val regAlloc = state.getRegisterAllocation();
+    val regAlloc = state.getRegisterAllocation();
     int rTo1 = regAlloc.get(regTo1);
     int rTo2 = regAlloc.get(regTo2);
     int rArray = regAlloc.get(regArray);
     int rIndex = regAlloc.get(regIndex);
 
     if (!formWideRegister(rTo1, rTo2))
-        return throwWideRegistersExpected();
-    
+      return throwWideRegistersExpected();
+
     if (fitsIntoBits_Unsigned(rTo1, 8) && formWideRegister(rTo1, rTo2) && fitsIntoBits_Unsigned(rArray, 8) && fitsIntoBits_Unsigned(rIndex, 8)) {
       return new Instruction[] {
                new Instruction23x(Opcode.AGET_WIDE, (short) rTo1, (short) rArray, (short) rIndex)
              };
     } else
-        return throwNoSuitableFormatFound();
+      return throwNoSuitableFormatFound();
   }
 }

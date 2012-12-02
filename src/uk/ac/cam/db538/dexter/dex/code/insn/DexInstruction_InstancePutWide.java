@@ -121,19 +121,19 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-	val regAlloc = state.getRegisterAllocation();	  
+    val regAlloc = state.getRegisterAllocation();
     int rTo1 = regAlloc.get(regFrom1);
     int rTo2 = regAlloc.get(regFrom2);
     int rObject = regAlloc.get(regObject);
-    
+
     if (!formWideRegister(rTo1, rTo2))
-    	return throwWideRegistersExpected();
+      return throwWideRegistersExpected();
 
     if (fitsIntoBits_Unsigned(rTo1, 4) && fitsIntoBits_Unsigned(rObject, 4)) {
       return new Instruction[] {
                new Instruction22c(Opcode.IPUT_WIDE, (byte) rTo1, (byte) rObject, state.getCache().getField(fieldClass, fieldType, fieldName))
              };
     } else
-        return throwNoSuitableFormatFound();
+      return throwNoSuitableFormatFound();
   }
 }

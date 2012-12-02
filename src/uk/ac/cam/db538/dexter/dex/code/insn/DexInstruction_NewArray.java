@@ -57,7 +57,7 @@ public class DexInstruction_NewArray extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-	val regAlloc = state.getRegisterAllocation();
+    val regAlloc = state.getRegisterAllocation();
     int rTo = regAlloc.get(regTo);
     int rSize = regAlloc.get(regSize);
 

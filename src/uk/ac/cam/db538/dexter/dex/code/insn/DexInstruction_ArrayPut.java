@@ -79,7 +79,7 @@ public class DexInstruction_ArrayPut extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-	val regAlloc = state.getRegisterAllocation();
+    val regAlloc = state.getRegisterAllocation();
     int rFrom = regAlloc.get(regFrom);
     int rArray = regAlloc.get(regArray);
     int rIndex = regAlloc.get(regIndex);
@@ -89,6 +89,6 @@ public class DexInstruction_ArrayPut extends DexInstruction {
                new Instruction23x(Opcode_GetPut.convert_APUT(opcode), (short) rFrom, (short) rArray, (short) rIndex)
              };
     } else
-        return throwNoSuitableFormatFound();
+      return throwNoSuitableFormatFound();
   }
 }

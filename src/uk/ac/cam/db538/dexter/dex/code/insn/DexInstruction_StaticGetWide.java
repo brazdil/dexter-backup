@@ -115,13 +115,13 @@ public class DexInstruction_StaticGetWide extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-	val regAlloc = state.getRegisterAllocation();
+    val regAlloc = state.getRegisterAllocation();
     int rTo1 = regAlloc.get(regTo1);
     int rTo2 = regAlloc.get(regTo2);
 
     if (!formWideRegister(rTo1, rTo2))
-    	return throwWideRegistersExpected();
-    
+      return throwWideRegistersExpected();
+
     if (fitsIntoBits_Unsigned(rTo1, 8)) {
       return new Instruction[] {
                new Instruction21c(Opcode.SGET_WIDE, (short) rTo1, state.getCache().getField(fieldClass, fieldType, fieldName))
