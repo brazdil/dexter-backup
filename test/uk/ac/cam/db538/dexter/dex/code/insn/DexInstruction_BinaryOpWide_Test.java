@@ -361,7 +361,7 @@ public class DexInstruction_BinaryOpWide_Test {
     val reg4 = new DexRegister(4);
     val reg5 = new DexRegister(5);
     val code = new DexCode();
-    code.add(new DexInstruction_BinaryOpWide(null, reg0, reg1, reg2, reg3, reg4, reg5, Opcode_BinaryOpWide.SubLong));
+    code.add(new DexInstruction_BinaryOpWide(code, reg0, reg1, reg2, reg3, reg4, reg5, Opcode_BinaryOpWide.SubLong));
 
     Utils.instrumentAndCompare(
       code,
