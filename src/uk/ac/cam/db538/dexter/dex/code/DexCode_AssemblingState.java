@@ -25,11 +25,13 @@ public class DexCode_AssemblingState {
     // start by setting the size of each instruction to 1
     // later on, it will get increased iteratively
     this.elementOffsets = new HashMap<DexCodeElement, Long>();
-    long offset = 0;
-    for (val elem : code.getInstructionList()) {
-      elementOffsets.put(elem, offset);
-      if (elem instanceof DexInstruction)
-        offset += 1;
+    if (this.code != null) {
+      long offset = 0;
+      for (val elem : this.code.getInstructionList()) {
+        elementOffsets.put(elem, offset);
+        if (elem instanceof DexInstruction)
+          offset += 1;
+      }
     }
   }
 
