@@ -67,7 +67,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionOffsetException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
@@ -294,14 +293,7 @@ public class DexCode {
         if (elem instanceof DexInstruction) {
           val insn = (DexInstruction) elem;
 
-          Instruction[] asm = null;
-          try {
-            asm = insn.assembleBytecode(asmState);
-          } catch (InstructionOffsetException e) {
-            // TODO: add goto instructions
-            throw new RuntimeException(e);
-          }
-
+          Instruction[] asm = insn.assembleBytecode(asmState);
           for (val asmInsn : asm)
             offset += asmInsn.getSize(0); // argument ignored
 

@@ -49,4 +49,18 @@ public class NodeRun {
   public int getIndexOf(DexRegister reg) {
     return nodes.indexOf(reg);
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof NodeRun) {
+      val other = (NodeRun) obj;
+      return this.nodes.equals(other.nodes);
+    } else
+      return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return this.nodes.hashCode();
+  }
 }
