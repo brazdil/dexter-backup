@@ -1,15 +1,21 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import org.jf.dexlib.Code.Instruction;
-import org.jf.dexlib.Code.Format.Instruction21t;
-
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import java.util.HashSet;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
+
+import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Format.Instruction21t;
+
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
 public class DexInstruction_IfTestZero extends DexInstruction {
 
@@ -43,5 +49,55 @@ public class DexInstruction_IfTestZero extends DexInstruction {
   public String getOriginalAssembly() {
     return "if-" + insnOpcode.name() + " v" + reg.getOriginalIndexString() +
            ", L" + target.getOriginalAbsoluteOffset();
+  }
+
+  @Override
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    int rTest = state.getRegisterAllocation().get(reg);
+    long offsetThis = state.getElementOffsets().get(this);
+    long offsetTarget = state.getElementOffsets().get(target);
+    long offset = offsetTarget - offsetThis;
+
+    System.out.println(offset);
+
+    if (offset == 0)
+      throw new InstructionAssemblyException("Cannot have zero offset");
+
+    if (!fitsIntoBits_Signed(offset, 16))
+      throw new InstructionOffsetException(this);
+
+    if (fitsIntoBits_Unsigned(rTest, 8))
+      return new Instruction[] {
+               new Instruction21t(Opcode_IfTestZero.convert(insnOpcode), (short) rTest, (short) offset)
+             };
+    else
+      return throwNoSuitableFormatFound();
+  }
+
+  @Override
+  public boolean cfgEndsBasicBlock() {
+    return true;
+  }
+
+  @Override
+  public DexCodeElement[] cfgGetSuccessors() {
+    return new DexCodeElement[] {
+             this.getNextCodeElement(),
+             this.target
+           };
+  }
+
+  @Override
+  public Set<DexRegister> lvaReferencedRegisters() {
+    val set = new HashSet<DexRegister>();
+    set.add(reg);
+    return set;
+  }
+
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    val set = new HashSet<GcRangeConstraint>();
+    set.add(new GcRangeConstraint(reg, ColorRange.RANGE_8BIT));
+    return set;
   }
 }

@@ -13,9 +13,18 @@ public class DexLabel extends DexCodeElement {
     this.originalAbsoluteOffset = originalAbsoluteOffset;
   }
 
+  public DexLabel(DexCode methodCode) {
+    super(methodCode);
+
+    this.originalAbsoluteOffset = -1;
+  }
+
   @Override
   public String getOriginalAssembly() {
-    return "L" + originalAbsoluteOffset + ":";
+    if (originalAbsoluteOffset >= 0)
+      return "L" + originalAbsoluteOffset + ":";
+    else
+      return "L???:";
   }
 
   @Override

@@ -67,6 +67,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionOffsetException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
@@ -275,24 +276,35 @@ public class DexCode {
     val asmState = new DexCode_AssemblingState(this, cache, regAlloc);
     val bytecode = new LinkedList<Instruction>();
 
+    // keep updating the offsets of instructions
+    // until they converge
     boolean offsetsChanged;
     do {
       bytecode.clear();
       offsetsChanged = false;
 
       // assemble each instruction
-      int offset = 0;
+      long offset = 0;
       for (val elem : instructionList) {
-        int previousOffset = asmState.getElementOffsets().get(elem);
+        long previousOffset = asmState.getElementOffsets().get(elem);
         offsetsChanged |= (offset != previousOffset);
 
         asmState.setElementOffset(elem, offset);
 
         if (elem instanceof DexInstruction) {
           val insn = (DexInstruction) elem;
-          val asm = insn.assembleBytecode(asmState);
+
+          Instruction[] asm = null;
+          try {
+            asm = insn.assembleBytecode(asmState);
+          } catch (InstructionOffsetException e) {
+            // TODO: add goto instructions
+            throw new RuntimeException(e);
+          }
+
           for (val asmInsn : asm)
             offset += asmInsn.getSize(0); // argument ignored
+
           bytecode.addAll(Arrays.asList(asm));
         }
       }
