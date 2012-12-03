@@ -58,8 +58,6 @@ public class DexInstruction_IfTestZero extends DexInstruction {
     long offsetTarget = state.getElementOffsets().get(target);
     long offset = offsetTarget - offsetThis;
 
-    System.out.println(offset);
-
     if (offset == 0)
       throw new InstructionAssemblyException("Cannot have zero offset");
 
