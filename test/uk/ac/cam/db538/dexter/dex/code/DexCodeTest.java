@@ -7,13 +7,23 @@ import java.util.NoSuchElementException;
 
 import lombok.val;
 
+import org.jf.dexlib.DexFile;
+import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Opcode;
+import org.jf.dexlib.Code.Format.Instruction10t;
+import org.jf.dexlib.Code.Format.Instruction10x;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
+import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Nop;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 
 public class DexCodeTest {
 
@@ -268,5 +278,53 @@ public class DexCodeTest {
     addFollowConstraint(r1, r4, code);
 
     code.getFollowRuns();
+  }
+
+  @Test(expected=InstructionParsingException.class)
+  public void testLabels_InvalidOffset_Positive() throws InstructionParsingException {
+    Utils.parseAndCompare(
+      new Instruction[] {
+        new Instruction10t(Opcode.GOTO, 2),
+        new Instruction10x(Opcode.NOP)
+      }, null);
+  }
+
+  @Test(expected=InstructionParsingException.class)
+  public void testLabels_InvalidOffset_Negative() throws InstructionParsingException {
+    Utils.parseAndCompare(
+      new Instruction[] {
+        new Instruction10x(Opcode.NOP),
+        new Instruction10t(Opcode.GOTO, -2)
+      }, null);
+  }
+
+  @Test
+  public void testAssembleBytecode_OffsetTooLong_Instrumentation() {
+    val code = new DexCode();
+
+    val regNum = Utils.numFitsInto_Unsigned(8);
+    val reg = new DexRegister(regNum);
+
+    val label = new DexLabel(code);
+    val nop = new DexInstruction_Nop(code);
+    val insn = new DexInstruction_IfTestZero(code, reg, label, Opcode_IfTestZero.eqz);
+
+    val r1 = new DexRegister(1);
+    val r2 = new DexRegister(2);
+    val r3 = new DexRegister(3);
+
+    code.add(insn);
+    for (int i = 0; i < 32766 / 2; ++i) // size of BinOp is 2
+      code.add(new DexInstruction_BinaryOp(code, r1, r2, r3, Opcode_BinaryOp.AddInt));
+    code.add(label);
+    code.add(nop);
+
+    val regAlloc = Utils.genRegAlloc(reg, r1, r2, r3);
+    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    assertEquals(3 + 32766/2 + 1, asm.size());
+    assertEquals(Opcode.IF_EQZ, asm.get(0).opcode); // the original IfTestZero
+    assertEquals(Opcode.GOTO, asm.get(1).opcode); // jump to successor
+    assertEquals(Opcode.GOTO_32, asm.get(2).opcode); // long jump to branch
+    assertEquals(Opcode.ADD_INT, asm.get(3).opcode); // original successor
   }
 }

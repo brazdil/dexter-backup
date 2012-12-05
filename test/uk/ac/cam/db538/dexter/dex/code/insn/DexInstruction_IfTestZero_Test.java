@@ -148,10 +148,51 @@ public class DexInstruction_IfTestZero_Test {
     code.add(nop);
 
     try {
+      code.disableJumpFixing();
       code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
       fail("Should have thrown exception");
     } catch (InstructionOffsetException e) {
       assertEquals(insn, e.getProblematicInstruction());
     }
+  }
+
+  @Test
+  public void testFixLongJump() {
+    val code = new DexCode();
+
+    val label = new DexLabel(code);
+    val reg = new DexRegister();
+    val opcode = Opcode_IfTestZero.eqz;
+
+    val insnIf = new DexInstruction_IfTestZero(code, reg, label, opcode);
+    val insnNop1 = new DexInstruction_Nop(code);
+    val insnNop2 = new DexInstruction_Nop(code);
+
+    code.add(insnIf);
+    code.add(insnNop1);
+    code.add(label);
+    code.add(insnNop2);
+
+    val fixedIfElems = insnIf.fixLongJump();
+    assertEquals(5, fixedIfElems.length);
+
+    assertTrue(fixedIfElems[0] instanceof DexInstruction_IfTestZero);
+    assertTrue(fixedIfElems[1] instanceof DexInstruction_Goto);
+    assertTrue(fixedIfElems[2] instanceof DexLabel);
+    assertTrue(fixedIfElems[3] instanceof DexInstruction_Goto);
+    assertTrue(fixedIfElems[4] instanceof DexLabel);
+
+    val newIf = (DexInstruction_IfTestZero) fixedIfElems[0];
+    val newGotoSucc = (DexInstruction_Goto) fixedIfElems[1];
+    val newLabelLongJump = (DexLabel) fixedIfElems[2];
+    val newGotoLongJump = (DexInstruction_Goto) fixedIfElems[3];
+    val newLabelSucc = (DexLabel) fixedIfElems[4];
+
+    assertEquals(reg, newIf.getReg());
+    assertEquals(newLabelLongJump, newIf.getTarget());
+    assertEquals(opcode, newIf.getInsnOpcode());
+
+    assertEquals(newLabelSucc, newGotoSucc.getTarget());
+    assertEquals(label, newGotoLongJump.getTarget());
   }
 }

@@ -67,6 +67,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionOffsetException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
@@ -271,38 +272,63 @@ public class DexCode {
     return allConstraints;
   }
 
+  private boolean allowJumpFix = true;
+
+  public void disableJumpFixing() {
+    allowJumpFix = false;
+  }
+
   public List<Instruction> assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) throws InstructionAssemblyException {
-    val asmState = new DexCode_AssemblingState(this, cache, regAlloc);
-    val bytecode = new LinkedList<Instruction>();
+    DexCode modifiedCode = this;
+    while (true) {
+      try {
+        val asmState = new DexCode_AssemblingState(modifiedCode, cache, regAlloc);
+        val bytecode = new LinkedList<Instruction>();
 
-    // keep updating the offsets of instructions
-    // until they converge
-    boolean offsetsChanged;
-    do {
-      bytecode.clear();
-      offsetsChanged = false;
+        // keep updating the offsets of instructions
+        // until they converge
+        boolean offsetsChanged;
+        do {
+          bytecode.clear();
+          offsetsChanged = false;
 
-      // assemble each instruction
-      long offset = 0;
-      for (val elem : instructionList) {
-        long previousOffset = asmState.getElementOffsets().get(elem);
-        offsetsChanged |= (offset != previousOffset);
+          // assemble each instruction
+          long offset = 0;
+          for (val elem : modifiedCode.instructionList) {
+            long previousOffset = asmState.getElementOffsets().get(elem);
+            offsetsChanged |= (offset != previousOffset);
 
-        asmState.setElementOffset(elem, offset);
+            asmState.setElementOffset(elem, offset);
 
-        if (elem instanceof DexInstruction) {
-          val insn = (DexInstruction) elem;
+            if (elem instanceof DexInstruction) {
+              val insn = (DexInstruction) elem;
 
-          Instruction[] asm = insn.assembleBytecode(asmState);
-          for (val asmInsn : asm)
-            offset += asmInsn.getSize(0); // argument ignored
+              Instruction[] asm = insn.assembleBytecode(asmState);
+              for (val asmInsn : asm)
+                offset += asmInsn.getSize(0); // argument ignored
 
-          bytecode.addAll(Arrays.asList(asm));
-        }
+              bytecode.addAll(Arrays.asList(asm));
+            }
+          }
+        } while (offsetsChanged);
+
+        return bytecode;
+      } catch (InstructionOffsetException e) {
+        if (!allowJumpFix) // for testing only
+          throw e;
+
+        val problematicInsn = e.getProblematicInstruction();
+
+        val newCode = new DexCode();
+        for (val insn : modifiedCode.instructionList)
+          if (insn == problematicInsn)
+            newCode.addAll(problematicInsn.fixLongJump());
+          else
+            newCode.add(insn);
+
+        modifiedCode = newCode;
       }
-    } while (offsetsChanged);
-
-    return bytecode;
+    }
   }
 
   private DexInstruction parseInstruction(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {

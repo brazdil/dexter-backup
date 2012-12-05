@@ -7,6 +7,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.DexLabel;
 
 public abstract class DexInstruction extends DexCodeElement {
 
@@ -24,6 +25,10 @@ public abstract class DexInstruction extends DexCodeElement {
 
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
     throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have assembling implemented");
+  }
+
+  public DexCodeElement[] fixLongJump() {
+    throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have long jump fix implemented");
   }
 
   protected final Instruction[] throwCannotAssembleException(String reason) {
@@ -74,5 +79,16 @@ public abstract class DexInstruction extends DexCodeElement {
 
   static boolean formWideRegister(int reg1, int reg2) {
     return (reg1 + 1 == reg2);
+  }
+
+  long computeRelativeOffset(DexLabel target, DexCode_AssemblingState state) {
+    long offsetThis = state.getElementOffsets().get(this);
+    long offsetTarget = state.getElementOffsets().get(target);
+    long offset = offsetTarget - offsetThis;
+
+    if (offset == 0)
+      throw new InstructionAssemblyException("Cannot have zero offset");
+
+    return offset;
   }
 }

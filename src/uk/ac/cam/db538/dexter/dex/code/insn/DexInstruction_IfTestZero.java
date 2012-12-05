@@ -54,12 +54,7 @@ public class DexInstruction_IfTestZero extends DexInstruction {
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
     int rTest = state.getRegisterAllocation().get(reg);
-    long offsetThis = state.getElementOffsets().get(this);
-    long offsetTarget = state.getElementOffsets().get(target);
-    long offset = offsetTarget - offsetThis;
-
-    if (offset == 0)
-      throw new InstructionAssemblyException("Cannot have zero offset");
+    long offset = computeRelativeOffset(target, state);
 
     if (!fitsIntoBits_Signed(offset, 16))
       throw new InstructionOffsetException(this);
@@ -97,5 +92,21 @@ public class DexInstruction_IfTestZero extends DexInstruction {
     val set = new HashSet<GcRangeConstraint>();
     set.add(new GcRangeConstraint(reg, ColorRange.RANGE_8BIT));
     return set;
+  }
+
+  @Override
+  public DexCodeElement[] fixLongJump() {
+    val code = this.getMethodCode();
+
+    val labelSuccessor = new DexLabel(code);
+    val labelLongJump = new DexLabel(code);
+
+    return new DexCodeElement[] {
+             new DexInstruction_IfTestZero(code, reg, labelLongJump, insnOpcode),
+             new DexInstruction_Goto(code, labelSuccessor),
+             labelLongJump,
+             new DexInstruction_Goto(code, target),
+             labelSuccessor
+           };
   }
 }
