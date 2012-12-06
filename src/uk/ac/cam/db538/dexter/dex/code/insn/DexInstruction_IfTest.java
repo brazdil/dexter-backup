@@ -3,17 +3,19 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 import java.util.HashSet;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.val;
+
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction22t;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_IfTest extends DexInstruction {
 
@@ -60,8 +62,8 @@ public class DexInstruction_IfTest extends DexInstruction {
   @Override
   public DexCodeElement[] cfgGetSuccessors() {
     return new DexCodeElement[] {
-             getNextCodeElement(),
-             target
+             this.getNextCodeElement(),
+             this.target
            };
   }
 
@@ -71,5 +73,46 @@ public class DexInstruction_IfTest extends DexInstruction {
     regs.add(regA);
     regs.add(regB);
     return regs;
+  }
+
+  @Override
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    int rA = state.getRegisterAllocation().get(regA);
+    int rB = state.getRegisterAllocation().get(regB);
+    long offset = computeRelativeOffset(target, state);
+
+    if (!fitsIntoBits_Signed(offset, 16))
+      throw new InstructionOffsetException(this);
+
+    if (fitsIntoBits_Unsigned(rA, 4) && fitsIntoBits_Unsigned(rB, 4))
+      return new Instruction[] {
+               new Instruction22t(Opcode_IfTest.convert(insnOpcode), (byte) rA, (byte) rB, (short) offset)
+             };
+    else
+      return throwNoSuitableFormatFound();
+  }
+
+  @Override
+  public DexCodeElement[] fixLongJump() {
+    val code = this.getMethodCode();
+
+    val labelSuccessor = new DexLabel(code);
+    val labelLongJump = new DexLabel(code);
+
+    return new DexCodeElement[] {
+             new DexInstruction_IfTest(code, regA, regB, labelLongJump, insnOpcode),
+             new DexInstruction_Goto(code, labelSuccessor),
+             labelLongJump,
+             new DexInstruction_Goto(code, target),
+             labelSuccessor
+           };
+  }
+
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    val set = new HashSet<GcRangeConstraint>();
+    set.add(new GcRangeConstraint(regA, ColorRange.RANGE_4BIT));
+    set.add(new GcRangeConstraint(regB, ColorRange.RANGE_4BIT));
+    return set;
   }
 }
