@@ -112,6 +112,10 @@ public class DexInstruction_Invoke extends DexInstruction {
     return Collections.unmodifiableList(argumentRegisters);
   }
 
+  public boolean isStaticCall() {
+    return this.callType == Opcode_Invoke.Static;
+  }
+
   @Override
   public String getOriginalAssembly() {
     val str = new StringBuilder();

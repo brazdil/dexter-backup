@@ -112,7 +112,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     // add parameter registers to the register allocation
     val registerAllocation = new HashMap<DexRegister, Integer>(codeColoring.getColoring());
     int registerCount = codeColoring.getColorsUsed();
-    val inWords = parameterRegisters.size();
+    val inWords = this.getPrototype().countParamWords(this.isStatic());
     if (registerCount >= inWords) {
       int startReg = registerCount - inWords;
       for (int i = 0; i < inWords; ++i)
@@ -131,7 +131,7 @@ public abstract class DexMethodWithCode extends DexMethod {
 
     List<EncodedCatchHandler> encodedCatchHandlers = null;
 
-    int outWords = 0; // TODO: finish (max inWords of methods called inside the code)
+    int outWords = this.code.getOutWords();
 
     DebugInfoItem debugInfo = null;
 

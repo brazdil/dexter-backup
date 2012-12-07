@@ -331,6 +331,22 @@ public class DexCode {
     }
   }
 
+  public int getOutWords() {
+    // outWords is the max of all inWords of methods in the code
+    int maxWords = 0;
+
+    for (val insn : this.instructionList) {
+      if (insn instanceof DexInstruction_Invoke) {
+        val insnInvoke = (DexInstruction_Invoke) insn;
+        int insnOutWords = insnInvoke.getMethodPrototype().countParamWords(insnInvoke.isStaticCall());
+        if (insnOutWords > maxWords)
+          maxWords = insnOutWords;
+      }
+    }
+
+    return maxWords;
+  }
+
   private DexInstruction parseInstruction(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
     switch (insn.opcode) {
 

@@ -54,7 +54,7 @@ public class DexPrototype {
     return list;
   }
 
-  private int countParamWords(boolean isStatic) {
+  public int countParamWords(boolean isStatic) {
     int totalWords = 0;
     if (!isStatic)
       totalWords += DexClassType.TypeSize.getRegisterCount();
