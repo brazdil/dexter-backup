@@ -112,9 +112,17 @@ public class MethodPanel extends InfoPanel {
         else if (insn instanceof DexCatch)
           TooltipManager.setTooltip(label, ((DexCatch) insn).getExceptionType().getPrettyName(), TooltipWay.trailing, 0);
         else if (insn instanceof DexTryBlockStart) {
+          val tryBlockStart = (DexTryBlockStart) insn;
           val str = new StringBuilder();
           str.append("<html>");
-          for (val catchBlock : ((DexTryBlockStart) insn).getCatchHandlers()) {
+
+          val catchAllBlock = tryBlockStart.getCatchAllHandler();
+          if (catchAllBlock != null) {
+            str.append("ALL => " + catchAllBlock.getOriginalAbsoluteOffset());
+            str.append("<br>");
+          }
+
+          for (val catchBlock : tryBlockStart.getCatchHandlers()) {
             str.append(catchBlock.getExceptionType().getPrettyName() + " => " + catchBlock.getOriginalAbsoluteOffset());
             str.append("<br>");
           }
