@@ -14,6 +14,7 @@ import lombok.val;
 
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.CodeItem.TryItem;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
@@ -101,7 +102,7 @@ public class DexCode {
   public DexCode(CodeItem methodInfo, DexParsingCache cache) throws InstructionParsingException {
     this();
     parsingInfo = new DexCode_ParsingState(cache, this);
-    parseInstructions(methodInfo.getInstructions(), parsingInfo);
+    parseInstructions(methodInfo.getInstructions(), methodInfo.getTries(), parsingInfo);
   }
 
   // called internally and from tests
@@ -109,10 +110,10 @@ public class DexCode {
   DexCode(Instruction[] instructions, DexParsingCache cache) {
     this();
     parsingInfo = new DexCode_ParsingState(cache, this);
-    parseInstructions(instructions, parsingInfo);
+    parseInstructions(instructions, null, parsingInfo);
   }
 
-  private void parseInstructions(Instruction[] instructions, DexCode_ParsingState parsingState) {
+  private void parseInstructions(Instruction[] instructions, TryItem[] tries, DexCode_ParsingState parsingState) {
     // What happens here:
     // - each instruction is parsed
     //   - offset of each instruction is stored
@@ -120,12 +121,14 @@ public class DexCode {
     //     separately, together with desired offsets
     // - labels are placed in the right position inside
     //   the instruction list
+    // - try/catch blocks are inserted in between the instructions
 
     for (val insn : instructions) {
       val parsedInsn = parseInstruction(insn, parsingState);
       parsingState.addInstruction(insn.getSize(0), parsedInsn);
     }
 
+    parsingState.placeTries(tries);
     parsingState.placeLabels();
   }
 

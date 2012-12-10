@@ -3,10 +3,14 @@ package uk.ac.cam.db538.dexter.dex.code;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.NoSuchElementException;
 
 import lombok.val;
 
+import org.jf.dexlib.CodeItem;
+import org.jf.dexlib.CodeItem.EncodedCatchHandler;
+import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
@@ -16,6 +20,7 @@ import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
@@ -326,5 +331,67 @@ public class DexCodeTest {
     assertEquals(Opcode.GOTO, asm.get(1).opcode); // jump to successor
     assertEquals(Opcode.GOTO_32, asm.get(2).opcode); // long jump to branch
     assertEquals(Opcode.ADD_INT, asm.get(3).opcode); // original successor
+  }
+
+  @Test
+  public void testParse_TryBlock_StartAtBeginning_EndInMiddle() {
+    val handler1 = new EncodedCatchHandler(null, -1);
+    val try1 = new TryItem(0, 1, handler1);
+
+    val insns = Arrays.asList(new Instruction[] { new Instruction10x(Opcode.NOP), new Instruction10x(Opcode.NOP) });
+    val tries = Arrays.asList(new TryItem[] { try1 });
+    val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
+
+    val codeItem = CodeItem.internCodeItem(new DexFile(), 1, 0, 0, null, insns, tries, handlers);
+    val dexCode = new DexCode(codeItem, new DexParsingCache());
+
+    assertTrue(dexCode.getInstructionList().get(0) instanceof DexTryBlockStart);
+    assertTrue(dexCode.getInstructionList().get(1) instanceof DexInstruction_Nop);
+    assertTrue(dexCode.getInstructionList().get(2) instanceof DexTryBlockEnd);
+    assertTrue(dexCode.getInstructionList().get(3) instanceof DexInstruction_Nop);
+  }
+
+  @Test
+  public void testParse_TryBlock_StartInMiddle_EndAtEnd() {
+    val handler1 = new EncodedCatchHandler(null, -1);
+    val try1 = new TryItem(1, 1, handler1);
+
+    val insns = Arrays.asList(new Instruction[] { new Instruction10x(Opcode.NOP), new Instruction10x(Opcode.NOP) });
+    val tries = Arrays.asList(new TryItem[] { try1 });
+    val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
+
+    val codeItem = CodeItem.internCodeItem(new DexFile(), 1, 0, 0, null, insns, tries, handlers);
+    val dexCode = new DexCode(codeItem, new DexParsingCache());
+
+    assertTrue(dexCode.getInstructionList().get(0) instanceof DexInstruction_Nop);
+    assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryBlockStart);
+    assertTrue(dexCode.getInstructionList().get(2) instanceof DexInstruction_Nop);
+    assertTrue(dexCode.getInstructionList().get(3) instanceof DexTryBlockEnd);
+  }
+
+  @Test(expected=InstructionParsingException.class)
+  public void testParse_TryBlock_StartOffsetError() {
+    val handler1 = new EncodedCatchHandler(null, -1);
+    val try1 = new TryItem(2, 1, handler1);
+
+    val insns = Arrays.asList(new Instruction[] { new Instruction10x(Opcode.NOP), new Instruction10x(Opcode.NOP) });
+    val tries = Arrays.asList(new TryItem[] { try1 });
+    val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
+
+    val codeItem = CodeItem.internCodeItem(new DexFile(), 1, 0, 0, null, insns, tries, handlers);
+    new DexCode(codeItem, new DexParsingCache());
+  }
+
+  @Test(expected=InstructionParsingException.class)
+  public void testParse_TryBlock_EndOffsetError() {
+    val handler1 = new EncodedCatchHandler(null, -1);
+    val try1 = new TryItem(0, 3, handler1);
+
+    val insns = Arrays.asList(new Instruction[] { new Instruction10x(Opcode.NOP), new Instruction10x(Opcode.NOP) });
+    val tries = Arrays.asList(new TryItem[] { try1 });
+    val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
+
+    val codeItem = CodeItem.internCodeItem(new DexFile(), 1, 0, 0, null, insns, tries, handlers);
+    new DexCode(codeItem, new DexParsingCache());
   }
 }

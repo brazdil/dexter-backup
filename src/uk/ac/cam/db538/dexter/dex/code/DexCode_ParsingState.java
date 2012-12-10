@@ -5,6 +5,9 @@ import java.util.Map;
 
 import lombok.Getter;
 import lombok.val;
+
+import org.jf.dexlib.CodeItem.TryItem;
+
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
@@ -24,7 +27,6 @@ public class DexCode_ParsingState {
 
     this.instructionOffsetMap = new HashMap<Long, DexInstruction>();
     this.cache = cache;
-    this.currentOffset = 0L;
     this.code = code;
   }
 
@@ -47,13 +49,12 @@ public class DexCode_ParsingState {
     code.add(insn);
   }
 
-  public void placeLabels() throws InstructionParsingException {
+  public void placeLabels() {
     for (val entry : labelOffsetCache.entrySet()) {
       val labelOffset = entry.getKey();
       val insnAtOffset = instructionOffsetMap.get(labelOffset);
       if (insnAtOffset == null)
-        throw new InstructionParsingException(
-          "Label could not be placed (non-existent offset " + labelOffset + ")");
+        throw new InstructionParsingException("Label could not be placed (non-existent offset " + labelOffset + ")");
       else {
         val label = entry.getValue();
         code.insertBefore(label, insnAtOffset);
@@ -61,4 +62,32 @@ public class DexCode_ParsingState {
     }
   }
 
+  public void placeTries(TryItem[] tries) {
+    if (tries == null)
+      return;
+
+    for (val tryBlock : tries) {
+      long startOffset = tryBlock.getStartCodeAddress();
+      long endOffset = startOffset + tryBlock.getTryLength();
+
+      val newBlockStart = new DexTryBlockStart(code, startOffset);
+      val newBlockEnd = new DexTryBlockEnd(code, newBlockStart);
+
+      val startInsn = instructionOffsetMap.get(startOffset);
+      if (startInsn == null)
+        throw new InstructionParsingException("Start of a try block could not be placed (non-existent offset " + startOffset + ")");
+      code.insertBefore(newBlockStart, startInsn);
+
+      if (endOffset == currentOffset) {
+        // current offset should equal to total length of the instruction block
+        // by the time this method is called
+        code.add(newBlockEnd);
+      } else {
+        val endInsn = instructionOffsetMap.get(endOffset);
+        if (endInsn == null)
+          throw new InstructionParsingException("End of a try block could not be placed (non-existent offset " + endOffset + ")");
+        code.insertBefore(newBlockEnd, endInsn);
+      }
+    }
+  }
 }
