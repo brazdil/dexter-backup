@@ -1,21 +1,32 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import lombok.Getter;
 
 public class DexTryBlockStart extends DexCodeElement {
 
   @Getter private final long originalAbsoluteOffset;
 
-  public DexTryBlockStart(DexCode methodCode, long originalAbsoluteOffset) {
+  @Getter private final DexCatchAll catchAllHandler;
+  private final List<DexCatch> catchHandlers;
+
+  public DexTryBlockStart(DexCode methodCode, long originalAbsoluteOffset, DexCatchAll catchAllHandler, List<DexCatch> catchHandlers) {
     super(methodCode);
 
     this.originalAbsoluteOffset = originalAbsoluteOffset;
+    this.catchAllHandler = catchAllHandler;
+    this.catchHandlers = catchHandlers == null ? new ArrayList<DexCatch>() : new ArrayList<DexCatch>(catchHandlers);
   }
 
   public DexTryBlockStart(DexCode methodCode) {
     super(methodCode);
 
     this.originalAbsoluteOffset = -1;
+    this.catchAllHandler = null;
+    this.catchHandlers = new ArrayList<DexCatch>();
   }
 
   @Override
@@ -28,6 +39,10 @@ public class DexTryBlockStart extends DexCodeElement {
       return Long.toString(originalAbsoluteOffset);
     else
       return "???";
+  }
+
+  public List<DexCatch> getCatchHandlers() {
+    return Collections.unmodifiableList(catchHandlers);
   }
 
   @Override

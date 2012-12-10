@@ -13,6 +13,7 @@ import java.util.Set;
 import lombok.val;
 
 import org.jf.dexlib.CodeItem;
+import org.jf.dexlib.CodeItem.EncodedCatchHandler;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.CodeItem.TryItem;
 
@@ -102,7 +103,7 @@ public class DexCode {
   public DexCode(CodeItem methodInfo, DexParsingCache cache) throws InstructionParsingException {
     this();
     parsingInfo = new DexCode_ParsingState(cache, this);
-    parseInstructions(methodInfo.getInstructions(), methodInfo.getTries(), parsingInfo);
+    parseInstructions(methodInfo.getInstructions(), methodInfo.getHandlers(), methodInfo.getTries(), parsingInfo);
   }
 
   // called internally and from tests
@@ -110,10 +111,10 @@ public class DexCode {
   DexCode(Instruction[] instructions, DexParsingCache cache) {
     this();
     parsingInfo = new DexCode_ParsingState(cache, this);
-    parseInstructions(instructions, null, parsingInfo);
+    parseInstructions(instructions, null, null, parsingInfo);
   }
 
-  private void parseInstructions(Instruction[] instructions, TryItem[] tries, DexCode_ParsingState parsingState) {
+  private void parseInstructions(Instruction[] instructions, EncodedCatchHandler[] catchHandlers, TryItem[] tries, DexCode_ParsingState parsingState) {
     // What happens here:
     // - each instruction is parsed
     //   - offset of each instruction is stored
@@ -129,7 +130,10 @@ public class DexCode {
     }
 
     parsingState.placeTries(tries);
+    parsingState.placeCatches(catchHandlers);
     parsingState.placeLabels();
+
+    parsingState.checkTryCatchBlocksPlaced();
   }
 
   public List<DexCodeElement> getInstructionList() {

@@ -10,8 +10,10 @@ import lombok.val;
 
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.EncodedCatchHandler;
+import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
 import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10t;
@@ -19,16 +21,13 @@ import org.jf.dexlib.Code.Format.Instruction10x;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Nop;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 
 public class DexCodeTest {
 
@@ -303,35 +302,35 @@ public class DexCodeTest {
       }, null);
   }
 
-  @Test
-  public void testAssembleBytecode_OffsetTooLong_Instrumentation() {
-    val code = new DexCode();
-
-    val regNum = Utils.numFitsInto_Unsigned(8);
-    val reg = new DexRegister(regNum);
-
-    val label = new DexLabel(code);
-    val nop = new DexInstruction_Nop(code);
-    val insn = new DexInstruction_IfTestZero(code, reg, label, Opcode_IfTestZero.eqz);
-
-    val r1 = new DexRegister(1);
-    val r2 = new DexRegister(2);
-    val r3 = new DexRegister(3);
-
-    code.add(insn);
-    for (int i = 0; i < 32766 / 2; ++i) // size of BinOp is 2
-      code.add(new DexInstruction_BinaryOp(code, r1, r2, r3, Opcode_BinaryOp.AddInt));
-    code.add(label);
-    code.add(nop);
-
-    val regAlloc = Utils.genRegAlloc(reg, r1, r2, r3);
-    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
-    assertEquals(3 + 32766/2 + 1, asm.size());
-    assertEquals(Opcode.IF_EQZ, asm.get(0).opcode); // the original IfTestZero
-    assertEquals(Opcode.GOTO, asm.get(1).opcode); // jump to successor
-    assertEquals(Opcode.GOTO_32, asm.get(2).opcode); // long jump to branch
-    assertEquals(Opcode.ADD_INT, asm.get(3).opcode); // original successor
-  }
+//  @Test
+//  public void testAssembleBytecode_OffsetTooLong_Instrumentation() {
+//    val code = new DexCode();
+//
+//    val regNum = Utils.numFitsInto_Unsigned(8);
+//    val reg = new DexRegister(regNum);
+//
+//    val label = new DexLabel(code);
+//    val nop = new DexInstruction_Nop(code);
+//    val insn = new DexInstruction_IfTestZero(code, reg, label, Opcode_IfTestZero.eqz);
+//
+//    val r1 = new DexRegister(1);
+//    val r2 = new DexRegister(2);
+//    val r3 = new DexRegister(3);
+//
+//    code.add(insn);
+//    for (int i = 0; i < 32766 / 2; ++i) // size of BinOp is 2
+//      code.add(new DexInstruction_BinaryOp(code, r1, r2, r3, Opcode_BinaryOp.AddInt));
+//    code.add(label);
+//    code.add(nop);
+//
+//    val regAlloc = Utils.genRegAlloc(reg, r1, r2, r3);
+//    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+//    assertEquals(3 + 32766/2 + 1, asm.size());
+//    assertEquals(Opcode.IF_EQZ, asm.get(0).opcode); // the original IfTestZero
+//    assertEquals(Opcode.GOTO, asm.get(1).opcode); // jump to successor
+//    assertEquals(Opcode.GOTO_32, asm.get(2).opcode); // long jump to branch
+//    assertEquals(Opcode.ADD_INT, asm.get(3).opcode); // original successor
+//  }
 
   @Test
   public void testParse_TryBlock_StartAtBeginning_EndInMiddle() {
@@ -392,6 +391,72 @@ public class DexCodeTest {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
 
     val codeItem = CodeItem.internCodeItem(new DexFile(), 1, 0, 0, null, insns, tries, handlers);
+    new DexCode(codeItem, new DexParsingCache());
+  }
+
+  @Test
+  public void testParse_CatchBlock() {
+    val dexFile = new DexFile();
+
+    val exceptionType = TypeIdItem.internTypeIdItem(dexFile, "Lcom/example/MyException;");
+
+    val handler1 = new EncodedCatchHandler(new EncodedTypeAddrPair[] { new EncodedTypeAddrPair(exceptionType, 1) }, -1);
+    val try1 = new TryItem(0, 1, handler1);
+
+    val insns = Arrays.asList(new Instruction[] { new Instruction10x(Opcode.NOP), new Instruction10x(Opcode.NOP), new Instruction10x(Opcode.NOP) });
+    val tries = Arrays.asList(new TryItem[] { try1 });
+    val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
+
+    val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
+    val dexCode = new DexCode(codeItem, new DexParsingCache());
+
+    assertTrue(dexCode.getInstructionList().get(0) instanceof DexTryBlockStart);
+    assertTrue(dexCode.getInstructionList().get(1) instanceof DexInstruction_Nop);
+    assertTrue(dexCode.getInstructionList().get(2) instanceof DexTryBlockEnd);
+    assertTrue(dexCode.getInstructionList().get(3) instanceof DexCatch);
+    assertTrue(dexCode.getInstructionList().get(4) instanceof DexInstruction_Nop);
+    assertTrue(dexCode.getInstructionList().get(5) instanceof DexInstruction_Nop);
+
+    val catchElem = (DexCatch) dexCode.getInstructionList().get(3);
+    assertEquals("Lcom/example/MyException;", catchElem.getExceptionType().getDescriptor());
+
+    val tryStartElem = (DexTryBlockStart) dexCode.getInstructionList().get(0);
+    assertEquals(null, tryStartElem.getCatchAllHandler());
+    assertEquals(1, tryStartElem.getCatchHandlers().size());
+    assertEquals(catchElem, tryStartElem.getCatchHandlers().get(0));
+  }
+
+  @Test(expected=InstructionParsingException.class)
+  public void testParse_CatchBlock_WrongOffset() {
+    val dexFile = new DexFile();
+
+    val exceptionType = TypeIdItem.internTypeIdItem(dexFile, "Lcom/example/MyException;");
+
+    val handler1 = new EncodedCatchHandler(new EncodedTypeAddrPair[] { new EncodedTypeAddrPair(exceptionType, 3) }, -1);
+    val try1 = new TryItem(0, 1, handler1);
+
+    val insns = Arrays.asList(new Instruction[] { new Instruction10x(Opcode.NOP), new Instruction10x(Opcode.NOP), new Instruction10x(Opcode.NOP) });
+    val tries = Arrays.asList(new TryItem[] { try1 });
+    val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
+
+    val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
+    new DexCode(codeItem, new DexParsingCache());
+  }
+
+  @Test(expected=InstructionParsingException.class)
+  public void testParse_CatchBlockNotMentionedInCodeItem() {
+    val dexFile = new DexFile();
+
+    val exceptionType = TypeIdItem.internTypeIdItem(dexFile, "Lcom/example/MyException;");
+
+    val handler1 = new EncodedCatchHandler(new EncodedTypeAddrPair[] { new EncodedTypeAddrPair(exceptionType, 1) }, -1);
+    val try1 = new TryItem(0, 1, handler1);
+
+    val insns = Arrays.asList(new Instruction[] { new Instruction10x(Opcode.NOP), new Instruction10x(Opcode.NOP), new Instruction10x(Opcode.NOP) });
+    val tries = Arrays.asList(new TryItem[] { try1 });
+    val handlers = Arrays.asList(new EncodedCatchHandler[] { });
+
+    val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
     new DexCode(codeItem, new DexParsingCache());
   }
 }

@@ -6,9 +6,12 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 
+import lombok.val;
+
 import org.jf.dexlib.Util.AccessFlags;
 
-import lombok.val;
+import uk.ac.cam.db538.dexter.dex.code.DexCatch;
+import uk.ac.cam.db538.dexter.dex.code.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
@@ -106,6 +109,18 @@ public class MethodPanel extends InfoPanel {
           TooltipManager.setTooltip(label, "0x" + Long.toHexString(((DexInstruction_ConstWide) insn).getValue()), TooltipWay.trailing, 0);
         else if (insn instanceof DexInstruction_ConstString)
           TooltipManager.setTooltip(label, ((DexInstruction_ConstString) insn).getStringConstant(), TooltipWay.up, 0);
+        else if (insn instanceof DexCatch)
+          TooltipManager.setTooltip(label, ((DexCatch) insn).getExceptionType().getPrettyName(), TooltipWay.trailing, 0);
+        else if (insn instanceof DexTryBlockStart) {
+          val str = new StringBuilder();
+          str.append("<html>");
+          for (val catchBlock : ((DexTryBlockStart) insn).getCatchHandlers()) {
+            str.append(catchBlock.getExceptionType().getPrettyName() + " => " + catchBlock.getOriginalAbsoluteOffset());
+            str.append("<br>");
+          }
+          str.append("</html>");
+          TooltipManager.setTooltip(label, str.toString(), TooltipWay.right);
+        }
 
         panelInstructions.add(label);
       }
