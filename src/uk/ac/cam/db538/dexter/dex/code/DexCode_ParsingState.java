@@ -21,6 +21,7 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 public class DexCode_ParsingState {
   private final Cache<Integer, DexRegister> registerIdCache;
   private final Cache<Long, DexLabel> labelOffsetCache;
+  private final Cache<Long, DexCatchAll> catchAllOffsetCache;
   private final Cache<Pair<Long, DexClassType>, DexCatch> catchOffsetCache;
   private final Map<Long, DexInstruction> instructionOffsetMap;
   private long currentOffset;
@@ -30,6 +31,7 @@ public class DexCode_ParsingState {
   public DexCode_ParsingState(DexParsingCache cache, DexCode code) {
     this.registerIdCache = DexRegister.createCache();
     this.labelOffsetCache = DexLabel.createCache(code);
+    this.catchAllOffsetCache = DexCatchAll.createCache(code);
     this.catchOffsetCache = DexCatch.createCache(code);
 
     this.instructionOffsetMap = new HashMap<Long, DexInstruction>();
@@ -48,6 +50,10 @@ public class DexCode_ParsingState {
   public DexLabel getLabel(long insnOffset) {
     long absoluteOffset = currentOffset + insnOffset;
     return labelOffsetCache.getCachedEntry(absoluteOffset);
+  }
+
+  public DexCatchAll getCatchAll(long handlerOffset) {
+    return catchAllOffsetCache.getCachedEntry(handlerOffset);
   }
 
   public DexCatch getCatch(long handlerOffset, DexClassType exceptionType) {
@@ -77,10 +83,27 @@ public class DexCode_ParsingState {
     if (encodedCatchHandlers == null)
       return;
 
+    val placedCatchAllHandlers = new HashSet<DexCatchAll>();
     val placedCatchHandlers = new HashSet<DexCatch>();
 
     for (val encodedCatchHandler : encodedCatchHandlers) {
-      // TODO: place CatchALL
+
+      // place catch all handler
+
+      long allHandlerOffset = encodedCatchHandler.getCatchAllHandlerAddress();
+      if (allHandlerOffset != -1L) {
+        val insnAtOffset = instructionOffsetMap.get(allHandlerOffset);
+        if (insnAtOffset == null)
+          throw new InstructionParsingException("CatchAll handler could not be placed (non-existent offset " + allHandlerOffset + ")");
+
+        val catchAllElem = getCatchAll(allHandlerOffset);
+        if (!placedCatchAllHandlers.contains(catchAllElem)) {
+          code.insertBefore(catchAllElem, insnAtOffset);
+          placedCatchAllHandlers.add(catchAllElem);
+        }
+      }
+
+      // place individual handlers
 
       if (encodedCatchHandler.handlers == null)
         continue;
@@ -114,6 +137,13 @@ public class DexCode_ParsingState {
       if (startInsn == null)
         throw new InstructionParsingException("Start of a try block could not be placed (non-existent offset " + startOffset + ")");
 
+      DexCatchAll catchAllHandler = null;
+      if (tryBlock.encodedCatchHandler != null) {
+        long catchAllOffset = tryBlock.encodedCatchHandler.getCatchAllHandlerAddress();
+        if (catchAllOffset != -1L)
+          catchAllHandler = getCatchAll(catchAllOffset);
+      }
+
       val catchHandlers = new LinkedList<DexCatch>();
       if (tryBlock.encodedCatchHandler != null && tryBlock.encodedCatchHandler.handlers != null)
         for (val catchBlock : tryBlock.encodedCatchHandler.handlers)
@@ -121,7 +151,7 @@ public class DexCode_ParsingState {
             getCatch(catchBlock.getHandlerAddress(),
                      cache.getClassType(catchBlock.exceptionType.getTypeDescriptor())));
 
-      val newBlockStart = new DexTryBlockStart(code, startOffset, null, catchHandlers);
+      val newBlockStart = new DexTryBlockStart(code, startOffset, catchAllHandler, catchHandlers);
       val newBlockEnd = new DexTryBlockEnd(code, newBlockStart);
 
       code.insertBefore(newBlockStart, startInsn);
@@ -142,9 +172,16 @@ public class DexCode_ParsingState {
   public void checkTryCatchBlocksPlaced() {
     val insns = code.getInstructionList();
     for (val elem : insns)
-      if (elem instanceof DexTryBlockStart)
-        for (val catchHandler : ((DexTryBlockStart) elem).getCatchHandlers())
+      if (elem instanceof DexTryBlockStart) {
+        val tryBlockStart = (DexTryBlockStart) elem;
+
+        val catchAllHandler = tryBlockStart.getCatchAllHandler();
+        if (catchAllHandler != null && !insns.contains(catchAllHandler))
+          throw new InstructionParsingException("CatchAll block hasn't been placed - DEX inconsistent");
+
+        for (val catchHandler : tryBlockStart.getCatchHandlers())
           if (!insns.contains(catchHandler))
             throw new InstructionParsingException("Catch block hasn't been placed - DEX inconsistent");
+      }
   }
 }
