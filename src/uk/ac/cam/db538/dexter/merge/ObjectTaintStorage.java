@@ -26,41 +26,41 @@ public class ObjectTaintStorage {
     // generate hash code and table index
     int objTableIndex = obj.getClass().hashCode() & M;
 
-//    synchronized (H) {
-    Entry currentEntry = H[objTableIndex];
-    Entry previousEntry = null;
-    while (currentEntry != null) {
-      // retrieve reference from the entry
-      Object entryObj = currentEntry.o.get();
+    synchronized (H) {
+      Entry currentEntry = H[objTableIndex];
+      Entry previousEntry = null;
+      while (currentEntry != null) {
+        // retrieve reference from the entry
+        Object entryObj = currentEntry.o.get();
 
-      if (entryObj == null) {
-        // it has been GCed
-        // remove it from the entry list
-        if (previousEntry == null)
-          H[objTableIndex] = currentEntry.n;
-        else
-          previousEntry.n = currentEntry.n;
+        if (entryObj == null) {
+          // it has been GCed
+          // remove it from the entry list
+          if (previousEntry == null)
+            H[objTableIndex] = currentEntry.n;
+          else
+            previousEntry.n = currentEntry.n;
 
-        // don't update previousEntry, just move to the next one
-        currentEntry = currentEntry.n;
-      } else if (entryObj == obj) {
-        // found it, move to front and return
+          // don't update previousEntry, just move to the next one
+          currentEntry = currentEntry.n;
+        } else if (entryObj == obj) {
+          // found it, move to front and return
 
-        // move it to the beginning of the list (temporal locality)
-        if (previousEntry != null) {
-          previousEntry.n = currentEntry.n;
-          currentEntry.n = H[objTableIndex];
-          H[objTableIndex] = currentEntry;
+          // move it to the beginning of the list (temporal locality)
+          if (previousEntry != null) {
+            previousEntry.n = currentEntry.n;
+            currentEntry.n = H[objTableIndex];
+            H[objTableIndex] = currentEntry;
+          }
+
+          return currentEntry.t;
+        } else {
+          // move to another entry
+          previousEntry = currentEntry;
+          currentEntry = currentEntry.n;
         }
-
-        return currentEntry.t;
-      } else {
-        // move to another entry
-        previousEntry = currentEntry;
-        currentEntry = currentEntry.n;
       }
     }
-//    }
 
     return 0;
   }
@@ -72,54 +72,54 @@ public class ObjectTaintStorage {
     // generate hash code and table index
     int objTableIndex = obj.getClass().hashCode() & M;
 
-//    synchronized (H) {
-    // try to update existing entry
-    Entry currentEntry = H[objTableIndex];
-    Entry previousEntry = null;
-    while (currentEntry != null) {
-      // retrieve reference from the entry
-      Object entryObj = currentEntry.o.get();
+    synchronized (H) {
+      // try to update existing entry
+      Entry currentEntry = H[objTableIndex];
+      Entry previousEntry = null;
+      while (currentEntry != null) {
+        // retrieve reference from the entry
+        Object entryObj = currentEntry.o.get();
 
-      if (entryObj == null) {
-        // it has been GCed
-        // remove it from the entry list
-        if (previousEntry == null)
-          H[objTableIndex] = currentEntry.n;
-        else
-          previousEntry.n = currentEntry.n;
+        if (entryObj == null) {
+          // it has been GCed
+          // remove it from the entry list
+          if (previousEntry == null)
+            H[objTableIndex] = currentEntry.n;
+          else
+            previousEntry.n = currentEntry.n;
 
-        // don't update previousEntry, just move to the next one
-        currentEntry = currentEntry.n;
-      } else if (entryObj == obj) {
-        // found it, update
-        currentEntry.t |= taint;
+          // don't update previousEntry, just move to the next one
+          currentEntry = currentEntry.n;
+        } else if (entryObj == obj) {
+          // found it, update
+          currentEntry.t |= taint;
 
-        // move it to the beginning of the list (temporal locality)
-        if (previousEntry != null) {
-          previousEntry.n = currentEntry.n;
-          currentEntry.n = H[objTableIndex];
-          H[objTableIndex] = currentEntry;
+          // move it to the beginning of the list (temporal locality)
+          if (previousEntry != null) {
+            previousEntry.n = currentEntry.n;
+            currentEntry.n = H[objTableIndex];
+            H[objTableIndex] = currentEntry;
+          }
+
+          // stop searching
+          break;
+        } else {
+          // move to next entry
+          previousEntry = currentEntry;
+          currentEntry = currentEntry.n;
         }
+      }
 
-        // stop searching
-        break;
-      } else {
-        // move to next entry
-        previousEntry = currentEntry;
-        currentEntry = currentEntry.n;
+      if (currentEntry == null) {
+        // object not in the map
+        // create new entry and put it at the beginning of the list
+        Entry newEntry = new Entry();
+        newEntry.o = new WeakReference<Object>(obj);
+        newEntry.t = taint;
+        newEntry.n = H[objTableIndex];
+        H[objTableIndex] = newEntry;
       }
     }
-
-    if (currentEntry == null) {
-      // object not in the map
-      // create new entry and put it at the beginning of the list
-      Entry newEntry = new Entry();
-      newEntry.o = new WeakReference<Object>(obj);
-      newEntry.t = taint;
-      newEntry.n = H[objTableIndex];
-      H[objTableIndex] = newEntry;
-    }
-//    }
   }
 
   static class Entry {
