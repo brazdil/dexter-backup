@@ -18,7 +18,7 @@ public class DexTryBlockEnd extends DexCodeElement {
   }
 
   @Override
-  public boolean cfgStartsBasicBlock() {
+  public boolean cfgEndsBasicBlock() {
     return true;
   }
 }
