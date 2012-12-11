@@ -2,6 +2,7 @@ package uk.ac.cam.db538.dexter.dex.method;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,6 +37,7 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   private final NoDuplicatesList<DexRegister> parameterRegisters;
   private final DexCode parameterMoveInstructions;
+  private final Set<DexRegister> parameterMappedRegisters;
 
   public DexMethodWithCode(DexClass parent, String name, Set<AccessFlags> accessFlags,
                            DexPrototype prototype, DexCode code,
@@ -45,6 +47,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     this.direct = direct;
     this.parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
     this.parameterMoveInstructions = new DexCode();
+    this.parameterMappedRegisters = new HashSet<DexRegister>();
   }
 
   public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, InstructionParsingException {
@@ -56,6 +59,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     direct = methodInfo.isDirect();
     parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
     parameterMoveInstructions = new DexCode();
+    parameterMappedRegisters = new HashSet<DexRegister>();
 
     val prototype = this.getPrototype();
     val isStatic = this.isStatic();
@@ -69,10 +73,16 @@ public abstract class DexMethodWithCode extends DexMethod {
       val paramType = prototype.getParameterType(i, isStatic, clazz);
       switch (paramType.getTypeSize()) {
       case SINGLE:
-        addParameterMapping_Single(i, code.getRegisterByOriginalNumber(paramRegId));
+        val regSingle = code.getRegisterByOriginalNumber(paramRegId);
+        addParameterMapping_Single(i, regSingle);
+        parameterMappedRegisters.add(regSingle);
         break;
       case WIDE:
-        addParameterMapping_Wide(i, code.getRegisterByOriginalNumber(paramRegId), code.getRegisterByOriginalNumber(paramRegId + 1));
+        val regWide1 = code.getRegisterByOriginalNumber(paramRegId);
+        val regWide2 = code.getRegisterByOriginalNumber(paramRegId + 1);
+        addParameterMapping_Wide(i, regWide1, regWide2);
+        parameterMappedRegisters.add(regWide1);
+        parameterMappedRegisters.add(regWide2);
         break;
       }
     }
@@ -122,6 +132,16 @@ public abstract class DexMethodWithCode extends DexMethod {
         registerAllocation.put(parameterRegisters.get(i), i);
       registerCount = inWords;
     }
+
+    // sometimes a register is not used in the code
+    // and thus would not get allocated...
+    // but if it's mapped to a parameter, assembling
+    // the move instruction would fail...
+    // so add these into the register allocation...
+    // the color doesn't matter
+    for (val reg : parameterMappedRegisters)
+      if (!registerAllocation.containsKey(reg))
+        registerAllocation.put(reg, 0);
 
     val assembledMoveInstructions = parameterMoveInstructions.assembleBytecode(registerAllocation, cache, 0);
     val assembledCode = modifiedCode.assembleBytecode(registerAllocation, cache, assembledMoveInstructions.getTotalCodeLength());
