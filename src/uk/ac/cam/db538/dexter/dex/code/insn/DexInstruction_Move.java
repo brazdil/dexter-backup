@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import lombok.Getter;
@@ -77,16 +76,12 @@ public class DexInstruction_Move extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
-    val regs = new HashSet<DexRegister>();
-    regs.add(regTo);
-    return regs;
+    return createSet(regTo);
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
-    val regs = new HashSet<DexRegister>();
-    regs.add(regFrom);
-    return regs;
+    return createSet(regFrom);
   }
 
   @Override

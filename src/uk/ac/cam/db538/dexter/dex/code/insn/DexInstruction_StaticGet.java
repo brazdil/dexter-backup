@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -85,16 +84,12 @@ public class DexInstruction_StaticGet extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
-    val definedRegs = new HashSet<DexRegister>();
-    definedRegs.add(regTo);
-    return definedRegs;
+    return createSet(regTo);
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
-    val constraints = new HashSet<GcRangeConstraint>();
-    constraints.add(new GcRangeConstraint(regTo, ColorRange.RANGE_8BIT));
-    return constraints;
+    return createSet(new GcRangeConstraint(regTo, ColorRange.RANGE_8BIT));
   }
 
   @Override

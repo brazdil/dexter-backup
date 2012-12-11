@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -88,24 +87,17 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
-    val referencedRegs = new HashSet<DexRegister>();
-    referencedRegs.add(regFrom1);
-    referencedRegs.add(regFrom2);
-    return referencedRegs;
+    return createSet(regFrom1, regFrom2);
   }
 
   @Override
   public Set<GcFollowConstraint> gcFollowConstraints() {
-    val constraints = new HashSet<GcFollowConstraint>();
-    constraints.add(new GcFollowConstraint(regFrom1, regFrom2));
-    return constraints;
+    return createSet(new GcFollowConstraint(regFrom1, regFrom2));
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
-    val constraints = new HashSet<GcRangeConstraint>();
-    constraints.add(new GcRangeConstraint(regFrom1, ColorRange.RANGE_8BIT));
-    return constraints;
+    return createSet(new GcRangeConstraint(regFrom1, ColorRange.RANGE_8BIT));
   }
 
   @Override

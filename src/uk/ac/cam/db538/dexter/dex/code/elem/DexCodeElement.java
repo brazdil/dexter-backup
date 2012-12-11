@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.elem;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -132,5 +133,12 @@ public abstract class DexCodeElement {
 
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return this; // TODO: replace with abstract!!!
+  }
+
+  // UTILS
+
+  @SafeVarargs
+  protected final <T> Set<T> createSet(T ... members) {
+    return new HashSet<T>(Arrays.asList(members));
   }
 }

@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import lombok.Getter;
@@ -71,23 +70,18 @@ public class DexInstruction_NewArray extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
-    val set = new HashSet<DexRegister>();
-    set.add(regTo);
-    return set;
+    return createSet(regTo);
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
-    val set = new HashSet<DexRegister>();
-    set.add(regSize);
-    return set;
+    return createSet(regSize);
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
-    val set = new HashSet<GcRangeConstraint>();
-    set.add(new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT));
-    set.add(new GcRangeConstraint(regSize, ColorRange.RANGE_4BIT));
-    return set;
+    return createSet(
+             new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT),
+             new GcRangeConstraint(regSize, ColorRange.RANGE_4BIT));
   }
 }

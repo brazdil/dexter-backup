@@ -1,8 +1,10 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import lombok.Getter;
+import lombok.val;
 
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
@@ -16,9 +18,6 @@ import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_InstanceOf extends DexInstruction {
 
@@ -60,10 +59,9 @@ public class DexInstruction_InstanceOf extends DexInstruction {
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
-    val set = new HashSet<GcRangeConstraint>();
-    set.add(new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT));
-    set.add(new GcRangeConstraint(regFrom, ColorRange.RANGE_4BIT));
-    return set;
+    return createSet(
+             new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT),
+             new GcRangeConstraint(regFrom, ColorRange.RANGE_4BIT));
   }
 
   @Override
@@ -77,17 +75,11 @@ public class DexInstruction_InstanceOf extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
-    val set = new HashSet<DexRegister>();
-    set.add(regTo);
-    return set;
+    return createSet(regTo);
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
-    val set = new HashSet<DexRegister>();
-    set.add(regFrom);
-    return set;
+    return createSet(regFrom);
   }
-
-
 }

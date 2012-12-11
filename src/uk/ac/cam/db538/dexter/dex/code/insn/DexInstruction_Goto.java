@@ -1,7 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Set;
+
+import lombok.Getter;
 
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
@@ -14,9 +15,6 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_Goto extends DexInstruction {
 
@@ -56,9 +54,7 @@ public class DexInstruction_Goto extends DexInstruction {
 
   @Override
   public Set<DexCodeElement> cfgGetSuccessors() {
-    val set = new HashSet<DexCodeElement>();
-    set.add(target);
-    return set;
+    return createSet((DexCodeElement) target);
   }
 
   @Override

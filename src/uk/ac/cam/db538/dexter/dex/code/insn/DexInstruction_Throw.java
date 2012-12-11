@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import lombok.Getter;
@@ -62,16 +61,12 @@ public class DexInstruction_Throw extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
-    val set = new HashSet<DexRegister>();
-    set.add(regFrom);
-    return set;
+    return createSet(regFrom);
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
-    val set = new HashSet<GcRangeConstraint>();
-    set.add(new GcRangeConstraint(regFrom, ColorRange.RANGE_8BIT));
-    return set;
+    return createSet(new GcRangeConstraint(regFrom, ColorRange.RANGE_8BIT));
   }
 
   @Override

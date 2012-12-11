@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,34 +56,25 @@ public class DexInstruction_ArrayGetWide extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
-    val definedRegs = new HashSet<DexRegister>();
-    definedRegs.add(regTo1);
-    definedRegs.add(regTo2);
-    return definedRegs;
+    return createSet(regTo1, regTo2);
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
-    val definedRegs = new HashSet<DexRegister>();
-    definedRegs.add(regArray);
-    definedRegs.add(regIndex);
-    return definedRegs;
+    return createSet(regArray, regIndex);
   }
 
   @Override
   public Set<GcFollowConstraint> gcFollowConstraints() {
-    val constraints = new HashSet<GcFollowConstraint>();
-    constraints.add(new GcFollowConstraint(regTo1, regTo2));
-    return constraints;
+    return createSet(new GcFollowConstraint(regTo1, regTo2));
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
-    val constraints = new HashSet<GcRangeConstraint>();
-    constraints.add(new GcRangeConstraint(regTo1, ColorRange.RANGE_8BIT));
-    constraints.add(new GcRangeConstraint(regArray, ColorRange.RANGE_8BIT));
-    constraints.add(new GcRangeConstraint(regIndex, ColorRange.RANGE_8BIT));
-    return constraints;
+    return createSet(
+             new GcRangeConstraint(regTo1, ColorRange.RANGE_8BIT),
+             new GcRangeConstraint(regArray, ColorRange.RANGE_8BIT),
+             new GcRangeConstraint(regIndex, ColorRange.RANGE_8BIT));
   }
 
   @Override

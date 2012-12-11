@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import lombok.Getter;
@@ -13,6 +12,7 @@ import org.jf.dexlib.Code.Format.Instruction21h;
 import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction31i;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -100,8 +100,11 @@ public class DexInstruction_Const extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
-    val regs = new HashSet<DexRegister>();
-    regs.add(regTo);
-    return regs;
+    return createSet(regTo);
+  }
+
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    return createSet(new GcRangeConstraint(regTo, ColorRange.RANGE_8BIT));
   }
 }

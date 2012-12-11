@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -99,30 +98,25 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
-    val regs = new HashSet<DexRegister>();
-    regs.add(regTarget);
-    return regs;
+    return createSet(regTarget);
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
-    val regs = new HashSet<DexRegister>();
-    regs.add(regSource);
-    return regs;
+    return createSet(regSource);
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
-    val set = new HashSet<GcRangeConstraint>();
     if (isLiteral8bit()) {
-      set.add(new GcRangeConstraint(regTarget, ColorRange.RANGE_8BIT));
-      set.add(new GcRangeConstraint(regSource, ColorRange.RANGE_8BIT));
+      return createSet(
+               new GcRangeConstraint(regTarget, ColorRange.RANGE_8BIT),
+               new GcRangeConstraint(regSource, ColorRange.RANGE_8BIT));
     } else {
-      set.add(new GcRangeConstraint(regTarget, ColorRange.RANGE_4BIT));
-      set.add(new GcRangeConstraint(regSource, ColorRange.RANGE_4BIT));
+      return createSet(
+               new GcRangeConstraint(regTarget, ColorRange.RANGE_4BIT),
+               new GcRangeConstraint(regSource, ColorRange.RANGE_4BIT));
     }
-
-    return set;
   }
 
   @Override

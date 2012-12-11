@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import lombok.Getter;
@@ -74,24 +73,17 @@ public class DexInstruction_IfTestZero extends DexInstruction {
 
   @Override
   public Set<DexCodeElement> cfgGetSuccessors() {
-    val set = new HashSet<DexCodeElement>();
-    set.add(this.getNextCodeElement());
-    set.add(target);
-    return set;
+    return createSet((DexCodeElement) target);
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
-    val set = new HashSet<DexRegister>();
-    set.add(reg);
-    return set;
+    return createSet(reg);
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
-    val set = new HashSet<GcRangeConstraint>();
-    set.add(new GcRangeConstraint(reg, ColorRange.RANGE_8BIT));
-    return set;
+    return createSet(new GcRangeConstraint(reg, ColorRange.RANGE_8BIT));
   }
 
   @Override

@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -145,38 +144,28 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
-    val regs = new HashSet<DexRegister>();
-    regs.add(regTarget1);
-    regs.add(regTarget2);
-    return regs;
+    return createSet(regTarget1, regTarget2);
   }
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
-    val regs = new HashSet<DexRegister>();
-    regs.add(regSourceA1);
-    regs.add(regSourceA2);
-    regs.add(regSourceB1);
-    regs.add(regSourceB2);
-    return regs;
+    return createSet(regSourceA1, regSourceA2, regSourceB1, regSourceB2);
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
-    val set = new HashSet<GcRangeConstraint>();
-    set.add(new GcRangeConstraint(regTarget1, ColorRange.RANGE_8BIT));
-    set.add(new GcRangeConstraint(regSourceA1, ColorRange.RANGE_8BIT));
-    set.add(new GcRangeConstraint(regSourceB1, ColorRange.RANGE_8BIT));
-    return set;
+    return createSet(
+             new GcRangeConstraint(regTarget1, ColorRange.RANGE_8BIT),
+             new GcRangeConstraint(regSourceA1, ColorRange.RANGE_8BIT),
+             new GcRangeConstraint(regSourceB1, ColorRange.RANGE_8BIT));
   }
 
   @Override
   public Set<GcFollowConstraint> gcFollowConstraints() {
-    val set = new HashSet<GcFollowConstraint>();
-    set.add(new GcFollowConstraint(regTarget1, regTarget2));
-    set.add(new GcFollowConstraint(regSourceA1, regSourceA2));
-    set.add(new GcFollowConstraint(regSourceB1, regSourceB2));
-    return set;
+    return createSet(
+             new GcFollowConstraint(regTarget1, regTarget2),
+             new GcFollowConstraint(regSourceA1, regSourceA2),
+             new GcFollowConstraint(regSourceB1, regSourceB2));
   }
 
   @Override
