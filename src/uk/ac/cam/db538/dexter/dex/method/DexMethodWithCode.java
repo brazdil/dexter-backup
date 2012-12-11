@@ -1,7 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.method;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -123,18 +123,25 @@ public abstract class DexMethodWithCode extends DexMethod {
       registerCount = inWords;
     }
 
-    List<Instruction> instructions = new LinkedList<Instruction>();
-    instructions.addAll(parameterMoveInstructions.assembleBytecode(registerAllocation, cache));
-    instructions.addAll(modifiedCode.assembleBytecode(registerAllocation, cache));
+    val assembledMoveInstructions = parameterMoveInstructions.assembleBytecode(registerAllocation, cache, 0);
+    val assembledCode = modifiedCode.assembleBytecode(registerAllocation, cache, assembledMoveInstructions.getTotalCodeLength());
 
-    List<TryItem> tries = null;
+    List<Instruction> instructions = new ArrayList<Instruction>();
+    instructions.addAll(assembledMoveInstructions.getInstructions());
+    instructions.addAll(assembledCode.getInstructions());
 
-    List<EncodedCatchHandler> encodedCatchHandlers = null;
+    List<TryItem> tries = new ArrayList<TryItem>();
+    tries.addAll(assembledMoveInstructions.getTries());
+    tries.addAll(assembledCode.getTries());
 
-    int outWords = this.code.getOutWords();
+    List<EncodedCatchHandler> catchHandlers = new ArrayList<EncodedCatchHandler>();
+    catchHandlers.addAll(assembledMoveInstructions.getCatchHandlers());
+    catchHandlers.addAll(assembledCode.getCatchHandlers());
+
+    int outWords = modifiedCode.getOutWords();
 
     DebugInfoItem debugInfo = null;
 
-    return CodeItem.internCodeItem(outFile, registerCount, inWords, outWords, debugInfo, instructions, tries, encodedCatchHandlers);
+    return CodeItem.internCodeItem(outFile, registerCount, inWords, outWords, debugInfo, instructions, tries, catchHandlers);
   }
 }

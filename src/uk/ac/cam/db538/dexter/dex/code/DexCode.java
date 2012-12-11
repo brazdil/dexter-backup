@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,20 +11,23 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.EncodedCatchHandler;
-import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
 import org.jf.dexlib.CodeItem.TryItem;
+import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement.GcFollowConstraint;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
@@ -310,12 +314,26 @@ public class DexCode {
     allowJumpFix = false;
   }
 
-  public List<Instruction> assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) throws InstructionAssemblyException {
+  @AllArgsConstructor
+  @Getter
+  public static class AssembledCode {
+    private final List<Instruction> instructions;
+    private final List<TryItem> tries;
+    private final List<EncodedCatchHandler> catchHandlers;
+    private final int totalCodeLength;
+  }
+
+  public AssembledCode assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
+    return assembleBytecode(regAlloc, cache, 0);
+  }
+
+  public AssembledCode assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache, int absoluteAddressOffset) {
     DexCode modifiedCode = this;
     while (true) {
       try {
         val asmState = new DexCode_AssemblingState(modifiedCode, cache, regAlloc);
         val bytecode = new LinkedList<Instruction>();
+        int totalCodeLength;
 
         // keep updating the offsets of instructions
         // until they converge
@@ -342,9 +360,53 @@ public class DexCode {
               bytecode.addAll(Arrays.asList(asm));
             }
           }
+
+          totalCodeLength = (int) offset;
         } while (offsetsChanged);
 
-        return bytecode;
+        // all is ready, let's create the result
+
+        // create TryItems and EncodedCatchHandlers
+        val elemOffsets = asmState.getElementOffsets();
+        val tryItems = new ArrayList<TryItem>();
+        val encodedCatchHandlers = new ArrayList<EncodedCatchHandler>();
+        for (val elem : modifiedCode.instructionList)
+          if (elem instanceof DexTryBlockEnd) {
+            val tryEnd = (DexTryBlockEnd) elem;
+            val tryStart = tryEnd.getBlockStart();
+
+            val catchAllHandler = tryStart.getCatchAllHandler();
+            int catchAllOffset;
+            if (catchAllHandler == null)
+              catchAllOffset = -1;
+            else
+              catchAllOffset = elemOffsets.get(catchAllHandler).intValue() + absoluteAddressOffset;
+
+            val catchHandlers = tryStart.getCatchHandlers();
+            val typeAddrPairs = new EncodedTypeAddrPair[catchHandlers.size()];
+            int i = 0;
+            for (val catchHandler : catchHandlers)
+              typeAddrPairs[i++] = new EncodedTypeAddrPair(
+                asmState.getCache().getType(catchHandler.getExceptionType()),
+                elemOffsets.get(catchHandler).intValue() + absoluteAddressOffset);
+
+            int tryStartAddr = elemOffsets.get(tryStart).intValue() + absoluteAddressOffset;
+            int tryEndAddr = elemOffsets.get(tryEnd).intValue() + absoluteAddressOffset;
+
+            if (tryStartAddr >= tryEndAddr)
+              throw new InstructionAssemblyException("Try block of non-positive length");
+
+            val encodedCatchHandler = new EncodedCatchHandler(typeAddrPairs, catchAllOffset);
+            val tryItem = new TryItem(
+              tryStartAddr,
+              tryEndAddr - tryStartAddr,
+              encodedCatchHandler);
+
+            tryItems.add(tryItem);
+            encodedCatchHandlers.add(encodedCatchHandler);
+          }
+
+        return new AssembledCode(bytecode, tryItems, encodedCatchHandlers, totalCodeLength);
       } catch (InstructionOffsetException e) {
         if (!allowJumpFix) // for testing only
           throw e;

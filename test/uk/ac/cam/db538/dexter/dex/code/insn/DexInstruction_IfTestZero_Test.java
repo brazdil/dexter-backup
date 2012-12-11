@@ -61,7 +61,7 @@ public class DexInstruction_IfTestZero_Test {
     code.add(nop);
     code.add(insn);
 
-    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile())).getInstructions();
     assertEquals(2, asm.size());
     assertTrue(asm.get(0) instanceof Instruction10x);
     assertTrue(asm.get(1) instanceof Instruction21t);
@@ -124,7 +124,7 @@ public class DexInstruction_IfTestZero_Test {
     code.add(label);
     code.add(nop);
 
-    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile())).getInstructions();
     val asmInsn = (Instruction21t) asm.get(0);
     assertEquals(32767, asmInsn.getTargetAddressOffset());
   }

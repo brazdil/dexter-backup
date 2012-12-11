@@ -63,7 +63,7 @@ public class DexInstruction_IfTest_Test {
     code.add(nop);
     code.add(insn);
 
-    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile())).getInstructions();
     assertEquals(2, asm.size());
     assertTrue(asm.get(0) instanceof Instruction10x);
     assertTrue(asm.get(1) instanceof Instruction22t);
