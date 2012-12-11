@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -106,5 +107,10 @@ public class DexInstruction_Const extends DexInstruction {
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regTo, ColorRange.RANGE_8BIT));
+  }
+
+  @Override
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return new DexInstruction_Const(getMethodCode(), mapping.get(regTo), value);
   }
 }

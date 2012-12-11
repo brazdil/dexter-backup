@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -77,5 +78,10 @@ public class DexInstruction_Throw extends DexInstruction {
   @Override
   public Set<DexCodeElement> cfgGetSuccessors() {
     return throwingInsn_CatchHandlers();
+  }
+
+  @Override
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return new DexInstruction_Throw(getMethodCode(), mapping.get(regFrom));
   }
 }

@@ -1,11 +1,14 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Map;
+
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 
 import lombok.Getter;
 import lombok.val;
@@ -44,5 +47,10 @@ public class DexInstruction_ConvertToWide extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return insnOpcode.getAssemblyName() + " v" + regTo1.getOriginalIndexString() + ", v" + regFrom.getOriginalIndexString();
+  }
+
+  @Override
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return new DexInstruction_ConvertToWide(getMethodCode(), mapping.get(regTo1), mapping.get(regTo2), mapping.get(regFrom), insnOpcode);
   }
 }

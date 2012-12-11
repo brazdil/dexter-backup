@@ -1,5 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Map;
+
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
@@ -8,6 +10,7 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -44,5 +47,10 @@ public class DexInstruction_ConstClass extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "const-class v" + regTo.getOriginalIndexString() + ", " + value.getDescriptor();
+  }
+
+  @Override
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return new DexInstruction_ConstClass(getMethodCode(), mapping.get(regTo), value);
   }
 }

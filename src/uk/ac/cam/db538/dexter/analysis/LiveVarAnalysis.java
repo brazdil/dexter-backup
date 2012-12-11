@@ -45,7 +45,6 @@ public class LiveVarAnalysis {
         // iterate instructions of the block in reverse order
         // and propagate live var info
         for (val insn : new ListReverser<DexCodeElement>(block.getInstructions())) {
-
           val insnLiveOut = liveVars.get(insn);
           int insnLiveOut_PrevSize = insnLiveOut.size();
 

@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -15,6 +16,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -83,5 +85,10 @@ public class DexInstruction_NewArray extends DexInstruction {
     return createSet(
              new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT),
              new GcRangeConstraint(regSize, ColorRange.RANGE_4BIT));
+  }
+
+  @Override
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return new DexInstruction_NewArray(getMethodCode(), mapping.get(regTo), mapping.get(regSize), value);
   }
 }

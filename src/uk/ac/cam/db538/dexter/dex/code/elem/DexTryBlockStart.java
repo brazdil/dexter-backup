@@ -2,9 +2,11 @@ package uk.ac.cam.db538.dexter.dex.code.elem;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -52,13 +54,9 @@ public class DexTryBlockStart extends DexCodeElement {
   public boolean cfgStartsBasicBlock() {
     return true;
   }
-//
-//  public static Cache<Long, DexTryBlockStart> createCache(final DexCode code) {
-//    return new Cache<Long, DexTryBlockStart>() {
-//      @Override
-//      protected DexTryBlockStart createNewEntry(Long absoluteOffset) {
-//        return new DexTryBlockStart(code, absoluteOffset);
-//      }
-//    };
-//  }
+
+  @Override
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return this;
+  }
 }

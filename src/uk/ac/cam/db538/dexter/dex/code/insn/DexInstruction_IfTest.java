@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -60,7 +61,9 @@ public class DexInstruction_IfTest extends DexInstruction {
 
   @Override
   public Set<DexCodeElement> cfgGetSuccessors() {
-    return createSet((DexCodeElement) target);
+    return createSet(
+             (DexCodeElement) target,
+             this.getNextCodeElement());
   }
 
   @Override
@@ -106,5 +109,10 @@ public class DexInstruction_IfTest extends DexInstruction {
     return createSet(
              new GcRangeConstraint(regA, ColorRange.RANGE_4BIT),
              new GcRangeConstraint(regB, ColorRange.RANGE_4BIT));
+  }
+
+  @Override
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return new DexInstruction_IfTest(getMethodCode(), mapping.get(regA), mapping.get(regB), target, insnOpcode);
   }
 }

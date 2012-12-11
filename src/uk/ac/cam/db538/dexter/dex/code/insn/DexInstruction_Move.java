@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -15,6 +16,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 
 public class DexInstruction_Move extends DexInstruction {
 
@@ -111,5 +113,10 @@ public class DexInstruction_Move extends DexInstruction {
                new Instruction32x(Opcode.MOVE_OBJECT_16, rTo, rFrom) :
                new Instruction32x(Opcode.MOVE_16, rTo, rFrom)
              };
+  }
+
+  @Override
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return new DexInstruction_Move(getMethodCode(), mapping.get(regTo), mapping.get(regFrom), objectMoving);
   }
 }

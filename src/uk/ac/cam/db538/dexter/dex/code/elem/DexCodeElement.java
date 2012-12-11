@@ -109,6 +109,7 @@ public abstract class DexCodeElement {
 
   public final List<DexCodeElement> gcAddTemporaries(Collection<DexRegister> spilledRegs) {
     val tempMapping = new HashMap<DexRegister, DexRegister>();
+    val methodCode = getMethodCode();
 
     for (val usedReg : lvaUsedRegisters())
       if (spilledRegs.contains(usedReg))
@@ -131,9 +132,7 @@ public abstract class DexCodeElement {
     return newElem;
   }
 
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return this; // TODO: replace with abstract!!!
-  }
+  protected abstract DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping);
 
   // UTILS
 

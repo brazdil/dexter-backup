@@ -1,8 +1,12 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Map;
+
 import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 
 import lombok.Getter;
 
@@ -18,5 +22,10 @@ public class DexInstruction_Unknown extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "??? " + opcode;
+  }
+
+  @Override
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+    return this;
   }
 }
