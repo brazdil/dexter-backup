@@ -95,6 +95,9 @@ public class DexInstruction_Move extends DexInstruction {
     int rTo = regAlloc.get(regTo);
     int rFrom = regAlloc.get(regFrom);
 
+    if (rTo == rFrom)
+      return new Instruction[0];
+
     if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Unsigned(rFrom, 4))
       return new Instruction[] {
                objectMoving ?
