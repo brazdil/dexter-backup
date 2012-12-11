@@ -1,6 +1,7 @@
-package uk.ac.cam.db538.dexter.dex.code;
+package uk.ac.cam.db538.dexter.dex.code.elem;
 
 import lombok.Getter;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexCatchAll extends DexCodeElement {

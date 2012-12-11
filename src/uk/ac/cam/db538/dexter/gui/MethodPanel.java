@@ -10,8 +10,8 @@ import lombok.val;
 
 import org.jf.dexlib.Util.AccessFlags;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCatch;
-import uk.ac.cam.db538.dexter.dex.code.DexTryBlockStart;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;

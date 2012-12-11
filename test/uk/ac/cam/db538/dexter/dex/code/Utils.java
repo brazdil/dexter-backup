@@ -16,6 +16,7 @@ import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class Utils {

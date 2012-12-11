@@ -14,12 +14,12 @@ import lombok.val;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.dex.code.DexCatch;
-import uk.ac.cam.db538.dexter.dex.code.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.DexTryBlockEnd;
-import uk.ac.cam.db538.dexter.dex.code.DexTryBlockStart;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 

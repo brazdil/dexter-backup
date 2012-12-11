@@ -3,7 +3,7 @@ package uk.ac.cam.db538.dexter.analysis.cfg;
 import java.util.Collections;
 import java.util.List;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class CfgBasicBlock extends CfgBlock {

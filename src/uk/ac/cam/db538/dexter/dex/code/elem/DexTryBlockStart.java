@@ -1,8 +1,10 @@
-package uk.ac.cam.db538.dexter.dex.code;
+package uk.ac.cam.db538.dexter.dex.code.elem;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 
 import lombok.Getter;
 import lombok.Setter;

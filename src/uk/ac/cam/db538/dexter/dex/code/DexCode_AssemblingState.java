@@ -7,6 +7,7 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 
 public class DexCode_AssemblingState {

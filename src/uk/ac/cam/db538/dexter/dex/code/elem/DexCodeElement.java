@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.dex.code;
+package uk.ac.cam.db538.dexter.dex.code.elem;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -12,6 +12,8 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
