@@ -78,7 +78,7 @@ public class ControlFlowGraph {
 
         // if a block ends with a returning instruction
         // connect it to EXIT
-        if (lastInsn.cfgExitsMethod() || lastInsnSuccs.length == 0)
+        if (lastInsn.cfgExitsMethod() || lastInsnSuccs.isEmpty())
           CfgBlock.createEdge(block, exitBlock);
 
         for (val succ : lastInsnSuccs) {

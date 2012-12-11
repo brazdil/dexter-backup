@@ -1,5 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10x;
@@ -46,7 +49,7 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] cfgGetSuccessors() {
-    return new DexCodeElement[0];
+  public Set<DexCodeElement> cfgGetSuccessors() {
+    return Collections.emptySet();
   }
 }

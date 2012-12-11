@@ -13,6 +13,10 @@ public class DexCatchAll extends DexCodeElement {
     this.originalAbsoluteOffset = originalAbsoluteOffset;
   }
 
+  public DexCatchAll(DexCode methodCode) {
+    this(methodCode, -1);
+  }
+
   @Override
   public String getOriginalAssembly() {
     if (originalAbsoluteOffset >= 0)

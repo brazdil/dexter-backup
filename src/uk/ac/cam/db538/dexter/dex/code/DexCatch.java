@@ -17,6 +17,10 @@ public class DexCatch extends DexCodeElement {
     this.exceptionType = exceptionType;
   }
 
+  public DexCatch(DexCode methodCode, DexClassType exceptionType) {
+    this(methodCode, -1, exceptionType);
+  }
+
   @Override
   public String getOriginalAssembly() {
     if (originalAbsoluteOffset >= 0)

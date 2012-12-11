@@ -426,7 +426,7 @@ public class DexCodeTest {
     val tryStartElem = (DexTryBlockStart) dexCode.getInstructionList().get(0);
     assertEquals(null, tryStartElem.getCatchAllHandler());
     assertEquals(1, tryStartElem.getCatchHandlers().size());
-    assertEquals(catchElem, tryStartElem.getCatchHandlers().get(0));
+    assertTrue(tryStartElem.getCatchHandlers().contains(catchElem));
   }
 
   @Test

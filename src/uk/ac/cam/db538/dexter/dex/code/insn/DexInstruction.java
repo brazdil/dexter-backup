@@ -1,6 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 
+import java.util.HashSet;
+import java.util.Set;
+
+import lombok.val;
+
 import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -41,6 +46,57 @@ public abstract class DexInstruction extends DexCodeElement {
 
   protected final Instruction[] throwWideRegistersExpected() {
     throw new InstructionAssemblyException("Wide registers badly aligned with instruction: " + getOriginalAssembly());
+  }
+
+  // THROWING INSTRUCTIONS
+
+  protected final boolean throwingInsn_CanExitMethod() {
+    val code = this.getMethodCode();
+
+    for (val tryBlockEnd : code.getTryBlocks()) {
+      val tryBlockStart = tryBlockEnd.getBlockStart();
+
+      // check that the instruction is in this try block
+      if (code.isBetween(tryBlockStart, tryBlockEnd, this)) {
+
+        // if the block has CatchAll handler, it can't exit the method
+        if (tryBlockStart.getCatchAllHandler() != null)
+          return false;
+
+        // if there is a catch block catching Throwable, it can't exit method either
+        for (val catchBlock : tryBlockStart.getCatchHandlers()) {
+          if (catchBlock.getExceptionType().getDescriptor().equals("Ljava/lang/Throwable;"))
+            return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  protected final Set<DexCodeElement> throwingInsn_CatchHandlers() {
+    val set = new HashSet<DexCodeElement>();
+
+    val code = this.getMethodCode();
+
+    for (val tryBlockEnd : code.getTryBlocks()) {
+      val tryBlockStart = tryBlockEnd.getBlockStart();
+
+      // check that the instruction is in this try block
+      if (code.isBetween(tryBlockStart, tryBlockEnd, this)) {
+
+        // if the block has CatchAll handler, it can jump to it
+        val catchAllHandler = tryBlockStart.getCatchAllHandler();
+        if (catchAllHandler != null)
+          set.add(catchAllHandler);
+
+        // similarly, add all catch blocks as possible successors
+        for (val catchBlock : tryBlockStart.getCatchHandlers())
+          set.add(catchBlock);
+      }
+    }
+
+    return set;
   }
 
   static boolean fitsIntoBits_Signed(long value, int bits) {

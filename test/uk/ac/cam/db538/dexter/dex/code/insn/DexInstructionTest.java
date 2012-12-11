@@ -1,37 +1,310 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Set;
+
+import lombok.val;
+
 import org.junit.Test;
+
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.DexCatch;
+import uk.ac.cam.db538.dexter.dex.code.DexCatchAll;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexTryBlockEnd;
+import uk.ac.cam.db538.dexter.dex.code.DexTryBlockStart;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 
 public class DexInstructionTest {
 
-//  @Test
-//  public void testFitsIntoBits_Signed() {
-//    assertTrue(DexInstruction.fitsIntoBits_Signed(127L, 8));
-//    assertFalse(DexInstruction.fitsIntoBits_Signed(128L, 8));
-//    assertTrue(DexInstruction.fitsIntoBits_Signed(-128L, 8));
-//    assertFalse(DexInstruction.fitsIntoBits_Signed(-129L, 8));
-//  }
-//
-//  @Test
-//  public void testFitsIntoBits_Unsigned() {
-//    assertTrue(DexInstruction.fitsIntoBits_Unsigned(255L, 8));
-//    assertFalse(DexInstruction.fitsIntoBits_Unsigned(256L, 8));
-//    assertTrue(DexInstruction.fitsIntoBits_Unsigned(0L, 8));
-//    assertFalse(DexInstruction.fitsIntoBits_Unsigned(-1L, 8));
-//  }
-//
-//  @Test
-//  public void testFitsIntoHighBits_Signed() {
-//    assertTrue(DexInstruction.fitsIntoHighBits_Signed(127L << 4, 8, 4));
-//    assertFalse(DexInstruction.fitsIntoHighBits_Signed(128L << 4, 8, 4));
-//    assertFalse(DexInstruction.fitsIntoHighBits_Signed((127L << 4) | (1L << 3), 8, 4));
-//    assertTrue(DexInstruction.fitsIntoHighBits_Signed(-128L << 4, 8, 4));
-//    assertFalse(DexInstruction.fitsIntoHighBits_Signed(-129L << 4, 8, 4));
-//    assertFalse(DexInstruction.fitsIntoHighBits_Signed((-128L << 4) | (1L << 3), 8, 4));
-//  }
-//
-//  private static DexCodeElement compare(Instruction insn, String output) {
+  @Test
+  public void testFitsIntoBits_Signed() {
+    assertTrue(DexInstruction.fitsIntoBits_Signed(127L, 8));
+    assertFalse(DexInstruction.fitsIntoBits_Signed(128L, 8));
+    assertTrue(DexInstruction.fitsIntoBits_Signed(-128L, 8));
+    assertFalse(DexInstruction.fitsIntoBits_Signed(-129L, 8));
+  }
+
+  @Test
+  public void testFitsIntoBits_Unsigned() {
+    assertTrue(DexInstruction.fitsIntoBits_Unsigned(255L, 8));
+    assertFalse(DexInstruction.fitsIntoBits_Unsigned(256L, 8));
+    assertTrue(DexInstruction.fitsIntoBits_Unsigned(0L, 8));
+    assertFalse(DexInstruction.fitsIntoBits_Unsigned(-1L, 8));
+  }
+
+  @Test
+  public void testFitsIntoHighBits_Signed() {
+    assertTrue(DexInstruction.fitsIntoHighBits_Signed(127L << 4, 8, 4));
+    assertFalse(DexInstruction.fitsIntoHighBits_Signed(128L << 4, 8, 4));
+    assertFalse(DexInstruction.fitsIntoHighBits_Signed((127L << 4) | (1L << 3), 8, 4));
+    assertTrue(DexInstruction.fitsIntoHighBits_Signed(-128L << 4, 8, 4));
+    assertFalse(DexInstruction.fitsIntoHighBits_Signed(-129L << 4, 8, 4));
+    assertFalse(DexInstruction.fitsIntoHighBits_Signed((-128L << 4) | (1L << 3), 8, 4));
+  }
+
+  private static boolean execThrowingInsn_CanExitMethod(DexInstruction insn) {
+    try {
+      Method m = DexInstruction.class.getDeclaredMethod("throwingInsn_CanExitMethod");
+      m.setAccessible(true);
+      return (Boolean) m.invoke(insn);
+    } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
+      e.printStackTrace(System.err);
+      fail("Couldn't execute method: " + e.getClass().getSimpleName());
+      return false;
+    }
+  }
+
+  @Test
+  public void testThrowingInsn_CanExitMethod_NoTryBlocks() {
+    // we pretend that NOP can throw an exception
+
+    val code = new DexCode();
+
+    val nop = new DexInstruction_Nop(code);
+    code.add(nop);
+
+    assertTrue(execThrowingInsn_CanExitMethod(nop));
+  }
+
+  @Test
+  public void testThrowingInsn_CanExitMethod_NotInsideTryBlock() {
+    // we pretend that NOP can throw an exception
+
+    val code = new DexCode();
+    val nop = new DexInstruction_Nop(code);
+    val tryStart = new DexTryBlockStart(code);
+    val tryEnd = new DexTryBlockEnd(code, tryStart);
+
+    code.add(nop);
+    code.add(tryStart);
+    code.add(tryEnd);
+
+    assertTrue(execThrowingInsn_CanExitMethod(nop));
+  }
+
+  @Test
+  public void testThrowingInsn_CanExitMethod_InsideTryBlockWithoutCatchHandlers() {
+    // we pretend that NOP can throw an exception
+
+    val code = new DexCode();
+    val nop = new DexInstruction_Nop(code);
+    val tryStart = new DexTryBlockStart(code);
+    val tryEnd = new DexTryBlockEnd(code, tryStart);
+
+    code.add(tryStart);
+    code.add(nop);
+    code.add(tryEnd);
+
+    assertTrue(execThrowingInsn_CanExitMethod(nop));
+  }
+
+  @Test
+  public void testThrowingInsn_CanExitMethod_InsideTryBlockWithCatchAllHandler() {
+    // we pretend that NOP can throw an exception
+
+    val code = new DexCode();
+    val nop = new DexInstruction_Nop(code);
+    val tryStart = new DexTryBlockStart(code);
+    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val catchAll = new DexCatchAll(code);
+
+    tryStart.setCatchAllHandler(catchAll);
+
+    code.add(tryStart);
+    code.add(nop);
+    code.add(tryEnd);
+    code.add(catchAll);
+    code.add(new DexInstruction_Nop(code));
+
+    assertFalse(execThrowingInsn_CanExitMethod(nop));
+  }
+
+  @Test
+  public void testThrowingInsn_CanExitMethod_InsideTryBlockWithCatchThrowableHandler() {
+    // we pretend that NOP can throw an exception
+
+    val code = new DexCode();
+    val nop = new DexInstruction_Nop(code);
+    val tryStart = new DexTryBlockStart(code);
+    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val catchThrowable = new DexCatch(code, DexClassType.parse("Ljava/lang/Throwable;", new DexParsingCache()));
+
+    tryStart.addCatchHandler(catchThrowable);
+
+    code.add(tryStart);
+    code.add(nop);
+    code.add(tryEnd);
+    code.add(catchThrowable);
+    code.add(new DexInstruction_Nop(code));
+
+    assertFalse(execThrowingInsn_CanExitMethod(nop));
+  }
+
+  @Test
+  public void testThrowingInsn_CanExitMethod_InsideTryBlockWithCatchExceptionHandler() {
+    // we pretend that NOP can throw an exception
+
+    val code = new DexCode();
+    val nop = new DexInstruction_Nop(code);
+    val tryStart = new DexTryBlockStart(code);
+    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val catchException = new DexCatch(code, DexClassType.parse("Ljava/lang/Exception;", new DexParsingCache()));
+
+    tryStart.addCatchHandler(catchException);
+
+    code.add(tryStart);
+    code.add(nop);
+    code.add(tryEnd);
+    code.add(catchException);
+    code.add(new DexInstruction_Nop(code));
+
+    // Exception catch handler doesn't catch RuntimeExceptions and Errors
+    // thus the instruction could exit the method
+    assertTrue(execThrowingInsn_CanExitMethod(nop));
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Set<DexCodeElement> execThrowingInsn_CatchHandlers(DexInstruction insn) {
+    try {
+      Method m = DexInstruction.class.getDeclaredMethod("throwingInsn_CatchHandlers");
+      m.setAccessible(true);
+      return (Set<DexCodeElement>) m.invoke(insn);
+    } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
+      e.printStackTrace(System.err);
+      fail("Couldn't execute method: " + e.getClass().getSimpleName());
+      return null;
+    }
+  }
+
+  @Test
+  public void testThrowingInsn_CatchHandlers_NotInsideTryBlock() {
+    // we pretend that NOP can throw an exception
+
+    val code = new DexCode();
+    val nop = new DexInstruction_Nop(code);
+    val tryStart = new DexTryBlockStart(code);
+    val tryEnd = new DexTryBlockEnd(code, tryStart);
+
+    code.add(nop);
+    code.add(tryStart);
+    code.add(tryEnd);
+
+    assertTrue(execThrowingInsn_CatchHandlers(nop).isEmpty());
+  }
+
+  @Test
+  public void testThrowingInsn_CatchHandlers_InsideTryBlockWithoutCatchHandlers() {
+    // we pretend that NOP can throw an exception
+
+    val code = new DexCode();
+    val nop = new DexInstruction_Nop(code);
+    val tryStart = new DexTryBlockStart(code);
+    val tryEnd = new DexTryBlockEnd(code, tryStart);
+
+    code.add(tryStart);
+    code.add(nop);
+    code.add(tryEnd);
+
+    assertTrue(execThrowingInsn_CatchHandlers(nop).isEmpty());
+  }
+
+  @Test
+  public void testThrowingInsn_CatchHandlers_InsideTryBlockWithCatchAllHandler() {
+    // we pretend that NOP can throw an exception
+
+    val code = new DexCode();
+    val nop = new DexInstruction_Nop(code);
+    val tryStart = new DexTryBlockStart(code);
+    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val catchAll = new DexCatchAll(code);
+
+    tryStart.setCatchAllHandler(catchAll);
+
+    code.add(tryStart);
+    code.add(nop);
+    code.add(tryEnd);
+    code.add(catchAll);
+    code.add(new DexInstruction_Nop(code));
+
+    val succ = execThrowingInsn_CatchHandlers(nop);
+    assertEquals(1, succ.size());
+    assertTrue(succ.contains(catchAll));
+  }
+
+  @Test
+  public void testThrowingInsn_CatchHandlers_InsideTryBlockWithCatchHandler() {
+    // we pretend that NOP can throw an exception
+
+    val code = new DexCode();
+    val nop = new DexInstruction_Nop(code);
+    val tryStart = new DexTryBlockStart(code);
+    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val catchThrowable = new DexCatch(code, DexClassType.parse("Ljava/lang/Throwable;", new DexParsingCache()));
+
+    tryStart.addCatchHandler(catchThrowable);
+
+    code.add(tryStart);
+    code.add(nop);
+    code.add(tryEnd);
+    code.add(catchThrowable);
+    code.add(new DexInstruction_Nop(code));
+
+    val succ = execThrowingInsn_CatchHandlers(nop);
+    assertEquals(1, succ.size());
+    assertTrue(succ.contains(catchThrowable));
+  }
+
+
+  @Test
+  public void testThrowingInsn_CatchHandlers_InsideTryBlockWithMultipleCatchHandlers() {
+    // we pretend that NOP can throw an exception
+
+    val parseCache = new DexParsingCache();
+
+    val code = new DexCode();
+    val nop = new DexInstruction_Nop(code);
+    val tryStart = new DexTryBlockStart(code);
+    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val catchAll = new DexCatchAll(code);
+    val catchThrowable = new DexCatch(code, DexClassType.parse("Ljava/lang/Throwable;", parseCache));
+    val catchRuntimeException = new DexCatch(code, DexClassType.parse("Ljava/lang/RuntimeException;", parseCache));
+    val catchError = new DexCatch(code, DexClassType.parse("Ljava/lang/Error;", parseCache));
+
+    tryStart.setCatchAllHandler(catchAll);
+    tryStart.addCatchHandler(catchThrowable);
+    tryStart.addCatchHandler(catchRuntimeException);
+    tryStart.addCatchHandler(catchError);
+
+    code.add(tryStart);
+    code.add(nop);
+    code.add(tryEnd);
+    code.add(catchAll);
+    code.add(new DexInstruction_Nop(code));
+    code.add(catchThrowable);
+    code.add(new DexInstruction_Nop(code));
+    code.add(catchRuntimeException);
+    code.add(new DexInstruction_Nop(code));
+    code.add(catchError);
+    code.add(new DexInstruction_Nop(code));
+
+    val succ = execThrowingInsn_CatchHandlers(nop);
+    assertEquals(4, succ.size());
+    assertTrue(succ.contains(catchAll));
+    assertTrue(succ.contains(catchThrowable));
+    assertTrue(succ.contains(catchRuntimeException));
+    assertTrue(succ.contains(catchError));
+  }
+
+  //  private static DexCodeElement compare(Instruction insn, String output) {
 //    DexCode code;
 //    try {
 //      code = new DexCode(new Instruction[] { insn }, new DexParsingCache());

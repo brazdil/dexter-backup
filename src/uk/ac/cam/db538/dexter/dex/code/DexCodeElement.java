@@ -55,12 +55,14 @@ public abstract class DexCodeElement {
     return false;
   }
 
-  public DexCodeElement[] cfgGetSuccessors() {
+  public Set<DexCodeElement> cfgGetSuccessors() {
+    val set = new HashSet<DexCodeElement>();
+
     val next = this.getNextCodeElement();
-    if (next == null)
-      return new DexCodeElement[] { };
-    else
-      return new DexCodeElement[] { next };
+    if (next != null)
+      set.add(next);
+
+    return set;
   }
 
   // LIVE VARIABLE ANALYSIS

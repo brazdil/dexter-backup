@@ -60,11 +60,11 @@ public class DexInstruction_IfTest extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] cfgGetSuccessors() {
-    return new DexCodeElement[] {
-             this.getNextCodeElement(),
-             this.target
-           };
+  public Set<DexCodeElement> cfgGetSuccessors() {
+    val set = new HashSet<DexCodeElement>();
+    set.add(this.getNextCodeElement());
+    set.add(target);
+    return set;
   }
 
   @Override

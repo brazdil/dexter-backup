@@ -2,7 +2,6 @@ package uk.ac.cam.db538.dexter.dex.code;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 
 import lombok.Getter;
@@ -144,7 +143,7 @@ public class DexCode_ParsingState {
           catchAllHandler = getCatchAll(catchAllOffset);
       }
 
-      val catchHandlers = new LinkedList<DexCatch>();
+      val catchHandlers = new HashSet<DexCatch>();
       if (tryBlock.encodedCatchHandler != null && tryBlock.encodedCatchHandler.handlers != null)
         for (val catchBlock : tryBlock.encodedCatchHandler.handlers)
           catchHandlers.add(

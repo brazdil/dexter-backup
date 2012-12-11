@@ -77,6 +77,7 @@ public class DexCode {
 
   private final NoDuplicatesList<DexCodeElement> instructionList;
   private final Set<DexRegister> usedRegisters;
+  private final Set<DexTryBlockEnd> tryBlocks;
 
   // stores information about original register mapping
   // is null for run-time generated code
@@ -86,17 +87,12 @@ public class DexCode {
   public DexCode() {
     instructionList = new NoDuplicatesList<DexCodeElement>();
     usedRegisters = new HashSet<DexRegister>();
-  }
-
-  // creates a copy without instructions
-  private DexCode(DexCode oldCode) {
-    instructionList = new NoDuplicatesList<DexCodeElement>();
-    usedRegisters = new HashSet<DexRegister>();
+    tryBlocks = new HashSet<DexTryBlockEnd>();
   }
 
   // creates a copy wit instruction replacement
   public DexCode(DexCode oldCode, NoDuplicatesList<DexCodeElement> codeReplacement) {
-    this(oldCode);
+    this();
     this.addAll(codeReplacement);
   }
 
@@ -144,6 +140,10 @@ public class DexCode {
     return Collections.unmodifiableSet(usedRegisters);
   }
 
+  public Set<DexTryBlockEnd> getTryBlocks() {
+    return Collections.unmodifiableSet(tryBlocks);
+  }
+
   public DexRegister getRegisterByOriginalNumber(int id) {
     if (parsingInfo != null)
       return parsingInfo.getRegister(id);
@@ -168,9 +168,15 @@ public class DexCode {
       throw new NoSuchElementException();
   }
 
+  private void addedNewElement(DexCodeElement elem) {
+    usedRegisters.addAll(elem.lvaUsedRegisters());
+    if (elem instanceof DexTryBlockEnd)
+      tryBlocks.add((DexTryBlockEnd) elem);
+  }
+
   public void add(DexCodeElement elem) {
     instructionList.add(elem);
-    usedRegisters.addAll(elem.lvaUsedRegisters());
+    addedNewElement(elem);
   }
 
   public void addAll(DexCodeElement[] elems) {
@@ -185,10 +191,27 @@ public class DexCode {
 
   public void insertBefore(DexCodeElement elem, DexCodeElement before) {
     instructionList.add(findElement(before), elem);
+    addedNewElement(elem);
   }
 
   public void insertAfter(DexCodeElement elem, DexCodeElement after) {
     instructionList.add(findElement(after) + 1, elem);
+    addedNewElement(elem);
+  }
+
+  public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, DexCodeElement elemSought) {
+    boolean hitStart = false, hitEnd = false;
+
+    for (val elem : instructionList) {
+      if (elem == elemSought)
+        return hitStart && !hitEnd;
+      else if (elem == elemStart)
+        hitStart = true;
+      else if (elem == elemEnd)
+        hitEnd = true;
+    }
+
+    return false;
   }
 
   public DexCode instrument() {
