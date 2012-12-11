@@ -88,6 +88,10 @@ public class Utils {
     return TypeIdItem.internTypeIdItem(new DexFile(), desc);
   }
 
+  public static StringIdItem getStringItem(String str) {
+    return StringIdItem.internStringIdItem(new DexFile(), str);
+  }
+
   public static FieldIdItem getFieldItem(String classTypeName, String fieldTypeName, String fieldName) {
     val dexFile = new DexFile();
     val classTypeItem = TypeIdItem.internTypeIdItem(dexFile, classTypeName);
