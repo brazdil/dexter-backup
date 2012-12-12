@@ -6,6 +6,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.lang.Thread.State;
 
 import javax.swing.JFileChooser;
@@ -107,7 +108,7 @@ public class MainWindow {
       doModal("Loading " + file.getName(), new Thread(new Runnable() {
         public void run() {
           try {
-            val splitPane = new FileTab(new Dex(file), file.getName());
+            val splitPane = new FileTab(new Dex(file, new File("android.jar")), file.getName());
             tabbedPane.addTab(file.getName(), splitPane);
           } catch (Throwable e) {
             JMessage.showErrorMessage(frame, "A problem occurred while loading file \"" + file.getName() + "\".", e);

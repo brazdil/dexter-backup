@@ -34,7 +34,7 @@ public class ClassPanel extends InfoPanel {
   public void changeClass(DexClass cls) {
     this.setBreadcrumbs(cls.getType().getPrettyName());
     fieldName.setText(cls.getType().getPrettyName());
-    fieldSuperClass.setText(cls.getSuperType().getPrettyName());
+    fieldSuperClass.setText(cls.getSuperclassType().getPrettyName());
     this.setAccessFlagCheckboxes(cls.getAccessFlagSet());
   }
 }

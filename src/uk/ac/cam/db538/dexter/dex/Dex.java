@@ -14,14 +14,15 @@ import lombok.val;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
+import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class Dex {
 
   private final List<DexClass> classes;
+  @Getter private final DexClassHierarchy classHierarchy;
+
   @Getter private DexClassType objectTaintStorageType;
 
   @Getter private final DexParsingCache parsingCache;
@@ -29,13 +30,19 @@ public class Dex {
   public Dex() {
     classes = new NoDuplicatesList<DexClass>();
     parsingCache = new DexParsingCache();
+    classHierarchy = new DexClassHierarchy(parsingCache.getClassType("Ljava/lang/Object;"));
   }
 
-  public Dex(File filename) throws IOException, UnknownTypeException, InstructionParsingException {
+  public Dex(File filename, File androidJar) throws IOException {
     this();
+
+    classHierarchy.addAllClassesFromJAR(androidJar, parsingCache);
 
     val originalFile = new DexFile(filename);
     classes.addAll(parseAllClasses(originalFile));
+
+    if (!classHierarchy.isConsistent())
+      throw new RuntimeException("Class hierarchy is inconsistent");
   }
 
   private static File getMergeFile() throws IOException {
@@ -123,6 +130,9 @@ public class Dex {
   }
 
   public void writeToFile(File filename) throws IOException {
+    if (!classHierarchy.isConsistent())
+      throw new RuntimeException("Class hierarchy is inconsistent");
+
     val outFile = new DexFile();
     val out = new ByteArrayAnnotatedOutput();
 

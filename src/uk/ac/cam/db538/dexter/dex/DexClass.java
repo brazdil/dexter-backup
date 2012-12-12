@@ -29,7 +29,6 @@ public class DexClass {
 
   @Getter private final Dex parentFile;
   @Getter private final DexClassType type;
-  @Getter private final DexClassType superType;
   private final Set<AccessFlags> accessFlagSet;
   protected final Set<DexField> fields;
   protected final Set<DexMethod> methods;
@@ -42,7 +41,6 @@ public class DexClass {
                   String sourceFile) {
     this.parentFile = parent;
     this.type = type;
-    this.superType = superType;
     this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
     this.fields = (fields == null) ? new HashSet<DexField>() : fields;
     this.methods = (methods == null) ? new HashSet<DexMethod>() : methods;
@@ -50,6 +48,7 @@ public class DexClass {
     this.sourceFile = sourceFile;
 
     this.type.setDefinedInternally(true);
+    this.parentFile.getClassHierarchy().addClass(this.type, superType);
   }
 
   public DexClass(Dex parent, ClassDefItem clsInfo) {
@@ -125,9 +124,13 @@ public class DexClass {
       method.instrument();
   }
 
+  public DexClassType getSuperclassType() {
+    return this.parentFile.getClassHierarchy().getSuperclassType(type);
+  }
+
   public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
     val asmClassType = cache.getType(type);
-    val asmSuperType = cache.getType(this.superType);
+    val asmSuperType = cache.getType(getSuperclassType());
     val asmAccessFlags = DexUtils.assembleAccessFlags(accessFlagSet);
     val asmInterfaces = (interfaces.isEmpty())
                         ? null
