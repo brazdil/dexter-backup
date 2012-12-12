@@ -18,14 +18,12 @@ import org.jf.dexlib.ClassDefItem.StaticFieldInitializer;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.AccessFlags;
 
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexPurelyVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexClass {
 
@@ -50,9 +48,11 @@ public class DexClass {
     this.methods = (methods == null) ? new HashSet<DexMethod>() : methods;
     this.interfaces = (interfaces == null) ? new HashSet<DexClassType>() : interfaces;
     this.sourceFile = sourceFile;
+
+    this.type.setDefinedInternally(true);
   }
 
-  public DexClass(Dex parent, ClassDefItem clsInfo) throws UnknownTypeException, InstructionParsingException {
+  public DexClass(Dex parent, ClassDefItem clsInfo) {
     this(parent,
          DexClassType.parse(clsInfo.getClassType().getTypeDescriptor(), parent.getParsingCache()),
          DexClassType.parse(clsInfo.getSuperclass().getTypeDescriptor(), parent.getParsingCache()),
@@ -81,7 +81,6 @@ public class DexClass {
         else
           methods.add(new DexVirtualMethod(this, virtualMethodInfo));
       }
-
     }
   }
 
