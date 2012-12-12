@@ -75,30 +75,39 @@ public abstract class DexMethodWithCode extends DexMethod {
       case SINGLE:
         val regSingle = code.getRegisterByOriginalNumber(paramRegId);
         addParameterMapping_Single(i, regSingle);
-        parameterMappedRegisters.add(regSingle);
         break;
       case WIDE:
         val regWide1 = code.getRegisterByOriginalNumber(paramRegId);
         val regWide2 = code.getRegisterByOriginalNumber(paramRegId + 1);
         addParameterMapping_Wide(i, regWide1, regWide2);
-        parameterMappedRegisters.add(regWide1);
-        parameterMappedRegisters.add(regWide2);
         break;
       }
     }
   }
 
   public void addParameterMapping_Single(int paramIndex, DexRegister codeReg) {
+    if (!code.getUsedRegisters().contains(codeReg))
+      return;
+
     val paramType = this.getPrototype().getParameterType(paramIndex, this.isStatic(), this.getParentClass());
     val paramReg = parameterRegisters.get(paramIndex);
+
     parameterMoveInstructions.add(new DexInstruction_Move(code, codeReg, paramReg, paramType instanceof DexReferenceType));
+
+    parameterMappedRegisters.add(codeReg);
   }
 
   public void addParameterMapping_Wide(int paramIndex, DexRegister codeReg1, DexRegister codeReg2) {
+    if (!code.getUsedRegisters().contains(codeReg1) && !code.getUsedRegisters().contains(codeReg2))
+      return;
+
     val paramReg1 = parameterRegisters.get(paramIndex);
     val paramReg2 = parameterRegisters.get(paramIndex + 1);
 
     parameterMoveInstructions.add(new DexInstruction_MoveWide(code, codeReg1, codeReg2, paramReg1, paramReg2));
+
+    parameterMappedRegisters.add(codeReg1);
+    parameterMappedRegisters.add(codeReg2);
   }
 
   @Override
