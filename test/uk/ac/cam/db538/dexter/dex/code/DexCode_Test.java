@@ -37,7 +37,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 
-public class DexCodeTest {
+public class DexCode_Test {
 
   @Test
   public void testInsertBefore_Middle() {

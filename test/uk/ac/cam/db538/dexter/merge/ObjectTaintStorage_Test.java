@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 
 import uk.ac.cam.db538.dexter.merge.ObjectTaintStorage.Entry;
 
-public class ObjectTaintStorageTest {
+public class ObjectTaintStorage_Test {
 
   private static Entry[] getMap() {
     try {

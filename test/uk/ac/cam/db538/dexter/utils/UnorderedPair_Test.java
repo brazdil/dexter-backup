@@ -5,7 +5,7 @@ import lombok.val;
 
 import org.junit.Test;
 
-public class UnorderedPairTest {
+public class UnorderedPair_Test {
 
   @Test(expected=NullPointerException.class)
   public void testNonNull_A() {

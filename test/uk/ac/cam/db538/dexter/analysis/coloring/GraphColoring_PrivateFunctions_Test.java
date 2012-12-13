@@ -26,7 +26,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpWide;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
-public class GraphColoring_PrivateFunctionsTest {
+public class GraphColoring_PrivateFunctions_Test {
 
   private static void genClash(DexCode code, DexRegister reg1, DexRegister reg2) {
     code.add(new DexInstruction_BinaryOp(code, reg1, reg1, reg2, Opcode_BinaryOp.AddInt));

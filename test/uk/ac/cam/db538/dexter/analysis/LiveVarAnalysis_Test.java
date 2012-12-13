@@ -17,7 +17,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTest;
 
-public class LiveVarAnalysisTest {
+public class LiveVarAnalysis_Test {
 
   @Test
   public void testSingleBlock() {

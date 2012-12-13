@@ -13,7 +13,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 
-public class ClashGraphTest {
+public class ClashGraph_Test {
 
   @Test
   public void testNoClashes() {

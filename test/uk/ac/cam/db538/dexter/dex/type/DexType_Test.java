@@ -15,7 +15,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexInteger;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexLong;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexShort;
 
-public class DexTypeTest {
+public class DexType_Test {
 
   @Test(expected=UnknownTypeException.class)
   public void testIncorrectType() throws UnknownTypeException {

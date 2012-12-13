@@ -23,7 +23,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 
-public class DexInstructionTest {
+public class DexInstruction_Test {
 
   @Test
   public void testFitsIntoBits_Signed() {

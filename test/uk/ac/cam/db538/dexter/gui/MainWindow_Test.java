@@ -26,7 +26,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
-public class MainWindowTest {
+public class MainWindow_Test {
 
   private static void execAddClassesToTree(DefaultMutableTreeNode root, List<DexClass> classes) {
     try {

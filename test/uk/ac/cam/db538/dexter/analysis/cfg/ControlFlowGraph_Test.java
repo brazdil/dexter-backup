@@ -15,7 +15,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTest;
 
-public class ControlFlowGraphTest {
+public class ControlFlowGraph_Test {
 
   @Test
   public void testBlockRecognition_Empty() {
