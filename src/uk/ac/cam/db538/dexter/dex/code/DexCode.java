@@ -221,12 +221,12 @@ public class DexCode {
   }
 
   public DexCode instrument() {
-    val newCode = new NoDuplicatesList<DexCodeElement>();
-    val taintRegs = new DexCode_InstrumentationState(this);
+    val newCode = new NoDuplicatesList<DexCodeElement>(instructionList.size() * 2);
+    val instrumentationState = new DexCode_InstrumentationState(this);
     for (val elem : instructionList) {
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
-        newCode.addAll(insn.instrument(taintRegs));
+        newCode.addAll(insn.instrument(instrumentationState));
       } else
         newCode.add(elem);
     }

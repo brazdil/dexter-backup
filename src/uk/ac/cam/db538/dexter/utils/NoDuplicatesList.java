@@ -12,25 +12,25 @@ public class NoDuplicatesList<E> extends ArrayList<E> {
   private static final RuntimeException DUPLICATE_EXCEPTION = new RuntimeException("Duplicate inserted into NoDuplicatesList");
 
   public NoDuplicatesList() {
-	  super();
+    super();
   }
-  
+
   public NoDuplicatesList(int initialCapacity) {
-	  super(initialCapacity);
+    super(initialCapacity);
   }
-  
+
   @Override
   public boolean add(E e) {
     if (contains(e))
       throw DUPLICATE_EXCEPTION;
-	return super.add(e);
+    return super.add(e);
   }
 
   @Override
   public void add(int index, E element) {
     if (contains(element))
       throw DUPLICATE_EXCEPTION;
-	super.add(index, element);
+    super.add(index, element);
   }
 
   @Override
@@ -57,16 +57,16 @@ public class NoDuplicatesList<E> extends ArrayList<E> {
   }
 
   public E peekFirst() {
-	  if (isEmpty())
-		  return null;
-	  else
-		  return get(0);
+    if (isEmpty())
+      return null;
+    else
+      return get(0);
   }
-  
+
   public E peekLast() {
-	  if (isEmpty())
-		  return null;
-	  else
-		  return get(size() - 1);
+    if (isEmpty())
+      return null;
+    else
+      return get(size() - 1);
   }
 }

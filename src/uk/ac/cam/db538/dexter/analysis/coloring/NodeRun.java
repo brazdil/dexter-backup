@@ -34,10 +34,6 @@ public class NodeRun {
     return Collections.unmodifiableList(nodes);
   }
 
-  public DexRegister getFirst() {
-    return nodes.getFirst();
-  }
-
   public DexRegister peekFirst() {
     return nodes.peekFirst();
   }

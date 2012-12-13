@@ -140,4 +140,9 @@ public abstract class DexCodeElement {
   protected final <T> Set<T> createSet(T ... members) {
     return new HashSet<T>(Arrays.asList(members));
   }
+
+  @SafeVarargs
+  protected final <T> List<T> createList(T ... elements) {
+    return Arrays.asList(elements);
+  }
 }

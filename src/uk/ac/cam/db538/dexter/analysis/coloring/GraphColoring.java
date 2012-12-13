@@ -166,7 +166,7 @@ public class GraphColoring {
   }
 
   private static int generateColorsInRange(int low, int high, NodeRun nodeRun, NodeStatesMap nodeMap) throws GraphUncolorableException {
-    val firstNode = nodeRun.getFirst();
+    val firstNode = nodeRun.peekFirst();
     val firstNodeForbiddenColors = nodeMap.get(firstNode).getForbiddenColors();
 
     while (true) {
