@@ -41,8 +41,7 @@ public class Dex {
     val originalFile = new DexFile(filename);
     classes.addAll(parseAllClasses(originalFile));
 
-    if (!classHierarchy.isConsistent())
-      throw new RuntimeException("Class hierarchy is inconsistent");
+    classHierarchy.checkConsistentency();
   }
 
   private static File getMergeFile() throws IOException {
@@ -130,8 +129,7 @@ public class Dex {
   }
 
   public void writeToFile(File filename) throws IOException {
-    if (!classHierarchy.isConsistent())
-      throw new RuntimeException("Class hierarchy is inconsistent");
+    classHierarchy.checkConsistentency();
 
     val outFile = new DexFile();
     val out = new ByteArrayAnnotatedOutput();

@@ -28,6 +28,9 @@ public class DexClassHierarchy {
   }
 
   public void addClass(DexClassType classType, DexClassType superclassType) {
+    if (classes.containsKey(classType))
+      throw new ClassHierarchyException("Class " + classType.getPrettyName() + " defined multiple times");
+
     val classEntry = new ClassEntry(classType, superclassType);
     classes.put(classType, classEntry);
   }
@@ -52,13 +55,14 @@ public class DexClassHierarchy {
     return classes.get(clazz).getSuperclassType();
   }
 
-  public boolean isConsistent() {
+  public void checkConsistentency() {
     // hierarchy is consistent if all classes have their parents in the hierarchy as well
     // (Object's parent is Object)
     for (val entry : classes.entrySet())
       if (!classes.containsKey(entry.getValue().getSuperclassType()))
-        return false;
-    return true;
+        throw new ClassHierarchyException("Class hierarchy not consistent (" +
+                                          entry.getKey().getPrettyName() + " needs its parent " +
+                                          entry.getValue().getSuperclassType().getPrettyName() + ")");
   }
 
   public boolean isAncestor(DexClassType clazz, DexClassType ancestor) {
