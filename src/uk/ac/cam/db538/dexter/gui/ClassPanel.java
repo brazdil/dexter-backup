@@ -2,6 +2,8 @@ package uk.ac.cam.db538.dexter.gui;
 
 import javax.swing.JTextField;
 
+import lombok.val;
+
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -15,6 +17,7 @@ public class ClassPanel extends InfoPanel {
 
   private JTextField fieldName;
   private JTextField fieldSuperClass;
+  private JTextField fieldInterfaces;
 
   public ClassPanel() {
     // create class field
@@ -25,7 +28,12 @@ public class ClassPanel extends InfoPanel {
     // create superclass field
     fieldSuperClass = new WebTextField();
     fieldSuperClass.setEditable(false);
-    this.addRow(new WebLabel("Super class:"), fieldSuperClass);
+    this.addRow(new WebLabel("Superclass:"), fieldSuperClass);
+
+    // create interfaces field
+    fieldInterfaces = new WebTextField();
+    fieldInterfaces.setEditable(false);
+    this.addRow(new WebLabel("Interfaces:"),fieldInterfaces);
 
     // create access flag checkboxes
     this.addRow(new WebLabel("Access flags:"), createAccessFlagCheckboxes(AccessFlags.getAccessFlagsForClass(-1)), true);
@@ -35,6 +43,18 @@ public class ClassPanel extends InfoPanel {
     this.setBreadcrumbs(cls.getType().getPrettyName());
     fieldName.setText(cls.getType().getPrettyName());
     fieldSuperClass.setText(cls.getSuperclassType().getPrettyName());
+
+    val strInterfaces = new StringBuilder();
+    boolean first = true;
+    for (val i : cls.getInterfaces()) {
+      if (first)
+        first = false;
+      else
+        strInterfaces.append(", ");
+      strInterfaces.append(i.getPrettyName());
+    }
+    fieldInterfaces.setText(strInterfaces.toString());
+
     this.setAccessFlagCheckboxes(cls.getAccessFlagSet());
   }
 }

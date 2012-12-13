@@ -16,6 +16,7 @@ import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.ClassDefItem.StaticFieldInitializer;
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
@@ -32,7 +33,6 @@ public class DexClass {
   private final Set<AccessFlags> accessFlagSet;
   protected final Set<DexField> fields;
   protected final Set<DexMethod> methods;
-  private final Set<DexClassType> interfaces;
   @Getter private final String sourceFile;
 
   public DexClass(Dex parent, DexClassType type, DexClassType superType,
@@ -44,11 +44,15 @@ public class DexClass {
     this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
     this.fields = (fields == null) ? new HashSet<DexField>() : fields;
     this.methods = (methods == null) ? new HashSet<DexMethod>() : methods;
-    this.interfaces = (interfaces == null) ? new HashSet<DexClassType>() : interfaces;
     this.sourceFile = sourceFile;
 
     this.type.setDefinedInternally(true);
-    this.parentFile.getClassHierarchy().addClass(this.type, superType);
+    this.parentFile.getClassHierarchy().addMember(
+      this.type,
+      superType,
+      (interfaces == null) ? new HashSet<DexClassType>() : interfaces,
+      isInterface()
+    );
   }
 
   public DexClass(Dex parent, ClassDefItem clsInfo) {
@@ -58,12 +62,8 @@ public class DexClass {
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForClass(clsInfo.getAccessFlags())),
          null,
          null,
-         null,
+         parseTypeList(clsInfo.getInterfaces(), parent.getParsingCache()),
          (clsInfo.getSourceFile() == null) ? null : clsInfo.getSourceFile().getStringValue());
-
-    if (clsInfo.getInterfaces() != null)
-      for (val interfaceType : clsInfo.getInterfaces().getTypes())
-        interfaces.add(parent.getParsingCache().getClassType(interfaceType.getTypeDescriptor()));
 
     val clsData = clsInfo.getClassData();
     if (clsData != null) {
@@ -83,6 +83,16 @@ public class DexClass {
     }
   }
 
+  private static Set<DexClassType> parseTypeList(TypeListItem list, DexParsingCache cache) {
+    val set = new HashSet<DexClassType>();
+
+    if (list != null)
+      for (val elem : list.getTypes())
+        set.add(cache.getClassType(elem.getTypeDescriptor()));
+
+    return set;
+  }
+
   public Set<AccessFlags> getAccessFlagSet() {
     return Collections.unmodifiableSet(accessFlagSet);
   }
@@ -93,6 +103,14 @@ public class DexClass {
 
   public Set<DexMethod> getMethods() {
     return Collections.unmodifiableSet(methods);
+  }
+
+  public DexClassType getSuperclassType() {
+    return this.parentFile.getClassHierarchy().getSuperclassType(type);
+  }
+
+  public Set<DexClassType> getInterfaces() {
+    return this.parentFile.getClassHierarchy().getInterfaces(type);
   }
 
   public boolean isAbstract() {
@@ -124,11 +142,9 @@ public class DexClass {
       method.instrument();
   }
 
-  public DexClassType getSuperclassType() {
-    return this.parentFile.getClassHierarchy().getSuperclassType(type);
-  }
-
   public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
+    val interfaces = this.getInterfaces();
+
     val asmClassType = cache.getType(type);
     val asmSuperType = cache.getType(getSuperclassType());
     val asmAccessFlags = DexUtils.assembleAccessFlags(accessFlagSet);
