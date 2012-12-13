@@ -79,6 +79,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.InstructionOffsetException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_InvokeWithResult;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_InvokeWithoutResult;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class DexCode {
@@ -235,6 +236,9 @@ public class DexCode {
                        (DexInstruction_Invoke) insns.get(i),
                        (DexInstruction_MoveResult) insns.get(i + 1)));
         i++;
+      } else if (insns.get(i) instanceof DexInstruction_Invoke) {
+        newInsns.add(new DexPseudoinstruction_InvokeWithoutResult(
+                       (DexInstruction_Invoke) insns.get(i)));
       } else
         newInsns.add(insns.get(i));
     }

@@ -22,7 +22,7 @@ public abstract class DexInstruction extends DexCodeElement {
 
   // INSTRUCTION INSTRUMENTATION
 
-  public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
+  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
     throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have instrumentation implemented");
   }
 

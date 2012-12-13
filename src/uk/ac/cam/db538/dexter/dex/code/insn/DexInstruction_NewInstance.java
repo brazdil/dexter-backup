@@ -14,6 +14,7 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -77,5 +78,16 @@ public class DexInstruction_NewInstance extends DexInstruction {
              };
     } else
       return throwCannotAssembleException("No suitable instruction format found");
+  }
+
+  @Override
+  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
+    return new DexCodeElement[] {
+             this,
+             new DexInstruction_NewInstance(
+               this.getMethodCode(),
+               state.getTaintRegister(regTo),
+               value)
+           };
   }
 }
