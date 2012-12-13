@@ -20,11 +20,9 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 public class DexClassHierarchy {
 
   private final Map<DexClassType, ClassEntry> classes;
-  private final DexClassType typeObject;
 
-  public DexClassHierarchy(DexClassType typeObject) {
+  public DexClassHierarchy() {
     this.classes = new HashMap<DexClassType, ClassEntry>();
-    this.typeObject = typeObject;
   }
 
   public void addClass(DexClassType classType, DexClassType superclassType) {
@@ -56,30 +54,39 @@ public class DexClassHierarchy {
   }
 
   public void checkConsistentency() {
-    // hierarchy is consistent if all classes have their parents in the hierarchy as well
-    // (Object's parent is Object)
-    for (val entry : classes.entrySet())
-      if (!classes.containsKey(entry.getValue().getSuperclassType()))
+    boolean foundTopObject = false;
+    for (val entry : classes.entrySet()) {
+      val clazz = entry.getKey();
+      val superclazz = entry.getValue().getSuperclassType();
+
+      // hierarchy is consistent if all classes have their parents in the hierarchy as well
+      if (!classes.containsKey(superclazz))
         throw new ClassHierarchyException("Class hierarchy not consistent (" +
-                                          entry.getKey().getPrettyName() + " needs its parent " +
-                                          entry.getValue().getSuperclassType().getPrettyName() + ")");
+                                          clazz.getPrettyName() + " needs its parent " +
+                                          superclazz.getPrettyName() + ")");
+
+      // Object's parent is Object, there can be only one class like that
+      if (clazz == superclazz) {
+        if (foundTopObject)
+          throw new ClassHierarchyException("Class hierarchy not consistent (cannot have multiple root classes)");
+        else
+          foundTopObject = true;
+      }
+    }
   }
 
   public boolean isAncestor(DexClassType clazz, DexClassType ancestor) {
     // start at clazz and work our way up the hierarchy tree
     // checking equality at each level
 
-    // the loop condition won't allow clazz to be tested against
-    // Object; that's why it is tested here
-    if (ancestor == typeObject)
-      return true;
-
+    DexClassType prevClazz = null;
     do {
       if (clazz == ancestor)
         return true;
 
+      prevClazz = clazz;
       clazz = getSuperclassType(clazz);
-    } while (clazz != typeObject);
+    } while (clazz != prevClazz);
 
     return false;
   }

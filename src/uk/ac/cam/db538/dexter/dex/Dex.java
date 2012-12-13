@@ -30,7 +30,7 @@ public class Dex {
   public Dex() {
     classes = new NoDuplicatesList<DexClass>();
     parsingCache = new DexParsingCache();
-    classHierarchy = new DexClassHierarchy(parsingCache.getClassType("Ljava/lang/Object;"));
+    classHierarchy = new DexClassHierarchy();
   }
 
   public Dex(File filename, File androidJar) throws IOException {
