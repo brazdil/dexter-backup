@@ -229,6 +229,9 @@ public class DexCode {
     val newInsns = new NoDuplicatesList<DexCodeElement>(codeLength);
 
     for (int i = 0; i < codeLength; i++) {
+
+      // replace INVOKE & MOVE_RESULT pairs with single
+      // InvokeWithResult pseudoinstruction
       if (i < codeLength - 1 &&
           insns.get(i) instanceof DexInstruction_Invoke &&
           insns.get(i + 1) instanceof DexInstruction_MoveResult) {
@@ -236,9 +239,14 @@ public class DexCode {
                        (DexInstruction_Invoke) insns.get(i),
                        (DexInstruction_MoveResult) insns.get(i + 1)));
         i++;
+
+        // to conform, replace other INVOKEs with InvokeWithoutResult
+        // pseudoinstruction
       } else if (insns.get(i) instanceof DexInstruction_Invoke) {
         newInsns.add(new DexPseudoinstruction_InvokeWithoutResult(
                        (DexInstruction_Invoke) insns.get(i)));
+
+        // otherwise add the original instruction to the new code
       } else
         newInsns.add(insns.get(i));
     }
