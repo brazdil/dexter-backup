@@ -77,6 +77,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionOffsetException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_InvokeWithResult;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class DexCode {
@@ -220,17 +222,56 @@ public class DexCode {
     return false;
   }
 
+  private static DexCode replaceWithPseudoinstructions(DexCode code) {
+    val insns = code.instructionList;
+    val codeLength = insns.size();
+    val newInsns = new NoDuplicatesList<DexCodeElement>(codeLength);
+
+    for (int i = 0; i < codeLength; i++) {
+      if (i < codeLength - 1 &&
+          insns.get(i) instanceof DexInstruction_Invoke &&
+          insns.get(i + 1) instanceof DexInstruction_MoveResult) {
+        newInsns.add(new DexPseudoinstruction_InvokeWithResult(
+                       (DexInstruction_Invoke) insns.get(i),
+                       (DexInstruction_MoveResult) insns.get(i + 1)));
+        i++;
+      } else
+        newInsns.add(insns.get(i));
+    }
+
+    return new DexCode(code, newInsns);
+  }
+
+  private static DexCode unwrapPseudoinstructions(DexCode code) {
+    val insns = code.instructionList;
+    val codeLength = insns.size();
+    val newInsns = new NoDuplicatesList<DexCodeElement>(codeLength);
+
+    for (val insn : insns)
+      if (insn instanceof DexPseudoinstruction)
+        newInsns.addAll(((DexPseudoinstruction) insn).unwrap());
+      else
+        newInsns.add(insn);
+
+    return new DexCode(code, newInsns);
+  }
+
   public DexCode instrument() {
-    val newCode = new NoDuplicatesList<DexCodeElement>(instructionList.size() * 2);
+    val pseudoCode = replaceWithPseudoinstructions(this);
+
+    val instrumentedInsns = new NoDuplicatesList<DexCodeElement>(pseudoCode.instructionList.size() * 2);
     val instrumentationState = new DexCode_InstrumentationState(this);
-    for (val elem : instructionList) {
+
+    for (val elem : pseudoCode.instructionList) {
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
-        newCode.addAll(insn.instrument(instrumentationState));
+        instrumentedInsns.addAll(insn.instrument(instrumentationState));
       } else
-        newCode.add(elem);
+        instrumentedInsns.add(elem);
     }
-    return new DexCode(this, newCode);
+
+    val instrumentedCode = new DexCode(pseudoCode, instrumentedInsns);
+    return unwrapPseudoinstructions(instrumentedCode);
   }
 
   public Map<DexRegister, ColorRange> getRangeConstraints() {
