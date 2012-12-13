@@ -1,28 +1,36 @@
 package uk.ac.cam.db538.dexter.utils;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 
 import lombok.val;
 
-public class NoDuplicatesList<E> extends LinkedList<E> {
+public class NoDuplicatesList<E> extends ArrayList<E> {
 
   private static final long serialVersionUID = -3844134393839278966L;
 
   private static final RuntimeException DUPLICATE_EXCEPTION = new RuntimeException("Duplicate inserted into NoDuplicatesList");
 
+  public NoDuplicatesList() {
+	  super();
+  }
+  
+  public NoDuplicatesList(int initialCapacity) {
+	  super(initialCapacity);
+  }
+  
   @Override
   public boolean add(E e) {
     if (contains(e))
       throw DUPLICATE_EXCEPTION;
-    return super.add(e);
+	return super.add(e);
   }
 
   @Override
   public void add(int index, E element) {
     if (contains(element))
       throw DUPLICATE_EXCEPTION;
-    super.add(index, element);
+	super.add(index, element);
   }
 
   @Override
@@ -48,19 +56,17 @@ public class NoDuplicatesList<E> extends LinkedList<E> {
     return true;
   }
 
-  @Override
-  public void addFirst(E e) {
-    if (contains(e))
-      throw DUPLICATE_EXCEPTION;
-    super.addFirst(e);
+  public E peekFirst() {
+	  if (isEmpty())
+		  return null;
+	  else
+		  return get(0);
   }
-
-  @Override
-  public void addLast(E e) {
-    if (contains(e))
-      throw DUPLICATE_EXCEPTION;
-    super.addLast(e);
+  
+  public E peekLast() {
+	  if (isEmpty())
+		  return null;
+	  else
+		  return get(size() - 1);
   }
-
-
 }
