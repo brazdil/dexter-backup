@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.dex.code.insn.pseudo;
 import java.util.List;
 
 import lombok.Getter;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
@@ -17,6 +18,8 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
     this.instructionInvoke = insnInvoke;
     this.instructionMoveResult = insnMoveResult;
+
+    System.out.println(instructionInvoke.getClassType().getPrettyName() + "." + instructionInvoke.getMethodName());
   }
 
   public DexPseudoinstruction_Invoke(DexInstruction_Invoke insnInvoke) {
@@ -24,7 +27,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
   }
 
   private boolean movesResult() {
-    return instructionMoveResult == null;
+    return instructionMoveResult != null;
   }
 
   @Override
@@ -37,4 +40,32 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       return createList((DexCodeElement) instructionInvoke);
   }
 
+  private DexCodeElement[] instrumentDirectExternal(DexCode_InstrumentationState state) {
+    return new DexCodeElement[0];
+  }
+
+  private DexCodeElement[] instrumentDirectInternal(DexCode_InstrumentationState state) {
+    return new DexCodeElement[0];
+  }
+
+  private DexCodeElement[] instrumentVirtual(DexCode_InstrumentationState state) {
+    return new DexCodeElement[0];
+  }
+
+  @Override
+  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
+    switch (instructionInvoke.getCallType()) {
+    case Direct:
+    case Static:
+      if (instructionInvoke.getClassType().isDefinedInternally())
+        return instrumentDirectInternal(state);
+      else
+        return instrumentDirectExternal(state);
+    case Interface:
+    case Super:
+    case Virtual:
+    default:
+      return instrumentVirtual(state);
+    }
+  }
 }
