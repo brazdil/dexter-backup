@@ -3,13 +3,20 @@ package uk.ac.cam.db538.dexter.dex.code;
 import java.util.HashMap;
 import java.util.Map;
 
+import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
+
+import lombok.Getter;
 import lombok.val;
 
 public class DexCode_InstrumentationState {
   private final Map<DexRegister, DexRegister> registerMap;
   private final int idOffset;
 
-  public DexCode_InstrumentationState(DexCode code) {
+  @Getter private final DexInstrumentationCache cache;
+
+  public DexCode_InstrumentationState(DexCode code, DexInstrumentationCache cache) {
+    this.cache = cache;
+
     registerMap = new HashMap<DexRegister, DexRegister>();
 
     // find the maximal register id in the code

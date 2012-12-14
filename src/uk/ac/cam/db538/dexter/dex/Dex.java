@@ -120,10 +120,12 @@ public class Dex {
   }
 
   public void instrument() {
+    val cache = new DexInstrumentationCache(parsingCache);
+
     val extraClasses = parseExtraClasses();
 
     for (val cls : classes)
-      cls.instrument();
+      cls.instrument(cache);
 
     classes.addAll(extraClasses);
   }

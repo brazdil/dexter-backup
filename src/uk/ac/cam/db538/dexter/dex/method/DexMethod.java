@@ -14,6 +14,7 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.utils.Cache;
@@ -50,7 +51,7 @@ public abstract class DexMethod {
 
   public abstract boolean isVirtual();
 
-  public abstract void instrument();
+  public abstract void instrument(DexInstrumentationCache cache);
 
   protected abstract CodeItem generateCodeItem(DexFile outFile, DexAssemblingCache cache);
 

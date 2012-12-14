@@ -137,9 +137,9 @@ public class DexClass {
     methods.add(m);
   }
 
-  public void instrument() {
+  public void instrument(DexInstrumentationCache cache) {
     for (val method : methods)
-      method.instrument();
+      method.instrument(cache);
   }
 
   public void writeToFile(DexFile outFile, DexAssemblingCache cache) {

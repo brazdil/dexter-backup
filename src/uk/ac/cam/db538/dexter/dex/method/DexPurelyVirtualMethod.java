@@ -9,6 +9,7 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -28,7 +29,7 @@ public class DexPurelyVirtualMethod extends DexMethod {
   }
 
   @Override
-  public void instrument() { }
+  public void instrument(DexInstrumentationCache cache) { }
 
   @Override
   protected CodeItem generateCodeItem(DexFile outFile, DexAssemblingCache cache) {

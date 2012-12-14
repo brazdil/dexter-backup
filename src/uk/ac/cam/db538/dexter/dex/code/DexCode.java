@@ -24,6 +24,7 @@ import org.jf.dexlib.Code.Instruction;
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
+import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement.GcFollowConstraint;
@@ -277,11 +278,11 @@ public class DexCode {
     return new DexCode(code, newInsns);
   }
 
-  public DexCode instrument() {
+  public DexCode instrument(DexInstrumentationCache cache) {
     val pseudoCode = replaceWithPseudoinstructions(this);
 
     val instrumentedInsns = new NoDuplicatesList<DexCodeElement>(pseudoCode.instructionList.size() * 2);
-    val instrumentationState = new DexCode_InstrumentationState(this);
+    val instrumentationState = new DexCode_InstrumentationState(this, cache);
 
     for (val elem : pseudoCode.instructionList) {
       if (elem instanceof DexInstruction) {

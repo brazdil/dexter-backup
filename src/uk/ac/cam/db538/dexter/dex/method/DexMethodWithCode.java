@@ -21,6 +21,7 @@ import org.jf.dexlib.Util.AccessFlags;
 import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
@@ -116,8 +117,8 @@ public abstract class DexMethodWithCode extends DexMethod {
   }
 
   @Override
-  public void instrument() {
-    code = code.instrument();
+  public void instrument(DexInstrumentationCache cache) {
+    code = code.instrument(cache);
   }
 
   @Override

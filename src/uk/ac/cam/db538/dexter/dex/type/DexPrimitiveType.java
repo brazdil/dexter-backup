@@ -31,7 +31,7 @@ public abstract class DexPrimitiveType extends DexRegisterType {
     addToPrimitivesCache(new DexDouble());
   }
 
-  public static DexPrimitiveType parse(String typeDescriptor) throws UnknownTypeException {
+  public static DexPrimitiveType parse(String typeDescriptor) {
     val primitive = PRIMITIVES_CACHE.get(typeDescriptor);
     if (primitive == null)
       throw new UnknownTypeException(typeDescriptor);
