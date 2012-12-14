@@ -82,12 +82,6 @@ public class DexInstruction_NewInstance extends DexInstruction {
 
   @Override
   public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
-    return new DexCodeElement[] {
-             this,
-             new DexInstruction_NewInstance(
-               this.getMethodCode(),
-               state.getTaintRegister(regTo),
-               value)
-           };
+    return new DexCodeElement[] { this };
   }
 }

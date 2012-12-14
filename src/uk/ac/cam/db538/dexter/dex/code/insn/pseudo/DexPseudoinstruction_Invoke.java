@@ -41,15 +41,15 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
   }
 
   private DexCodeElement[] instrumentDirectExternal(DexCode_InstrumentationState state) {
-    return new DexCodeElement[0];
+    return new DexCodeElement[] { this };
   }
 
   private DexCodeElement[] instrumentDirectInternal(DexCode_InstrumentationState state) {
-    return new DexCodeElement[0];
+    return new DexCodeElement[] { this };
   }
 
   private DexCodeElement[] instrumentVirtual(DexCode_InstrumentationState state) {
-    return new DexCodeElement[0];
+    return new DexCodeElement[] { this };
   }
 
   @Override
