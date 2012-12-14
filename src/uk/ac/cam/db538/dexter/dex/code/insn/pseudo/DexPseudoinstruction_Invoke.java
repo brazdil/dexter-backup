@@ -18,8 +18,6 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
     this.instructionInvoke = insnInvoke;
     this.instructionMoveResult = insnMoveResult;
-
-    System.out.println(instructionInvoke.getClassType().getPrettyName() + "." + instructionInvoke.getMethodName());
   }
 
   public DexPseudoinstruction_Invoke(DexInstruction_Invoke insnInvoke) {
