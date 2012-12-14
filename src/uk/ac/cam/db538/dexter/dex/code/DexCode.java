@@ -78,9 +78,9 @@ import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionOffsetException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_InvokeWithResult;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_InvokeWithoutResult;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_Invoke;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexCode {
 
@@ -223,32 +223,41 @@ public class DexCode {
     return false;
   }
 
+  private static Pair<DexInstruction, Integer> nextInstruction(List<DexCodeElement> instructionList, int index) {
+    int len = instructionList.size();
+    for (int i = index + 1; i < len; ++i) {
+      val insn = instructionList.get(i);
+      if (insn instanceof DexInstruction)
+        return new Pair<DexInstruction, Integer>((DexInstruction) insn, i);
+    }
+    return null;
+  }
+
   private static DexCode replaceWithPseudoinstructions(DexCode code) {
     val insns = code.instructionList;
     val codeLength = insns.size();
     val newInsns = new NoDuplicatesList<DexCodeElement>(codeLength);
 
     for (int i = 0; i < codeLength; i++) {
+      val thisInsn = insns.get(i);
 
-      // replace INVOKE & MOVE_RESULT pairs with single
-      // InvokeWithResult pseudoinstruction
-      if (i < codeLength - 1 &&
-          insns.get(i) instanceof DexInstruction_Invoke &&
-          insns.get(i + 1) instanceof DexInstruction_MoveResult) {
-        newInsns.add(new DexPseudoinstruction_InvokeWithResult(
-                       (DexInstruction_Invoke) insns.get(i),
-                       (DexInstruction_MoveResult) insns.get(i + 1)));
-        i++;
+      if (thisInsn instanceof DexInstruction_Invoke) {
+        val nextInsnPair = nextInstruction(insns, i);
 
-        // to conform, replace other INVOKEs with InvokeWithoutResult
-        // pseudoinstruction
-      } else if (insns.get(i) instanceof DexInstruction_Invoke) {
-        newInsns.add(new DexPseudoinstruction_InvokeWithoutResult(
-                       (DexInstruction_Invoke) insns.get(i)));
+        // replace INVOKE & MOVE_RESULT pairs with single
+        // Invoke pseudoinstruction
+        if (nextInsnPair != null && nextInsnPair.getValA() instanceof DexInstruction_MoveResult) {
+          newInsns.add(new DexPseudoinstruction_Invoke(
+                         (DexInstruction_Invoke) thisInsn,
+                         (DexInstruction_MoveResult) nextInsnPair.getValA()));
+          i = nextInsnPair.getValB();
 
-        // otherwise add the original instruction to the new code
+          // to conform, replace other INVOKEs as well
+        } else
+          newInsns.add(new DexPseudoinstruction_Invoke(
+                         (DexInstruction_Invoke) thisInsn));
       } else
-        newInsns.add(insns.get(i));
+        newInsns.add(thisInsn);
     }
 
     return new DexCode(code, newInsns);
