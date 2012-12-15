@@ -16,6 +16,7 @@ import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
@@ -133,6 +134,21 @@ public class DexPrototype {
         newParameterTypes.add(typeInteger);
 
     return new DexPrototype(newReturnType, newParameterTypes);
+  }
+
+  public List<DexRegister> instrumentInvokeCallArgumentRegisters(List<DexRegister> originalRegisters, boolean isStatic, DexCode_InstrumentationState state) {
+    val newArgumentRegisters = new LinkedList<DexRegister>();
+    newArgumentRegisters.addAll(originalRegisters);
+
+    int i = isStatic ? 0 : 1;
+    for (val paramType : parameterTypes) {
+      if (paramType instanceof DexPrimitiveType)
+        newArgumentRegisters.add(state.getTaintRegister(originalRegisters.get(i)));
+
+      i += paramType.getRegisters();
+    }
+
+    return newArgumentRegisters;
   }
 
   public static Cache<DexPrototype, ProtoIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {

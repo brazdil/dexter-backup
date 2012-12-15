@@ -241,10 +241,12 @@ public class DexCode {
 
         // replace INVOKE & MOVE_RESULT pairs with single
         // Invoke pseudoinstruction
-        if (nextInsnPair != null && nextInsnPair.getValA() instanceof DexInstruction_MoveResult) {
+        if (nextInsnPair != null &&
+            (nextInsnPair.getValA() instanceof DexInstruction_MoveResult) ||
+            (nextInsnPair.getValA() instanceof DexInstruction_MoveResultWide)) {
           newInsns.add(new DexPseudoinstruction_Invoke(
                          (DexInstruction_Invoke) thisInsn,
-                         (DexInstruction_MoveResult) nextInsnPair.getValA()));
+                         (DexInstruction) nextInsnPair.getValA()));
           i = nextInsnPair.getValB();
 
           // to conform, replace other INVOKEs as well

@@ -10,6 +10,7 @@ import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction51l;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -71,11 +72,28 @@ public class DexInstruction_ConstWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "const-wide v" + regTo1.getOriginalIndexString() + ", #" + value;
+    return "const-wide v" + regTo1.getOriginalIndexString() + "|v" + regTo2.getOriginalIndexString() + ", #" + value;
   }
 
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_ConstWide(getMethodCode(), mapping.get(regTo1), mapping.get(regTo2), value);
   }
+
+  @Override
+  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
+    return new DexCodeElement[] {
+             this,
+             new DexInstruction_Const(
+               getMethodCode(),
+               state.getTaintRegister(regTo1),
+               0),
+             new DexInstruction_Const(
+               getMethodCode(),
+               state.getTaintRegister(regTo2),
+               0)
+           };
+  }
+
+
 }
