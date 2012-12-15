@@ -118,7 +118,7 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   @Override
   public void instrument(DexInstrumentationCache cache) {
-    code = code.instrument(cache);
+    code.instrument(cache);
   }
 
   @Override
@@ -126,8 +126,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     // do register allocation
     // note that this changes the code itself
     // (adds temporaries, inserts move instructions)
-    val codeColoring = new GraphColoring(code);
-    val modifiedCode = codeColoring.getModifiedCode();
+    val codeColoring = new GraphColoring(code); // changes the code itself (potentially)
 
     // add parameter registers to the register allocation
     val registerAllocation = new HashMap<DexRegister, Integer>(codeColoring.getColoring());
@@ -154,7 +153,7 @@ public abstract class DexMethodWithCode extends DexMethod {
         registerAllocation.put(reg, 0);
 
     val assembledMoveInstructions = parameterMoveInstructions.assembleBytecode(registerAllocation, cache, 0);
-    val assembledCode = modifiedCode.assembleBytecode(registerAllocation, cache, assembledMoveInstructions.getTotalCodeLength());
+    val assembledCode = code.assembleBytecode(registerAllocation, cache, assembledMoveInstructions.getTotalCodeLength());
 
     List<Instruction> instructions = new ArrayList<Instruction>();
     instructions.addAll(assembledMoveInstructions.getInstructions());
@@ -168,7 +167,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     catchHandlers.addAll(assembledMoveInstructions.getCatchHandlers());
     catchHandlers.addAll(assembledCode.getCatchHandlers());
 
-    int outWords = modifiedCode.getOutWords();
+    int outWords = code.getOutWords();
 
     DebugInfoItem debugInfo = null;
 

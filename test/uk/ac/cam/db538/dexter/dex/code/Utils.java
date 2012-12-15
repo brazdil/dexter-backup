@@ -78,8 +78,8 @@ public class Utils {
   }
 
   public static void instrumentAndCompare(DexCode code, String[] output) {
-    val newCode = code.instrument(new DexInstrumentationCache(new DexParsingCache()));
-    val insnList = newCode.getInstructionList();
+    code.instrument(new DexInstrumentationCache(new DexParsingCache()));
+    val insnList = code.getInstructionList();
     assertEquals(output.length, insnList.size());
     for (int i = 0; i < output.length; ++i)
       assertEquals(output[i], insnList.get(i).getOriginalAssembly());

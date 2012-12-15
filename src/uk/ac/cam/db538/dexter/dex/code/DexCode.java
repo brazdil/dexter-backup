@@ -100,12 +100,6 @@ public class DexCode {
     tryBlocks = new HashSet<DexTryBlockEnd>();
   }
 
-  // creates a copy wit instruction replacement
-  public DexCode(DexCode oldCode, NoDuplicatesList<DexCodeElement> codeReplacement) {
-    this();
-    this.addAll(codeReplacement);
-  }
-
   public DexCode(CodeItem methodInfo, DexParsingCache cache) throws InstructionParsingException {
     this();
     parsingInfo = new DexCode_ParsingState(cache, this);
@@ -234,8 +228,8 @@ public class DexCode {
     return null;
   }
 
-  private static DexCode replaceWithPseudoinstructions(DexCode code) {
-    val insns = code.instructionList;
+  private void generatePseudoinstructions() {
+    val insns = instructionList;
     val codeLength = insns.size();
     val newInsns = new NoDuplicatesList<DexCodeElement>(codeLength);
 
@@ -261,11 +255,11 @@ public class DexCode {
         newInsns.add(thisInsn);
     }
 
-    return new DexCode(code, newInsns);
+    replaceInstructions(newInsns);
   }
 
-  private static DexCode unwrapPseudoinstructions(DexCode code) {
-    val insns = code.instructionList;
+  private void unwrapPseudoinstructions() {
+    val insns = instructionList;
     val codeLength = insns.size();
     val newInsns = new NoDuplicatesList<DexCodeElement>(codeLength);
 
@@ -275,16 +269,16 @@ public class DexCode {
       else
         newInsns.add(insn);
 
-    return new DexCode(code, newInsns);
+    replaceInstructions(newInsns);
   }
 
-  public DexCode instrument(DexInstrumentationCache cache) {
-    val pseudoCode = replaceWithPseudoinstructions(this);
+  public void instrument(DexInstrumentationCache cache) {
+    generatePseudoinstructions();
 
-    val instrumentedInsns = new NoDuplicatesList<DexCodeElement>(pseudoCode.instructionList.size() * 2);
+    val instrumentedInsns = new NoDuplicatesList<DexCodeElement>(instructionList.size() * 2);
     val instrumentationState = new DexCode_InstrumentationState(this, cache);
 
-    for (val elem : pseudoCode.instructionList) {
+    for (val elem : instructionList) {
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
         instrumentedInsns.addAll(insn.instrument(instrumentationState));
@@ -292,8 +286,9 @@ public class DexCode {
         instrumentedInsns.add(elem);
     }
 
-    val instrumentedCode = new DexCode(pseudoCode, instrumentedInsns);
-    return unwrapPseudoinstructions(instrumentedCode);
+    replaceInstructions(instrumentedInsns);
+
+    unwrapPseudoinstructions();
   }
 
   public Map<DexRegister, ColorRange> getRangeConstraints() {
@@ -369,6 +364,14 @@ public class DexCode {
         processFollowConstraint(constraint, allConstraints);
 
     return allConstraints;
+  }
+
+  public void replaceInstructions(List<DexCodeElement> newInsns) {
+    instructionList.clear();
+    usedRegisters.clear();
+    tryBlocks.clear();
+
+    addAll(newInsns);
   }
 
   private boolean allowJumpFix = true;

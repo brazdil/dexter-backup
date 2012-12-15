@@ -23,7 +23,6 @@ public class GraphColoring {
 
   @Getter private final DexCode code;
 
-  @Getter private DexCode modifiedCode;
   private Map<DexRegister, Integer> coloring;
   @Getter private int colorsUsed;
 
@@ -33,12 +32,11 @@ public class GraphColoring {
   }
 
   private void generateGC() {
-    modifiedCode = code;
     boolean colored = false;
     while (!colored) {
-      val nodeMap = generateNodeStates(modifiedCode);
+      val nodeMap = generateNodeStates(code);
       try {
-        colorGraph(nodeMap, new ClashGraph(modifiedCode));
+        colorGraph(nodeMap, new ClashGraph(code));
         val result = generateUngappedColoring(nodeMap);
 
         coloring = result.getValA();
@@ -48,7 +46,7 @@ public class GraphColoring {
       } catch (GraphUncolorableException e) {
         if (getStrictestColorRange(e.getProblematicNodeRun(), nodeMap) == ColorRange.RANGE_16BIT)
           throw new RuntimeException(e);
-        modifiedCode = generateCodeWithSpilledNode(modifiedCode, e.getProblematicNodeRun());
+        spillNodeInCode(code, e.getProblematicNodeRun());
       }
     }
   }
@@ -234,17 +232,17 @@ public class GraphColoring {
     return false;
   }
 
-  private static DexCode generateCodeWithSpilledNode(DexCode currentCode, NodeRun nodeRun) {
+  private static void spillNodeInCode(DexCode code, NodeRun nodeRun) {
     val newInstructions = new NoDuplicatesList<DexCodeElement>();
 
-    for (val insn : currentCode.getInstructionList()) {
+    for (val insn : code.getInstructionList()) {
       if (containsAnyOfNodes(insn.lvaUsedRegisters(), nodeRun))
         newInstructions.addAll(insn.gcAddTemporaries(nodeRun.getNodes()));
       else
         newInstructions.add(insn);
     }
 
-    return new DexCode(currentCode, newInstructions);
+    code.replaceInstructions(newInstructions);
   }
 
   private static Pair<Map<DexRegister, Integer>, Integer> generateUngappedColoring(NodeStatesMap nodeMap) {

@@ -56,6 +56,9 @@ public class GraphColoring_ActualSituations_Test {
     genClash(code, rY, rX);
     genClash(code, rY, rZ);
 
+    // remember original number of instructions
+    int codeLength = code.getInstructionList().size();
+
     // generate coloring
     val coloring = new GraphColoring(code);
     int cA = coloring.getColor(rA);
@@ -68,7 +71,7 @@ public class GraphColoring_ActualSituations_Test {
     int cZ = coloring.getColor(rZ);
 
     // check that the code hasn't changed
-    assertEquals(coloring.getCode(), coloring.getModifiedCode());
+    assertEquals(codeLength, code.getInstructionList().size());
 
     // check that there are no clashes in the coloring
     assertTrue(cA != cB);
@@ -108,11 +111,10 @@ public class GraphColoring_ActualSituations_Test {
     for (int i = 0; i < SpillingRegCount; ++i)
       gen4bitRangeConstraint(code, regs[i], cache);
 
-    val coloring = new GraphColoring(code);
-    val newCode = coloring.getModifiedCode();
+    val coloring = new GraphColoring(code); // will change the code
 
     // should have increased the number of registers
-    assertEquals((SpillingRegCount_ExpectedSpilledRegs + 1) * SpillingRegCount, newCode.getUsedRegisters().size());
+    assertEquals((SpillingRegCount_ExpectedSpilledRegs + 1) * SpillingRegCount, code.getUsedRegisters().size());
     assertEquals(SpillingRegCount + 2, coloring.getColorsUsed()); // needs two distinct temp registers
 
     // check that there are no clashes

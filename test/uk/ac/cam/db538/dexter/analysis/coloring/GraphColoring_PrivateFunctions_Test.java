@@ -642,15 +642,14 @@ public class GraphColoring_PrivateFunctions_Test {
 
   // GENERATE CODE WITH SPILLED NODE
 
-  private static DexCode execGenerateCodeWithSpilledNode(DexCode currentCode, NodeRun nodeRun) {
+  private static void execSpillNodeInCode(DexCode currentCode, NodeRun nodeRun) {
     try {
-      Method m = GraphColoring.class.getDeclaredMethod("generateCodeWithSpilledNode", DexCode.class, NodeRun.class);
+      Method m = GraphColoring.class.getDeclaredMethod("spillNodeInCode", DexCode.class, NodeRun.class);
       m.setAccessible(true);
-      return (DexCode) m.invoke(null, currentCode, nodeRun);
+      m.invoke(null, currentCode, nodeRun);
     } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
       e.printStackTrace(System.err);
       fail("Couldn't execute method: " + e.getClass().getSimpleName());
-      return null;
     }
   }
 
@@ -675,12 +674,12 @@ public class GraphColoring_PrivateFunctions_Test {
 
     val nodeRun = new NodeRun();
 
-    val newCode = execGenerateCodeWithSpilledNode(code, nodeRun);
-    assertEquals(4, newCode.getInstructionList().size());
-    assertEquals(i1, newCode.getInstructionList().get(0));
-    assertEquals(i2, newCode.getInstructionList().get(1));
-    assertEquals(i3, newCode.getInstructionList().get(2));
-    assertEquals(i4, newCode.getInstructionList().get(3));
+    execSpillNodeInCode(code, nodeRun);
+    assertEquals(4, code.getInstructionList().size());
+    assertEquals(i1, code.getInstructionList().get(0));
+    assertEquals(i2, code.getInstructionList().get(1));
+    assertEquals(i3, code.getInstructionList().get(2));
+    assertEquals(i4, code.getInstructionList().get(3));
   }
 
   @Test
@@ -706,8 +705,8 @@ public class GraphColoring_PrivateFunctions_Test {
     nodeRun.add(r2); // new Pair<DexRegister, ColorRange>(r2, ColorRange.RANGE_8BIT));
     nodeRun.add(r3); // new Pair<DexRegister, ColorRange>(r3, ColorRange.RANGE_8BIT));
 
-    val newCode = execGenerateCodeWithSpilledNode(code, nodeRun);
-    val insns = newCode.getInstructionList();
+    execSpillNodeInCode(code, nodeRun);
+    val insns = code.getInstructionList();
     assertTrue(insns.contains(i1));
     assertFalse(insns.contains(i2));
     assertFalse(insns.contains(i3));
