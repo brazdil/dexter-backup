@@ -14,6 +14,7 @@ import lombok.val;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
+import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
@@ -24,6 +25,8 @@ public class Dex {
   @Getter private final DexClassHierarchy classHierarchy;
 
   @Getter private DexClassType objectTaintStorageType;
+  @Getter private DexMethod objectTaintStorage_Get;
+  @Getter private DexMethod objectTaintStorage_Set;
 
   @Getter private final DexParsingCache parsingCache;
 
@@ -109,8 +112,15 @@ public class Dex {
     parsingCache.removeDescriptorReplacement(CLASS_OBJTAINT);
     parsingCache.removeDescriptorReplacement(CLASS_OBJTAINTENTRY);
 
-    // store Object Taint Storage class type
+    // store Object Taint Storage class type and method references
     objectTaintStorageType = clsObjTaint;
+    for (val clazz : extraClasses)
+      if (clazz.getType() == objectTaintStorageType)
+        for (val method : clazz.getMethods())
+          if (method.getName().equals("get"))
+            objectTaintStorage_Get = method;
+          else if (method.getName().equals("set"))
+            objectTaintStorage_Set = method;
 
     return extraClasses;
   }

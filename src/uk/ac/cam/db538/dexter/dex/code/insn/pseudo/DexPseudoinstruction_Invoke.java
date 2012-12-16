@@ -10,6 +10,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
@@ -17,7 +18,6 @@ import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexLong;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
@@ -86,14 +86,15 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
         // result of the method is a combination of the original value and its taint tag
         return new DexCodeElement[] {
-                 new DexPseudoinstruction_Invoke(
-                   newInstructionInvoke,
-                   new DexInstruction_MoveResultWide(code, regPrimitive, regTaint))
+                 newInstructionInvoke,
+                 new DexInstruction_MoveResultWide(code, regPrimitive, regTaint)
                };
       } else {
         val regObj = new DexRegister();
         val regTo1 = ((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo1();
         val regTo2 = ((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo2();
+        val regTaint1 = state.getTaintRegister(regTo1);
+        val regTaint2 = state.getTaintRegister(regTo2);
 
         String convertFnName = null;
         String convertFnReturnType = null;
@@ -106,21 +107,24 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
         }
 
         return new DexCodeElement[] {
-                 new DexPseudoinstruction_Invoke(
-                   newInstructionInvoke,
-                   new DexInstruction_MoveResult(code, regObj, true)),
-                 new DexPseudoinstruction_Invoke(
-                   new DexInstruction_Invoke(
-                     code,
-                     (DexClassType) newReturnType,
-                     convertFnName,
-                     new DexPrototype(DexPrimitiveType.parse(convertFnReturnType), null),
-                     Arrays.asList(new DexRegister[] { regObj }),
-                     Opcode_Invoke.Virtual),
-                   new DexInstruction_MoveResultWide(
-                     code,
-                     regTo1,
-                     regTo2))
+                 newInstructionInvoke,
+                 new DexInstruction_MoveResult(code, regObj, true),
+                 new DexInstruction_Invoke(
+                   code,
+                   (DexClassType) newReturnType,
+                   convertFnName,
+                   new DexPrototype(DexPrimitiveType.parse(convertFnReturnType), null),
+                   Arrays.asList(new DexRegister[] { regObj }),
+                   Opcode_Invoke.Virtual),
+                 new DexInstruction_MoveResultWide(
+                   code,
+                   regTo1,
+                   regTo2),
+                 new DexPseudoinstruction_GetObjectTaint(
+                   code,
+                   regTaint1,
+                   regObj),
+                 new DexInstruction_Move(code, regTaint2, regTaint1, false)
                };
       }
     } else

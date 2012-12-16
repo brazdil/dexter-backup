@@ -80,6 +80,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.InstructionOffsetException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -88,6 +89,7 @@ public class DexCode {
   private final NoDuplicatesList<DexCodeElement> instructionList;
   private final Set<DexRegister> usedRegisters;
   private final Set<DexTryBlockEnd> tryBlocks;
+  @Getter private final DexMethod parentMethod;
 
   // stores information about original register mapping
   // is null for run-time generated code
@@ -95,15 +97,24 @@ public class DexCode {
 
   // creates completely empty code
   public DexCode() {
-    instructionList = new NoDuplicatesList<DexCodeElement>();
-    usedRegisters = new HashSet<DexRegister>();
-    tryBlocks = new HashSet<DexTryBlockEnd>();
+    this(null);
   }
 
-  public DexCode(CodeItem methodInfo, DexParsingCache cache) throws InstructionParsingException {
-    this();
+  public DexCode(DexMethod parentMethod) {
+    this.instructionList = new NoDuplicatesList<DexCodeElement>();
+    this.usedRegisters = new HashSet<DexRegister>();
+    this.tryBlocks = new HashSet<DexTryBlockEnd>();
+    this.parentMethod = parentMethod;
+  }
+
+  public DexCode(CodeItem methodInfo, DexMethod parentMethod, DexParsingCache cache) {
+    this(parentMethod);
     parsingInfo = new DexCode_ParsingState(cache, this);
     parseInstructions(methodInfo.getInstructions(), methodInfo.getHandlers(), methodInfo.getTries(), parsingInfo);
+  }
+
+  public DexCode(CodeItem methodInfo, DexParsingCache cache) {
+    this(methodInfo, null, cache);
   }
 
   // called internally and from tests
