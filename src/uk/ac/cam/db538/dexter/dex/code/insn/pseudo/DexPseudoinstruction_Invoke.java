@@ -84,10 +84,15 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
         val regPrimitive = originalMoveResult.getRegTo();
         val regTaint = state.getTaintRegister(regPrimitive);
 
+        val regTempResult1 = new DexRegister();
+        val regTempResult2 = new DexRegister();
+
         // result of the method is a combination of the original value and its taint tag
         return new DexCodeElement[] {
                  newInstructionInvoke,
-                 new DexInstruction_MoveResultWide(code, regPrimitive, regTaint)
+                 new DexInstruction_MoveResultWide(code, regTempResult1, regTempResult2),
+                 new DexInstruction_Move(code, regPrimitive, regTempResult1, false),
+                 new DexInstruction_Move(code, regTaint, regTempResult2, false)
                };
       } else {
         val regObj = new DexRegister();

@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.dex.method;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import lombok.Getter;
 import lombok.val;
@@ -72,17 +73,23 @@ public class DexPrototype {
     return parameterTypes.size() + (isStatic ? 0 : 1);
   }
 
-  public int getParameterRegisterId(int paramId, int registerCount, boolean isStatic, DexClass clazz) {
-    int regId = registerCount - getParameterCount(isStatic);
+  public int getParameterRegisterId(int paramId, int registerCount, boolean isStatic) {
+    return getFirstParameterRegisterIndex(paramId, isStatic) + registerCount - countParamWords(isStatic);
+  }
+
+  public int getFirstParameterRegisterIndex(int paramId, boolean isStatic) {
     if (paramId == 0)
-      return regId;
-    else if (!isStatic) {
-      regId += clazz.getType().getRegisters();
+      return 0;
+
+    int regId = 0;
+
+    if (!isStatic) {
+      regId += DexClassType.TypeSize.getRegisterCount();
       paramId--;
     }
 
     for (int i = 0; i < paramId; ++i)
-      regId = parameterTypes.get(i).getRegisters();
+      regId += parameterTypes.get(i).getRegisters();
 
     return regId;
   }
@@ -149,6 +156,33 @@ public class DexPrototype {
     }
 
     return newArgumentRegisters;
+  }
+
+  public void instrumentMethod(DexMethodWithCode method, List<DexRegister> parameterRegisters, Map<DexRegister, DexRegister> parameterMappings, DexCode_InstrumentationState instrumentationState) {
+    method.setPrototype(this.getInstrumentedPrototype(instrumentationState.getCache()));
+
+    int i = method.isStatic() ? 0 : 1;
+    int taintRegCount = 0;
+    for (val paramType : parameterTypes) {
+      if (paramType instanceof DexPrimitiveType) {
+        // add new register to parameters
+        val taintReg = new DexRegister();
+        int taintParamIndex = (method.isStatic() ? 0 : 1) + parameterTypes.size() + (taintRegCount++);
+        parameterRegisters.add(taintReg);
+
+        // create mappings to the taint register(s) inside the code
+        val paramReg1 = parameterRegisters.get(i);
+        val codeReg1 = parameterMappings.get(paramReg1);
+        method.addParameterMapping_Single(taintParamIndex, instrumentationState.getTaintRegister(codeReg1));
+        if (paramType.isWide()) {
+          val paramReg2 = parameterRegisters.get(i + 1);
+          val codeReg2 = parameterMappings.get(paramReg2);
+          method.addParameterMapping_Single(taintParamIndex, instrumentationState.getTaintRegister(codeReg2));
+        }
+      }
+
+      i += paramType.getRegisters();
+    }
   }
 
   public static Cache<DexPrototype, ProtoIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {

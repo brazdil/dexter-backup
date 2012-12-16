@@ -2,8 +2,8 @@ package uk.ac.cam.db538.dexter.dex.method;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -33,12 +33,12 @@ import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public abstract class DexMethodWithCode extends DexMethod {
 
-  @Getter private DexCode code;
+  @Getter protected DexCode code;
   @Getter private final boolean direct;
 
-  private final NoDuplicatesList<DexRegister> parameterRegisters;
+  protected final NoDuplicatesList<DexRegister> parameterRegisters;
+  protected final Map<DexRegister, DexRegister> parameterMappings;
   private final DexCode parameterMoveInstructions;
-  private final Set<DexRegister> parameterMappedRegisters;
 
   public DexMethodWithCode(DexClass parent, String name, Set<AccessFlags> accessFlags,
                            DexPrototype prototype, DexCode code,
@@ -48,7 +48,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     this.direct = direct;
     this.parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
     this.parameterMoveInstructions = new DexCode();
-    this.parameterMappedRegisters = new HashSet<DexRegister>();
+    this.parameterMappings = new HashMap<DexRegister, DexRegister>();
   }
 
   public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, InstructionParsingException {
@@ -60,18 +60,21 @@ public abstract class DexMethodWithCode extends DexMethod {
     direct = methodInfo.isDirect();
     parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
     parameterMoveInstructions = new DexCode();
-    parameterMappedRegisters = new HashSet<DexRegister>();
+    this.parameterMappings = new HashMap<DexRegister, DexRegister>();
 
     val prototype = this.getPrototype();
     val isStatic = this.isStatic();
     val clazz = this.getParentClass();
 
+    System.out.println("Method: " + this.getName());
+
     // create the parameter-register mappings
     val regCount = methodInfo.codeItem.getRegisterCount();
     val paramCount = prototype.getParameterCount(isStatic);
     for (int i = 0; i < paramCount; ++i) {
-      val paramRegId = prototype.getParameterRegisterId(i, regCount, isStatic, clazz);
+      val paramRegId = prototype.getParameterRegisterId(i, regCount, isStatic);
       val paramType = prototype.getParameterType(i, isStatic, clazz);
+      System.out.println("  param #" + i + ": " + paramType.getPrettyName() + ", v" + paramRegId);
       switch (paramType.getTypeSize()) {
       case SINGLE:
         val regSingle = code.getRegisterByOriginalNumber(paramRegId);
@@ -90,25 +93,29 @@ public abstract class DexMethodWithCode extends DexMethod {
     if (!code.getUsedRegisters().contains(codeReg))
       return;
 
-    val paramType = this.getPrototype().getParameterType(paramIndex, this.isStatic(), this.getParentClass());
-    val paramReg = parameterRegisters.get(paramIndex);
+    val paramType = this.prototype.getParameterType(paramIndex, this.isStatic(), this.getParentClass());
+
+    val regIndex = this.prototype.getFirstParameterRegisterIndex(paramIndex, isStatic());
+    val paramReg = parameterRegisters.get(regIndex);
 
     parameterMoveInstructions.add(new DexInstruction_Move(code, codeReg, paramReg, paramType instanceof DexReferenceType));
 
-    parameterMappedRegisters.add(codeReg);
+    parameterMappings.put(paramReg, codeReg);
   }
 
   public void addParameterMapping_Wide(int paramIndex, DexRegister codeReg1, DexRegister codeReg2) {
     if (!code.getUsedRegisters().contains(codeReg1) && !code.getUsedRegisters().contains(codeReg2))
       return;
 
-    val paramReg1 = parameterRegisters.get(paramIndex);
-    val paramReg2 = parameterRegisters.get(paramIndex + 1);
+    val firstRegIndex = this.prototype.getFirstParameterRegisterIndex(paramIndex, isStatic());
+
+    val paramReg1 = parameterRegisters.get(firstRegIndex);
+    val paramReg2 = parameterRegisters.get(firstRegIndex + 1);
 
     parameterMoveInstructions.add(new DexInstruction_MoveWide(code, codeReg1, codeReg2, paramReg1, paramReg2));
 
-    parameterMappedRegisters.add(codeReg1);
-    parameterMappedRegisters.add(codeReg2);
+    parameterMappings.put(paramReg1, codeReg1);
+    parameterMappings.put(paramReg2, codeReg2);
   }
 
   @Override
@@ -148,7 +155,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     // the move instruction would fail...
     // so add these into the register allocation...
     // the color doesn't matter
-    for (val reg : parameterMappedRegisters)
+    for (val reg : parameterMappings.values())
       if (!registerAllocation.containsKey(reg))
         registerAllocation.put(reg, 0);
 

@@ -95,6 +95,8 @@ public class DexCode {
   // is null for run-time generated code
   private DexCode_ParsingState parsingInfo = null;
 
+  @Getter private DexCode_InstrumentationState instrumentationState = null;
+
   // creates completely empty code
   public DexCode() {
     this(null);
@@ -288,8 +290,8 @@ public class DexCode {
   public void instrument(DexInstrumentationCache cache) {
     generatePseudoinstructions();
 
+    instrumentationState = new DexCode_InstrumentationState(this, cache);
     val instrumentedInsns = new NoDuplicatesList<DexCodeElement>(instructionList.size() * 2);
-    val instrumentationState = new DexCode_InstrumentationState(this, cache);
 
     for (val elem : instructionList) {
       if (elem instanceof DexInstruction) {
