@@ -84,12 +84,9 @@ public class DexInstruction_ConstWide extends DexInstruction {
   public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
     return new DexCodeElement[] {
              this,
-             new DexInstruction_Const(
+             new DexInstruction_ConstWide(
                getMethodCode(),
                state.getTaintRegister(regTo1),
-               0),
-             new DexInstruction_Const(
-               getMethodCode(),
                state.getTaintRegister(regTo2),
                0)
            };
