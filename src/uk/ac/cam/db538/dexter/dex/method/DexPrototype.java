@@ -15,8 +15,10 @@ import org.jf.dexlib.TypeListItem;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.utils.Cache;
@@ -108,6 +110,19 @@ public class DexPrototype {
     return regs;
   }
 
+  public List<DexRegister> generateArgumentTaintStoringRegisters(List<DexRegister> argumentRegisters, boolean isStatic, DexCode_InstrumentationState state) {
+    val argStoreRegs = new LinkedList<DexRegister>();
+
+    int i = isStatic ? 0 : 1;
+    for (val paramType : parameterTypes) {
+      if (paramType instanceof DexPrimitiveType)
+        argStoreRegs.add(state.getTaintRegister(argumentRegisters.get(i)));
+      i += paramType.getRegisters();
+    }
+
+    return argStoreRegs;
+  }
+
   public static Cache<DexPrototype, ProtoIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
     return new Cache<DexPrototype, ProtoIdItem>() {
       @Override
@@ -118,5 +133,12 @@ public class DexPrototype {
                  cache.getTypeList(prototype.getParameterTypes()));
       }
     };
+  }
+
+  public boolean hasPrimitiveArgument() {
+    for (val paramType : parameterTypes)
+      if (paramType instanceof DexPrimitiveType)
+        return true;
+    return false;
   }
 }

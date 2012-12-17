@@ -258,6 +258,7 @@ public class DexCode {
             (nextInsnPair.getValA() instanceof DexInstruction_MoveResult) ||
             (nextInsnPair.getValA() instanceof DexInstruction_MoveResultWide)) {
           newInsns.add(new DexPseudoinstruction_Invoke(
+                         this,
                          (DexInstruction_Invoke) thisInsn,
                          (DexInstruction) nextInsnPair.getValA()));
           i = nextInsnPair.getValB();
@@ -265,6 +266,7 @@ public class DexCode {
           // to conform, replace other INVOKEs as well
         } else
           newInsns.add(new DexPseudoinstruction_Invoke(
+                         this,
                          (DexInstruction_Invoke) thisInsn));
       } else
         newInsns.add(thisInsn);

@@ -21,6 +21,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
@@ -42,6 +43,15 @@ public class DexInstruction_Invoke extends DexInstruction {
     this.callType = callType;
 
     checkArguments();
+  }
+
+  public DexInstruction_Invoke(DexCode methodCode, DexDirectMethod method, List<DexRegister> argumentRegisters) {
+    this(methodCode,
+         method.getParentClass().getType(),
+         method.getName(),
+         method.getPrototype(),
+         argumentRegisters,
+         method.getCallType());
   }
 
   public DexInstruction_Invoke(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {

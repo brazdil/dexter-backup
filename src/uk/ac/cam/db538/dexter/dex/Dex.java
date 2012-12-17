@@ -14,7 +14,7 @@ import lombok.val;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
-import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
@@ -25,16 +25,16 @@ public class Dex {
   @Getter private final DexClassHierarchy classHierarchy;
 
   @Getter private DexClassType objectTaintStorage_Type;
-  @Getter private DexMethod objectTaintStorage_Get;
-  @Getter private DexMethod objectTaintStorage_Set;
+  @Getter private DexDirectMethod objectTaintStorage_Get;
+  @Getter private DexDirectMethod objectTaintStorage_Set;
 
   @Getter private DexClassType methodCallHelper_Type;
   @Getter private DexField methodCallHelper_Arg;
   @Getter private DexField methodCallHelper_Res;
   @Getter private DexField methodCallHelper_SArg;
   @Getter private DexField methodCallHelper_SRes;
-  @Getter private DexMethod methodCallHelper_SArgAcquire;
-  @Getter private DexMethod methodCallHelper_SResAcquire;
+  @Getter private DexDirectMethod methodCallHelper_SArgAcquire;
+  @Getter private DexDirectMethod methodCallHelper_SResAcquire;
 
   @Getter private final DexParsingCache parsingCache;
 
@@ -128,18 +128,27 @@ public class Dex {
     objectTaintStorage_Type = clsObjTaint;
     methodCallHelper_Type = clsMethodCallHelper;
     for (val clazz : extraClasses)
+
       if (clazz.getType() == objectTaintStorage_Type) {
-        for (val method : clazz.getMethods())
+        for (val method : clazz.getMethods()) {
+          if (! (method instanceof DexDirectMethod))
+            continue;
           if (method.getName().equals("get"))
-            objectTaintStorage_Get = method;
+            objectTaintStorage_Get = (DexDirectMethod) method;
           else if (method.getName().equals("set"))
-            objectTaintStorage_Set = method;
+            objectTaintStorage_Set = (DexDirectMethod) method;
+        }
+
       } else if (clazz.getType() == methodCallHelper_Type) {
-        for (val method : clazz.getMethods())
+        for (val method : clazz.getMethods()) {
+          if (! (method instanceof DexDirectMethod))
+            continue;
           if (method.getName().equals("S_ARG_acquire"))
-            methodCallHelper_SArgAcquire = method;
+            methodCallHelper_SArgAcquire = (DexDirectMethod) method;
           else if (method.getName().equals("S_RES_acquire"))
-            methodCallHelper_SResAcquire = method;
+            methodCallHelper_SResAcquire = (DexDirectMethod) method;
+        }
+
         for (val field : clazz.getFields())
           if (field.getName().equals("ARG"))
             methodCallHelper_Arg = field;
