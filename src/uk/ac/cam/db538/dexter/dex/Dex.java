@@ -24,9 +24,17 @@ public class Dex {
   private final List<DexClass> classes;
   @Getter private final DexClassHierarchy classHierarchy;
 
-  @Getter private DexClassType objectTaintStorageType;
+  @Getter private DexClassType objectTaintStorage_Type;
   @Getter private DexMethod objectTaintStorage_Get;
   @Getter private DexMethod objectTaintStorage_Set;
+
+  @Getter private DexClassType methodCallHelper_Type;
+  @Getter private DexField methodCallHelper_Arg;
+  @Getter private DexField methodCallHelper_Res;
+  @Getter private DexField methodCallHelper_SArg;
+  @Getter private DexField methodCallHelper_SRes;
+  @Getter private DexMethod methodCallHelper_SArgAcquire;
+  @Getter private DexMethod methodCallHelper_SResAcquire;
 
   @Getter private final DexParsingCache parsingCache;
 
@@ -92,10 +100,12 @@ public class Dex {
     // generate names
     val clsObjTaint = generateClassType();
     val clsObjTaintEntry = generateClassType();
+    val clsMethodCallHelper = generateClassType();
 
     // set descriptor replacements
     parsingCache.setDescriptorReplacement(CLASS_OBJTAINT, clsObjTaint.getDescriptor());
     parsingCache.setDescriptorReplacement(CLASS_OBJTAINTENTRY, clsObjTaintEntry.getDescriptor());
+    parsingCache.setDescriptorReplacement(CLASS_METHODCALLHELPER, clsMethodCallHelper.getDescriptor());
 
     // open the merge DEX file
     DexFile mergeDex;
@@ -111,16 +121,35 @@ public class Dex {
     // remove descriptor replacements
     parsingCache.removeDescriptorReplacement(CLASS_OBJTAINT);
     parsingCache.removeDescriptorReplacement(CLASS_OBJTAINTENTRY);
+    parsingCache.removeDescriptorReplacement(CLASS_METHODCALLHELPER);
 
     // store Object Taint Storage class type and method references
-    objectTaintStorageType = clsObjTaint;
+    // store MethodCallHelper class type & method and field references
+    objectTaintStorage_Type = clsObjTaint;
+    methodCallHelper_Type = clsMethodCallHelper;
     for (val clazz : extraClasses)
-      if (clazz.getType() == objectTaintStorageType)
+      if (clazz.getType() == objectTaintStorage_Type) {
         for (val method : clazz.getMethods())
           if (method.getName().equals("get"))
             objectTaintStorage_Get = method;
           else if (method.getName().equals("set"))
             objectTaintStorage_Set = method;
+      } else if (clazz.getType() == methodCallHelper_Type) {
+        for (val method : clazz.getMethods())
+          if (method.getName().equals("S_ARG_acquire"))
+            methodCallHelper_SArgAcquire = method;
+          else if (method.getName().equals("S_RES_acquire"))
+            methodCallHelper_SResAcquire = method;
+        for (val field : clazz.getFields())
+          if (field.getName().equals("ARG"))
+            methodCallHelper_Arg = field;
+          else if (field.getName().equals("RES"))
+            methodCallHelper_Res = field;
+          else if (field.getName().equals("S_ARG"))
+            methodCallHelper_SArg = field;
+          else if (field.getName().equals("S_RES"))
+            methodCallHelper_SRes = field;
+      }
 
     return extraClasses;
   }
@@ -165,4 +194,5 @@ public class Dex {
 
   private static final String CLASS_OBJTAINT = "Luk/ac/cam/db538/dexter/merge/ObjectTaintStorage;";
   private static final String CLASS_OBJTAINTENTRY = "Luk/ac/cam/db538/dexter/merge/ObjectTaintStorage$Entry;";
+  private static final String CLASS_METHODCALLHELPER = "Luk/ac/cam/db538/dexter/merge/MethodCallHelper;";
 }
