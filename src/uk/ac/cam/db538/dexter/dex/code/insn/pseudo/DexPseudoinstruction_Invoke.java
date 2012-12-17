@@ -170,39 +170,54 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     val dex = methodCode.getParentMethod().getParentClass().getParentFile();
 
     val instrumentedCode = new LinkedList<DexCodeElement>();
-    val regInternalInstance = new DexRegister();
-    val labelExternal = new DexLabel(methodCode);
-    val labelEnd = new DexLabel(methodCode);
 
-    // TEST IF INSTANCEOF InternalClassInterface
+    // try to find an internal class that extends the invoked class type
+    // if there isn't one, the call will always be external
+    val invokedClassType = instructionInvoke.getClassType();
+    boolean canBeInternalCall = false;
+    for (val clazz : dex.getClasses())
+      if (dex.getClassHierarchy().isAncestor(clazz.getType(), invokedClassType)) {
+        canBeInternalCall = true;
+        break;
+      }
 
-    instrumentedCode.add(
-      new DexInstruction_InstanceOf(
-        methodCode,
-        regInternalInstance,
-        instructionInvoke.getArgumentRegisters().get(0),
-        dex.getInternalClassInterface_Type()));
-    instrumentedCode.add(
-      new DexInstruction_IfTestZero(
-        methodCode,
-        regInternalInstance,
-        labelExternal,
-        Opcode_IfTestZero.eqz));
+    if (canBeInternalCall) {
+      val regInternalInstance = new DexRegister();
+      val labelExternal = new DexLabel(methodCode);
+      val labelEnd = new DexLabel(methodCode);
 
-    // INTERNAL CALL
+      // TEST IF INSTANCEOF InternalClassInterface
 
-    instrumentedCode.addAll(generatePreInternalCallCode(state));
-    instrumentedCode.add(this);
-    instrumentedCode.addAll(generatePostInternalCallCode(state));
+      instrumentedCode.add(
+        new DexInstruction_InstanceOf(
+          methodCode,
+          regInternalInstance,
+          instructionInvoke.getArgumentRegisters().get(0),
+          dex.getInternalClassInterface_Type()));
+      instrumentedCode.add(
+        new DexInstruction_IfTestZero(
+          methodCode,
+          regInternalInstance,
+          labelExternal,
+          Opcode_IfTestZero.eqz));
 
-    instrumentedCode.add(new DexInstruction_Goto(methodCode, labelEnd));
+      // INTERNAL CALL
 
-    // EXTERNAL CALL
+      instrumentedCode.addAll(generatePreInternalCallCode(state));
+      instrumentedCode.add(cloneThisInstruction());
+      instrumentedCode.addAll(generatePostInternalCallCode(state));
 
-    instrumentedCode.add(labelExternal);
-    instrumentedCode.add(cloneThisInstruction());
+      instrumentedCode.add(new DexInstruction_Goto(methodCode, labelEnd));
 
-    instrumentedCode.add(labelEnd);
+      // EXTERNAL CALL
+
+      instrumentedCode.add(labelExternal);
+      instrumentedCode.add(this);
+
+      instrumentedCode.add(labelEnd);
+    } else {
+      instrumentedCode.add(this);
+    }
 
     return instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]);
   }
