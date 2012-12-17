@@ -17,6 +17,7 @@ import lombok.val;
 
 import org.apache.bcel.classfile.ClassParser;
 
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
@@ -160,6 +161,10 @@ public class DexClassHierarchy {
     return false;
   }
 
+  public void addImplementedInterface(DexClassType clazz, DexClassType interfaceClazz) {
+    classes.get(clazz).getInterfaces().add(interfaceClazz);
+  }
+
   private boolean wouldIntroduceLoop(DexClassType clazz, DexClassType superclazz) {
     DexClassType currClazz = superclazz;
 
@@ -189,4 +194,5 @@ public class DexClassHierarchy {
     private final Set<DexClassType> interfaces;
     private final boolean flaggedInterface;
   }
+
 }

@@ -36,6 +36,8 @@ public class Dex {
   @Getter private DexDirectMethod methodCallHelper_SArgAcquire;
   @Getter private DexDirectMethod methodCallHelper_SResAcquire;
 
+  @Getter private DexClassType internalClassInterface_Type;
+
   @Getter private final DexParsingCache parsingCache;
 
   public Dex() {
@@ -101,11 +103,13 @@ public class Dex {
     val clsObjTaint = generateClassType();
     val clsObjTaintEntry = generateClassType();
     val clsMethodCallHelper = generateClassType();
+    val clsInternalClassInterface = generateClassType();
 
     // set descriptor replacements
     parsingCache.setDescriptorReplacement(CLASS_OBJTAINT, clsObjTaint.getDescriptor());
     parsingCache.setDescriptorReplacement(CLASS_OBJTAINTENTRY, clsObjTaintEntry.getDescriptor());
     parsingCache.setDescriptorReplacement(CLASS_METHODCALLHELPER, clsMethodCallHelper.getDescriptor());
+    parsingCache.setDescriptorReplacement(CLASS_INTERNALCLASS, clsInternalClassInterface.getDescriptor());
 
     // open the merge DEX file
     DexFile mergeDex;
@@ -122,11 +126,13 @@ public class Dex {
     parsingCache.removeDescriptorReplacement(CLASS_OBJTAINT);
     parsingCache.removeDescriptorReplacement(CLASS_OBJTAINTENTRY);
     parsingCache.removeDescriptorReplacement(CLASS_METHODCALLHELPER);
+    parsingCache.removeDescriptorReplacement(CLASS_INTERNALCLASS);
 
     // store Object Taint Storage class type and method references
     // store MethodCallHelper class type & method and field references
     objectTaintStorage_Type = clsObjTaint;
     methodCallHelper_Type = clsMethodCallHelper;
+    internalClassInterface_Type = clsInternalClassInterface;
     for (val clazz : extraClasses)
 
       if (clazz.getType() == objectTaintStorage_Type) {
@@ -204,4 +210,5 @@ public class Dex {
   private static final String CLASS_OBJTAINT = "Luk/ac/cam/db538/dexter/merge/ObjectTaintStorage;";
   private static final String CLASS_OBJTAINTENTRY = "Luk/ac/cam/db538/dexter/merge/ObjectTaintStorage$Entry;";
   private static final String CLASS_METHODCALLHELPER = "Luk/ac/cam/db538/dexter/merge/MethodCallHelper;";
+  private static final String CLASS_INTERNALCLASS = "Luk/ac/cam/db538/dexter/merge/InternalClassInterface;";
 }

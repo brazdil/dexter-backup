@@ -138,6 +138,10 @@ public class DexClass {
   }
 
   public void instrument(DexInstrumentationCache cache) {
+    this.parentFile.getClassHierarchy().addImplementedInterface(
+      this.getType(),
+      this.parentFile.getInternalClassInterface_Type());
+
     for (val method : methods)
       method.instrument(cache);
   }
