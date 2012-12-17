@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.merge;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.Semaphore;
 
 public class MethodCallHelper {
@@ -33,13 +34,13 @@ public class MethodCallHelper {
     S_ARG_acquire();
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws NoSuchMethodException, SecurityException, InterruptedException {
     S_ARG.release();
 
     int x = 5, y = 10;
     int tx = 1, ty = 0;
 
-    S_ARG_acquire();
+    S_ARG.acquire();
     ARG[0] = tx;
     ARG[1] = ty;
     int z = add(x, y);
@@ -49,13 +50,17 @@ public class MethodCallHelper {
     System.out.println(x + "|" + tx + " + " + y + "|" + ty + " = " + z + "|" + tz);
 
     Object o = new Object();
+    Method m = o.getClass().getMethod("equals", Object.class);
+    if (m.getAnnotation(SafeVarargs.class) != null)
+      System.out.println("Has Nonnull annotation");
+
     if (o instanceof InternalClassInterface)
       System.out.println("INTERNAL");
     else
       System.out.println("EXTERNAL");
   }
 
-  public static int add(int a, int b) {
+  public static int add(int a, int b) throws InterruptedException {
     int ta = ARG[0];
     int tb = ARG[1];
     S_ARG.release();
@@ -63,7 +68,7 @@ public class MethodCallHelper {
     int res = a + b;
     int tres = ta | tb;
 
-    S_RES_acquire();
+    S_RES.acquire();
     RES = tres;
     return res;
   }

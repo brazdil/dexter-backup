@@ -165,28 +165,70 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     return instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]);
   }
 
+  private boolean canBeInternalCall() {
+    val dex = getMethodCode().getParentMethod().getParentClass().getParentFile();
+
+    val invokedClassType = instructionInvoke.getClassType();
+    val invokedMethodName = instructionInvoke.getMethodName();
+    val invokedMethodPrototype = instructionInvoke.getMethodPrototype();
+
+    // try to find an internal class that extends the invoked class type
+    // if there isn't one, the call will always be external
+    for (val clazz : dex.getClasses())
+      if (dex.getClassHierarchy().isAncestor(clazz.getType(), invokedClassType))
+        // does it contain the given method?
+        for (val method : clazz.getMethods())
+          if (method.getName().equals(invokedMethodName) &&
+              method.getPrototype().equals(invokedMethodPrototype))
+            return true;
+
+    return false;
+  }
+
+  private boolean canBeExternalCall() {
+    val dex = getMethodCode().getParentMethod().getParentClass().getParentFile();
+
+    val invokedClassType = instructionInvoke.getClassType();
+    val invokedMethodName = instructionInvoke.getMethodName();
+    val invokedMethodPrototype = instructionInvoke.getMethodPrototype();
+
+    if (!invokedClassType.isDefinedInternally())
+      return true;
+
+    // find the class invoked in the instruction
+    for (val clazz : dex.getClasses())
+      if (clazz.getType() == invokedClassType)
+        // does it contain the given method?
+        for (val method : clazz.getMethods())
+          if (method.getName().equals(invokedMethodName) &&
+              method.getPrototype().equals(invokedMethodPrototype))
+            // it does => the call will always be internal
+            // even if it is purely virtual
+            return false;
+
+    return true;
+  }
+
   private DexCodeElement[] instrumentVirtual(DexCode_InstrumentationState state) {
     val methodCode = getMethodCode();
     val dex = methodCode.getParentMethod().getParentClass().getParentFile();
 
     val instrumentedCode = new LinkedList<DexCodeElement>();
 
-    // try to find an internal class that extends the invoked class type
-    // if there isn't one, the call will always be external
-    val invokedClassType = instructionInvoke.getClassType();
-    boolean canBeInternalCall = false;
-    for (val clazz : dex.getClasses())
-      if (dex.getClassHierarchy().isAncestor(clazz.getType(), invokedClassType)) {
-        canBeInternalCall = true;
-        break;
-      }
+    boolean canBeInternalCall = canBeInternalCall();
+    boolean canBeExternalCall = canBeExternalCall();
+    boolean canBeAnyCall = canBeInternalCall || canBeExternalCall;
 
-    if (canBeInternalCall) {
-      val regInternalInstance = new DexRegister();
-      val labelExternal = new DexLabel(methodCode);
-      val labelEnd = new DexLabel(methodCode);
+    DexRegister regInternalInstance = null;
+    DexLabel labelExternal = null;
+    DexLabel labelEnd = null;
 
-      // TEST IF INSTANCEOF InternalClassInterface
+    if (canBeAnyCall) {
+      regInternalInstance = new DexRegister();
+      labelExternal = new DexLabel(methodCode);
+      labelEnd = new DexLabel(methodCode);
+
+      // test if the method has our annotation
 
       instrumentedCode.add(
         new DexInstruction_InstanceOf(
@@ -200,23 +242,28 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
           regInternalInstance,
           labelExternal,
           Opcode_IfTestZero.eqz));
+    }
 
+    if (canBeInternalCall) {
       // INTERNAL CALL
 
       instrumentedCode.addAll(generatePreInternalCallCode(state));
       instrumentedCode.add(cloneThisInstruction());
       instrumentedCode.addAll(generatePostInternalCallCode(state));
+    }
 
+    if (canBeAnyCall) {
       instrumentedCode.add(new DexInstruction_Goto(methodCode, labelEnd));
-
-      // EXTERNAL CALL
-
       instrumentedCode.add(labelExternal);
-      instrumentedCode.add(this);
+    }
 
-      instrumentedCode.add(labelEnd);
-    } else {
+    if (canBeExternalCall) {
+      // EXTERNAL CALL
       instrumentedCode.add(this);
+    }
+
+    if (canBeAnyCall) {
+      instrumentedCode.add(labelEnd);
     }
 
     return instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]);
