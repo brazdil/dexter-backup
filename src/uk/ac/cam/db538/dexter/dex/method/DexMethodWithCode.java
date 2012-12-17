@@ -66,15 +66,12 @@ public abstract class DexMethodWithCode extends DexMethod {
     val isStatic = this.isStatic();
     val clazz = this.getParentClass();
 
-    System.out.println("Method: " + this.getName());
-
     // create the parameter-register mappings
     val regCount = methodInfo.codeItem.getRegisterCount();
     val paramCount = prototype.getParameterCount(isStatic);
     for (int i = 0; i < paramCount; ++i) {
       val paramRegId = prototype.getParameterRegisterId(i, regCount, isStatic);
       val paramType = prototype.getParameterType(i, isStatic, clazz);
-      System.out.println("  param #" + i + ": " + paramType.getPrettyName() + ", v" + paramRegId);
       switch (paramType.getTypeSize()) {
       case SINGLE:
         val regSingle = code.getRegisterByOriginalNumber(paramRegId);
