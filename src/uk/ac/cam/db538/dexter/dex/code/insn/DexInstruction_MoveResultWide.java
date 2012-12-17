@@ -42,6 +42,12 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
       throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
+  public DexInstruction_MoveResultWide(DexInstruction_MoveResultWide toClone) {
+    this(toClone.getMethodCode(),
+         toClone.regTo1,
+         toClone.regTo2);
+  }
+
   @Override
   public String getOriginalAssembly() {
     return "move-result-wide v" + regTo1.getOriginalIndexString() + "|v" + regTo2.getOriginalIndexString();

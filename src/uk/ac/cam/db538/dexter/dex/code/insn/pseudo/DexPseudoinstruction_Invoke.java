@@ -10,15 +10,20 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -60,16 +65,25 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       return createList((DexCodeElement) instructionInvoke);
   }
 
-  private DexCodeElement[] instrumentDirectExternal(DexCode_InstrumentationState state) {
-    return new DexCodeElement[] { this };
+  private DexPseudoinstruction_Invoke cloneThisInstruction() {
+    DexInstruction_Invoke clonedInvoke = new DexInstruction_Invoke(instructionInvoke);
+    DexInstruction clonedMove = null;
+    if (movesResult()) {
+      if (instructionMoveResult instanceof DexInstruction_MoveResult)
+        clonedMove = new DexInstruction_MoveResult((DexInstruction_MoveResult) instructionMoveResult);
+      else if (instructionMoveResult instanceof DexInstruction_MoveResultWide)
+        clonedMove = new DexInstruction_MoveResultWide((DexInstruction_MoveResultWide) instructionMoveResult);
+    }
+
+    return new DexPseudoinstruction_Invoke(getMethodCode(), clonedInvoke, clonedMove);
   }
 
-  private DexCodeElement[] instrumentDirectInternal(DexCode_InstrumentationState state) {
+  private List<DexCodeElement> generatePreInternalCallCode(DexCode_InstrumentationState state) {
     val methodCode = getMethodCode();
     val dex = methodCode.getParentMethod().getParentClass().getParentFile();
     val callPrototype = instructionInvoke.getMethodPrototype();
 
-    val instrumentedCode = new LinkedList<DexCodeElement>();
+    val codePreInternalCall = new LinkedList<DexCodeElement>();
 
     if (callPrototype.hasPrimitiveArgument()) {
       val regArray = new DexRegister();
@@ -80,18 +94,26 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                            instructionInvoke.isStaticCall(),
                            state);
 
-      instrumentedCode.add(new DexInstruction_StaticGet(methodCode, regArray, dex.getMethodCallHelper_Arg()));
+      codePreInternalCall.add(new DexInstruction_StaticGet(methodCode, regArray, dex.getMethodCallHelper_Arg()));
 
-      instrumentedCode.add(new DexInstruction_Invoke(methodCode, dex.getMethodCallHelper_SArgAcquire(), null));
+      codePreInternalCall.add(new DexInstruction_Invoke(methodCode, dex.getMethodCallHelper_SArgAcquire(), null));
 
       int arrayIndex = 0;
       for (val argTaintReg : argTaintRegs) {
-        instrumentedCode.add(new DexInstruction_Const(methodCode, regIndex, arrayIndex++));
-        instrumentedCode.add(new DexInstruction_ArrayPut(methodCode, argTaintReg, regArray, regIndex, Opcode_GetPut.IntFloat));
+        codePreInternalCall.add(new DexInstruction_Const(methodCode, regIndex, arrayIndex++));
+        codePreInternalCall.add(new DexInstruction_ArrayPut(methodCode, argTaintReg, regArray, regIndex, Opcode_GetPut.IntFloat));
       }
     }
 
-    instrumentedCode.add(this);
+    return codePreInternalCall;
+  }
+
+  private List<DexCodeElement> generatePostInternalCallCode(DexCode_InstrumentationState state) {
+    val methodCode = getMethodCode();
+    val dex = methodCode.getParentMethod().getParentClass().getParentFile();
+    val callPrototype = instructionInvoke.getMethodPrototype();
+
+    val codePostInternalCall = new LinkedList<DexCodeElement>();
 
     if (callPrototype.getReturnType() instanceof DexPrimitiveType) {
       val regResSemaphore = new DexRegister();
@@ -99,38 +121,90 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       if (movesResult()) {
         if (instructionMoveResult instanceof DexInstruction_MoveResult) {
           val regTo = state.getTaintRegister(((DexInstruction_MoveResult) instructionMoveResult).getRegTo());
-          instrumentedCode.add(new DexInstruction_StaticGet(
-                                 methodCode,
-                                 regTo,
-                                 dex.getMethodCallHelper_Res()));
+          codePostInternalCall.add(new DexInstruction_StaticGet(
+                                     methodCode,
+                                     regTo,
+                                     dex.getMethodCallHelper_Res()));
 
         } else if (instructionMoveResult instanceof DexInstruction_MoveResultWide) {
           val regTo1 = state.getTaintRegister(((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo1());
           val regTo2 = state.getTaintRegister(((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo2());
 
-          instrumentedCode.add(new DexInstruction_StaticGet(
-                                 methodCode,
-                                 regTo1,
-                                 dex.getMethodCallHelper_Res()));
-          instrumentedCode.add(new DexInstruction_Move(methodCode, regTo2, regTo1, false));
+          codePostInternalCall.add(new DexInstruction_StaticGet(
+                                     methodCode,
+                                     regTo1,
+                                     dex.getMethodCallHelper_Res()));
+          codePostInternalCall.add(new DexInstruction_Move(methodCode, regTo2, regTo1, false));
         }
       }
 
-      instrumentedCode.add(new DexInstruction_StaticGet(methodCode, regResSemaphore, dex.getMethodCallHelper_SRes()));
-      instrumentedCode.add(new DexInstruction_Invoke(
-                             methodCode,
-                             (DexClassType) dex.getMethodCallHelper_SRes().getType(),
-                             "release",
-                             new DexPrototype(DexVoid.parse("V", null), null),
-                             Arrays.asList(regResSemaphore),
-                             Opcode_Invoke.Virtual));
+      codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regResSemaphore, dex.getMethodCallHelper_SRes()));
+      codePostInternalCall.add(new DexInstruction_Invoke(
+                                 methodCode,
+                                 (DexClassType) dex.getMethodCallHelper_SRes().getType(),
+                                 "release",
+                                 new DexPrototype(DexVoid.parse("V", null), null),
+                                 Arrays.asList(regResSemaphore),
+                                 Opcode_Invoke.Virtual));
     }
+
+    return codePostInternalCall;
+  }
+
+  private DexCodeElement[] instrumentDirectExternal(DexCode_InstrumentationState state) {
+    return new DexCodeElement[] { this };
+  }
+
+  private DexCodeElement[] instrumentDirectInternal(DexCode_InstrumentationState state) {
+    val instrumentedCode = new LinkedList<DexCodeElement>();
+
+    instrumentedCode.addAll(generatePreInternalCallCode(state));
+    instrumentedCode.add(this);
+    instrumentedCode.addAll(generatePostInternalCallCode(state));
 
     return instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]);
   }
 
   private DexCodeElement[] instrumentVirtual(DexCode_InstrumentationState state) {
-    return new DexCodeElement[] { this };
+    val methodCode = getMethodCode();
+    val dex = methodCode.getParentMethod().getParentClass().getParentFile();
+
+    val instrumentedCode = new LinkedList<DexCodeElement>();
+    val regInternalInstance = new DexRegister();
+    val labelExternal = new DexLabel(methodCode);
+    val labelEnd = new DexLabel(methodCode);
+
+    // TEST IF INSTANCEOF InternalClassInterface
+
+    instrumentedCode.add(
+      new DexInstruction_InstanceOf(
+        methodCode,
+        regInternalInstance,
+        instructionInvoke.getArgumentRegisters().get(0),
+        dex.getInternalClassInterface_Type()));
+    instrumentedCode.add(
+      new DexInstruction_IfTestZero(
+        methodCode,
+        regInternalInstance,
+        labelExternal,
+        Opcode_IfTestZero.eqz));
+
+    // INTERNAL CALL
+
+    instrumentedCode.addAll(generatePreInternalCallCode(state));
+    instrumentedCode.add(this);
+    instrumentedCode.addAll(generatePostInternalCallCode(state));
+
+    instrumentedCode.add(new DexInstruction_Goto(methodCode, labelEnd));
+
+    // EXTERNAL CALL
+
+    instrumentedCode.add(labelExternal);
+    instrumentedCode.add(cloneThisInstruction());
+
+    instrumentedCode.add(labelEnd);
+
+    return instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]);
   }
 
   @Override

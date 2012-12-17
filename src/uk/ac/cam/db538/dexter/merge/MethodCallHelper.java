@@ -47,6 +47,12 @@ public class MethodCallHelper {
     S_RES.release();
 
     System.out.println(x + "|" + tx + " + " + y + "|" + ty + " = " + z + "|" + tz);
+
+    Object o = new Object();
+    if (o instanceof InternalClassInterface)
+      System.out.println("INTERNAL");
+    else
+      System.out.println("EXTERNAL");
   }
 
   public static int add(int a, int b) {

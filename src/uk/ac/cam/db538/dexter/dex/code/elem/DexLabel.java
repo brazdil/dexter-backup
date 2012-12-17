@@ -9,6 +9,9 @@ import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexLabel extends DexCodeElement {
 
+  private static int LABEL_COUNTER = -1;
+
+
   @Getter private final long originalAbsoluteOffset;
 
   public DexLabel(DexCode methodCode, long originalAbsoluteOffset) {
@@ -20,15 +23,19 @@ public class DexLabel extends DexCodeElement {
   public DexLabel(DexCode methodCode) {
     super(methodCode);
 
-    this.originalAbsoluteOffset = -1;
+    this.originalAbsoluteOffset = LABEL_COUNTER;
+
+    LABEL_COUNTER--;
+    if (LABEL_COUNTER >= 0)
+      LABEL_COUNTER = -1;
   }
 
   @Override
   public String getOriginalAssembly() {
-    if (originalAbsoluteOffset >= 0)
-      return "L" + originalAbsoluteOffset + ":";
-    else
-      return "L???:";
+//    if (originalAbsoluteOffset >= 0)
+    return "L" + originalAbsoluteOffset + ":";
+//    else
+//      return "L???:";
   }
 
   @Override

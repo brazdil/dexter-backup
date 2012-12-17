@@ -43,6 +43,12 @@ public class DexInstruction_MoveResult extends DexInstruction {
       throw new InstructionParsingException("Unknown instruction format or opcode");
   }
 
+  public DexInstruction_MoveResult(DexInstruction_MoveResult toClone) {
+    this(toClone.getMethodCode(),
+         toClone.regTo,
+         toClone.objectMoving);
+  }
+
   @Override
   public String getOriginalAssembly() {
     return "move-result" + (objectMoving ? "-object" : "") +

@@ -106,6 +106,15 @@ public class DexInstruction_Invoke extends DexInstruction {
     checkArguments();
   }
 
+  public DexInstruction_Invoke(DexInstruction_Invoke toClone) {
+    this(toClone.getMethodCode(),
+         toClone.classType,
+         toClone.methodName,
+         toClone.methodPrototype,
+         toClone.argumentRegisters,
+         toClone.callType);
+  }
+
   private void checkArguments() {
     // check that the number of registers is correct
     int expectedRegisterCount = (callType == Opcode_Invoke.Static) ? 0 : 1;

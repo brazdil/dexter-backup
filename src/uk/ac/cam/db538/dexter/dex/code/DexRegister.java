@@ -4,16 +4,16 @@ import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexRegister {
 
-  private static int REG_COUNTER = 65536;
+  private static int REG_COUNTER = -1;
 
   private final Integer originalIndex;
 
   public DexRegister() {
     this.originalIndex = REG_COUNTER;
 
-    REG_COUNTER++;
-    if (REG_COUNTER < 65536)
-      REG_COUNTER = 65536;
+    REG_COUNTER--;
+    if (REG_COUNTER >= 0)
+      REG_COUNTER = -1;
   }
 
   public DexRegister(Integer id) {
