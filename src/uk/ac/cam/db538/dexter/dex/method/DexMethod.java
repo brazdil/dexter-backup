@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Set;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.val;
 
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
@@ -26,7 +25,7 @@ public abstract class DexMethod {
   @Getter private DexClass parentClass;
   @Getter private final String name;
   private final Set<AccessFlags> accessFlagSet;
-  @Getter @Setter protected DexPrototype prototype;
+  @Getter private DexPrototype prototype;
 
   public DexMethod(DexClass parent, String name, Set<AccessFlags> accessFlags, DexPrototype prototype) {
     this.parentClass = parent;

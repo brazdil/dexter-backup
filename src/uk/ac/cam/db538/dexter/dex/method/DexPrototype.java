@@ -3,7 +3,6 @@ package uk.ac.cam.db538.dexter.dex.method;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import lombok.Getter;
 import lombok.val;
@@ -15,14 +14,9 @@ import org.jf.dexlib.TypeListItem;
 
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
-import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexDouble;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexLong;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.utils.Cache;
@@ -112,77 +106,6 @@ public class DexPrototype {
       regs.add(new DexRegister());
 
     return regs;
-  }
-
-  public DexPrototype getInstrumentedPrototype(DexInstrumentationCache cache) {
-    // modify the return type
-    DexType newReturnType = null;
-    // change only primitives
-    if (returnType instanceof DexPrimitiveType) {
-      // turn long into Long, double into Double
-      if (((DexPrimitiveType) returnType).isWide()) {
-        if (returnType instanceof DexLong)
-          newReturnType = cache.getParsingCache().getClassType("Ljava/lang/Long;");
-        else if (returnType instanceof DexDouble)
-          newReturnType = cache.getParsingCache().getClassType("Ljava/lang/Double;");
-        // turn all the short ones into long
-      } else
-        newReturnType = DexPrimitiveType.parse("J");
-      // leave objects alone
-    } else
-      newReturnType = returnType;
-
-    // add extra parameters for passing taint of primitives
-    // one int parameter per primitive
-    val newParameterTypes = new LinkedList<DexRegisterType>(parameterTypes);
-    val typeInteger = DexPrimitiveType.parse("I");
-    for (val paramType : parameterTypes)
-      if (paramType instanceof DexPrimitiveType)
-        newParameterTypes.add(typeInteger);
-
-    return new DexPrototype(newReturnType, newParameterTypes);
-  }
-
-  public List<DexRegister> instrumentInvokeCallArgumentRegisters(List<DexRegister> originalRegisters, boolean isStatic, DexCode_InstrumentationState state) {
-    val newArgumentRegisters = new LinkedList<DexRegister>();
-    newArgumentRegisters.addAll(originalRegisters);
-
-    int i = isStatic ? 0 : 1;
-    for (val paramType : parameterTypes) {
-      if (paramType instanceof DexPrimitiveType)
-        newArgumentRegisters.add(state.getTaintRegister(originalRegisters.get(i)));
-
-      i += paramType.getRegisters();
-    }
-
-    return newArgumentRegisters;
-  }
-
-  public void instrumentMethod(DexMethodWithCode method, List<DexRegister> parameterRegisters, Map<DexRegister, DexRegister> parameterMappings, DexCode_InstrumentationState instrumentationState) {
-    method.setPrototype(this.getInstrumentedPrototype(instrumentationState.getCache()));
-
-    int i = method.isStatic() ? 0 : 1;
-    int taintRegCount = 0;
-    for (val paramType : parameterTypes) {
-      if (paramType instanceof DexPrimitiveType) {
-        // add new register to parameters
-        val taintReg = new DexRegister();
-        int taintParamIndex = (method.isStatic() ? 0 : 1) + parameterTypes.size() + (taintRegCount++);
-        parameterRegisters.add(taintReg);
-
-        // create mappings to the taint register(s) inside the code
-        val paramReg1 = parameterRegisters.get(i);
-        val codeReg1 = parameterMappings.get(paramReg1);
-        method.addParameterMapping_Single(taintParamIndex, instrumentationState.getTaintRegister(codeReg1));
-        if (paramType.isWide()) {
-          val paramReg2 = parameterRegisters.get(i + 1);
-          val codeReg2 = parameterMappings.get(paramReg2);
-          method.addParameterMapping_Single(taintParamIndex, instrumentationState.getTaintRegister(codeReg2));
-        }
-      }
-
-      i += paramType.getRegisters();
-    }
   }
 
   public static Cache<DexPrototype, ProtoIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
