@@ -55,9 +55,9 @@ public class MainWindow_Test {
     val cache = new DexParsingCache();
     val dexFile = new Dex();
 
-    val cls11 = new DexClass(dexFile, DexClassType.parse("Lcom.example1.a;", cache), null, null, null, null, null, null, null);
-    val cls12 = new DexClass(dexFile, DexClassType.parse("Lcom.example1.b;", cache), null, null, null, null, null, null, null);
-    val cls21 = new DexClass(dexFile, DexClassType.parse("Lcom.example2.a;", cache), null, null, null, null, null, null, null);
+    val cls11 = new DexClass(dexFile, DexClassType.parse("Lcom.example1.a;", cache), null, null, null, null, null, null);
+    val cls12 = new DexClass(dexFile, DexClassType.parse("Lcom.example1.b;", cache), null, null, null, null, null, null);
+    val cls21 = new DexClass(dexFile, DexClassType.parse("Lcom.example2.a;", cache), null, null, null, null, null, null);
 
     classes.add(cls11);
     classes.add(cls12);
@@ -98,7 +98,7 @@ public class MainWindow_Test {
     val cache = new DexParsingCache();
     val dexFile = new Dex();
 
-    val cls = new DexClass(dexFile, DexClassType.parse("LTestClass;", cache), null, null, null, null, null, null, null);
+    val cls = new DexClass(dexFile, DexClassType.parse("LTestClass;", cache), null, null, null, null, null, null);
     classes.add(cls);
 
     execAddClassesToTree(root, classes);
@@ -124,7 +124,7 @@ public class MainWindow_Test {
     val cache = new DexParsingCache();
     val dexFile = new Dex();
 
-    val cls = new DexClass(dexFile, DexClassType.parse("LTestClass;", cache), null, null, null, null, null, null, null);
+    val cls = new DexClass(dexFile, DexClassType.parse("LTestClass;", cache), null, null, null, null, null, null);
 
     val staticField1 = new DexField(null, "a", typeInt, EnumSet.of(AccessFlags.STATIC));
     val staticField2 = new DexField(null, "c", typeInt, EnumSet.of(AccessFlags.STATIC));

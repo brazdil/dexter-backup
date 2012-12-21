@@ -42,21 +42,21 @@ public class DexClass {
 
   public DexClass(Dex parent, DexClassType type, DexClassType superType,
                   Set<AccessFlags> accessFlags, Set<DexField> fields,
-                  Set<DexMethod> methods, Set<DexClassType> interfaces,
+                  Set<DexClassType> interfaces,
                   Set<DexAnnotation> annotations, String sourceFile) {
     this.parentFile = parent;
     this.type = type;
     this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
     this.fields = (fields == null) ? new HashSet<DexField>() : fields;
-    this.methods = (methods == null) ? new HashSet<DexMethod>() : methods;
+    this.methods = new HashSet<DexMethod>();
     this.sourceFile = sourceFile;
 
     this.type.setDefinedInternally(true);
     this.parentFile.getClassHierarchy().addMember(
       this.type,
       superType,
-      (interfaces == null) ? new HashSet<DexClassType>() : interfaces,
-      (annotations == null) ? new HashSet<DexAnnotation>() : annotations,
+      interfaces,
+      annotations,
       isInterface()
     );
   }
@@ -66,7 +66,6 @@ public class DexClass {
          DexClassType.parse(clsInfo.getClassType().getTypeDescriptor(), parent.getParsingCache()),
          DexClassType.parse(clsInfo.getSuperclass().getTypeDescriptor(), parent.getParsingCache()),
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForClass(clsInfo.getAccessFlags())),
-         null,
          null,
          parseTypeList(clsInfo.getInterfaces(), parent.getParsingCache()),
          parseAnnotations(clsInfo.getAnnotations(), parent.getParsingCache()),
@@ -95,7 +94,7 @@ public class DexClass {
 
     if (list != null)
       for (val elem : list.getTypes())
-        set.add(cache.getClassType(elem.getTypeDescriptor()));
+        set.add(DexClassType.parse(elem.getTypeDescriptor(), cache));
 
     return set;
   }

@@ -96,7 +96,7 @@ public class DexInstruction_Invoke extends DexInstruction {
     } else
       throw new InstructionParsingException("Unknown instruction format or opcode");
 
-    classType = parsingState.getCache().getClassType(methodInfo.getContainingClass().getTypeDescriptor());
+    classType = DexClassType.parse(methodInfo.getContainingClass().getTypeDescriptor(), parsingState.getCache());
 
     methodName = methodInfo.getMethodName().getStringValue();
     methodPrototype = new DexPrototype(methodInfo.getPrototype(), cache);

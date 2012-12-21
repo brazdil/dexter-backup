@@ -32,6 +32,10 @@ public abstract class DexMethod {
     this.name = name;
     this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
     this.prototype = prototype;
+
+    if (!isAbstract())
+      this.parentClass.getParentFile().getClassHierarchy().addImplementedMethod(
+        parentClass.getType(), this.name, this.prototype);
   }
 
   public DexMethod(DexClass parent, EncodedMethod methodInfo) {
@@ -47,6 +51,10 @@ public abstract class DexMethod {
 
   public boolean isStatic() {
     return accessFlagSet.contains(AccessFlags.STATIC);
+  }
+
+  public boolean isAbstract() {
+    return accessFlagSet.contains(AccessFlags.ABSTRACT);
   }
 
   public abstract boolean isVirtual();

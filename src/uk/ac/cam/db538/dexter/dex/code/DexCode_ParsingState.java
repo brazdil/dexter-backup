@@ -119,7 +119,7 @@ public class DexCode_ParsingState {
         if (insnAtOffset == null)
           throw new InstructionParsingException("Catch handler could not be placed (non-existent offset " + handlerOffset + ")");
 
-        val catchElem = getCatch(handlerOffset, cache.getClassType(catchHandler.exceptionType.getTypeDescriptor()));
+        val catchElem = getCatch(handlerOffset, DexClassType.parse(catchHandler.exceptionType.getTypeDescriptor(), cache));
         if (!placedCatchHandlers.contains(catchElem)) {
           code.insertBefore(catchElem, insnAtOffset);
           placedCatchHandlers.add(catchElem);
@@ -153,7 +153,7 @@ public class DexCode_ParsingState {
         for (val catchBlock : tryBlock.encodedCatchHandler.handlers)
           catchHandlers.add(
             getCatch(catchBlock.getHandlerAddress(),
-                     cache.getClassType(catchBlock.exceptionType.getTypeDescriptor())));
+                     DexClassType.parse(catchBlock.exceptionType.getTypeDescriptor(), cache)));
 
       val newBlockStart = new DexTryBlockStart(code, startOffset, catchAllHandler, catchHandlers);
       val newBlockEnd = new DexTryBlockEnd(code, newBlockStart);

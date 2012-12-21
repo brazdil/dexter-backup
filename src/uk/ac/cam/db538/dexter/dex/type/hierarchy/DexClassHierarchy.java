@@ -20,6 +20,7 @@ import org.apache.bcel.classfile.ClassParser;
 
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexClassHierarchy {
@@ -59,8 +60,15 @@ public class DexClassHierarchy {
     if (interfaces == null)
       interfaces = new HashSet<DexClassType>();
 
-    val classEntry = new ClassEntry(classType, superclassType, interfaces, annotations, flagInterface);
+    if (annotations == null)
+      annotations = new HashSet<DexAnnotation>();
+
+    val classEntry = new ClassEntry(classType, superclassType, interfaces, annotations, new HashSet<MethodEntry>(), flagInterface);
     classes.put(classType, classEntry);
+  }
+
+  public void addImplementedMethod(DexClassType classType, String methodName, DexPrototype methodPrototype) {
+    classes.get(classType).implementedMethods.add(new MethodEntry(methodName, methodPrototype));
   }
 
   public void addAllClassesFromJAR(File file, DexParsingCache cache) throws IOException {
@@ -75,7 +83,7 @@ public class DexClassHierarchy {
 
         val setInterfaces = new HashSet<DexClassType>();
         for (val i : jarClass.getInterfaceNames())
-          setInterfaces.add(cache.getClassType(createDescriptor(i)));
+          setInterfaces.add(DexClassType.parse(createDescriptor(i), cache));
 
         val setAnnotations = new HashSet<DexAnnotation>();
         for (val attr : jarClass.getAttributes())
@@ -83,13 +91,19 @@ public class DexClassHierarchy {
             for (val anno : ((Annotations) attr).getAnnotationEntries())
               setAnnotations.add(new DexAnnotation(anno, cache));
 
+        val classType = DexClassType.parse(createDescriptor(jarClass.getClassName()), cache);
+
         addMember(
-          cache.getClassType(createDescriptor(jarClass.getClassName())),
-          cache.getClassType(createDescriptor(jarClass.getSuperclassName())),
+          classType,
+          DexClassType.parse(createDescriptor(jarClass.getSuperclassName()), cache),
           setInterfaces,
           setAnnotations,
           jarClass.isInterface()
         );
+
+        for (val method : jarClass.getMethods())
+          if (!method.isAbstract())
+            addImplementedMethod(classType, method.getName(), new DexPrototype(method.getSignature(), cache));
       }
     }
   }
@@ -208,7 +222,47 @@ public class DexClassHierarchy {
     private final DexClassType superclassType;
     private final Set<DexClassType> interfaces;
     private final Set<DexAnnotation> annotations;
+    private final Set<MethodEntry> implementedMethods;
     private final boolean flaggedInterface;
   }
 
+  @AllArgsConstructor
+  @Getter
+  private static class MethodEntry {
+    private final String name;
+    private final DexPrototype prototype;
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result
+               + ((this.name == null) ? 0 : this.name.hashCode());
+      result = prime * result
+               + ((this.prototype == null) ? 0 : this.prototype.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (!(obj instanceof MethodEntry))
+        return false;
+      MethodEntry other = (MethodEntry) obj;
+      if (this.name == null) {
+        if (other.name != null)
+          return false;
+      } else if (!this.name.equals(other.name))
+        return false;
+      if (this.prototype == null) {
+        if (other.prototype != null)
+          return false;
+      } else if (!this.prototype.equals(other.prototype))
+        return false;
+      return true;
+    }
+  }
 }

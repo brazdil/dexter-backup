@@ -33,7 +33,7 @@ public class DexAnnotation {
   }
 
   public DexAnnotation(AnnotationItem anno, DexParsingCache cache) {
-    this(cache.getClassType(anno.getEncodedAnnotation().annotationType.getTypeDescriptor()),
+    this(DexClassType.parse(anno.getEncodedAnnotation().annotationType.getTypeDescriptor(), cache),
          anno.getVisibility());
 
     val encAnno = anno.getEncodedAnnotation();
@@ -43,7 +43,7 @@ public class DexAnnotation {
   }
 
   public DexAnnotation(AnnotationEntry anno, DexParsingCache cache) {
-    this(cache.getClassType(anno.getAnnotationType()),
+    this(DexClassType.parse(anno.getAnnotationType(), cache),
          (anno.isRuntimeVisible()) ? AnnotationVisibility.RUNTIME : AnnotationVisibility.SYSTEM);
 
     // TODO: load parameters of the annotation
