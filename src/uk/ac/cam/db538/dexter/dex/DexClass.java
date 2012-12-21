@@ -10,6 +10,11 @@ import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.AnnotationDirectoryItem;
+import org.jf.dexlib.AnnotationDirectoryItem.FieldAnnotation;
+import org.jf.dexlib.AnnotationDirectoryItem.MethodAnnotation;
+import org.jf.dexlib.AnnotationDirectoryItem.ParameterAnnotation;
+import org.jf.dexlib.AnnotationItem;
+import org.jf.dexlib.AnnotationSetItem;
 import org.jf.dexlib.ClassDataItem;
 import org.jf.dexlib.ClassDataItem.EncodedField;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
@@ -38,7 +43,7 @@ public class DexClass {
   public DexClass(Dex parent, DexClassType type, DexClassType superType,
                   Set<AccessFlags> accessFlags, Set<DexField> fields,
                   Set<DexMethod> methods, Set<DexClassType> interfaces,
-                  String sourceFile) {
+                  Set<DexAnnotation> annotations, String sourceFile) {
     this.parentFile = parent;
     this.type = type;
     this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
@@ -51,6 +56,7 @@ public class DexClass {
       this.type,
       superType,
       (interfaces == null) ? new HashSet<DexClassType>() : interfaces,
+      (annotations == null) ? new HashSet<DexAnnotation>() : annotations,
       isInterface()
     );
   }
@@ -63,6 +69,7 @@ public class DexClass {
          null,
          null,
          parseTypeList(clsInfo.getInterfaces(), parent.getParsingCache()),
+         parseAnnotations(clsInfo.getAnnotations(), parent.getParsingCache()),
          (clsInfo.getSourceFile() == null) ? null : clsInfo.getSourceFile().getStringValue());
 
     val clsData = clsInfo.getClassData();
@@ -93,6 +100,13 @@ public class DexClass {
     return set;
   }
 
+  private static Set<DexAnnotation> parseAnnotations(AnnotationDirectoryItem annotations, DexParsingCache cache) {
+    if (annotations == null)
+      return Collections.emptySet();
+    else
+      return DexAnnotation.parseAll(annotations.getClassAnnotations(), cache);
+  }
+
   public Set<AccessFlags> getAccessFlagSet() {
     return Collections.unmodifiableSet(accessFlagSet);
   }
@@ -111,6 +125,10 @@ public class DexClass {
 
   public Set<DexClassType> getInterfaces() {
     return this.parentFile.getClassHierarchy().getInterfaces(type);
+  }
+
+  public Set<DexAnnotation> getAnnotations() {
+    return this.parentFile.getClassHierarchy().getAnnotations(type);
   }
 
   public boolean isAbstract() {
@@ -148,6 +166,7 @@ public class DexClass {
 
   public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
     val interfaces = this.getInterfaces();
+    val classAnnotations = this.getAnnotations();
 
     val asmClassType = cache.getType(type);
     val asmSuperType = cache.getType(getSuperclassType());
@@ -158,14 +177,19 @@ public class DexClass {
     val asmSourceFile = (sourceFile == null)
                         ? null
                         : cache.getStringConstant(sourceFile);
-    val asmAnnotations = (AnnotationDirectoryItem) null; // AnnotationDirectoryItem.internAnnotationDirectoryItem(
-//                        outFile,
-//                        AnnotationSetItem.internAnnotationSetItem(
-//                          outFile,
-//                          new LinkedList<AnnotationItem>()),
-//                        new LinkedList<FieldAnnotation>(),
-//                        new LinkedList<MethodAnnotation>(),
-//                        new LinkedList<ParameterAnnotation>());
+
+    val asmClassAnnotations = new ArrayList<AnnotationItem>(classAnnotations.size());
+    for (val anno : classAnnotations)
+      asmClassAnnotations.add(anno.writeToFile(outFile, cache));
+
+    val asmAnnotations = AnnotationDirectoryItem.internAnnotationDirectoryItem(
+                           outFile,
+                           AnnotationSetItem.internAnnotationSetItem(
+                             outFile,
+                             asmClassAnnotations),
+                           new LinkedList<FieldAnnotation>(),
+                           new LinkedList<MethodAnnotation>(),
+                           new LinkedList<ParameterAnnotation>());
 
     val asmStaticFields = new LinkedList<EncodedField>();
     val asmInstanceFields = new LinkedList<EncodedField>();

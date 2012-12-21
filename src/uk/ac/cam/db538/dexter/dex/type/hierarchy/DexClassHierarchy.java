@@ -15,9 +15,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.val;
 
+import org.apache.bcel.classfile.Annotations;
 import org.apache.bcel.classfile.ClassParser;
 
-import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
@@ -33,19 +34,22 @@ public class DexClassHierarchy {
 
   public void addClass(DexClassType classType, DexClassType superclassType) {
     Set<DexClassType> emptyInterfaces = Collections.emptySet();
-    addMember(classType, superclassType, emptyInterfaces, false);
+    Set<DexAnnotation> emptyAnnotations = Collections.emptySet();
+    addMember(classType, superclassType, emptyInterfaces, emptyAnnotations, false);
   }
 
   public void addClass(DexClassType classType, DexClassType superclassType, Set<DexClassType> interfaces) {
-    addMember(classType, superclassType, interfaces, false);
+    Set<DexAnnotation> emptyAnnotations = Collections.emptySet();
+    addMember(classType, superclassType, interfaces, emptyAnnotations, false);
   }
 
   public void addInterface(DexClassType classType) {
     Set<DexClassType> emptyInterfaces = Collections.emptySet();
-    addMember(classType, rootClass, emptyInterfaces, true);
+    Set<DexAnnotation> emptyAnnotations = Collections.emptySet();
+    addMember(classType, rootClass, emptyInterfaces, emptyAnnotations, true);
   }
 
-  public void addMember(DexClassType classType, DexClassType superclassType, Set<DexClassType> interfaces, boolean flagInterface) {
+  public void addMember(DexClassType classType, DexClassType superclassType, Set<DexClassType> interfaces, Set<DexAnnotation> annotations, boolean flagInterface) {
     if (classes.containsKey(classType))
       throw new ClassHierarchyException("Class " + classType.getPrettyName() + " defined multiple times");
 
@@ -55,7 +59,7 @@ public class DexClassHierarchy {
     if (interfaces == null)
       interfaces = new HashSet<DexClassType>();
 
-    val classEntry = new ClassEntry(classType, superclassType, interfaces, flagInterface);
+    val classEntry = new ClassEntry(classType, superclassType, interfaces, annotations, flagInterface);
     classes.put(classType, classEntry);
   }
 
@@ -73,10 +77,17 @@ public class DexClassHierarchy {
         for (val i : jarClass.getInterfaceNames())
           setInterfaces.add(cache.getClassType(createDescriptor(i)));
 
+        val setAnnotations = new HashSet<DexAnnotation>();
+        for (val attr : jarClass.getAttributes())
+          if (attr instanceof Annotations)
+            for (val anno : ((Annotations) attr).getAnnotationEntries())
+              setAnnotations.add(new DexAnnotation(anno, cache));
+
         addMember(
           cache.getClassType(createDescriptor(jarClass.getClassName())),
           cache.getClassType(createDescriptor(jarClass.getSuperclassName())),
           setInterfaces,
+          setAnnotations,
           jarClass.isInterface()
         );
       }
@@ -89,6 +100,10 @@ public class DexClassHierarchy {
 
   public Set<DexClassType> getInterfaces(DexClassType clazz) {
     return Collections.unmodifiableSet(classes.get(clazz).getInterfaces());
+  }
+
+  public Set<DexAnnotation> getAnnotations(DexClassType clazz) {
+    return Collections.unmodifiableSet(classes.get(clazz).getAnnotations());
   }
 
   public void checkConsistentency() {
@@ -192,6 +207,7 @@ public class DexClassHierarchy {
     private final DexClassType classType;
     private final DexClassType superclassType;
     private final Set<DexClassType> interfaces;
+    private final Set<DexAnnotation> annotations;
     private final boolean flaggedInterface;
   }
 

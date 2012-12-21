@@ -94,7 +94,7 @@ public class DexClassHierarchy_Test {
     val hierarchy = new DexClassHierarchy(typeObject);
     hierarchy.addClass(typeObject, typeObject);
     hierarchy.addClass(typeClassA, typeObject);
-    hierarchy.addMember(typeInterface1, typeClassA, null, true);
+    hierarchy.addMember(typeInterface1, typeClassA, null, null, true);
 
     hierarchy.checkConsistentency();
   }

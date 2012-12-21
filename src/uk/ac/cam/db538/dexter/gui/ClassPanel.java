@@ -18,6 +18,7 @@ public class ClassPanel extends InfoPanel {
   private JTextField fieldName;
   private JTextField fieldSuperClass;
   private JTextField fieldInterfaces;
+  private JTextField fieldAnnotations;
 
   public ClassPanel() {
     // create class field
@@ -34,6 +35,11 @@ public class ClassPanel extends InfoPanel {
     fieldInterfaces = new WebTextField();
     fieldInterfaces.setEditable(false);
     this.addRow(new WebLabel("Interfaces:"),fieldInterfaces);
+
+    // create interfaces field
+    fieldAnnotations = new WebTextField();
+    fieldAnnotations.setEditable(false);
+    this.addRow(new WebLabel("Annotations:"),fieldAnnotations);
 
     // create access flag checkboxes
     this.addRow(new WebLabel("Access flags:"), createAccessFlagCheckboxes(AccessFlags.getAccessFlagsForClass(-1)), true);
@@ -54,6 +60,17 @@ public class ClassPanel extends InfoPanel {
       strInterfaces.append(i.getPrettyName());
     }
     fieldInterfaces.setText(strInterfaces.toString());
+
+    val strAnnotations = new StringBuilder();
+    first = true;
+    for (val a : cls.getAnnotations()) {
+      if (first)
+        first = false;
+      else
+        strAnnotations.append(", ");
+      strAnnotations.append(a.getType().getPrettyName());
+    }
+    fieldAnnotations.setText(strAnnotations.toString());
 
     this.setAccessFlagCheckboxes(cls.getAccessFlagSet());
   }
