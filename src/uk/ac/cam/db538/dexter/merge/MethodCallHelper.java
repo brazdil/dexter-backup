@@ -49,15 +49,10 @@ public class MethodCallHelper {
 
     System.out.println(x + "|" + tx + " + " + y + "|" + ty + " = " + z + "|" + tz);
 
-    Object o = new Object();
-    Method m = o.getClass().getMethod("equals", Object.class);
-    if (m.getAnnotation(SafeVarargs.class) != null)
-      System.out.println("Has Nonnull annotation");
-
-    if (o instanceof InternalClassInterface)
-      System.out.println("INTERNAL");
-    else
-      System.out.println("EXTERNAL");
+//    Object o = new Object();
+//    Method m = o.getClass().getMethod("equals", Object.class);
+//    if (m.getAnnotation(SafeVarargs.class) != null)
+//      System.out.println("Has SafeVarargs annotation");
   }
 
   public static int add(int a, int b) throws InterruptedException {

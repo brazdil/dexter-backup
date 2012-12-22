@@ -9,6 +9,8 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.val;
 
+import org.jf.dexlib.AnnotationSetItem;
+import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.EncodedCatchHandler;
@@ -19,6 +21,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring;
+import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
@@ -26,9 +29,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
-import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public abstract class DexMethodWithCode extends DexMethod {
@@ -42,8 +43,9 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   public DexMethodWithCode(DexClass parent, String name, Set<AccessFlags> accessFlags,
                            DexPrototype prototype, DexCode code,
+                           Set<DexAnnotation> annotations,
                            boolean direct) {
-    super(parent, name, accessFlags, prototype);
+    super(parent, name, accessFlags, prototype, annotations);
     this.code = code;
     this.direct = direct;
     this.parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
@@ -51,8 +53,8 @@ public abstract class DexMethodWithCode extends DexMethod {
     this.codeRegistersForParameters = new HashSet<DexRegister>();
   }
 
-  public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, InstructionParsingException {
-    super(parent, methodInfo);
+  public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
+    super(parent, methodInfo, encodedAnnotations);
     if (methodInfo.codeItem == null)
       code = new DexCode(this);
     else
@@ -123,6 +125,11 @@ public abstract class DexMethodWithCode extends DexMethod {
   @Override
   public void instrument(DexInstrumentationCache cache) {
     code.instrument(cache);
+
+    if (isVirtual())
+      this.addAnnotation(
+        new DexAnnotation(this.getParentClass().getParentFile().getInternalMethodAnnotation_Type(),
+                          AnnotationVisibility.RUNTIME));
   }
 
   @Override

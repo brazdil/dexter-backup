@@ -2,23 +2,24 @@ package uk.ac.cam.db538.dexter.dex.method;
 
 import java.util.Set;
 
+import org.jf.dexlib.AnnotationSetItem;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
-import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexVirtualMethod extends DexMethodWithCode {
 
-  public DexVirtualMethod(DexClass parent, EncodedMethod methodInfo)
-  throws UnknownTypeException, InstructionParsingException {
-    super(parent, methodInfo);
+  public DexVirtualMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
+    super(parent, methodInfo, encodedAnnotations);
   }
 
   public DexVirtualMethod(DexClass parent, String name,
-                          Set<AccessFlags> accessFlags, DexPrototype prototype, DexCode code, boolean direct) {
-    super(parent, name, accessFlags, prototype, code, direct);
+                          Set<AccessFlags> accessFlags, DexPrototype prototype, DexCode code,
+                          Set<DexAnnotation> annotations,
+                          boolean direct) {
+    super(parent, name, accessFlags, prototype, code, annotations, direct);
   }
 }

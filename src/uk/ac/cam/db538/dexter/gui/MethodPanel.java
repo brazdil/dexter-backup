@@ -35,6 +35,7 @@ public class MethodPanel extends InfoPanel {
   private JTextField fieldParentClass;
   private JTextField fieldReturnType;
   private JTextField fieldParameters;
+  private JTextField fieldAnnotations;
   private JCheckBox checkboxVirtual;
   private GroupPanel panelInstructions;
 
@@ -58,6 +59,11 @@ public class MethodPanel extends InfoPanel {
     fieldParameters = new WebTextField();
     fieldParameters.setEditable(false);
     this.addRow(new WebLabel("Parameters:"), fieldParameters);
+
+    // create interfaces field
+    fieldAnnotations = new WebTextField();
+    fieldAnnotations.setEditable(false);
+    this.addRow(new WebLabel("Annotations:"), fieldAnnotations);
 
     // create virtual checkbox
     checkboxVirtual = new WebCheckBox();
@@ -88,6 +94,17 @@ public class MethodPanel extends InfoPanel {
       params.append(param.getPrettyName());
     }
     fieldParameters.setText(params.toString());
+
+    val strAnnotations = new StringBuilder();
+    first = true;
+    for (val a : method.getAnnotations()) {
+      if (first)
+        first = false;
+      else
+        strAnnotations.append(", ");
+      strAnnotations.append(a.getType().getPrettyName());
+    }
+    fieldAnnotations.setText(strAnnotations.toString());
 
     this.setCheckboxValueUneditable(checkboxVirtual, method.isVirtual());
     this.setAccessFlagCheckboxes(method.getAccessFlagSet());

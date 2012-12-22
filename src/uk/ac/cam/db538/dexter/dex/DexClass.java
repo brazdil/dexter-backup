@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import lombok.Getter;
@@ -71,6 +72,10 @@ public class DexClass {
          parseAnnotations(clsInfo.getAnnotations(), parent.getParsingCache()),
          (clsInfo.getSourceFile() == null) ? null : clsInfo.getSourceFile().getStringValue());
 
+    List<MethodAnnotation> methodAnnotations = null;
+    if (clsInfo.getAnnotations() != null)
+      methodAnnotations = clsInfo.getAnnotations().getMethodAnnotations();
+
     val clsData = clsInfo.getClassData();
     if (clsData != null) {
       for (val staticFieldInfo : clsData.getStaticFields())
@@ -79,14 +84,22 @@ public class DexClass {
         fields.add(new DexField(this, instanceFieldInfo));
 
       for (val directMethodInfo : clsData.getDirectMethods())
-        methods.add(new DexDirectMethod(this, directMethodInfo));
+        methods.add(new DexDirectMethod(this, directMethodInfo, findMethodAnnotation(directMethodInfo, methodAnnotations)));
       for (val virtualMethodInfo : clsData.getVirtualMethods()) {
         if (virtualMethodInfo.codeItem == null)
-          methods.add(new DexPurelyVirtualMethod(this, virtualMethodInfo));
+          methods.add(new DexPurelyVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations)));
         else
-          methods.add(new DexVirtualMethod(this, virtualMethodInfo));
+          methods.add(new DexVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations)));
       }
     }
+  }
+
+  private static AnnotationSetItem findMethodAnnotation(EncodedMethod encMethod, List<MethodAnnotation> methodAnnotations) {
+    if (methodAnnotations != null)
+      for (val annoItem : methodAnnotations)
+        if (annoItem.method.equals(encMethod.method))
+          return annoItem.annotationSet;
+    return null;
   }
 
   private static Set<DexClassType> parseTypeList(TypeListItem list, DexParsingCache cache) {
@@ -155,10 +168,6 @@ public class DexClass {
   }
 
   public void instrument(DexInstrumentationCache cache) {
-    this.parentFile.getClassHierarchy().addImplementedInterface(
-      this.getType(),
-      this.parentFile.getInternalClassInterface_Type());
-
     for (val method : methods)
       method.instrument(cache);
   }
@@ -181,13 +190,17 @@ public class DexClass {
     for (val anno : classAnnotations)
       asmClassAnnotations.add(anno.writeToFile(outFile, cache));
 
+    val asmMethodAnnotations = new ArrayList<MethodAnnotation>(methods.size());
+    for (val method : methods)
+      asmMethodAnnotations.add(method.assembleAnnotations(outFile, cache));
+
     val asmAnnotations = AnnotationDirectoryItem.internAnnotationDirectoryItem(
                            outFile,
                            AnnotationSetItem.internAnnotationSetItem(
                              outFile,
                              asmClassAnnotations),
                            new LinkedList<FieldAnnotation>(),
-                           new LinkedList<MethodAnnotation>(),
+                           asmMethodAnnotations,
                            new LinkedList<ParameterAnnotation>());
 
     val asmStaticFields = new LinkedList<EncodedField>();

@@ -15,15 +15,12 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -230,18 +227,18 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
       // test if the method has our annotation
 
-      instrumentedCode.add(
-        new DexInstruction_InstanceOf(
-          methodCode,
-          regInternalInstance,
-          instructionInvoke.getArgumentRegisters().get(0),
-          dex.getInternalClassInterface_Type()));
-      instrumentedCode.add(
-        new DexInstruction_IfTestZero(
-          methodCode,
-          regInternalInstance,
-          labelExternal,
-          Opcode_IfTestZero.eqz));
+//      instrumentedCode.add(
+//        new DexInstruction_InstanceOf(
+//          methodCode,
+//          regInternalInstance,
+//          instructionInvoke.getArgumentRegisters().get(0),
+//          dex.getInternalClassInterface_Type()));
+//      instrumentedCode.add(
+//        new DexInstruction_IfTestZero(
+//          methodCode,
+//          regInternalInstance,
+//          labelExternal,
+//          Opcode_IfTestZero.eqz));
     }
 
     if (canBeInternalCall) {

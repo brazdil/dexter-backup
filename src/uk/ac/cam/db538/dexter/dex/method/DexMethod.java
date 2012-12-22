@@ -1,17 +1,23 @@
 package uk.ac.cam.db538.dexter.dex.method;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
 
+import org.jf.dexlib.AnnotationItem;
+import org.jf.dexlib.AnnotationSetItem;
+import org.jf.dexlib.AnnotationDirectoryItem.MethodAnnotation;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
@@ -26,23 +32,26 @@ public abstract class DexMethod {
   @Getter private final String name;
   private final Set<AccessFlags> accessFlagSet;
   @Getter private DexPrototype prototype;
+  private final Set<DexAnnotation> annotations;
 
-  public DexMethod(DexClass parent, String name, Set<AccessFlags> accessFlags, DexPrototype prototype) {
+  public DexMethod(DexClass parent, String name, Set<AccessFlags> accessFlags, DexPrototype prototype, Set<DexAnnotation> annotations) {
     this.parentClass = parent;
     this.name = name;
     this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
     this.prototype = prototype;
+    this.annotations = (annotations == null) ? new HashSet<DexAnnotation>() : annotations;
 
     if (!isAbstract())
       this.parentClass.getParentFile().getClassHierarchy().addImplementedMethod(
         parentClass.getType(), this.name, this.prototype);
   }
 
-  public DexMethod(DexClass parent, EncodedMethod methodInfo) {
+  public DexMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
     this(parent,
          methodInfo.method.getMethodName().getStringValue(),
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForMethod(methodInfo.accessFlags)),
-         new DexPrototype(methodInfo.method.getPrototype(), parent.getParentFile().getParsingCache()));
+         new DexPrototype(methodInfo.method.getPrototype(), parent.getParentFile().getParsingCache()),
+         DexAnnotation.parseAll(encodedAnnotations, parent.getParentFile().getParsingCache()));
   }
 
   public Set<AccessFlags> getAccessFlagSet() {
@@ -55,6 +64,14 @@ public abstract class DexMethod {
 
   public boolean isAbstract() {
     return accessFlagSet.contains(AccessFlags.ABSTRACT);
+  }
+
+  public Set<DexAnnotation> getAnnotations() {
+    return Collections.unmodifiableSet(annotations);
+  }
+
+  public void addAnnotation(DexAnnotation anno) {
+    annotations.add(anno);
   }
 
   public abstract boolean isVirtual();
@@ -83,5 +100,16 @@ public abstract class DexMethod {
                  cache.getStringConstant(key.getValC()));
       }
     };
+  }
+
+  public MethodAnnotation assembleAnnotations(DexFile outFile, DexAssemblingCache cache) {
+    val annoList = new ArrayList<AnnotationItem>(annotations.size());
+    for (val anno : annotations)
+      annoList.add(anno.writeToFile(outFile, cache));
+
+    val annoSet = AnnotationSetItem.internAnnotationSetItem(outFile, annoList);
+    val methodAnno = new MethodAnnotation(cache.getMethod(parentClass.getType(), prototype, name), annoSet);
+
+    return methodAnno;
   }
 }

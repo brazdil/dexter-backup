@@ -2,25 +2,25 @@ package uk.ac.cam.db538.dexter.dex.method;
 
 import java.util.Set;
 
+import org.jf.dexlib.AnnotationSetItem;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
-import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexPurelyVirtualMethod extends DexMethod {
 
-  public DexPurelyVirtualMethod(DexClass parent, String name, Set<AccessFlags> accessFlags, DexPrototype prototype) {
-    super(parent, name, accessFlags, prototype);
+  public DexPurelyVirtualMethod(DexClass parent, String name, Set<AccessFlags> accessFlags, DexPrototype prototype, Set<DexAnnotation> annotations) {
+    super(parent, name, accessFlags, prototype, annotations);
   }
 
-  public DexPurelyVirtualMethod(DexClass parent, EncodedMethod methodInfo) throws UnknownTypeException, InstructionParsingException {
-    super(parent, methodInfo);
+  public DexPurelyVirtualMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
+    super(parent, methodInfo, encodedAnnotations);
   }
 
   @Override

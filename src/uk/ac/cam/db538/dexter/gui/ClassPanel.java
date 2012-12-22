@@ -34,12 +34,12 @@ public class ClassPanel extends InfoPanel {
     // create interfaces field
     fieldInterfaces = new WebTextField();
     fieldInterfaces.setEditable(false);
-    this.addRow(new WebLabel("Interfaces:"),fieldInterfaces);
+    this.addRow(new WebLabel("Interfaces:"), fieldInterfaces);
 
     // create interfaces field
     fieldAnnotations = new WebTextField();
     fieldAnnotations.setEditable(false);
-    this.addRow(new WebLabel("Annotations:"),fieldAnnotations);
+    this.addRow(new WebLabel("Annotations:"), fieldAnnotations);
 
     // create access flag checkboxes
     this.addRow(new WebLabel("Access flags:"), createAccessFlagCheckboxes(AccessFlags.getAccessFlagsForClass(-1)), true);
