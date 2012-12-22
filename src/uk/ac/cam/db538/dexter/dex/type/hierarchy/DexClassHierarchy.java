@@ -2,10 +2,12 @@ package uk.ac.cam.db538.dexter.dex.type.hierarchy;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -190,6 +192,16 @@ public class DexClassHierarchy {
     return false;
   }
 
+  public boolean implementsMethod(DexClassType clazz, String name, DexPrototype prototype) {
+    val lookingFor = new MethodEntry(name, prototype);
+
+    for (val method : classes.get(clazz).implementedMethods)
+      if (method.equals(lookingFor))
+        return true;
+
+    return false;
+  }
+
   public void addImplementedInterface(DexClassType clazz, DexClassType interfaceClazz) {
     classes.get(clazz).getInterfaces().add(interfaceClazz);
   }
@@ -213,6 +225,30 @@ public class DexClassHierarchy {
 
   private static String createDescriptor(String className) {
     return "L" + className.replace('.', '/') + ";";
+  }
+
+  public Set<DexClassType> getAllChildren(DexClassType clazz) {
+    val set = new HashSet<DexClassType>();
+
+    for (val child : classes.keySet())
+      if (isAncestor(child, clazz))
+        set.add(child);
+
+    return set;
+  }
+
+  public List<DexClassType> getAllParents(DexClassType clazz) {
+    val list = new ArrayList<DexClassType>();
+
+    while (true) {
+      list.add(clazz);
+
+      val superClazz = this.getSuperclassType(clazz);
+      if (list.contains(superClazz))
+        return list;
+
+      clazz = superClazz;
+    }
   }
 
   @AllArgsConstructor

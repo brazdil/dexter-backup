@@ -1,8 +1,10 @@
 package uk.ac.cam.db538.dexter.dex.code.insn.pseudo;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
@@ -26,6 +28,7 @@ import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
@@ -162,59 +165,55 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     return instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]);
   }
 
-  private boolean canBeInternalCall() {
+  private Pair<Boolean, Boolean> decideMethodCallDestination() {
     val dex = getMethodCode().getParentMethod().getParentClass().getParentFile();
+    val classHierarchy = dex.getClassHierarchy();
 
+    val invokedCallType = instructionInvoke.getCallType();
     val invokedClassType = instructionInvoke.getClassType();
     val invokedMethodName = instructionInvoke.getMethodName();
     val invokedMethodPrototype = instructionInvoke.getMethodPrototype();
 
-    // try to find an internal class that extends the invoked class type
-    // if there isn't one, the call will always be external
-    for (val clazz : dex.getClasses())
-      if (dex.getClassHierarchy().isAncestor(clazz.getType(), invokedClassType))
-        // does it contain the given method?
-        for (val method : clazz.getMethods())
-          if (method.getName().equals(invokedMethodName) &&
-              method.getPrototype().equals(invokedMethodPrototype))
-            return true;
+    Set<DexClassType> potentialDestinationClasses = new HashSet<DexClassType>();
 
-    return false;
-  }
+    if (invokedCallType == Opcode_Invoke.Virtual) {
 
-  private boolean canBeExternalCall() {
-    val dex = getMethodCode().getParentMethod().getParentClass().getParentFile();
+      // call destination class can be a child which implements the given method,
+      // or it can be a parent which implements the given method
 
-    val invokedClassType = instructionInvoke.getClassType();
-    val invokedMethodName = instructionInvoke.getMethodName();
-    val invokedMethodPrototype = instructionInvoke.getMethodPrototype();
+      potentialDestinationClasses.addAll(classHierarchy.getAllChildren(invokedClassType));
+      potentialDestinationClasses.addAll(classHierarchy.getAllParents(invokedClassType));
+    }
 
-    if (!invokedClassType.isDefinedInternally())
-      return true;
+    boolean canBeInternal = false;
+    boolean canBeExternal = false;
 
-    // find the class invoked in the instruction
-    for (val clazz : dex.getClasses())
-      if (clazz.getType() == invokedClassType)
-        // does it contain the given method?
-        for (val method : clazz.getMethods())
-          if (method.getName().equals(invokedMethodName) &&
-              method.getPrototype().equals(invokedMethodPrototype))
-            // it does => the call will always be internal
-            // even if it is purely virtual
-            return false;
+    for (val destClassClass : potentialDestinationClasses) {
+      if (classHierarchy.implementsMethod(destClassClass, invokedMethodName, invokedMethodPrototype)) {
+        if (destClassClass.isDefinedInternally())
+          canBeInternal = true;
+        else
+          canBeExternal = true;
+      }
+    }
 
-    return true;
+    return new Pair<Boolean, Boolean>(canBeInternal, canBeExternal);
   }
 
   private DexCodeElement[] instrumentVirtual(DexCode_InstrumentationState state) {
-    val methodCode = getMethodCode();
-    val dex = methodCode.getParentMethod().getParentClass().getParentFile();
-
     val instrumentedCode = new LinkedList<DexCodeElement>();
+    val methodCode = getMethodCode();
 
-    boolean canBeInternalCall = canBeInternalCall();
-    boolean canBeExternalCall = canBeExternalCall();
+    val destAnalysis = decideMethodCallDestination();
+    boolean canBeInternalCall = destAnalysis.getValA();
+    boolean canBeExternalCall = destAnalysis.getValB();
     boolean canBeAnyCall = canBeInternalCall || canBeExternalCall;
+
+    val invokedClassType = instructionInvoke.getClassType();
+    val invokedMethodName = instructionInvoke.getMethodName();
+    System.out.println(invokedClassType.getPrettyName() + " ... " + invokedMethodName);
+    System.out.println("  internal: " + canBeInternalCall);
+    System.out.println("  external: " + canBeExternalCall);
 
     DexRegister regInternalInstance = null;
     DexLabel labelExternal = null;
