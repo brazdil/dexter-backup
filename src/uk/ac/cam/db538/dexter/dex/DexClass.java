@@ -76,12 +76,16 @@ public class DexClass {
     if (clsInfo.getAnnotations() != null)
       methodAnnotations = clsInfo.getAnnotations().getMethodAnnotations();
 
+    List<FieldAnnotation> fieldAnnotations = null;
+    if (clsInfo.getAnnotations() != null)
+      fieldAnnotations = clsInfo.getAnnotations().getFieldAnnotations();
+
     val clsData = clsInfo.getClassData();
     if (clsData != null) {
       for (val staticFieldInfo : clsData.getStaticFields())
-        fields.add(new DexField(this, staticFieldInfo));
+        fields.add(new DexField(this, staticFieldInfo, findFieldAnnotation(staticFieldInfo, fieldAnnotations)));
       for (val instanceFieldInfo : clsData.getInstanceFields())
-        fields.add(new DexField(this, instanceFieldInfo));
+        fields.add(new DexField(this, instanceFieldInfo, findFieldAnnotation(instanceFieldInfo, fieldAnnotations)));
 
       for (val directMethodInfo : clsData.getDirectMethods())
         methods.add(new DexDirectMethod(this, directMethodInfo, findMethodAnnotation(directMethodInfo, methodAnnotations)));
@@ -98,6 +102,14 @@ public class DexClass {
     if (methodAnnotations != null)
       for (val annoItem : methodAnnotations)
         if (annoItem.method.equals(encMethod.method))
+          return annoItem.annotationSet;
+    return null;
+  }
+
+  private static AnnotationSetItem findFieldAnnotation(EncodedField encField, List<FieldAnnotation> fieldAnnotations) {
+    if (fieldAnnotations != null)
+      for (val annoItem : fieldAnnotations)
+        if (annoItem.field.equals(encField.field))
           return annoItem.annotationSet;
     return null;
   }
@@ -194,12 +206,16 @@ public class DexClass {
     for (val method : methods)
       asmMethodAnnotations.add(method.assembleAnnotations(outFile, cache));
 
+    val asmFieldAnnotations = new ArrayList<FieldAnnotation>(fields.size());
+    for (val field : fields)
+      asmFieldAnnotations.add(field.assembleAnnotations(outFile, cache));
+
     val asmAnnotations = AnnotationDirectoryItem.internAnnotationDirectoryItem(
                            outFile,
                            AnnotationSetItem.internAnnotationSetItem(
                              outFile,
                              asmClassAnnotations),
-                           new LinkedList<FieldAnnotation>(),
+                           asmFieldAnnotations,
                            asmMethodAnnotations,
                            new LinkedList<ParameterAnnotation>());
 
