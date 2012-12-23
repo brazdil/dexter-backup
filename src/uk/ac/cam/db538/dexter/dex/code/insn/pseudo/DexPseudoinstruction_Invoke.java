@@ -176,60 +176,60 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     val invokedMethodPrototype = instructionInvoke.getMethodPrototype();
 
     if (invokedCallType == Opcode_Invoke.Super) {
-    	
-    	// with super call we can always deduce the destination
-    	// by going through the parents (DexClassHierarchy will
-    	// return them ordered from the closest parent
-    	// to Object) and deciding based on the first implementation
-    	// we encounter
-    	
-    	// need to put TRUE here, because invokedClassType is already a parent
-    	for (val parentClass : classHierarchy.getAllParents(invokedClassType, true)) 
-  	      if (classHierarchy.implementsMethod(parentClass, invokedMethodName, invokedMethodPrototype)) {
-  	        if (parentClass.isDefinedInternally())
-  	          return new Pair<Boolean, Boolean>(true, false); // will always be internal
-  	        else
-    	          return new Pair<Boolean, Boolean>(false, true); // will always be external
-  	      }
-    	
-    	throw new ClassHierarchyException("Cannot determine the destination of super method call: " + invokedClassType.getPrettyName() + "." + invokedMethodName);
-    	
-    } else {
-    
-        Set<DexClassType> potentialDestinationClasses;
 
-	    if (invokedCallType == Opcode_Invoke.Virtual) {
-	
-	      // call destination class can be a child which implements the given method,
-	      // or it can be a parent which implements the given method
-	
-	    	potentialDestinationClasses = new HashSet<DexClassType>();
-	      potentialDestinationClasses.addAll(classHierarchy.getAllChildren(invokedClassType));
-	      potentialDestinationClasses.addAll(classHierarchy.getAllParents(invokedClassType, true));
-	      
-	    } else {
-	
-	      // in the case of an interface, we need to look at all the classes
-	      // that implement it; class hierarchy will automatically return
-	      // all the ancestors of such classes as well
-	
-	      potentialDestinationClasses = classHierarchy.getAllClassesImplementingInterface(invokedClassType);
-	
-	    }
-	    
-	    boolean canBeInternal = false;
-	    boolean canBeExternal = false;
-	
-	    for (val destClass : potentialDestinationClasses) {
-	      if (classHierarchy.implementsMethod(destClass, invokedMethodName, invokedMethodPrototype)) {
-	        if (destClass.isDefinedInternally())
-	          canBeInternal = true;
-	        else
-	          canBeExternal = true;
-	      }
-	    }
-	
-	    return new Pair<Boolean, Boolean>(canBeInternal, canBeExternal);
+      // with super call we can always deduce the destination
+      // by going through the parents (DexClassHierarchy will
+      // return them ordered from the closest parent
+      // to Object) and deciding based on the first implementation
+      // we encounter
+
+      // need to put TRUE here, because invokedClassType is already a parent
+      for (val parentClass : classHierarchy.getAllParents(invokedClassType, true))
+        if (classHierarchy.implementsMethod(parentClass, invokedMethodName, invokedMethodPrototype)) {
+          if (parentClass.isDefinedInternally())
+            return new Pair<Boolean, Boolean>(true, false); // will always be internal
+          else
+            return new Pair<Boolean, Boolean>(false, true); // will always be external
+        }
+
+      throw new ClassHierarchyException("Cannot determine the destination of super method call: " + invokedClassType.getPrettyName() + "." + invokedMethodName);
+
+    } else {
+
+      Set<DexClassType> potentialDestinationClasses;
+
+      if (invokedCallType == Opcode_Invoke.Virtual) {
+
+        // call destination class can be a child which implements the given method,
+        // or it can be a parent which implements the given method
+
+        potentialDestinationClasses = new HashSet<DexClassType>();
+        potentialDestinationClasses.addAll(classHierarchy.getAllChildren(invokedClassType));
+        potentialDestinationClasses.addAll(classHierarchy.getAllParents(invokedClassType, true));
+
+      } else {
+
+        // in the case of an interface, we need to look at all the classes
+        // that implement it; class hierarchy will automatically return
+        // all the ancestors of such classes as well
+
+        potentialDestinationClasses = classHierarchy.getAllClassesImplementingInterface(invokedClassType);
+
+      }
+
+      boolean canBeInternal = false;
+      boolean canBeExternal = false;
+
+      for (val destClass : potentialDestinationClasses) {
+        if (classHierarchy.implementsMethod(destClass, invokedMethodName, invokedMethodPrototype)) {
+          if (destClass.isDefinedInternally())
+            canBeInternal = true;
+          else
+            canBeExternal = true;
+        }
+      }
+
+      return new Pair<Boolean, Boolean>(canBeInternal, canBeExternal);
     }
   }
 

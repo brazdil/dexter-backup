@@ -238,22 +238,22 @@ public class DexClassHierarchy {
   }
 
   public List<DexClassType> getAllParents(DexClassType clazz, boolean includeItself) {
-	  // needs to return a list
-	  // and elements must be in order, starting with the closest parent
+    // needs to return a list
+    // and elements must be in order, starting with the closest parent
     val list = new ArrayList<DexClassType>();
     if (includeItself)
-    	list.add(clazz);
+      list.add(clazz);
 
     if (clazz != rootClass) {
-    while (true) {
-	      clazz = this.getSuperclassType(clazz);
-	      if (list.contains(clazz))
-	        return list;
-	      else
-	    	  list.add(clazz);
-	    }
+      while (true) {
+        clazz = this.getSuperclassType(clazz);
+        if (list.contains(clazz))
+          return list;
+        else
+          list.add(clazz);
+      }
     } else
-    	return list;
+      return list;
   }
 
   public Set<DexClassType> getAllClassesImplementingInterface(DexClassType intrface) {
