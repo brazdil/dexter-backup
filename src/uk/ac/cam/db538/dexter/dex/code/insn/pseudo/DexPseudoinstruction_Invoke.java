@@ -183,6 +183,14 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
       potentialDestinationClasses.addAll(classHierarchy.getAllChildren(invokedClassType));
       potentialDestinationClasses.addAll(classHierarchy.getAllParents(invokedClassType));
+    } else if (invokedCallType == Opcode_Invoke.Interface) {
+
+      // in the case of an interface, we need to look at all the classes
+      // that implement it; class hierarchy will automatically return
+      // all the ancestors of such classes as well
+
+      potentialDestinationClasses = classHierarchy.getAllClassesImplementingInterface(invokedClassType);
+
     }
 
     boolean canBeInternal = false;
@@ -207,7 +215,8 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     val destAnalysis = decideMethodCallDestination();
     boolean canBeInternalCall = destAnalysis.getValA();
     boolean canBeExternalCall = destAnalysis.getValB();
-    boolean canBeAnyCall = canBeInternalCall || canBeExternalCall;
+    boolean canBeAnyCall = canBeInternalCall && canBeExternalCall;
+    boolean canBeNeitherCall = !canBeInternalCall && !canBeExternalCall;
 
     val invokedClassType = instructionInvoke.getClassType();
     val invokedMethodName = instructionInvoke.getMethodName();
@@ -241,8 +250,6 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     }
 
     if (canBeInternalCall) {
-      // INTERNAL CALL
-
       instrumentedCode.addAll(generatePreInternalCallCode(state));
       instrumentedCode.add(cloneThisInstruction());
       instrumentedCode.addAll(generatePostInternalCallCode(state));
@@ -254,12 +261,15 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     }
 
     if (canBeExternalCall) {
-      // EXTERNAL CALL
       instrumentedCode.add(this);
     }
 
     if (canBeAnyCall) {
       instrumentedCode.add(labelEnd);
+    }
+
+    if (canBeNeitherCall) {
+      instrumentedCode.add(this);
     }
 
     return instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]);

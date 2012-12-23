@@ -251,6 +251,16 @@ public class DexClassHierarchy {
     }
   }
 
+  public Set<DexClassType> getAllClassesImplementingInterface(DexClassType intrface) {
+    val set = new HashSet<DexClassType>();
+
+    for (val clazz : classes.keySet())
+      if (implementsInterface(clazz, intrface))
+        set.add(clazz);
+
+    return set;
+  }
+
   @AllArgsConstructor
   @Getter
   private static class ClassEntry {
