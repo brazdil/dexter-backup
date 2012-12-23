@@ -47,6 +47,8 @@ public class DexInstruction_MoveResult extends DexInstruction {
     this(toClone.getMethodCode(),
          toClone.regTo,
          toClone.objectMoving);
+
+    this.setOriginalElement(toClone.isOriginalElement());
   }
 
   @Override

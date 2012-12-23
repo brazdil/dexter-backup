@@ -113,6 +113,8 @@ public class DexInstruction_Invoke extends DexInstruction {
          toClone.methodPrototype,
          toClone.argumentRegisters,
          toClone.callType);
+
+    this.setOriginalElement(toClone.isOriginalElement());
   }
 
   private void checkArguments() {

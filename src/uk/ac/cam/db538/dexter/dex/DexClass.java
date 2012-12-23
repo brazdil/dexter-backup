@@ -250,4 +250,9 @@ public class DexClass {
       asmInterfaces, asmSourceFile, asmAnnotations,
       classData, staticFieldInitializers);
   }
+
+  public void markMethodsOriginal() {
+    for (val method : methods)
+      method.markMethodOriginal();
+  }
 }

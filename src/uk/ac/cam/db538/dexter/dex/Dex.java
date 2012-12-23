@@ -54,6 +54,9 @@ public class Dex {
     val originalFile = new DexFile(filename);
     classes.addAll(parseAllClasses(originalFile));
 
+    for (val clazz : classes)
+      clazz.markMethodsOriginal();
+
     classHierarchy.checkConsistentency();
   }
 

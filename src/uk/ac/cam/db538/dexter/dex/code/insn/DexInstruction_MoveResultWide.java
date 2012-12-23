@@ -46,6 +46,8 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
     this(toClone.getMethodCode(),
          toClone.regTo1,
          toClone.regTo2);
+
+    this.setOriginalElement(toClone.isOriginalElement());
   }
 
   @Override

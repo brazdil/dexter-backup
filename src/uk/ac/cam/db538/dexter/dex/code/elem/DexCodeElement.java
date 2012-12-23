@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -21,6 +22,7 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 public abstract class DexCodeElement {
 
   @Getter private DexCode methodCode;
+  @Getter @Setter private boolean originalElement = false;
 
   public DexCodeElement(DexCode methodCode) {
     this.methodCode = methodCode;

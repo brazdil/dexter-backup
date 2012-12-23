@@ -827,4 +827,9 @@ public class DexCode {
       return new DexInstruction_Unknown(this, insn);
     }
   }
+
+  public void markAllInstructionsOriginal() {
+    for (val elem : instructionList)
+      elem.setOriginalElement(true);
+  }
 }

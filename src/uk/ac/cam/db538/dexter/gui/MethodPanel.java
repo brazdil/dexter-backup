@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.gui;
 
+import java.awt.Color;
 import java.awt.Insets;
 
 import javax.swing.BoxLayout;
@@ -115,6 +116,10 @@ public class MethodPanel extends InfoPanel {
     if (method instanceof DexMethodWithCode) {
       for (val insn : ((DexMethodWithCode) method).getCode().getInstructionList()) {
         val label = new WebHotkeyLabel(insn.getOriginalAssembly());
+
+        // set its colour based on being original element or not
+        if (!insn.isOriginalElement())
+          label.setForeground(Color.GRAY);
 
         // indent instructions (not labels)
         if (insn instanceof DexInstruction)

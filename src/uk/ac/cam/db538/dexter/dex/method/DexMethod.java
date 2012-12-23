@@ -112,4 +112,6 @@ public abstract class DexMethod {
 
     return methodAnno;
   }
+
+  public abstract void markMethodOriginal();
 }

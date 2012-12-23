@@ -35,4 +35,7 @@ public class DexPurelyVirtualMethod extends DexMethod {
   protected CodeItem generateCodeItem(DexFile outFile, DexAssemblingCache cache) {
     return null;
   }
+
+  @Override
+  public void markMethodOriginal() { }
 }

@@ -184,4 +184,9 @@ public abstract class DexMethodWithCode extends DexMethod {
 
     return CodeItem.internCodeItem(outFile, registerCount, inWords, outWords, debugInfo, instructions, tries, catchHandlers);
   }
+
+  @Override
+  public void markMethodOriginal() {
+    code.markAllInstructionsOriginal();
+  }
 }
