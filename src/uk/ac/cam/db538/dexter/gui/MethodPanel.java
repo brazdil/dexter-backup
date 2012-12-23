@@ -16,6 +16,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 
@@ -145,6 +146,23 @@ public class MethodPanel extends InfoPanel {
           }
           str.append("</html>");
           TooltipManager.setTooltip(label, str.toString(), TooltipWay.right);
+        } else if (insn instanceof DexInstruction_Invoke) {
+          val str = new StringBuilder();
+          val prototype = ((DexInstruction_Invoke) insn).getMethodPrototype();
+
+          first = true;
+          for (val paramType : prototype.getParameterTypes()) {
+            if (first)
+              first = false;
+            else
+              str.append(", ");
+            str.append(paramType.getPrettyName());
+          }
+
+          str.append(" => ");
+          str.append(prototype.getReturnType().getPrettyName());
+
+          TooltipManager.setTooltip(label, str.toString(), TooltipWay.up);
         }
 
         panelInstructions.add(label);

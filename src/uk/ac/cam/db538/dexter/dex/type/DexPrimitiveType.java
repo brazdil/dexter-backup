@@ -3,6 +3,9 @@ package uk.ac.cam.db538.dexter.dex.type;
 import java.util.HashMap;
 import java.util.Map;
 
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.utils.Pair;
+
 import lombok.val;
 
 public abstract class DexPrimitiveType extends DexRegisterType {
@@ -38,9 +41,16 @@ public abstract class DexPrimitiveType extends DexRegisterType {
     return primitive;
   }
 
+  public abstract Pair<DexClassType, String> getPrimitiveClassConstantField(DexParsingCache cache);
+
   public static class DexByte extends DexPrimitiveType {
     private DexByte() {
       super("B", "byte", DexRegisterTypeSize.SINGLE);
+    }
+
+    @Override
+    public Pair<DexClassType, String> getPrimitiveClassConstantField(DexParsingCache cache) {
+      return new Pair<DexClassType, String>(DexClassType.parse("Ljava/lang/Byte;", cache), "TYPE");
     }
   }
 
@@ -48,11 +58,21 @@ public abstract class DexPrimitiveType extends DexRegisterType {
     private DexBoolean() {
       super("Z", "boolean", DexRegisterTypeSize.SINGLE);
     }
+
+    @Override
+    public Pair<DexClassType, String> getPrimitiveClassConstantField(DexParsingCache cache) {
+      return new Pair<DexClassType, String>(DexClassType.parse("Ljava/lang/Boolean;", cache), "TYPE");
+    }
   }
 
   public static class DexShort extends DexPrimitiveType {
     private DexShort() {
       super("S", "short", DexRegisterTypeSize.SINGLE);
+    }
+
+    @Override
+    public Pair<DexClassType, String> getPrimitiveClassConstantField(DexParsingCache cache) {
+      return new Pair<DexClassType, String>(DexClassType.parse("Ljava/lang/Short;", cache), "TYPE");
     }
   }
 
@@ -60,11 +80,22 @@ public abstract class DexPrimitiveType extends DexRegisterType {
     private DexChar() {
       super("C", "char", DexRegisterTypeSize.SINGLE);
     }
+
+
+    @Override
+    public Pair<DexClassType, String> getPrimitiveClassConstantField(DexParsingCache cache) {
+      return new Pair<DexClassType, String>(DexClassType.parse("Ljava/lang/Character;", cache), "TYPE");
+    }
   }
 
   public static class DexInteger extends DexPrimitiveType {
     private DexInteger() {
       super("I", "int", DexRegisterTypeSize.SINGLE);
+    }
+
+    @Override
+    public Pair<DexClassType, String> getPrimitiveClassConstantField(DexParsingCache cache) {
+      return new Pair<DexClassType, String>(DexClassType.parse("Ljava/lang/Integer;", cache), "TYPE");
     }
   }
 
@@ -72,17 +103,32 @@ public abstract class DexPrimitiveType extends DexRegisterType {
     private DexLong() {
       super("J", "long", DexRegisterTypeSize.WIDE);
     }
+
+    @Override
+    public Pair<DexClassType, String> getPrimitiveClassConstantField(DexParsingCache cache) {
+      return new Pair<DexClassType, String>(DexClassType.parse("Ljava/lang/Long;", cache), "TYPE");
+    }
   }
 
   public static class DexFloat extends DexPrimitiveType {
     private DexFloat() {
       super("F", "float", DexRegisterTypeSize.SINGLE);
     }
+
+    @Override
+    public Pair<DexClassType, String> getPrimitiveClassConstantField(DexParsingCache cache) {
+      return new Pair<DexClassType, String>(DexClassType.parse("Ljava/lang/Float;", cache), "TYPE");
+    }
   }
 
   public static class DexDouble extends DexPrimitiveType {
     private DexDouble() {
       super("D", "double", DexRegisterTypeSize.WIDE);
+    }
+
+    @Override
+    public Pair<DexClassType, String> getPrimitiveClassConstantField(DexParsingCache cache) {
+      return new Pair<DexClassType, String>(DexClassType.parse("Ljava/lang/Double;", cache), "TYPE");
     }
   }
 }
