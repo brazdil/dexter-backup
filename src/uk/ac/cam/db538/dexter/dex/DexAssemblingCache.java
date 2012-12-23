@@ -2,6 +2,7 @@ package uk.ac.cam.db538.dexter.dex;
 
 import java.util.List;
 
+import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.DexFile;
@@ -22,6 +23,7 @@ import uk.ac.cam.db538.dexter.utils.Triple;
 
 public class DexAssemblingCache {
 
+  @Getter private final DexParsingCache parsingCache;
   private final Cache<DexType, TypeIdItem> types;
   private final Cache<List<DexRegisterType>, TypeListItem> typeLists;
   private final Cache<String, StringIdItem> stringConstants;
@@ -29,7 +31,9 @@ public class DexAssemblingCache {
   private final Cache<Triple<DexClassType, DexRegisterType, String>, FieldIdItem> fields;
   private final Cache<Triple<DexClassType, DexPrototype, String>, MethodIdItem> methods;
 
-  public DexAssemblingCache(final DexFile outFile) {
+  public DexAssemblingCache(final DexFile outFile, DexParsingCache parsingCache) {
+    this.parsingCache = parsingCache;
+
     val cache = this;
 
     types = DexType.createAssemblingCache(this, outFile);

@@ -61,7 +61,7 @@ public class Utils {
   public static DexCode_AssemblingState genAsmState(DexCode code, Map<DexRegister, Integer> regAlloc) {
     return new DexCode_AssemblingState(
              code,
-             new DexAssemblingCache(new DexFile()),
+             new DexAssemblingCache(new DexFile(), null),
              regAlloc);
   }
 

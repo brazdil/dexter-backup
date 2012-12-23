@@ -332,7 +332,7 @@ public class DexCode_Test {
     code.add(nop);
 
     val regAlloc = Utils.genRegAlloc(reg, r1, r2, r3);
-    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile())).getInstructions();
+    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile(), null)).getInstructions();
     assertEquals(3 + 32766/2 + 1, asm.size());
     assertEquals(Opcode.IF_EQZ, asm.get(0).opcode); // the original IfTestZero
     assertEquals(Opcode.GOTO, asm.get(1).opcode); // jump to successor

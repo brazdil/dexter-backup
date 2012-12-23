@@ -182,7 +182,7 @@ public class Dex {
     val outFile = new DexFile();
     val out = new ByteArrayAnnotatedOutput();
 
-    val asmCache = new DexAssemblingCache(outFile);
+    val asmCache = new DexAssemblingCache(outFile, parsingCache);
     for (val cls : classes)
       cls.writeToFile(outFile, asmCache);
 

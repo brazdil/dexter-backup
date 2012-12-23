@@ -63,7 +63,7 @@ public class DexInstruction_IfTest_Test {
     code.add(nop);
     code.add(insn);
 
-    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile())).getInstructions();
+    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile(), null)).getInstructions();
     assertEquals(2, asm.size());
     assertTrue(asm.get(0) instanceof Instruction10x);
     assertTrue(asm.get(1) instanceof Instruction22t);
@@ -90,7 +90,7 @@ public class DexInstruction_IfTest_Test {
     code.add(label);
     code.add(insn);
 
-    code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile(), null));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -110,7 +110,7 @@ public class DexInstruction_IfTest_Test {
     code.add(nop);
     code.add(insn);
 
-    code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile(), null));
   }
 
   @Test(expected=InstructionAssemblyException.class)
@@ -130,7 +130,7 @@ public class DexInstruction_IfTest_Test {
     code.add(nop);
     code.add(insn);
 
-    code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+    code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile(), null));
   }
 
   @Test
@@ -155,7 +155,7 @@ public class DexInstruction_IfTest_Test {
 
     try {
       code.disableJumpFixing();
-      code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile()));
+      code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile(), null));
       fail("Should have thrown exception");
     } catch (InstructionOffsetException e) {
       assertEquals(insn, e.getProblematicInstruction());

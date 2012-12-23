@@ -16,9 +16,20 @@ import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.EncodedValue.AnnotationEncodedSubValue;
+import org.jf.dexlib.EncodedValue.AnnotationEncodedValue;
+import org.jf.dexlib.EncodedValue.ArrayEncodedSubValue;
+import org.jf.dexlib.EncodedValue.ArrayEncodedValue;
 import org.jf.dexlib.EncodedValue.EncodedValue;
+import org.jf.dexlib.EncodedValue.EnumEncodedValue;
+import org.jf.dexlib.EncodedValue.FieldEncodedValue;
+import org.jf.dexlib.EncodedValue.MethodEncodedValue;
+import org.jf.dexlib.EncodedValue.StringEncodedValue;
+import org.jf.dexlib.EncodedValue.TypeEncodedValue;
 
+import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
 
 public class DexAnnotation {
 
@@ -50,8 +61,8 @@ public class DexAnnotation {
     // not necessary though, this is used to load android.jar
   }
 
-  public void addParam(String name, EncodedValue val) {
-    params.put(name, val);
+  public void addParam(String name, EncodedValue value) {
+    params.put(name, value);
   }
 
   public Map<String, EncodedValue> getParams() {
@@ -71,6 +82,72 @@ public class DexAnnotation {
     return list;
   }
 
+  private static EncodedValue cloneEncodedValue(EncodedValue value, DexFile outFile, DexAssemblingCache asmCache) {
+    val parsingCache = asmCache.getParsingCache();
+
+    switch (value.getValueType()) {
+    case VALUE_ARRAY:
+      val arrayValue = (ArrayEncodedSubValue) value;
+      val isSubValue = !(value instanceof ArrayEncodedValue);
+
+      int innerValuesCount = arrayValue.values.length;
+      val innerValues = new EncodedValue[innerValuesCount];
+      for (int i = 0; i < innerValuesCount; ++i)
+        innerValues[i] = cloneEncodedValue(arrayValue.values[i], outFile, asmCache);
+
+      if (isSubValue)
+        return new ArrayEncodedSubValue(innerValues);
+      else
+        return new ArrayEncodedValue(innerValues);
+
+    case VALUE_BOOLEAN:
+    case VALUE_BYTE:
+    case VALUE_CHAR:
+    case VALUE_DOUBLE:
+    case VALUE_FLOAT:
+    case VALUE_INT:
+    case VALUE_LONG:
+    case VALUE_NULL:
+    case VALUE_SHORT:
+      return value;
+
+    case VALUE_ENUM:
+      val enumValue = (EnumEncodedValue) value;
+      return new EnumEncodedValue(
+               asmCache.getField(
+                 DexClassType.parse(enumValue.value.getContainingClass().getTypeDescriptor(), parsingCache),
+                 DexRegisterType.parse(enumValue.value.getFieldType().getTypeDescriptor(), parsingCache),
+                 enumValue.value.getFieldName().getStringValue()));
+
+    case VALUE_FIELD:
+      val fieldValue = (FieldEncodedValue) value;
+      return new FieldEncodedValue(
+               asmCache.getField(
+                 DexClassType.parse(fieldValue.value.getContainingClass().getTypeDescriptor(), parsingCache),
+                 DexRegisterType.parse(fieldValue.value.getFieldType().getTypeDescriptor(), parsingCache),
+                 fieldValue.value.getFieldName().getStringValue()));
+
+    case VALUE_METHOD:
+      val methodValue = (MethodEncodedValue) value;
+      return new MethodEncodedValue(
+               asmCache.getMethod(
+                 DexClassType.parse(methodValue.value.getContainingClass().getTypeDescriptor(), parsingCache),
+                 new DexPrototype(methodValue.value.getPrototype(), parsingCache),
+                 methodValue.value.getMethodName().getStringValue()));
+
+    case VALUE_STRING:
+      val stringValue = (StringEncodedValue) value;
+      return new StringEncodedValue(asmCache.getStringConstant(stringValue.value.getStringValue()));
+
+    case VALUE_TYPE:
+      val typeValue = (TypeEncodedValue) value;
+      return new TypeEncodedValue(asmCache.getType(DexType.parse(typeValue.value.getTypeDescriptor(), parsingCache)));
+
+    default:
+      throw new RuntimeException("Unexpected EncodedValue type: " + value.getValueType().name());
+    }
+  }
+
   public AnnotationItem writeToFile(DexFile outFile, DexAssemblingCache cache) {
     int paramCount = params.size();
     int paramIndex = 0;
@@ -78,7 +155,7 @@ public class DexAnnotation {
     val paramValues = new EncodedValue[paramCount];
     for (val param : params.entrySet()) {
       paramNames[paramIndex] = cache.getStringConstant(param.getKey());
-      paramValues[paramIndex] = param.getValue();
+      paramValues[paramIndex] = cloneEncodedValue(param.getValue(), outFile, cache);
       paramIndex++;
     }
 
