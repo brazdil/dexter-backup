@@ -107,6 +107,10 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                            instructionInvoke.isStaticCall(),
                            state);
 
+      codePreInternalCall.add(new DexPseudoinstruction_PrintString(
+                                methodCode,
+                                "$$$ INTERNAL CALL | TAINTED ARGS: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName()));
+
       codePreInternalCall.add(new DexInstruction_StaticGet(
                                 methodCode,
                                 regArgSemaphore,
@@ -168,6 +172,10 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                                  new DexPrototype(DexVoid.parse("V", null), null),
                                  Arrays.asList(regResSemaphore),
                                  Opcode_Invoke.Virtual));
+
+      codePostInternalCall.add(new DexPseudoinstruction_PrintString(
+                                 methodCode,
+                                 "$$$ INTERNAL CALL | TAINTED RESULT: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName()));
     }
 
     return codePostInternalCall;
