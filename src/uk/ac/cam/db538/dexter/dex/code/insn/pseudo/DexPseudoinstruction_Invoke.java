@@ -272,10 +272,6 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     val invokedMethodName = instructionInvoke.getMethodName();
     val invokedMethodPrototype = instructionInvoke.getMethodPrototype();
 
-    System.out.println(invokedClassType.getPrettyName() + " ... " + invokedMethodName);
-    System.out.println("  internal: " + canBeInternalCall);
-    System.out.println("  external: " + canBeExternalCall);
-
     DexLabel labelExternal = null;
     DexLabel labelEnd = null;
 
