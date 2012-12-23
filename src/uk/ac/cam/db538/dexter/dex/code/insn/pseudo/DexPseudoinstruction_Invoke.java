@@ -115,7 +115,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                                 methodCode,
                                 semaphoreClass,
                                 "acquire",
-                                new DexPrototype(DexType.parse("V", parsingCache), null),
+                                new DexPrototype(DexType.parse("V", null), null),
                                 Arrays.asList(new DexRegister[] { regArgSemaphore }),
                                 Opcode_Invoke.Virtual));
 

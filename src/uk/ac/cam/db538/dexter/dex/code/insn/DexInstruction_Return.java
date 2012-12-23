@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,6 +18,9 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 
 public class DexInstruction_Return extends DexInstruction {
 
@@ -90,6 +94,24 @@ public class DexInstruction_Return extends DexInstruction {
 
   @Override
   public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
-    return new DexCodeElement[] { this };
+    if (objectMoving || !state.isNeedsCallInstrumentation())
+      return new DexCodeElement[] { this };
+    else {
+      val dex = getMethodCode().getParentMethod().getParentClass().getParentFile();
+      val regResSemaphore = new DexRegister();
+
+      return new DexCodeElement[] {
+               new DexInstruction_StaticGet(getMethodCode(), regResSemaphore, dex.getMethodCallHelper_SRes()),
+               new DexInstruction_Invoke(
+                 getMethodCode(),
+                 (DexClassType) dex.getMethodCallHelper_SRes().getType(),
+                 "acquire",
+                 new DexPrototype(DexVoid.parse("V", null), null),
+                 Arrays.asList(regResSemaphore),
+                 Opcode_Invoke.Virtual),
+               new DexInstruction_StaticPut(getMethodCode(), state.getTaintRegister(regFrom), dex.getMethodCallHelper_Res()),
+               this
+             };
+    }
   }
 }
