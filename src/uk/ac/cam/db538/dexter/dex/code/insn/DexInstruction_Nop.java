@@ -3,7 +3,6 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 import java.util.Map;
 
 import lombok.Getter;
-import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
