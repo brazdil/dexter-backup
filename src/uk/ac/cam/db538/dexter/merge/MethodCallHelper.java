@@ -10,28 +10,32 @@ public class MethodCallHelper {
 
   public static final Semaphore S_ARG, S_RES;
 
-  public static void S_ARG_acquire() {
-    try {
-      S_ARG.acquire();
-    } catch (InterruptedException e) {
-      throw new Error(e);
-    }
-  }
-
-  public static void S_RES_acquire() {
-    try {
-      S_RES.acquire();
-    } catch (InterruptedException e) {
-      throw new Error(e);
-    }
-  }
-
+//  public static void S_ARG_acquire() {
+//    try {
+//      S_ARG.acquire();
+//    } catch (InterruptedException e) {
+//      throw new Error(e);
+//    }
+//  }
+//
+//  public static void S_RES_acquire() {
+//    try {
+//      S_RES.acquire();
+//    } catch (InterruptedException e) {
+//      throw new Error(e);
+//    }
+//  }
+//
   static {
     ARG = new int[256];
     S_ARG = new Semaphore(1);
     S_RES = new Semaphore(1);
 
-    S_ARG_acquire();
+    try {
+      S_ARG.acquire();
+    } catch (InterruptedException e) {
+      throw new Error(e);
+    }
   }
 
   public static void main(String[] args) throws NoSuchMethodException, SecurityException, InterruptedException {

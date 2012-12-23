@@ -35,6 +35,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 import uk.ac.cam.db538.dexter.dex.type.hierarchy.ClassHierarchyException;
 import uk.ac.cam.db538.dexter.utils.Pair;
@@ -90,11 +91,14 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
   private List<DexCodeElement> generatePreInternalCallCode(DexCode_InstrumentationState state) {
     val methodCode = getMethodCode();
     val dex = methodCode.getParentMethod().getParentClass().getParentFile();
+    val parsingCache = state.getCache().getParsingCache();
+    val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
     val callPrototype = instructionInvoke.getMethodPrototype();
 
     val codePreInternalCall = new LinkedList<DexCodeElement>();
 
     if (callPrototype.hasPrimitiveArgument()) {
+      val regArgSemaphore = new DexRegister();
       val regArray = new DexRegister();
       val regIndex = new DexRegister();
 
@@ -103,10 +107,19 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                            instructionInvoke.isStaticCall(),
                            state);
 
+      codePreInternalCall.add(new DexInstruction_StaticGet(
+                                methodCode,
+                                regArgSemaphore,
+                                dex.getMethodCallHelper_SArg()));
+      codePreInternalCall.add(new DexInstruction_Invoke(
+                                methodCode,
+                                semaphoreClass,
+                                "acquire",
+                                new DexPrototype(DexType.parse("V", parsingCache), null),
+                                Arrays.asList(new DexRegister[] { regArgSemaphore }),
+                                Opcode_Invoke.Virtual));
+
       codePreInternalCall.add(new DexInstruction_StaticGet(methodCode, regArray, dex.getMethodCallHelper_Arg()));
-
-      codePreInternalCall.add(new DexInstruction_Invoke(methodCode, dex.getMethodCallHelper_SArgAcquire(), null));
-
       int arrayIndex = 0;
       for (val argTaintReg : argTaintRegs) {
         codePreInternalCall.add(new DexInstruction_Const(methodCode, regIndex, arrayIndex++));

@@ -62,6 +62,13 @@ public class DexClass {
     );
   }
 
+  private boolean isMethodAbstract(int accessFlags) {
+    for (val flag : AccessFlags.getAccessFlagsForMethod(accessFlags))
+      if (flag == AccessFlags.ABSTRACT)
+        return true;
+    return false;
+  }
+
   public DexClass(Dex parent, ClassDefItem clsInfo) {
     this(parent,
          DexClassType.parse(clsInfo.getClassType().getTypeDescriptor(), parent.getParsingCache()),
@@ -90,7 +97,7 @@ public class DexClass {
       for (val directMethodInfo : clsData.getDirectMethods())
         methods.add(new DexDirectMethod(this, directMethodInfo, findMethodAnnotation(directMethodInfo, methodAnnotations)));
       for (val virtualMethodInfo : clsData.getVirtualMethods()) {
-        if (virtualMethodInfo.codeItem == null)
+        if (isMethodAbstract(virtualMethodInfo.accessFlags))
           methods.add(new DexAbstractMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations)));
         else
           methods.add(new DexVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations)));

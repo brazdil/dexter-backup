@@ -33,8 +33,6 @@ public class Dex {
   @Getter private DexField methodCallHelper_Res;
   @Getter private DexField methodCallHelper_SArg;
   @Getter private DexField methodCallHelper_SRes;
-  @Getter private DexDirectMethod methodCallHelper_SArgAcquire;
-  @Getter private DexDirectMethod methodCallHelper_SResAcquire;
 
   @Getter private DexClassType internalMethodAnnotation_Type;
 
@@ -149,15 +147,6 @@ public class Dex {
         }
 
       } else if (clazz.getType() == methodCallHelper_Type) {
-        for (val method : clazz.getMethods()) {
-          if (! (method instanceof DexDirectMethod))
-            continue;
-          if (method.getName().equals("S_ARG_acquire"))
-            methodCallHelper_SArgAcquire = (DexDirectMethod) method;
-          else if (method.getName().equals("S_RES_acquire"))
-            methodCallHelper_SResAcquire = (DexDirectMethod) method;
-        }
-
         for (val field : clazz.getFields())
           if (field.getName().equals("ARG"))
             methodCallHelper_Arg = field;

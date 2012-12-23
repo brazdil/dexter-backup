@@ -13,9 +13,13 @@ public class DexCode_InstrumentationState {
   private final int idOffset;
 
   @Getter private final DexInstrumentationCache cache;
+  @Getter private final boolean needsCallInstrumentation;
 
   public DexCode_InstrumentationState(DexCode code, DexInstrumentationCache cache) {
     this.cache = cache;
+
+    val parentMethod = code.getParentMethod();
+    this.needsCallInstrumentation = !parentMethod.isAbstract() && parentMethod.isVirtual();
 
     registerMap = new HashMap<DexRegister, DexRegister>();
 
@@ -32,6 +36,9 @@ public class DexCode_InstrumentationState {
   }
 
   public DexRegister getTaintRegister(DexRegister reg) {
+    if (reg == null)
+      return null;
+
     val taintReg = registerMap.get(reg);
     if (taintReg == null) {
       val newReg = new DexRegister(reg.getOriginalIndex() + idOffset);

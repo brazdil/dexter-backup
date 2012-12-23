@@ -78,9 +78,14 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionOffsetException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_Invoke;
-import uk.ac.cam.db538.dexter.dex.method.DexMethod;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
+import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -89,7 +94,7 @@ public class DexCode {
   private final NoDuplicatesList<DexCodeElement> instructionList;
   private final Set<DexRegister> usedRegisters;
   private final Set<DexTryBlockEnd> tryBlocks;
-  @Getter private final DexMethod parentMethod;
+  @Getter private final DexMethodWithCode parentMethod;
 
   // stores information about original register mapping
   // is null for run-time generated code
@@ -102,14 +107,14 @@ public class DexCode {
     this(null);
   }
 
-  public DexCode(DexMethod parentMethod) {
+  public DexCode(DexMethodWithCode parentMethod) {
     this.instructionList = new NoDuplicatesList<DexCodeElement>();
     this.usedRegisters = new HashSet<DexRegister>();
     this.tryBlocks = new HashSet<DexTryBlockEnd>();
     this.parentMethod = parentMethod;
   }
 
-  public DexCode(CodeItem methodInfo, DexMethod parentMethod, DexParsingCache cache) {
+  public DexCode(CodeItem methodInfo, DexMethodWithCode parentMethod, DexParsingCache cache) {
     this(parentMethod);
     parsingInfo = new DexCode_ParsingState(cache, this);
     parseInstructions(methodInfo.getInstructions(), methodInfo.getHandlers(), methodInfo.getTries(), parsingInfo);
@@ -305,7 +310,53 @@ public class DexCode {
 
     replaceInstructions(instrumentedInsns);
 
+    if (instrumentationState.isNeedsCallInstrumentation() && parentMethod.getPrototype().hasPrimitiveArgument())
+      insertPostCallHandling(cache);
+
     unwrapPseudoinstructions();
+  }
+
+  private void insertPostCallHandling(DexInstrumentationCache cache) {
+    val codePostCall = new NoDuplicatesList<DexCodeElement>();
+    val dex = parentMethod.getParentClass().getParentFile();
+
+    val parsingCache = cache.getParsingCache();
+    val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
+
+    val regArray = new DexRegister();
+    val regIndex = new DexRegister();
+    val regSemaphore = new DexRegister();
+
+    val argTaintRegs = parentMethod.getPrototype().generateArgumentTaintStoringRegisters(
+                         parentMethod.getParameterMappedRegisters(),
+                         parentMethod.isStatic(),
+                         instrumentationState);
+
+    codePostCall.add(new DexInstruction_StaticGet(this, regArray, dex.getMethodCallHelper_Arg()));
+
+    int arrayIndex = 0;
+    for (val argTaintReg : argTaintRegs) {
+      if (argTaintReg != null) {
+        codePostCall.add(new DexInstruction_Const(this, regIndex, arrayIndex));
+        codePostCall.add(new DexInstruction_ArrayGet(this, argTaintReg, regArray, regIndex, Opcode_GetPut.IntFloat));
+      }
+      arrayIndex++;
+    }
+
+    codePostCall.add(new DexInstruction_StaticGet(
+                       this,
+                       regSemaphore,
+                       dex.getMethodCallHelper_SArg()));
+    codePostCall.add(new DexInstruction_Invoke(
+                       this,
+                       semaphoreClass,
+                       "release",
+                       new DexPrototype(DexType.parse("V", parsingCache), null),
+                       Arrays.asList(new DexRegister[] { regSemaphore }),
+                       Opcode_Invoke.Virtual));
+
+    codePostCall.addAll(instructionList);
+    replaceInstructions(codePostCall);
   }
 
   public Map<DexRegister, ColorRange> getRangeConstraints() {
