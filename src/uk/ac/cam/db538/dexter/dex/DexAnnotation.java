@@ -16,7 +16,6 @@ import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.EncodedValue.AnnotationEncodedSubValue;
-import org.jf.dexlib.EncodedValue.AnnotationEncodedValue;
 import org.jf.dexlib.EncodedValue.ArrayEncodedSubValue;
 import org.jf.dexlib.EncodedValue.ArrayEncodedValue;
 import org.jf.dexlib.EncodedValue.EncodedValue;

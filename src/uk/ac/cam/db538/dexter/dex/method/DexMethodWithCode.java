@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.AnnotationSetItem;
+import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.EncodedCatchHandler;
@@ -145,10 +146,10 @@ public abstract class DexMethodWithCode extends DexMethod {
   public void instrument(DexInstrumentationCache cache) {
     code.instrument(cache);
 
-//    if (isVirtual())
-//      this.addAnnotation(
-//        new DexAnnotation(this.getParentClass().getParentFile().getInternalMethodAnnotation_Type(),
-//                          AnnotationVisibility.RUNTIME));
+    if (isVirtual())
+      this.addAnnotation(
+        new DexAnnotation(this.getParentClass().getParentFile().getInternalMethodAnnotation_Type(),
+                          AnnotationVisibility.RUNTIME));
   }
 
   @Override
