@@ -36,7 +36,7 @@ public class DexInstruction_ReturnWide extends DexInstruction {
       regFrom2 = parsingState.getRegister(insnReturnWide.getRegisterA() + 1);
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

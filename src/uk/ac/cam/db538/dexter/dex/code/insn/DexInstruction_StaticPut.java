@@ -72,7 +72,7 @@ public class DexInstruction_StaticPut extends DexInstruction {
       opcode = Opcode_GetPut.convert_SPUT(insn.opcode);
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
 
     Opcode_GetPut.checkTypeAgainstOpcode(this.fieldType, this.opcode);
   }

@@ -76,7 +76,7 @@ public class DexInstruction_InstancePut extends DexInstruction {
       opcode = Opcode_GetPut.convert_IPUT(insn.opcode);
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
 
     Opcode_GetPut.checkTypeAgainstOpcode(this.fieldType, this.opcode);
   }

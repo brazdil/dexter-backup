@@ -25,7 +25,7 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
     super(methodCode);
 
     if (!(insn instanceof Instruction10x) || insn.opcode != Opcode.RETURN_VOID)
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

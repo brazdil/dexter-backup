@@ -40,7 +40,7 @@ public class DexInstruction_Goto extends DexInstruction {
     } else if (insn instanceof Instruction30t && insn.opcode == Opcode.GOTO_32) {
       targetOffset = ((Instruction30t) insn).getTargetAddressOffset();
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
 
     target = parsingState.getLabel(targetOffset);
   }

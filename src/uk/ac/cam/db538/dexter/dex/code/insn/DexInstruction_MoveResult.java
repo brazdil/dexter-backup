@@ -40,7 +40,7 @@ public class DexInstruction_MoveResult extends DexInstruction {
       objectMoving = insn.opcode == Opcode.MOVE_RESULT_OBJECT;
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   public DexInstruction_MoveResult(DexInstruction_MoveResult toClone) {

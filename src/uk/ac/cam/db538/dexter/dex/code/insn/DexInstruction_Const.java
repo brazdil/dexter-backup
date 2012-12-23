@@ -64,7 +64,7 @@ public class DexInstruction_Const extends DexInstruction {
       value = insnConstHigh16.getLiteral() << 16;
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

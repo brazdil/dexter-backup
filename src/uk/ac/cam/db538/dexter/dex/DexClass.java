@@ -27,7 +27,7 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
-import uk.ac.cam.db538.dexter.dex.method.DexPurelyVirtualMethod;
+import uk.ac.cam.db538.dexter.dex.method.DexAbstractMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
@@ -91,7 +91,7 @@ public class DexClass {
         methods.add(new DexDirectMethod(this, directMethodInfo, findMethodAnnotation(directMethodInfo, methodAnnotations)));
       for (val virtualMethodInfo : clsData.getVirtualMethods()) {
         if (virtualMethodInfo.codeItem == null)
-          methods.add(new DexPurelyVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations)));
+          methods.add(new DexAbstractMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations)));
         else
           methods.add(new DexVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations)));
       }
@@ -233,7 +233,7 @@ public class DexClass {
     for (val method : methods)
       if (method instanceof DexDirectMethod)
         asmDirectMethods.add(method.writeToFile(outFile, cache));
-      else if ((method instanceof DexVirtualMethod) || (method instanceof DexPurelyVirtualMethod))
+      else if ((method instanceof DexVirtualMethod) || (method instanceof DexAbstractMethod))
         asmVirtualMethods.add(method.writeToFile(outFile, cache));
 
     val classData = ClassDataItem.internClassDataItem(

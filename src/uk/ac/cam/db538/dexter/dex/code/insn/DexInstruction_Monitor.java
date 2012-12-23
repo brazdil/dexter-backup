@@ -40,7 +40,7 @@ public class DexInstruction_Monitor extends DexInstruction {
       enter = insn.opcode == Opcode.MONITOR_ENTER;
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

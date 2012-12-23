@@ -13,13 +13,13 @@ import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 
-public class DexPurelyVirtualMethod extends DexMethod {
+public class DexAbstractMethod extends DexMethod {
 
-  public DexPurelyVirtualMethod(DexClass parent, String name, Set<AccessFlags> accessFlags, DexPrototype prototype, Set<DexAnnotation> annotations) {
+  public DexAbstractMethod(DexClass parent, String name, Set<AccessFlags> accessFlags, DexPrototype prototype, Set<DexAnnotation> annotations) {
     super(parent, name, accessFlags, prototype, annotations);
   }
 
-  public DexPurelyVirtualMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
+  public DexAbstractMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
     super(parent, methodInfo, encodedAnnotations);
   }
 

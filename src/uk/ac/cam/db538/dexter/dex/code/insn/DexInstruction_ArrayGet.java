@@ -45,7 +45,7 @@ public class DexInstruction_ArrayGet extends DexInstruction {
       opcode = Opcode_GetPut.convert_AGET(insn.opcode);
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

@@ -56,7 +56,7 @@ public class DexInstruction_MoveWide extends DexInstruction {
       regB = insnMoveWide16.getRegisterB();
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
 
     regTo1 = parsingState.getRegister(regA);
     regTo2 = parsingState.getRegister(regA + 1);

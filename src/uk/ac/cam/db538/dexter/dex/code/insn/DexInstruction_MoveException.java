@@ -37,7 +37,7 @@ public class DexInstruction_MoveException extends DexInstruction {
       regTo = parsingState.getRegister(insnMoveException.getRegisterA());
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
 

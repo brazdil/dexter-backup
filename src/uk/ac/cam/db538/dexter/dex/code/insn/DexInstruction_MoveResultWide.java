@@ -39,7 +39,7 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
       regTo2 = parsingState.getRegister(insnMove.getRegisterA() + 1);
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   public DexInstruction_MoveResultWide(DexInstruction_MoveResultWide toClone) {

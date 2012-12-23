@@ -67,7 +67,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
       regC = insnBinaryOpWide2addr.getRegisterB();
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
 
     regTarget1 = parsingState.getRegister(regA);
     regTarget2 = parsingState.getRegister(regA + 1);

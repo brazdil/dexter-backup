@@ -44,7 +44,7 @@ public class DexInstruction_ConvertWide extends DexInstruction {
       insnOpcode = Opcode_ConvertWide.convert(insn.opcode);
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

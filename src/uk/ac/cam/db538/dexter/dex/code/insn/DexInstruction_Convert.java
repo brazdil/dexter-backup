@@ -38,7 +38,7 @@ public class DexInstruction_Convert extends DexInstruction {
       insnOpcode = Opcode_Convert.convert(insn.opcode);
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

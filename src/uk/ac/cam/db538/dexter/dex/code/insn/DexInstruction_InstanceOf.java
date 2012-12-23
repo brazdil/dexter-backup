@@ -48,7 +48,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
                 parsingState.getCache());
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

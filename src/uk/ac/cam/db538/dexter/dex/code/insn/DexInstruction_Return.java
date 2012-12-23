@@ -41,7 +41,7 @@ public class DexInstruction_Return extends DexInstruction {
       objectMoving = insn.opcode == Opcode.RETURN_OBJECT;
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

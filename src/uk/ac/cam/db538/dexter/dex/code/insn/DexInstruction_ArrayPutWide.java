@@ -45,7 +45,7 @@ public class DexInstruction_ArrayPutWide extends DexInstruction {
       regArray = parsingState.getRegister(insnArrayPutWide.getRegisterB());
       regIndex = parsingState.getRegister(insnArrayPutWide.getRegisterC());
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

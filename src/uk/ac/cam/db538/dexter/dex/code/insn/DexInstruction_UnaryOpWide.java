@@ -42,7 +42,7 @@ public class DexInstruction_UnaryOpWide extends DexInstruction {
       insnOpcode = Opcode_UnaryOpWide.convert(insn.opcode);
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

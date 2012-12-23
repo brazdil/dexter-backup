@@ -94,7 +94,7 @@ public class DexInstruction_Invoke extends DexInstruction {
         argumentRegisters.add(parsingState.getRegister(startRegister + i));
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
 
     classType = DexClassType.parse(methodInfo.getContainingClass().getTypeDescriptor(), parsingState.getCache());
 

@@ -64,7 +64,7 @@ public class DexInstruction_Move extends DexInstruction {
       objectMoving = insn.opcode == Opcode.MOVE_OBJECT_16;
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
 
     regTo = parsingState.getRegister(regA);
     regFrom = parsingState.getRegister(regB);

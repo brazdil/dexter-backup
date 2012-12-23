@@ -20,6 +20,10 @@ public abstract class DexInstruction extends DexCodeElement {
     super(methodCode);
   }
 
+  // PARSING
+
+  protected static final InstructionParsingException FORMAT_EXCEPTION = new InstructionParsingException("Unknown instruction format or opcode");
+
   // INSTRUCTION INSTRUMENTATION
 
   public DexCodeElement[] instrument(DexCode_InstrumentationState state) {

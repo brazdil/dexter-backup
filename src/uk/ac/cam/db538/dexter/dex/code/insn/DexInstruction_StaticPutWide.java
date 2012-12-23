@@ -75,7 +75,7 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
       fieldName = refItem.getFieldName().getStringValue();
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
 
     Opcode_GetPutWide.checkTypeIsWide(this.fieldType);
   }

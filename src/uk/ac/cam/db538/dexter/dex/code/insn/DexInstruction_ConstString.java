@@ -51,7 +51,7 @@ public class DexInstruction_ConstString extends DexInstruction {
 //      stringConstant = ((StringIdItem) insnConstStringJumbo.getReferencedItem()).getStringValue();
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

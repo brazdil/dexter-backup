@@ -54,7 +54,7 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
       lit = insnBinaryOpLit8.getLiteral();
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
 
     this.regTarget = parsingState.getRegister(regA);
     this.regSource = parsingState.getRegister(regB);

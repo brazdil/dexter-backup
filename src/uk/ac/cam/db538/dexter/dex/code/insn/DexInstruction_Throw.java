@@ -36,7 +36,7 @@ public class DexInstruction_Throw extends DexInstruction {
       regFrom = parsingState.getRegister(insnThrow.getRegisterA());
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override

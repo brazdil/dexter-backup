@@ -45,7 +45,7 @@ public class DexInstruction_IfTest extends DexInstruction {
       insnOpcode = Opcode_IfTest.convert(insn.opcode);
 
     } else
-      throw new InstructionParsingException("Unknown instruction format or opcode");
+      throw FORMAT_EXCEPTION;
   }
 
   @Override
