@@ -68,8 +68,6 @@ public abstract class DexMethodWithCode extends DexMethod {
     val isStatic = this.isStatic();
     val clazz = this.getParentClass();
 
-    System.out.println(clazz.getType().getPrettyName() + "." + getName());
-
     // create the parameter-register mappings
     val regCount = methodInfo.codeItem.getRegisterCount();
     val paramCount = prototype.getParameterCount(isStatic);
@@ -80,13 +78,11 @@ public abstract class DexMethodWithCode extends DexMethod {
       case SINGLE:
         val regSingle = code.getRegisterByOriginalNumber(paramRegId);
         addParameterMapping_Single(i, regSingle);
-        System.out.println("  - single #" + i + ": " + paramRegId);
         break;
       case WIDE:
         val regWide1 = code.getRegisterByOriginalNumber(paramRegId);
         val regWide2 = code.getRegisterByOriginalNumber(paramRegId + 1);
         addParameterMapping_Wide(i, regWide1, regWide2);
-        System.out.println("  - wide #" + i + ": " + paramRegId);
         break;
       }
     }
