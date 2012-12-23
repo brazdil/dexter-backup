@@ -13,12 +13,11 @@ public class MethodCallHelper {
     ARG = new int[256];
     S_ARG = new Semaphore(1);
     S_RES = new Semaphore(1);
-
-    try {
-      S_ARG.acquire();
-    } catch (InterruptedException e) {
-      throw new Error(e);
-    }
+//    try {
+//      S_ARG.acquire();
+//    } catch (InterruptedException e) {
+//      throw new Error(e);
+//    }
   }
 
 //  public static void S_ARG_acquire() {

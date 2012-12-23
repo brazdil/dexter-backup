@@ -174,6 +174,8 @@ public class Dex {
       cls.instrument(cache);
 
     classes.addAll(extraClasses);
+
+    classHierarchy.checkConsistentency();
   }
 
   public void writeToFile(File filename) throws IOException {
