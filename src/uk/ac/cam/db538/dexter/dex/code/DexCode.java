@@ -82,6 +82,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -332,6 +334,11 @@ public class DexCode {
                          parentMethod.isStatic(),
                          instrumentationState);
 
+    codePostCall.add(new DexPseudoinstruction_PrintStringConst(this,
+                     "$$$ METHOD " + parentMethod.getParentClass().getType().getPrettyName() +
+                     "..." + parentMethod.getName(),
+                     true));
+
     codePostCall.add(new DexInstruction_StaticGet(this, regArray, dex.getMethodCallHelper_Arg()));
 
     int arrayIndex = 0;
@@ -339,6 +346,8 @@ public class DexCode {
       if (argTaintReg != null) {
         codePostCall.add(new DexInstruction_Const(this, regIndex, arrayIndex));
         codePostCall.add(new DexInstruction_ArrayGet(this, argTaintReg, regArray, regIndex, Opcode_GetPut.IntFloat));
+        codePostCall.add(new DexPseudoinstruction_PrintStringConst(this, "$$$  ARG[" + arrayIndex + "] = ", false));
+        codePostCall.add(new DexPseudoinstruction_PrintInteger(this, argTaintReg, true));
       }
       arrayIndex++;
     }

@@ -17,13 +17,15 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 
-public class DexPseudoinstruction_PrintString extends DexPseudoinstruction {
+public class DexPseudoinstruction_PrintStringConst extends DexPseudoinstruction {
 
   @Getter private final String stringValue;
+  @Getter private final boolean finishLine;
 
-  public DexPseudoinstruction_PrintString(DexCode methodCode, String stringValue) {
+  public DexPseudoinstruction_PrintStringConst(DexCode methodCode, String stringValue, boolean finishLine) {
     super(methodCode);
     this.stringValue = stringValue;
+    this.finishLine = finishLine;
   }
 
   @Override
@@ -47,7 +49,7 @@ public class DexPseudoinstruction_PrintString extends DexPseudoinstruction {
              new DexInstruction_Invoke(
                code,
                DexClassType.parse("Ljava/io/PrintStream;", parsingCache),
-               "println",
+               finishLine ? "println" : "print",
                new DexPrototype(
                  DexType.parse("V", parsingCache),
                  createList(DexRegisterType.parse("Ljava/lang/String;", parsingCache))),
