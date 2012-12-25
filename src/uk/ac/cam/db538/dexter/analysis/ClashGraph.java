@@ -44,12 +44,20 @@ public class ClashGraph implements Cloneable {
 
     val LVA = new LiveVarAnalysis(code);
     for (val insn : code.getInstructionList()) {
-      val liveVars = LVA.getLiveVarsAt(insn).toArray(new DexRegister[0]);
+      // generate all pairs of live-vars-out
+      val liveVarsOut_Set = LVA.getLiveVarsOut(insn);
+      val liveVarsOut = liveVarsOut_Set.toArray(new DexRegister[liveVarsOut_Set.size()]);
+      for (int i = 0; i < liveVarsOut.length - 1; ++i)
+        for (int j = i + 1; j < liveVarsOut.length; ++j)
+          edges.add(new ClashGraph_Edge(liveVarsOut[i], liveVarsOut[j]));
 
-      // generate all pairs
-      for (int i = 0; i < liveVars.length - 1; ++i)
-        for (int j = i + 1; j < liveVars.length; ++j)
-          edges.add(new ClashGraph_Edge(liveVars[i], liveVars[j]));
+      // generate pairs from the defined registers to live-vars-in
+      val insnDefRegs = insn.lvaDefinedRegisters();
+      val liveVarsIn = LVA.getLiveVarsIn(insn);
+      for (val defReg : insnDefRegs)
+        for (val liveVar : liveVarsIn)
+          if (defReg != liveVar)
+            edges.add(new ClashGraph_Edge(defReg, liveVar));
     }
   }
 

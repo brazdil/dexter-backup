@@ -101,4 +101,31 @@ public class ClashGraph_Test {
     assertFalse(lr1.equals(lr2));
     assertTrue(r0.equals(lr3));
   }
+
+  @Test
+  public void testUnusedCodeBug() {
+    val code = new DexCode();
+
+    val r0 = new DexRegister(0);
+    val r1 = new DexRegister(1);
+    val r2 = new DexRegister(2);
+    val r3 = new DexRegister(3);
+
+    val i0 = new DexInstruction_Const(code, r0, 1);
+    code.add(i0);
+    val i1 = new DexInstruction_Const(code, r1, 2);
+    code.add(i1);
+    val i2 = new DexInstruction_Const(code, r3, 6);
+    code.add(i2);
+    val i3 = new DexInstruction_BinaryOp(code, r2, r0, r1, Opcode_BinaryOp.AddInt);
+    code.add(i3);
+    val i4 = new DexInstruction_BinaryOp(code, r2, r0, r2, Opcode_BinaryOp.AddInt);
+    code.add(i4);
+
+    val clashGraph = new ClashGraph(code);
+
+    // r3 cannot be assigned to either of r0 and r1
+    assertTrue(clashGraph.areClashing(r3, r0));
+    assertTrue(clashGraph.areClashing(r3, r1));
+  }
 }

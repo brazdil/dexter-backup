@@ -17,7 +17,8 @@ import uk.ac.cam.db538.dexter.utils.ListReverser;
 public class LiveVarAnalysis {
 
   @Getter private final DexCode code;
-  private Map<DexCodeElement, Set<DexRegister>> liveVars;
+  private Map<DexCodeElement, Set<DexRegister>> liveVarsOut;
+  private Map<DexCodeElement, Set<DexRegister>> liveVarsIn;
 
   public LiveVarAnalysis(DexCode code) {
     this.code = code;
@@ -25,9 +26,10 @@ public class LiveVarAnalysis {
   }
 
   private void generateLVA() {
-    liveVars = new HashMap<DexCodeElement, Set<DexRegister>>();
+    liveVarsOut = new HashMap<DexCodeElement, Set<DexRegister>>();
+    liveVarsIn = new HashMap<DexCodeElement, Set<DexRegister>>();
     for (val insn : code.getInstructionList())
-      liveVars.put(insn, new HashSet<DexRegister>());
+      liveVarsOut.put(insn, new HashSet<DexRegister>());
 
     val CFG = new ControlFlowGraph(code);
     boolean somethingChanged;
@@ -40,12 +42,15 @@ public class LiveVarAnalysis {
         // union of successors's liveOut
         for (val succ : block.getSuccessors())
           if (succ instanceof CfgBasicBlock)
-            insnLiveIn.addAll(liveVars.get(((CfgBasicBlock) succ).getFirstInstruction()));
+            insnLiveIn.addAll(liveVarsOut.get(((CfgBasicBlock) succ).getFirstInstruction()));
 
         // iterate instructions of the block in reverse order
         // and propagate live var info
         for (val insn : new ListReverser<DexCodeElement>(block.getInstructions())) {
-          val insnLiveOut = liveVars.get(insn);
+          // store liveVarIn
+          liveVarsIn.put(insn, insnLiveIn);
+
+          val insnLiveOut = liveVarsOut.get(insn);
           int insnLiveOut_PrevSize = insnLiveOut.size();
 
           insnLiveOut.addAll(insnLiveIn);
@@ -61,8 +66,11 @@ public class LiveVarAnalysis {
     } while (somethingChanged);
   }
 
-  public Set<DexRegister> getLiveVarsAt(DexCodeElement insn) {
-    return liveVars.get(insn);
+  public Set<DexRegister> getLiveVarsOut(DexCodeElement insn) {
+    return liveVarsOut.get(insn);
   }
 
+  public Set<DexRegister> getLiveVarsIn(DexCodeElement insn) {
+    return liveVarsIn.get(insn);
+  }
 }
