@@ -146,6 +146,15 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       val regResSemaphore = new DexRegister();
 
       if (movesResult()) {
+        codePostInternalCall.add(new DexPseudoinstruction_PrintStringConst(
+                                   methodCode,
+                                   "$$$ INTERNAL CALL | TAINTED RESULT: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
+                                   true));
+        codePostInternalCall.add(new DexPseudoinstruction_PrintStringConst(
+                                   methodCode,
+                                   "$$$  RES = ",
+                                   false));
+
         if (instructionMoveResult instanceof DexInstruction_MoveResult) {
           val regTo = state.getTaintRegister(((DexInstruction_MoveResult) instructionMoveResult).getRegTo());
           codePostInternalCall.add(new DexInstruction_StaticGet(
@@ -153,6 +162,10 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                                      regTo,
                                      dex.getMethodCallHelper_Res()));
 
+          codePostInternalCall.add(new DexPseudoinstruction_PrintInteger(
+                                     methodCode,
+                                     regTo,
+                                     true));
         } else if (instructionMoveResult instanceof DexInstruction_MoveResultWide) {
           val regTo1 = state.getTaintRegister(((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo1());
           val regTo2 = state.getTaintRegister(((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo2());
@@ -162,6 +175,11 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                                      regTo1,
                                      dex.getMethodCallHelper_Res()));
           codePostInternalCall.add(new DexInstruction_Move(methodCode, regTo2, regTo1, false));
+
+          codePostInternalCall.add(new DexPseudoinstruction_PrintInteger(
+                                     methodCode,
+                                     regTo1,
+                                     true));
         }
       }
 
@@ -173,11 +191,6 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                                  new DexPrototype(DexVoid.parse("V", null), null),
                                  Arrays.asList(regResSemaphore),
                                  Opcode_Invoke.Virtual));
-
-      codePostInternalCall.add(new DexPseudoinstruction_PrintStringConst(
-                                 methodCode,
-                                 "$$$ INTERNAL CALL | TAINTED RESULT: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
-                                 true));
     }
 
     return codePostInternalCall;
