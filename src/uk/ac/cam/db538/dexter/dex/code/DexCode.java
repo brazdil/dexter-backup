@@ -20,6 +20,7 @@ import org.jf.dexlib.CodeItem.EncodedCatchHandler;
 import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
 import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
@@ -64,6 +65,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Nop;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_PackedSwitch;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_PackedSwitchData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnWide;
@@ -588,7 +591,10 @@ public class DexCode {
     switch (insn.opcode) {
 
     case NOP:
-      return new DexInstruction_Nop(this, insn, parsingState);
+      if (insn instanceof PackedSwitchDataPseudoInstruction)
+        return new DexInstruction_PackedSwitchData(this, insn, parsingState);
+      else
+        return new DexInstruction_Nop(this, insn, parsingState);
 
     case MOVE:
     case MOVE_OBJECT:
@@ -881,6 +887,9 @@ public class DexCode {
     case SHR_INT_LIT8:
     case USHR_INT_LIT8:
       return new DexInstruction_BinaryOpLiteral(this, insn, parsingState);
+
+    case PACKED_SWITCH:
+      return new DexInstruction_PackedSwitch(this, insn, parsingState);
 
     default:
       // TODO: throw exception

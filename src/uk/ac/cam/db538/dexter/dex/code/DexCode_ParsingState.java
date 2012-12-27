@@ -28,6 +28,7 @@ public class DexCode_ParsingState {
   private final Cache<Long, DexCatchAll> catchAllOffsetCache;
   private final Cache<Pair<Long, DexClassType>, DexCatch> catchOffsetCache;
   private final Map<Long, DexInstruction> instructionOffsetMap;
+  private final Map<Long, DexInstruction> instructionParents;
   private long currentOffset;
   @Getter private final DexParsingCache cache;
   @Getter private final DexCode code;
@@ -39,6 +40,7 @@ public class DexCode_ParsingState {
     this.catchOffsetCache = DexCatch.createCache(code);
 
     this.instructionOffsetMap = new HashMap<Long, DexInstruction>();
+    this.instructionParents = new HashMap<Long, DexInstruction>();
     this.cache = cache;
     this.code = code;
   }
@@ -56,6 +58,19 @@ public class DexCode_ParsingState {
     return labelOffsetCache.getCachedEntry(absoluteOffset);
   }
 
+  public DexLabel getLabel(long insnOffset, DexInstruction relativeTo) {
+    if (!instructionOffsetMap.containsValue(relativeTo))
+      throw new InstructionParsingException("Cannot find zero-offset instruction");
+
+    long zeroPoint = 0;
+    for (val entry : instructionOffsetMap.entrySet())
+      if (entry.getValue().equals(relativeTo))
+        zeroPoint = entry.getKey();
+
+    long absoluteOffset = zeroPoint + insnOffset;
+    return labelOffsetCache.getCachedEntry(absoluteOffset);
+  }
+
   public DexCatchAll getCatchAll(long handlerOffset) {
     return catchAllOffsetCache.getCachedEntry(handlerOffset);
   }
@@ -68,6 +83,14 @@ public class DexCode_ParsingState {
     instructionOffsetMap.put(currentOffset, insn);
     currentOffset += size;
     code.add(insn);
+  }
+
+  public void registerParentInstruction(DexInstruction parent, long childOffset) {
+    instructionParents.put(currentOffset + childOffset, parent);
+  }
+
+  public DexInstruction getCurrentOffsetParent() {
+    return instructionParents.get(currentOffset);
   }
 
   public void placeLabels() {

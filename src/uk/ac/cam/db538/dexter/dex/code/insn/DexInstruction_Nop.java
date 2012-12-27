@@ -8,7 +8,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.Instruction10x;
-import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -23,7 +22,6 @@ public class DexInstruction_Nop extends DexInstruction {
   public static enum NopType {
     Standard,
     SparseSwitchData,
-    PackedSwitchData,
     ArrayData
   }
 
@@ -38,7 +36,7 @@ public class DexInstruction_Nop extends DexInstruction {
     this(methodCode, NopType.Standard);
   }
 
-  public DexInstruction_Nop(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_Nop(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
     super(methodCode);
 
     if (insn.opcode != Opcode.NOP)
@@ -48,8 +46,6 @@ public class DexInstruction_Nop extends DexInstruction {
       this.instructionType = NopType.Standard;
     else if (insn instanceof SparseSwitchDataPseudoInstruction)
       this.instructionType = NopType.SparseSwitchData;
-    else if (insn instanceof PackedSwitchDataPseudoInstruction)
-      this.instructionType = NopType.PackedSwitchData;
     else if (insn instanceof ArrayDataPseudoInstruction)
       this.instructionType = NopType.ArrayData;
     else
