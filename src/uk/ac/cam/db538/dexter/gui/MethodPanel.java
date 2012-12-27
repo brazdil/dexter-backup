@@ -17,6 +17,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_PackedSwitchData;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
@@ -177,6 +178,34 @@ public class MethodPanel extends InfoPanel {
           int key = insnPSD.getFirstKey();
           for (val target : insnPSD.getTargets()) {
             str.append(key++ + " => L" + target.getOriginalAbsoluteOffset());
+            str.append("<br>");
+          }
+          str.append("</html>");
+          TooltipManager.setTooltip(label, str.toString(), TooltipWay.right);
+        } else if (insn instanceof DexInstruction_FillArrayData) {
+          val insnFAD = (DexInstruction_FillArrayData) insn;
+          val str = new StringBuilder();
+          str.append("<html>");
+
+          int index = 0;
+          for (val target : insnFAD.getElementData()) {
+            str.append(index++ + " => [");
+            int number = 0;
+            first = true;
+            for (int i = 0; i < target.length; ++i) {
+              if (first)
+                first = false;
+              else
+                str.append(", ");
+              str.append(target[i]);
+              number |= ((int) target[i]) << (8 * i);
+              if (i < 3)
+                number &= (1 << (8 * (i + 1))) - 1;
+            }
+            str.append("] => ");
+            str.append(number);
+            str.append(", 0x");
+            str.append(Integer.toHexString(number));
             str.append("<br>");
           }
           str.append("</html>");

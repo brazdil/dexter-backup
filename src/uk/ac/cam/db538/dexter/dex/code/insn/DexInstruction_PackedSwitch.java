@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction31t;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -29,7 +30,7 @@ public class DexInstruction_PackedSwitch extends DexInstruction {
   public DexInstruction_PackedSwitch(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
     super(methodCode);
 
-    if (insn instanceof Instruction31t) {
+    if (insn instanceof Instruction31t && insn.opcode == Opcode.PACKED_SWITCH) {
 
       val insnPackedSwitch = (Instruction31t) insn;
       int dataTableOffset = insnPackedSwitch.getTargetAddressOffset();
@@ -50,6 +51,6 @@ public class DexInstruction_PackedSwitch extends DexInstruction {
 
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_PackedSwitch(getMethodCode(), regTest, switchTable);
+    return new DexInstruction_PackedSwitch(getMethodCode(), mapping.get(regTest), switchTable);
   }
 }

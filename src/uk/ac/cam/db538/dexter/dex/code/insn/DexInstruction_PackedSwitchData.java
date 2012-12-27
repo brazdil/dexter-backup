@@ -61,6 +61,6 @@ public class DexInstruction_PackedSwitchData extends DexInstruction {
 
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_PackedSwitchData(getMethodCode(), parentInstruction, firstKey, targets);
+    return this;
   }
 }

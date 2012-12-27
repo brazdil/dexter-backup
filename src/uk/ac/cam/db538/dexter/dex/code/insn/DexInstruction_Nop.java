@@ -6,7 +6,6 @@ import lombok.Getter;
 
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
-import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.Instruction10x;
 import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
@@ -21,8 +20,7 @@ public class DexInstruction_Nop extends DexInstruction {
 
   public static enum NopType {
     Standard,
-    SparseSwitchData,
-    ArrayData
+    SparseSwitchData
   }
 
   @Getter private final NopType instructionType;
@@ -46,8 +44,6 @@ public class DexInstruction_Nop extends DexInstruction {
       this.instructionType = NopType.Standard;
     else if (insn instanceof SparseSwitchDataPseudoInstruction)
       this.instructionType = NopType.SparseSwitchData;
-    else if (insn instanceof ArrayDataPseudoInstruction)
-      this.instructionType = NopType.ArrayData;
     else
       throw FORMAT_EXCEPTION;
   }

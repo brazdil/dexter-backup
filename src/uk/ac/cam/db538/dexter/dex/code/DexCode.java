@@ -20,6 +20,7 @@ import org.jf.dexlib.CodeItem.EncodedCatchHandler;
 import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
 import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
@@ -47,6 +48,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertFromWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertToWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
@@ -593,6 +596,8 @@ public class DexCode {
     case NOP:
       if (insn instanceof PackedSwitchDataPseudoInstruction)
         return new DexInstruction_PackedSwitchData(this, insn, parsingState);
+      else if (insn instanceof ArrayDataPseudoInstruction)
+        return new DexInstruction_FillArrayData(this, insn, parsingState);
       else
         return new DexInstruction_Nop(this, insn, parsingState);
 
@@ -890,6 +895,9 @@ public class DexCode {
 
     case PACKED_SWITCH:
       return new DexInstruction_PackedSwitch(this, insn, parsingState);
+
+    case FILL_ARRAY_DATA:
+      return new DexInstruction_FillArray(this, insn, parsingState);
 
     default:
       // TODO: throw exception
