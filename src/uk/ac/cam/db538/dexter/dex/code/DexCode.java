@@ -35,6 +35,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPutWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
@@ -672,6 +673,9 @@ public class DexCode {
 
     case NEW_ARRAY:
       return new DexInstruction_NewArray(this, insn, parsingState);
+
+    case ARRAY_LENGTH:
+      return new DexInstruction_ArrayLength(this, insn, parsingState);
 
     case THROW:
       return new DexInstruction_Throw(this, insn, parsingState);
