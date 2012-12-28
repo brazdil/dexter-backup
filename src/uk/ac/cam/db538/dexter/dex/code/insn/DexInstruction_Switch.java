@@ -15,28 +15,32 @@ import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 
-public class DexInstruction_PackedSwitch extends DexInstruction {
+public class DexInstruction_Switch extends DexInstruction {
 
   @Getter private final DexRegister regTest;
   @Getter private final DexLabel switchTable;
+  @Getter private final boolean packed;
 
-  public DexInstruction_PackedSwitch(DexCode methodCode, DexRegister test, DexLabel switchTable) {
+  public DexInstruction_Switch(DexCode methodCode, DexRegister test, DexLabel switchTable, boolean isPacked) {
     super(methodCode);
 
     this.regTest = test;
     this.switchTable = switchTable;
+    this.packed = isPacked;
   }
 
-  public DexInstruction_PackedSwitch(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
+  public DexInstruction_Switch(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
     super(methodCode);
 
-    if (insn instanceof Instruction31t && insn.opcode == Opcode.PACKED_SWITCH) {
+    if (insn instanceof Instruction31t &&
+        (insn.opcode == Opcode.PACKED_SWITCH || insn.opcode == Opcode.SPARSE_SWITCH)) {
 
-      val insnPackedSwitch = (Instruction31t) insn;
-      int dataTableOffset = insnPackedSwitch.getTargetAddressOffset();
+      val insnSwitch = (Instruction31t) insn;
+      int dataTableOffset = insnSwitch.getTargetAddressOffset();
 
-      this.regTest = parsingState.getRegister(insnPackedSwitch.getRegisterA());
+      this.regTest = parsingState.getRegister(insnSwitch.getRegisterA());
       this.switchTable = parsingState.getLabel(dataTableOffset);
+      this.packed = (insn.opcode == Opcode.PACKED_SWITCH);
 
       parsingState.registerParentInstruction(this, dataTableOffset);
 
@@ -46,11 +50,11 @@ public class DexInstruction_PackedSwitch extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "packed-switch v" + regTest.getOriginalIndexString() + ", L" + switchTable.getOriginalAbsoluteOffset();
+    return (packed ? "packed" : "sparse") + "-switch v" + regTest.getOriginalIndexString() + ", L" + switchTable.getOriginalAbsoluteOffset();
   }
 
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_PackedSwitch(getMethodCode(), mapping.get(regTest), switchTable);
+    return new DexInstruction_Switch(getMethodCode(), mapping.get(regTest), switchTable, packed);
   }
 }

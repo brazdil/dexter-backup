@@ -22,6 +22,7 @@ import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
+import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
@@ -68,7 +69,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Nop;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_PackedSwitch;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_PackedSwitchData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
@@ -77,6 +78,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGetWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPutWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_SparseSwitchData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
@@ -596,6 +598,8 @@ public class DexCode {
     case NOP:
       if (insn instanceof PackedSwitchDataPseudoInstruction)
         return new DexInstruction_PackedSwitchData(this, insn, parsingState);
+      else if (insn instanceof SparseSwitchDataPseudoInstruction)
+        return new DexInstruction_SparseSwitchData(this, insn, parsingState);
       else if (insn instanceof ArrayDataPseudoInstruction)
         return new DexInstruction_FillArrayData(this, insn, parsingState);
       else
@@ -894,7 +898,8 @@ public class DexCode {
       return new DexInstruction_BinaryOpLiteral(this, insn, parsingState);
 
     case PACKED_SWITCH:
-      return new DexInstruction_PackedSwitch(this, insn, parsingState);
+    case SPARSE_SWITCH:
+      return new DexInstruction_Switch(this, insn, parsingState);
 
     case FILL_ARRAY_DATA:
       return new DexInstruction_FillArray(this, insn, parsingState);

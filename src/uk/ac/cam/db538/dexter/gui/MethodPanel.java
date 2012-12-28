@@ -20,6 +20,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_PackedSwitchData;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_SparseSwitchData;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 
@@ -178,6 +179,17 @@ public class MethodPanel extends InfoPanel {
           int key = insnPSD.getFirstKey();
           for (val target : insnPSD.getTargets()) {
             str.append(key++ + " => L" + target.getOriginalAbsoluteOffset());
+            str.append("<br>");
+          }
+          str.append("</html>");
+          TooltipManager.setTooltip(label, str.toString(), TooltipWay.right);
+        } else if (insn instanceof DexInstruction_SparseSwitchData) {
+          val insnSSD = (DexInstruction_SparseSwitchData) insn;
+          val str = new StringBuilder();
+          str.append("<html>");
+
+          for (val keyTarget : insnSSD.getKeyTargetPairs()) {
+            str.append(keyTarget.getValA() + " => L" + keyTarget.getValB().getOriginalAbsoluteOffset());
             str.append("<br>");
           }
           str.append("</html>");
