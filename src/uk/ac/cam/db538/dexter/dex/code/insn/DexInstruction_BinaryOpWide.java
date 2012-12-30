@@ -80,8 +80,9 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return insnOpcode.getAssemblyName() + " v" + regTarget1.getOriginalIndexString() +
-           ", v" + regSourceA1.getOriginalIndexString() + ", v" + regSourceB1.getOriginalIndexString();
+    return insnOpcode.getAssemblyName() + " v" + regTarget1.getOriginalIndexString() + "|v" + regTarget2.getOriginalIndexString()
+           + ", v" + regSourceA1.getOriginalIndexString() + "|v" + regSourceA2.getOriginalIndexString()
+           + ", v" + regSourceB1.getOriginalIndexString() + "|v" + regSourceB2.getOriginalIndexString();
   }
 
   @Override

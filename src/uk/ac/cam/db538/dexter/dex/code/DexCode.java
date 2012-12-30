@@ -42,6 +42,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CompareFloat;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CompareWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
@@ -700,6 +702,15 @@ public class DexCode {
     case IF_GTZ:
     case IF_LEZ:
       return new DexInstruction_IfTestZero(this, insn, parsingState);
+
+    case CMPL_FLOAT:
+    case CMPG_FLOAT:
+      return new DexInstruction_CompareFloat(this, insn, parsingState);
+
+    case CMPL_DOUBLE:
+    case CMPG_DOUBLE:
+    case CMP_LONG:
+      return new DexInstruction_CompareWide(this, insn, parsingState);
 
     case SGET:
     case SGET_OBJECT:
