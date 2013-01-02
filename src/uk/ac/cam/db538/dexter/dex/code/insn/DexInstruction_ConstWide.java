@@ -111,7 +111,7 @@ public class DexInstruction_ConstWide extends DexInstruction {
       return new Instruction[] { new Instruction21s(Opcode.CONST_WIDE_16, (short) rTo1, (short) value) };
     else if (fitsIntoBits_Signed(value, 32))
       return new Instruction[] { new Instruction31i(Opcode.CONST_WIDE_32, (short) rTo1, (int) value) };
-    else if (fitsIntoHighBits_Signed(value, 64, 48))
+    else if (fitsIntoHighBits_Signed(value, 16, 48))
       return new Instruction[] { new Instruction21h(Opcode.CONST_WIDE_HIGH16, (short) rTo1, (short) value) };
     else
       return new Instruction[] { new Instruction51l(Opcode.CONST_WIDE, (short) rTo1, value) };

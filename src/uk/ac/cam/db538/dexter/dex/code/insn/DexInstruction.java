@@ -121,12 +121,12 @@ public abstract class DexInstruction extends DexCodeElement {
     return (value & mask) == 0L;
   }
 
-  static boolean fitsIntoHighBits_Signed(long value, int bitsWidth, int bitsBottomEmpty) {
-    assert bitsWidth > 0;
-    assert bitsWidth <= 64;
+  static boolean fitsIntoHighBits_Signed(long value, int bitsUsedWidth, int bitsBottomEmpty) {
+    assert bitsUsedWidth > 0;
+    assert bitsUsedWidth <= 64;
     assert bitsBottomEmpty > 0;
     assert bitsBottomEmpty <= 64;
-    assert bitsWidth + bitsBottomEmpty <= 64;
+    assert bitsUsedWidth + bitsBottomEmpty <= 64;
 
     // check that the bottom bits are zero
     // and then that it fits in the sum of bit arguments
@@ -134,7 +134,7 @@ public abstract class DexInstruction extends DexCodeElement {
     for (int i = 0; i < bitsBottomEmpty; ++i)
       mask |= 1L << i;
     return ((value & mask) == 0L) &&
-           fitsIntoBits_Signed(value, bitsBottomEmpty + bitsWidth);
+           fitsIntoBits_Signed(value, bitsBottomEmpty + bitsUsedWidth);
   }
 
   static boolean formWideRegister(int reg1, int reg2) {
