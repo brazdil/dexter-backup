@@ -262,6 +262,18 @@ public class DexCode {
     return null;
   }
 
+  public DexInstruction getFollowingInstruction(DexCodeElement elem) {
+    val elemIndex = instructionList.indexOf(elem);
+    if (elemIndex < 0)
+      throw new NoSuchElementException();
+
+    val nextInsnInfo = nextInstruction(instructionList, elemIndex);
+    if (nextInsnInfo == null)
+      return null;
+
+    return nextInsnInfo.getValA();
+  }
+
   private void generatePseudoinstructions() {
     val insns = instructionList;
     val codeLength = insns.size();

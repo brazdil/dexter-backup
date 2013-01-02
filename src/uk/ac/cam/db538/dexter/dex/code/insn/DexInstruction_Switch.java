@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Map;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
@@ -9,7 +10,10 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction31t;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -63,5 +67,44 @@ public class DexInstruction_Switch extends DexInstruction {
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_Switch(getMethodCode(), mapping.get(regTest), switchTable, packed);
+  }
+
+  @Override
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    int rTest = state.getRegisterAllocation().get(regTest);
+    long offset = computeRelativeOffset(switchTable, state);
+
+    if (!fitsIntoBits_Unsigned(rTest, 8))
+      return throwNoSuitableFormatFound();
+
+    if (packed)
+      return new Instruction[] { new Instruction31t(Opcode.PACKED_SWITCH, (short) rTest, (int) offset) };
+    else
+      return new Instruction[] { new Instruction31t(Opcode.SPARSE_SWITCH, (short) rTest, (int) offset) };
+  }
+
+  @Override
+  public boolean cfgEndsBasicBlock() {
+    return true;
+  }
+
+  @Override
+  public Set<DexCodeElement> cfgGetSuccessors() {
+    return createSet((DexCodeElement) switchTable);
+  }
+
+  @Override
+  public Set<DexRegister> lvaReferencedRegisters() {
+    return createSet(regTest);
+  }
+
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    return createSet(new GcRangeConstraint(regTest, ColorRange.RANGE_8BIT));
+  }
+
+  @Override
+  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
+    return new DexCodeElement[] { this };
   }
 }
