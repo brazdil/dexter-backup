@@ -105,4 +105,7 @@ public class DexInstruction_CheckCast extends DexInstruction {
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regObject, ColorRange.RANGE_8BIT));
   }
+
+  // TODO: instrument needs to surround the instruction with try/catch
+  // and pass taint from regObject to the exception
 }
