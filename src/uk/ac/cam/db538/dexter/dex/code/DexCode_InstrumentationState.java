@@ -19,7 +19,7 @@ public class DexCode_InstrumentationState {
     this.cache = cache;
 
     val parentMethod = code.getParentMethod();
-    this.needsCallInstrumentation = !parentMethod.isAbstract();
+    this.needsCallInstrumentation = parentMethod != null && !parentMethod.isAbstract();
 
     registerMap = new HashMap<DexRegister, DexRegister>();
 

@@ -37,27 +37,27 @@ public class DexInstruction_BinaryOpWide_Test {
         new Instruction23x(Opcode.DIV_DOUBLE, (short) 234, (short) 235, (short) 236),
         new Instruction23x(Opcode.REM_DOUBLE, (short) 234, (short) 235, (short) 236)
       }, new String[] {
-        "add-long v234, v235, v236",
-        "sub-long v234, v235, v236",
-        "mul-long v234, v235, v236",
-        "div-long v234, v235, v236",
-        "rem-long v234, v235, v236",
-        "and-long v234, v235, v236",
-        "or-long v234, v235, v236",
-        "xor-long v234, v235, v236",
-        "shl-long v234, v235, v236",
-        "shr-long v234, v235, v236",
-        "ushr-long v234, v235, v236",
-        "add-double v234, v235, v236",
-        "sub-double v234, v235, v236",
-        "mul-double v234, v235, v236",
-        "div-double v234, v235, v236",
-        "rem-double v234, v235, v236"
+        "add-long v234|v235, v235|v236, v236|v237",
+        "sub-long v234|v235, v235|v236, v236|v237",
+        "mul-long v234|v235, v235|v236, v236|v237",
+        "div-long v234|v235, v235|v236, v236|v237",
+        "rem-long v234|v235, v235|v236, v236|v237",
+        "and-long v234|v235, v235|v236, v236|v237",
+        "or-long v234|v235, v235|v236, v236|v237",
+        "xor-long v234|v235, v235|v236, v236|v237",
+        "shl-long v234|v235, v235|v236, v236|v237",
+        "shr-long v234|v235, v235|v236, v236|v237",
+        "ushr-long v234|v235, v235|v236, v236|v237",
+        "add-double v234|v235, v235|v236, v236|v237",
+        "sub-double v234|v235, v235|v236, v236|v237",
+        "mul-double v234|v235, v235|v236, v236|v237",
+        "div-double v234|v235, v235|v236, v236|v237",
+        "rem-double v234|v235, v235|v236, v236|v237"
       });
 
     val insn = (DexInstruction_BinaryOpWide)
                Utils.parseAndCompare(new Instruction23x(Opcode.ADD_LONG, (short) 2, (short) 12, (short) 112),
-                                     "add-long v2, v12, v112");
+                                     "add-long v2|v3, v12|v13, v112|v113");
     assertEquals(2, insn.getRegTarget1().getOriginalIndex());
     assertEquals(3, insn.getRegTarget2().getOriginalIndex());
     assertEquals(12, insn.getRegSourceA1().getOriginalIndex());
@@ -87,27 +87,27 @@ public class DexInstruction_BinaryOpWide_Test {
         new Instruction12x(Opcode.DIV_DOUBLE_2ADDR, (byte) 4, (byte) 14),
         new Instruction12x(Opcode.REM_DOUBLE_2ADDR, (byte) 4, (byte) 14)
       }, new String[] {
-        "add-long v4, v4, v14",
-        "sub-long v4, v4, v14",
-        "mul-long v4, v4, v14",
-        "div-long v4, v4, v14",
-        "rem-long v4, v4, v14",
-        "and-long v4, v4, v14",
-        "or-long v4, v4, v14",
-        "xor-long v4, v4, v14",
-        "shl-long v4, v4, v14",
-        "shr-long v4, v4, v14",
-        "ushr-long v4, v4, v14",
-        "add-double v4, v4, v14",
-        "sub-double v4, v4, v14",
-        "mul-double v4, v4, v14",
-        "div-double v4, v4, v14",
-        "rem-double v4, v4, v14"
+        "add-long v4|v5, v4|v5, v14|v15",
+        "sub-long v4|v5, v4|v5, v14|v15",
+        "mul-long v4|v5, v4|v5, v14|v15",
+        "div-long v4|v5, v4|v5, v14|v15",
+        "rem-long v4|v5, v4|v5, v14|v15",
+        "and-long v4|v5, v4|v5, v14|v15",
+        "or-long v4|v5, v4|v5, v14|v15",
+        "xor-long v4|v5, v4|v5, v14|v15",
+        "shl-long v4|v5, v4|v5, v14|v15",
+        "shr-long v4|v5, v4|v5, v14|v15",
+        "ushr-long v4|v5, v4|v5, v14|v15",
+        "add-double v4|v5, v4|v5, v14|v15",
+        "sub-double v4|v5, v4|v5, v14|v15",
+        "mul-double v4|v5, v4|v5, v14|v15",
+        "div-double v4|v5, v4|v5, v14|v15",
+        "rem-double v4|v5, v4|v5, v14|v15"
       });
 
     val insn = (DexInstruction_BinaryOpWide)
                Utils.parseAndCompare(new Instruction12x(Opcode.ADD_LONG_2ADDR, (byte) 3, (byte) 6),
-                                     "add-long v3, v3, v6");
+                                     "add-long v3|v4, v3|v4, v6|v7");
     assertEquals(3, insn.getRegTarget1().getOriginalIndex());
     assertEquals(4, insn.getRegTarget2().getOriginalIndex());
     assertEquals(3, insn.getRegSourceA1().getOriginalIndex());
@@ -366,7 +366,7 @@ public class DexInstruction_BinaryOpWide_Test {
     Utils.instrumentAndCompare(
       code,
       new String[] {
-        "sub-long v0, v2, v4",
+        "sub-long v0|v1, v2|v3, v4|v5",
         "or-int v6, v8, v9",
         "or-int v6, v6, v10",
         "or-int v6, v6, v11",

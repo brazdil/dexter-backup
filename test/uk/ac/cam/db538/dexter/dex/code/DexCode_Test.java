@@ -572,4 +572,44 @@ public class DexCode_Test {
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
     new DexCode(codeItem, new DexParsingCache());
   }
+
+  @Test
+  public void testAssembly_EvenAlignedLabels_NoNeed() {
+    val code = new DexCode();
+    val label = new DexLabel(code);
+    label.setEvenAligned(true);
+    code.add(new DexInstruction_Nop(code));
+    code.add(new DexLabel(code)); // normal label
+    code.add(new DexInstruction_Nop(code));
+    code.add(label); // already correctly aligned
+    code.add(new DexInstruction_Nop(code));
+
+    val asm = code.assembleBytecode(null, null);
+    assertEquals(3, asm.getInstructions().size());
+    assertEquals(3, asm.getTotalCodeLength());
+    assertEquals(Opcode.NOP, asm.getInstructions().get(0).opcode);
+    assertEquals(Opcode.NOP, asm.getInstructions().get(1).opcode);
+    assertEquals(Opcode.NOP, asm.getInstructions().get(2).opcode);
+  }
+
+  @Test
+  public void testAssembly_EvenAlignedLabels_BadlyAligned() {
+    val code = new DexCode();
+    val label = new DexLabel(code);
+    label.setEvenAligned(true);
+    code.add(new DexInstruction_Nop(code));
+    code.add(new DexInstruction_Nop(code));
+    code.add(new DexInstruction_Nop(code));
+    code.add(label); // badly aligned
+    code.add(new DexInstruction_Nop(code));
+
+    val asm = code.assembleBytecode(null, null);
+    assertEquals(5, asm.getInstructions().size());
+    assertEquals(5, asm.getTotalCodeLength());
+    assertEquals(Opcode.NOP, asm.getInstructions().get(0).opcode);
+    assertEquals(Opcode.NOP, asm.getInstructions().get(1).opcode);
+    assertEquals(Opcode.NOP, asm.getInstructions().get(2).opcode);
+    assertEquals(Opcode.NOP, asm.getInstructions().get(3).opcode);
+    assertEquals(Opcode.NOP, asm.getInstructions().get(4).opcode);
+  }
 }

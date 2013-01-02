@@ -25,6 +25,8 @@ public class DexInstruction_FillArray extends DexInstruction {
 
     this.regArray = array;
     this.arrayTable = arrayTable;
+
+    setUp();
   }
 
   public DexInstruction_FillArray(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
@@ -39,9 +41,14 @@ public class DexInstruction_FillArray extends DexInstruction {
       this.arrayTable = parsingState.getLabel(dataTableOffset);
 
       parsingState.registerParentInstruction(this, dataTableOffset);
+      setUp();
 
     } else
       throw FORMAT_EXCEPTION;
+  }
+
+  private void setUp() {
+    this.arrayTable.setEvenAligned(true);
   }
 
   @Override

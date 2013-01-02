@@ -20,7 +20,9 @@ import org.jf.dexlib.CodeItem.EncodedCatchHandler;
 import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
 import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction;
+import org.jf.dexlib.Code.Format.Instruction10x;
 import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
@@ -31,6 +33,7 @@ import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement.GcFollowConstraint;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
@@ -72,16 +75,16 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Nop;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_PackedSwitchData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_SparseSwitchData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGetWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPutWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_SparseSwitchData;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
@@ -482,10 +485,9 @@ public class DexCode {
   }
 
   public AssembledCode assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache, int absoluteAddressOffset) {
-    DexCode modifiedCode = this;
     while (true) {
       try {
-        val asmState = new DexCode_AssemblingState(modifiedCode, cache, regAlloc);
+        val asmState = new DexCode_AssemblingState(this, cache, regAlloc);
         val bytecode = new LinkedList<Instruction>();
         int totalCodeLength;
 
@@ -498,22 +500,34 @@ public class DexCode {
 
           // assemble each instruction
           long offset = 0;
-          for (val elem : modifiedCode.instructionList) {
+          for (val elem : instructionList) {
+            if (elem instanceof DexLabel) {
+              val label = (DexLabel) elem;
+
+              if (label.isEvenAligned() && ((offset & 1L) != 0)) {
+                // can't use assembly method of DexInstruction_NOP here,
+                // because it returns empty instruction list
+                val nop = new Instruction10x(Opcode.NOP);
+                offset += nop.getSize(0); // argument ignored
+                bytecode.add(nop);
+              }
+            }
+
             long previousOffset = asmState.getElementOffsets().get(elem);
             offsetsChanged |= (offset != previousOffset);
-
             asmState.setElementOffset(elem, offset);
 
             if (elem instanceof DexInstruction) {
               val insn = (DexInstruction) elem;
 
-              Instruction[] asm = insn.assembleBytecode(asmState);
+              val asm = insn.assembleBytecode(asmState);
               for (val asmInsn : asm)
                 offset += asmInsn.getSize(0); // argument ignored
 
               bytecode.addAll(Arrays.asList(asm));
             }
           }
+
 
           totalCodeLength = (int) offset;
         } while (offsetsChanged);
@@ -524,7 +538,7 @@ public class DexCode {
         val elemOffsets = asmState.getElementOffsets();
         val tryItems = new ArrayList<TryItem>();
         val encodedCatchHandlers = new ArrayList<EncodedCatchHandler>();
-        for (val elem : modifiedCode.instructionList)
+        for (val elem : instructionList)
           if (elem instanceof DexTryBlockEnd) {
             val tryEnd = (DexTryBlockEnd) elem;
             val tryStart = tryEnd.getBlockStart();
@@ -567,14 +581,14 @@ public class DexCode {
 
         val problematicInsn = e.getProblematicInstruction();
 
-        val newCode = new DexCode();
-        for (val insn : modifiedCode.instructionList)
+        val newCode = new NoDuplicatesList<DexCodeElement>(this.instructionList.size() + 20); // 20 is kinda arbitrary here, should be enough
+        for (val insn : instructionList)
           if (insn == problematicInsn)
             newCode.addAll(problematicInsn.fixLongJump());
           else
             newCode.add(insn);
 
-        modifiedCode = newCode;
+        this.replaceInstructions(newCode);
       }
     }
   }

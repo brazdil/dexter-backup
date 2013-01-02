@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.dex.code.elem;
 import java.util.Map;
 
 import lombok.Getter;
+import lombok.Setter;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.utils.Cache;
@@ -11,8 +12,8 @@ public class DexLabel extends DexCodeElement {
 
   private static int LABEL_COUNTER = -1;
 
-
   @Getter private final long originalAbsoluteOffset;
+  @Getter @Setter private boolean evenAligned = false;
 
   public DexLabel(DexCode methodCode, long originalAbsoluteOffset) {
     super(methodCode);

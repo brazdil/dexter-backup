@@ -27,6 +27,8 @@ public class DexInstruction_Switch extends DexInstruction {
     this.regTest = test;
     this.switchTable = switchTable;
     this.packed = isPacked;
+
+    setUp();
   }
 
   public DexInstruction_Switch(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
@@ -43,9 +45,14 @@ public class DexInstruction_Switch extends DexInstruction {
       this.packed = (insn.opcode == Opcode.PACKED_SWITCH);
 
       parsingState.registerParentInstruction(this, dataTableOffset);
+      setUp();
 
     } else
       throw FORMAT_EXCEPTION;
+  }
+
+  private void setUp() {
+    this.switchTable.setEvenAligned(true);
   }
 
   @Override
