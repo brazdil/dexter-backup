@@ -13,11 +13,15 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public abstract class DexInstruction extends DexCodeElement {
 
+  private final DexClassType classThrowable;
+
   public DexInstruction(DexCode methodCode) {
     super(methodCode);
+    classThrowable = DexClassType.parse("Ljava/lang/Throwable;", getMethodCode().getParentMethod().getParentClass().getParentFile().getParsingCache());
   }
 
   // PARSING
@@ -55,7 +59,12 @@ public abstract class DexInstruction extends DexCodeElement {
   // THROWING INSTRUCTIONS
 
   protected final boolean throwingInsn_CanExitMethod() {
+    return throwingInsn_CanExitMethod(classThrowable);
+  }
+
+  protected final boolean throwingInsn_CanExitMethod(DexClassType thrownExceptionType) {
     val code = this.getMethodCode();
+    val classHierarchy = code.getParentMethod().getParentClass().getParentFile().getClassHierarchy();
 
     for (val tryBlockEnd : code.getTryBlocks()) {
       val tryBlockStart = tryBlockEnd.getBlockStart();
@@ -67,21 +76,22 @@ public abstract class DexInstruction extends DexCodeElement {
         if (tryBlockStart.getCatchAllHandler() != null)
           return false;
 
-        // if there is a catch block catching Throwable, it can't exit method either
-        for (val catchBlock : tryBlockStart.getCatchHandlers()) {
-          if (catchBlock.getExceptionType().getDescriptor().equals("Ljava/lang/Throwable;"))
+        // if there is a catch block catching the exception or its ancestor,
+        // it can't exit the method either
+        for (val catchBlock : tryBlockStart.getCatchHandlers())
+          if (classHierarchy.isAncestor(thrownExceptionType, catchBlock.getExceptionType()))
             return false;
-        }
       }
     }
 
     return true;
   }
 
-  protected final Set<DexCodeElement> throwingInsn_CatchHandlers() {
+  protected final Set<DexCodeElement> throwingInsn_CatchHandlers(DexClassType thrownExceptionType) {
     val set = new HashSet<DexCodeElement>();
 
     val code = this.getMethodCode();
+    val classHierarchy = code.getParentMethod().getParentClass().getParentFile().getClassHierarchy();
 
     for (val tryBlockEnd : code.getTryBlocks()) {
       val tryBlockStart = tryBlockEnd.getBlockStart();
@@ -95,12 +105,18 @@ public abstract class DexInstruction extends DexCodeElement {
           set.add(catchAllHandler);
 
         // similarly, add all catch blocks as possible successors
+        // if they catch the given exception type or its ancestor
         for (val catchBlock : tryBlockStart.getCatchHandlers())
-          set.add(catchBlock);
+          if (thrownExceptionType == null || classHierarchy.isAncestor(thrownExceptionType, catchBlock.getExceptionType()))
+            set.add(catchBlock);
       }
     }
 
     return set;
+  }
+
+  protected final Set<DexCodeElement> throwingInsn_CatchHandlers() {
+    return throwingInsn_CatchHandlers(null);
   }
 
   static boolean fitsIntoBits_Signed(long value, int bits) {
