@@ -187,8 +187,8 @@ public class DexInstruction_Const_Test {
     val reg1 = new DexRegister(0);
     val reg2 = new DexRegister(1);
     val code = new DexCode();
-    code.add(new DexInstruction_Const(null, reg1, 1));
-    code.add(new DexInstruction_Const(null, reg2, 0xdec0ded));
+    code.add(new DexInstruction_Const(code, reg1, 1));
+    code.add(new DexInstruction_Const(code, reg2, 0xdec0ded));
 
     Utils.instrumentAndCompare(
       code,

@@ -246,7 +246,7 @@ public class DexInstruction_BinaryOp_Test {
     val reg2 = new DexRegister(1);
     val reg3 = new DexRegister(2);
     val code = new DexCode();
-    code.add(new DexInstruction_BinaryOp(null, reg1, reg2, reg3, Opcode_BinaryOp.XorInt));
+    code.add(new DexInstruction_BinaryOp(code, reg1, reg2, reg3, Opcode_BinaryOp.XorInt));
 
     Utils.instrumentAndCompare(
       code,
