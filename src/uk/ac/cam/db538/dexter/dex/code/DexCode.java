@@ -13,6 +13,7 @@ import java.util.Set;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.val;
 
 import org.jf.dexlib.CodeItem;
@@ -108,9 +109,8 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 public class DexCode {
 
   private final NoDuplicatesList<DexCodeElement> instructionList;
-  private final Set<DexRegister> usedRegisters;
   private final Set<DexTryBlockEnd> tryBlocks;
-  @Getter private final DexMethodWithCode parentMethod;
+  @Getter @Setter private DexMethodWithCode parentMethod;
 
   // stores information about original register mapping
   // is null for run-time generated code
@@ -125,7 +125,6 @@ public class DexCode {
 
   public DexCode(DexMethodWithCode parentMethod) {
     this.instructionList = new NoDuplicatesList<DexCodeElement>();
-    this.usedRegisters = new HashSet<DexRegister>();
     this.tryBlocks = new HashSet<DexTryBlockEnd>();
     this.parentMethod = parentMethod;
   }
@@ -175,7 +174,10 @@ public class DexCode {
   }
 
   public Set<DexRegister> getUsedRegisters() {
-    return Collections.unmodifiableSet(usedRegisters);
+    val set = new HashSet<DexRegister>();
+    for (val elem : instructionList)
+      set.addAll(elem.lvaUsedRegisters());
+    return set;
   }
 
   public Set<DexTryBlockEnd> getTryBlocks() {
@@ -207,7 +209,6 @@ public class DexCode {
   }
 
   private void addedNewElement(DexCodeElement elem) {
-    usedRegisters.addAll(elem.lvaUsedRegisters());
     if (elem instanceof DexTryBlockEnd)
       tryBlocks.add((DexTryBlockEnd) elem);
   }
@@ -235,6 +236,12 @@ public class DexCode {
   public void insertAfter(DexCodeElement elem, DexCodeElement after) {
     instructionList.add(findElement(after) + 1, elem);
     addedNewElement(elem);
+  }
+
+  public void insertAfter(DexCodeElement[] elems, DexCodeElement after) {
+    instructionList.addAll(findElement(after) + 1, Arrays.asList(elems));
+    for (val elem : elems)
+      addedNewElement(elem);
   }
 
   public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, DexCodeElement elemSought) {
@@ -454,7 +461,7 @@ public class DexCode {
     val allConstraints = new HashMap<DexRegister, NodeRun>();
 
     // create a single-element run for each register
-    for (val reg : usedRegisters) {
+    for (val reg : getUsedRegisters()) {
       val newRun = new NodeRun();
       newRun.add(reg);
       allConstraints.put(reg, newRun);
@@ -471,7 +478,6 @@ public class DexCode {
 
   public void replaceInstructions(List<DexCodeElement> newInsns) {
     instructionList.clear();
-    usedRegisters.clear();
     tryBlocks.clear();
 
     addAll(newInsns);

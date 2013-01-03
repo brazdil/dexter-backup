@@ -51,6 +51,8 @@ public abstract class DexMethodWithCode extends DexMethod {
     this.parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
     this.parameterMoveInstructions = new DexCode();
     this.parameterRegistersMappings = new HashMap<DexRegister, DexRegister>();
+
+    this.code.setParentMethod(this);
   }
 
   public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {

@@ -17,11 +17,8 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public abstract class DexInstruction extends DexCodeElement {
 
-  private final DexClassType classThrowable;
-
   public DexInstruction(DexCode methodCode) {
     super(methodCode);
-    classThrowable = DexClassType.parse("Ljava/lang/Throwable;", getMethodCode().getParentMethod().getParentClass().getParentFile().getParsingCache());
   }
 
   // PARSING
@@ -59,7 +56,9 @@ public abstract class DexInstruction extends DexCodeElement {
   // THROWING INSTRUCTIONS
 
   protected final boolean throwingInsn_CanExitMethod() {
-    return throwingInsn_CanExitMethod(classThrowable);
+    return throwingInsn_CanExitMethod(
+             DexClassType.parse("Ljava/lang/Throwable;",
+                                getMethodCode().getParentMethod().getParentClass().getParentFile().getParsingCache()));
   }
 
   protected final boolean throwingInsn_CanExitMethod(DexClassType thrownExceptionType) {
@@ -118,6 +117,8 @@ public abstract class DexInstruction extends DexCodeElement {
   protected final Set<DexCodeElement> throwingInsn_CatchHandlers() {
     return throwingInsn_CatchHandlers(null);
   }
+
+
 
   static boolean fitsIntoBits_Signed(long value, int bits) {
     assert bits > 0;

@@ -21,6 +21,7 @@ import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -131,7 +132,7 @@ public class MainWindow_Test {
     val instanceField1 = new DexField(null, "d", typeInt, null, null);
     val instanceField2 = new DexField(null, "b", typeInt, null, null);
 
-    val method1 = new DexDirectMethod(cls, "a", null, new DexPrototype(typeInt, Arrays.asList(new DexRegisterType[] { typeInt, typeInt })), null, null);
+    val method1 = new DexDirectMethod(cls, "a", null, new DexPrototype(typeInt, Arrays.asList(new DexRegisterType[] { typeInt, typeInt })), new DexCode(), null);
 
     cls.addField(staticField1);
     cls.addField(staticField2);
