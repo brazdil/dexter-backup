@@ -109,7 +109,6 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 public class DexCode {
 
   private final NoDuplicatesList<DexCodeElement> instructionList;
-  private final Set<DexTryBlockEnd> tryBlocks;
   @Getter @Setter private DexMethodWithCode parentMethod;
 
   // stores information about original register mapping
@@ -125,7 +124,6 @@ public class DexCode {
 
   public DexCode(DexMethodWithCode parentMethod) {
     this.instructionList = new NoDuplicatesList<DexCodeElement>();
-    this.tryBlocks = new HashSet<DexTryBlockEnd>();
     this.parentMethod = parentMethod;
   }
 
@@ -181,8 +179,13 @@ public class DexCode {
   }
 
   public Set<DexTryBlockEnd> getTryBlocks() {
-    return Collections.unmodifiableSet(tryBlocks);
+    val set = new HashSet<DexTryBlockEnd>();
+    for (val elem : instructionList)
+      if (elem instanceof DexTryBlockEnd)
+        set.add((DexTryBlockEnd) elem);
+    return set;
   }
+
 
   public DexRegister getRegisterByOriginalNumber(int id) {
     if (parsingInfo != null)
@@ -208,14 +211,8 @@ public class DexCode {
       throw new NoSuchElementException();
   }
 
-  private void addedNewElement(DexCodeElement elem) {
-    if (elem instanceof DexTryBlockEnd)
-      tryBlocks.add((DexTryBlockEnd) elem);
-  }
-
   public void add(DexCodeElement elem) {
     instructionList.add(elem);
-    addedNewElement(elem);
   }
 
   public void addAll(DexCodeElement[] elems) {
@@ -230,18 +227,14 @@ public class DexCode {
 
   public void insertBefore(DexCodeElement elem, DexCodeElement before) {
     instructionList.add(findElement(before), elem);
-    addedNewElement(elem);
   }
 
   public void insertAfter(DexCodeElement elem, DexCodeElement after) {
     instructionList.add(findElement(after) + 1, elem);
-    addedNewElement(elem);
   }
 
   public void insertAfter(DexCodeElement[] elems, DexCodeElement after) {
     instructionList.addAll(findElement(after) + 1, Arrays.asList(elems));
-    for (val elem : elems)
-      addedNewElement(elem);
   }
 
   public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, DexCodeElement elemSought) {
@@ -478,8 +471,6 @@ public class DexCode {
 
   public void replaceInstructions(List<DexCodeElement> newInsns) {
     instructionList.clear();
-    tryBlocks.clear();
-
     addAll(newInsns);
   }
 
