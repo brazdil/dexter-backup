@@ -5,10 +5,11 @@ import java.util.Map;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import lombok.Getter;
+import lombok.Setter;
 
 public class DexTryBlockEnd extends DexCodeElement {
 
-  @Getter private final DexTryBlockStart blockStart;
+  @Getter @Setter private DexTryBlockStart blockStart;
 
   public DexTryBlockEnd(DexCode methodCode, DexTryBlockStart blockStart) {
     super(methodCode);

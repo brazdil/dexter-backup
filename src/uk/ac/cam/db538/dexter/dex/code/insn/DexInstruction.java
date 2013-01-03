@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,6 +12,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public abstract class DexInstruction extends DexCodeElement {
@@ -118,7 +118,14 @@ public abstract class DexInstruction extends DexCodeElement {
     return throwingInsn_CatchHandlers(null);
   }
 
-
+  protected final DexTryBlockEnd getSurroundingTryBlock() {
+    val code = getMethodCode();
+    for (val tryBlockEnd : code.getTryBlocks())
+      // check that the instruction is in this try block
+      if (code.isBetween(tryBlockEnd.getBlockStart(), tryBlockEnd, this))
+        return tryBlockEnd;
+    return null;
+  }
 
   static boolean fitsIntoBits_Signed(long value, int bits) {
     assert bits > 0;

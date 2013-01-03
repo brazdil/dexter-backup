@@ -9,6 +9,8 @@ import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexCatchAll extends DexCodeElement {
 
+  private static long CATCHALL_COUNTER = -1L;
+
   @Getter private final long originalAbsoluteOffset;
 
   public DexCatchAll(DexCode methodCode, long originalAbsoluteOffset) {
@@ -18,15 +20,16 @@ public class DexCatchAll extends DexCodeElement {
   }
 
   public DexCatchAll(DexCode methodCode) {
-    this(methodCode, -1);
+    this(methodCode, CATCHALL_COUNTER);
+
+    CATCHALL_COUNTER--;
+    if (CATCHALL_COUNTER >= 0L)
+      CATCHALL_COUNTER = -1L;
   }
 
   @Override
   public String getOriginalAssembly() {
-    if (originalAbsoluteOffset >= 0)
-      return "CATCHALL" + originalAbsoluteOffset + ":";
-    else
-      return "CATCHALL???:";
+    return "CATCHALL" + originalAbsoluteOffset + ":";
   }
 
   @Override

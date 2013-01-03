@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,8 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -108,6 +111,54 @@ public class DexInstruction_CheckCast extends DexInstruction {
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regObject, ColorRange.RANGE_8BIT));
+  }
+
+  @Override
+  public void instrument(DexCode_InstrumentationState state) {
+    val code = getMethodCode();
+
+    val catchAll = new DexCatchAll(code);
+    val tryStart = new DexTryBlockStart(code);
+    tryStart.setCatchAllHandler(catchAll);
+    val tryEnd = new DexTryBlockEnd(code, tryStart);
+
+    val labelSucc = new DexLabel(code);
+    val gotoSucc = new DexInstruction_Goto(code, labelSucc);
+
+    val regException = new DexRegister();
+    val regTaint = new DexRegister();
+    val moveException = new DexInstruction_MoveException(code, regException);
+    val getObjTaint = new DexPseudoinstruction_GetObjectTaint(code, regTaint, this.regObject);
+    val setExTaint = new DexPseudoinstruction_SetObjectTaint(code, regException, regTaint);
+    val throwException = new DexInstruction_Throw(code, regException);
+
+    val surroundingTryBlockEnd = this.getSurroundingTryBlock();
+    DexTryBlockStart surroundingTryBlockStart = null;
+    DexTryBlockEnd splitTryBlockEnd = null;
+    DexTryBlockStart splitTryBlockStart = null;
+    boolean hasSurroundingTryBlock = (surroundingTryBlockEnd != null);
+    if (hasSurroundingTryBlock) {
+      surroundingTryBlockStart = surroundingTryBlockEnd.getBlockStart();
+      splitTryBlockEnd = new DexTryBlockEnd(code, surroundingTryBlockStart);
+      splitTryBlockStart = new DexTryBlockStart(surroundingTryBlockStart);
+      surroundingTryBlockEnd.setBlockStart(splitTryBlockStart);
+    }
+
+    val instrumentedCode = new ArrayList<DexCodeElement>();
+    if (hasSurroundingTryBlock) instrumentedCode.add(splitTryBlockEnd);
+    instrumentedCode.add(tryStart);
+    instrumentedCode.add(this);
+    instrumentedCode.add(tryEnd);
+    instrumentedCode.add(gotoSucc);
+    instrumentedCode.add(catchAll);
+    instrumentedCode.add(moveException);
+    if (hasSurroundingTryBlock) instrumentedCode.add(splitTryBlockStart);
+    instrumentedCode.add(getObjTaint);
+    instrumentedCode.add(setExTaint);
+    instrumentedCode.add(throwException);
+    instrumentedCode.add(labelSucc);
+
+    code.replace(this, instrumentedCode);
   }
 
   // TODO: instrument needs to surround the instruction with try/catch

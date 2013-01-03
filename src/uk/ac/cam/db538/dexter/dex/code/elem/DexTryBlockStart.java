@@ -13,6 +13,8 @@ import lombok.Setter;
 
 public class DexTryBlockStart extends DexCodeElement {
 
+  private static long TRYBLOCK_COUNTER = -1L;
+
   @Getter private final long originalAbsoluteOffset;
 
   @Getter @Setter private DexCatchAll catchAllHandler;
@@ -27,7 +29,18 @@ public class DexTryBlockStart extends DexCodeElement {
   }
 
   public DexTryBlockStart(DexCode methodCode) {
-    this(methodCode, -1, null, new HashSet<DexCatch>());
+    this(methodCode, TRYBLOCK_COUNTER, null, new HashSet<DexCatch>());
+
+    TRYBLOCK_COUNTER--;
+    if (TRYBLOCK_COUNTER >= 0L)
+      TRYBLOCK_COUNTER = -1L;
+  }
+
+  public DexTryBlockStart(DexTryBlockStart toClone) {
+    this(toClone.getMethodCode(),
+         toClone.originalAbsoluteOffset,
+         toClone.catchAllHandler,
+         new HashSet<DexCatch>(toClone.catchHandlers));
   }
 
   public void addCatchHandler(DexCatch catchHandler) {
@@ -40,10 +53,7 @@ public class DexTryBlockStart extends DexCodeElement {
   }
 
   public String getOriginalAbsoluteOffsetString() {
-    if (originalAbsoluteOffset >= 0)
-      return Long.toString(originalAbsoluteOffset);
-    else
-      return "???";
+    return Long.toString(originalAbsoluteOffset);
   }
 
   public Set<DexCatch> getCatchHandlers() {

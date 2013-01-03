@@ -577,8 +577,10 @@ public class DexCode {
             int tryStartAddr = elemOffsets.get(tryStart).intValue() + absoluteAddressOffset;
             int tryEndAddr = elemOffsets.get(tryEnd).intValue() + absoluteAddressOffset;
 
-            if (tryStartAddr >= tryEndAddr)
-              throw new InstructionAssemblyException("Try block of non-positive length");
+            if (tryStartAddr > tryEndAddr)
+              throw new InstructionAssemblyException("Try block of negative length");
+            else if (tryStartAddr == tryEndAddr)
+              continue;
 
             val encodedCatchHandler = new EncodedCatchHandler(typeAddrPairs, catchAllOffset);
             val tryItem = new TryItem(

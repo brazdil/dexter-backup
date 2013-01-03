@@ -10,7 +10,7 @@ import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexLabel extends DexCodeElement {
 
-  private static int LABEL_COUNTER = -1;
+  private static long LABEL_COUNTER = -1L;
 
   @Getter private final long originalAbsoluteOffset;
   @Getter @Setter private boolean evenAligned = false;
@@ -22,13 +22,11 @@ public class DexLabel extends DexCodeElement {
   }
 
   public DexLabel(DexCode methodCode) {
-    super(methodCode);
-
-    this.originalAbsoluteOffset = LABEL_COUNTER;
+    this(methodCode, LABEL_COUNTER);
 
     LABEL_COUNTER--;
-    if (LABEL_COUNTER >= 0)
-      LABEL_COUNTER = -1;
+    if (LABEL_COUNTER >= 0L)
+      LABEL_COUNTER = -1L;
   }
 
   @Override
