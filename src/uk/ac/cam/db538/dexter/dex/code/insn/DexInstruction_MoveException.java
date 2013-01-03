@@ -74,7 +74,5 @@ public class DexInstruction_MoveException extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
-    return new DexCodeElement[] { this };
-  }
+  public void instrument(DexCode_InstrumentationState state) { }
 }

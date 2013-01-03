@@ -196,18 +196,17 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     return codePostInternalCall;
   }
 
-  private DexCodeElement[] instrumentDirectExternal(DexCode_InstrumentationState state) {
-    return new DexCodeElement[] { this };
-  }
+  private void instrumentDirectExternal(DexCode_InstrumentationState state) { }
 
-  private DexCodeElement[] instrumentDirectInternal(DexCode_InstrumentationState state) {
+  private void instrumentDirectInternal(DexCode_InstrumentationState state) {
     val instrumentedCode = new LinkedList<DexCodeElement>();
 
     instrumentedCode.addAll(generatePreInternalCallCode(state));
     instrumentedCode.add(this);
     instrumentedCode.addAll(generatePostInternalCallCode(state));
 
-    return instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]);
+    getMethodCode().replace(this,
+                            instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]));
   }
 
   private Pair<Boolean, Boolean> decideMethodCallDestination() {
@@ -280,7 +279,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     }
   }
 
-  private DexCodeElement[] instrumentVirtual(DexCode_InstrumentationState state) {
+  private void instrumentVirtual(DexCode_InstrumentationState state) {
     val instrumentedCode = new LinkedList<DexCodeElement>();
     val dex = getMethodCode().getParentMethod().getParentClass().getParentFile();
     val methodCode = getMethodCode();
@@ -413,23 +412,26 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       instrumentedCode.add(labelEnd);
     }
 
-    return instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]);
+    getMethodCode().replace(this,
+                            instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]));
   }
 
   @Override
-  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
+  public void instrument(DexCode_InstrumentationState state) {
     switch (instructionInvoke.getCallType()) {
     case Direct:
     case Static:
       if (instructionInvoke.getClassType().isDefinedInternally())
-        return instrumentDirectInternal(state);
+        instrumentDirectInternal(state);
       else
-        return instrumentDirectExternal(state);
+        instrumentDirectExternal(state);
+      break;
     case Interface:
     case Super:
     case Virtual:
     default:
-      return instrumentVirtual(state);
+      instrumentVirtual(state);
+      break;
     }
   }
 }

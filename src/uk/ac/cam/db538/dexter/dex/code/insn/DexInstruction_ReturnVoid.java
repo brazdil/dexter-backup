@@ -34,9 +34,7 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
-    return new DexCodeElement[] { this };
-  }
+  public void instrument(DexCode_InstrumentationState mapping) { }
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {

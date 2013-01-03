@@ -91,7 +91,5 @@ public class DexInstruction_ConstString extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
-    return new DexCodeElement[] { this };
-  }
+  public void instrument(DexCode_InstrumentationState state) { }
 }

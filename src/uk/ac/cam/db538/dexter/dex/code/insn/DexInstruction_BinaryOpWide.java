@@ -86,7 +86,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
+  public void instrument(DexCode_InstrumentationState mapping) {
     val taintTarget1 = mapping.getTaintRegister(regTarget1);
     val taintTarget2 = mapping.getTaintRegister(regTarget2);
     val taintSourceA1 = mapping.getTaintRegister(regSourceA1);
@@ -94,32 +94,33 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
     val taintSourceB1 = mapping.getTaintRegister(regSourceB1);
     val taintSourceB2 = mapping.getTaintRegister(regSourceB2);
 
-    return new DexCodeElement[] {
-             this,
-             new DexInstruction_BinaryOp(
-               this.getMethodCode(),
-               taintTarget1,
-               taintSourceA1,
-               taintSourceA2,
-               Opcode_BinaryOp.OrInt),
-             new DexInstruction_BinaryOp(
-               this.getMethodCode(),
-               taintTarget1,
-               taintTarget1,
-               taintSourceB1,
-               Opcode_BinaryOp.OrInt),
-             new DexInstruction_BinaryOp(
-               this.getMethodCode(),
-               taintTarget1,
-               taintTarget1,
-               taintSourceB2,
-               Opcode_BinaryOp.OrInt),
-             new DexInstruction_Move(
-               this.getMethodCode(),
-               taintTarget2,
-               taintTarget1,
-               false)
-           };
+    getMethodCode().replace(this,
+                            new DexCodeElement[] {
+                              this,
+                              new DexInstruction_BinaryOp(
+                                this.getMethodCode(),
+                                taintTarget1,
+                                taintSourceA1,
+                                taintSourceA2,
+                                Opcode_BinaryOp.OrInt),
+                              new DexInstruction_BinaryOp(
+                                this.getMethodCode(),
+                                taintTarget1,
+                                taintTarget1,
+                                taintSourceB1,
+                                Opcode_BinaryOp.OrInt),
+                              new DexInstruction_BinaryOp(
+                                this.getMethodCode(),
+                                taintTarget1,
+                                taintTarget1,
+                                taintSourceB2,
+                                Opcode_BinaryOp.OrInt),
+                              new DexInstruction_Move(
+                                this.getMethodCode(),
+                                taintTarget2,
+                                taintTarget1,
+                                false)
+                            });
   }
 
   @Override

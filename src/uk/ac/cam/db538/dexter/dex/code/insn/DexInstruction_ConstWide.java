@@ -84,15 +84,16 @@ public class DexInstruction_ConstWide extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
-    return new DexCodeElement[] {
-             this,
-             new DexInstruction_ConstWide(
-               getMethodCode(),
-               state.getTaintRegister(regTo1),
-               state.getTaintRegister(regTo2),
-               0)
-           };
+  public void instrument(DexCode_InstrumentationState state) {
+    getMethodCode().replace(this,
+                            new DexCodeElement[] {
+                              this,
+                              new DexInstruction_ConstWide(
+                                getMethodCode(),
+                                state.getTaintRegister(regTo1),
+                                state.getTaintRegister(regTo2),
+                                0)
+                            });
   }
 
   @Override

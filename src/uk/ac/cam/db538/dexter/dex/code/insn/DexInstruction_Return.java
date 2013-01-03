@@ -93,25 +93,24 @@ public class DexInstruction_Return extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
-    if (objectMoving || !state.isNeedsCallInstrumentation())
-      return new DexCodeElement[] { this };
-    else {
+  public void instrument(DexCode_InstrumentationState state) {
+    if (!objectMoving && state.isNeedsCallInstrumentation()) {
       val dex = getMethodCode().getParentMethod().getParentClass().getParentFile();
       val regResSemaphore = new DexRegister();
 
-      return new DexCodeElement[] {
-               new DexInstruction_StaticGet(getMethodCode(), regResSemaphore, dex.getMethodCallHelper_SRes()),
-               new DexInstruction_Invoke(
-                 getMethodCode(),
-                 (DexClassType) dex.getMethodCallHelper_SRes().getType(),
-                 "acquire",
-                 new DexPrototype(DexVoid.parse("V", null), null),
-                 Arrays.asList(regResSemaphore),
-                 Opcode_Invoke.Virtual),
-               new DexInstruction_StaticPut(getMethodCode(), state.getTaintRegister(regFrom), dex.getMethodCallHelper_Res()),
-               this
-             };
+      getMethodCode().replace(this,
+                              new DexCodeElement[] {
+                                new DexInstruction_StaticGet(getMethodCode(), regResSemaphore, dex.getMethodCallHelper_SRes()),
+                                new DexInstruction_Invoke(
+                                  getMethodCode(),
+                                  (DexClassType) dex.getMethodCallHelper_SRes().getType(),
+                                  "acquire",
+                                  new DexPrototype(DexVoid.parse("V", null), null),
+                                  Arrays.asList(regResSemaphore),
+                                  Opcode_Invoke.Virtual),
+                                new DexInstruction_StaticPut(getMethodCode(), state.getTaintRegister(regFrom), dex.getMethodCallHelper_Res()),
+                                this
+                              });
     }
   }
 }

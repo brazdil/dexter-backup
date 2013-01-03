@@ -87,7 +87,5 @@ public class DexInstruction_Throw extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
-    return new DexCodeElement[] { this };
-  }
+  public void instrument(DexCode_InstrumentationState state) { }
 }

@@ -72,16 +72,17 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
-    return new DexCodeElement[] {
-             this,
-             new DexInstruction_BinaryOp(
-               this.getMethodCode(),
-               mapping.getTaintRegister(regTarget),
-               mapping.getTaintRegister(regSourceA),
-               mapping.getTaintRegister(regSourceB),
-               Opcode_BinaryOp.OrInt)
-           };
+  public void instrument(DexCode_InstrumentationState mapping) {
+    getMethodCode().replace(this,
+                            new DexCodeElement[] {
+                              this,
+                              new DexInstruction_BinaryOp(
+                                this.getMethodCode(),
+                                mapping.getTaintRegister(regTarget),
+                                mapping.getTaintRegister(regSourceA),
+                                mapping.getTaintRegister(regSourceB),
+                                Opcode_BinaryOp.OrInt)
+                            });
   }
 
   @Override

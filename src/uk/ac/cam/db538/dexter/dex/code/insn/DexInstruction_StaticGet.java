@@ -111,10 +111,8 @@ public class DexInstruction_StaticGet extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
-    if (opcode == Opcode_GetPut.Object)
-      return new DexCodeElement[] { this };
-    else
-      return super.instrument(state);
+  public void instrument(DexCode_InstrumentationState state) {
+    if (opcode != Opcode_GetPut.Object)
+      super.instrument(state);
   }
 }

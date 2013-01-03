@@ -334,14 +334,13 @@ public class DexCode {
 
     instrumentationState = new DexCode_InstrumentationState(this, cache);
 
-    for (int index = 0; index < instructionList.size(); ) {
-      val elem = instructionList.get(index);
-      if (elem instanceof DexInstruction) {
-        val insn = (DexInstruction) elem;
-        index = replace(insn, insn.instrument(instrumentationState));
-      } else
-        index++;
-    }
+    val insns = new HashSet<DexInstruction>();
+    for (val elem : instructionList)
+      if (elem instanceof DexInstruction)
+        insns.add((DexInstruction) elem);
+
+    for (val insn : insns)
+      insn.instrument(instrumentationState);
 
     if (instrumentationState.isNeedsCallInstrumentation() && parentMethod.getPrototype().hasPrimitiveArgument())
       insertPostCallHandling(cache);

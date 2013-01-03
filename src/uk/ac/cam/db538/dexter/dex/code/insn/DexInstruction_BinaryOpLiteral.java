@@ -131,10 +131,11 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] instrument(DexCode_InstrumentationState state) {
-    return new DexCodeElement[] {
-             this,
-             new DexInstruction_Move(getMethodCode(), state.getTaintRegister(regTarget), state.getTaintRegister(regSource), false)
-           };
+  public void instrument(DexCode_InstrumentationState state) {
+    getMethodCode().replace(this,
+                            new DexCodeElement[] {
+                              this,
+                              new DexInstruction_Move(getMethodCode(), state.getTaintRegister(regTarget), state.getTaintRegister(regSource), false)
+                            });
   }
 }

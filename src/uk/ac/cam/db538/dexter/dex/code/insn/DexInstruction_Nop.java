@@ -48,9 +48,7 @@ public class DexInstruction_Nop extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement[] instrument(DexCode_InstrumentationState mapping) {
-    return new DexCodeElement[] { this };
-  }
+  public void instrument(DexCode_InstrumentationState mapping) { }
 
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
