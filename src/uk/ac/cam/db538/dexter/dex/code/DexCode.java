@@ -237,6 +237,13 @@ public class DexCode {
     instructionList.addAll(findElement(after) + 1, Arrays.asList(elems));
   }
 
+  public int replace(DexCodeElement elem, DexCodeElement[] replacement) {
+    int index = findElement(elem);
+    instructionList.remove(index);
+    instructionList.addAll(index, Arrays.asList(replacement));
+    return index + replacement.length;
+  }
+
   public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, DexCodeElement elemSought) {
     boolean hitStart = false, hitEnd = false;
 
@@ -326,17 +333,15 @@ public class DexCode {
     generatePseudoinstructions();
 
     instrumentationState = new DexCode_InstrumentationState(this, cache);
-    val instrumentedInsns = new NoDuplicatesList<DexCodeElement>(instructionList.size() * 2);
 
-    for (val elem : instructionList) {
+    for (int index = 0; index < instructionList.size(); ) {
+      val elem = instructionList.get(index);
       if (elem instanceof DexInstruction) {
         val insn = (DexInstruction) elem;
-        instrumentedInsns.addAll(insn.instrument(instrumentationState));
+        index = replace(insn, insn.instrument(instrumentationState));
       } else
-        instrumentedInsns.add(elem);
+        index++;
     }
-
-    replaceInstructions(instrumentedInsns);
 
     if (instrumentationState.isNeedsCallInstrumentation() && parentMethod.getPrototype().hasPrimitiveArgument())
       insertPostCallHandling(cache);
