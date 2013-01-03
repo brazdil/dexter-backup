@@ -237,11 +237,14 @@ public class DexCode {
     instructionList.addAll(findElement(after) + 1, Arrays.asList(elems));
   }
 
-  public int replace(DexCodeElement elem, DexCodeElement[] replacement) {
+  public void replace(DexCodeElement elem, DexCodeElement[] replacement) {
+    replace(elem, Arrays.asList(replacement));
+  }
+
+  public void replace(DexCodeElement elem, List<DexCodeElement> replacement) {
     int index = findElement(elem);
     instructionList.remove(index);
-    instructionList.addAll(index, Arrays.asList(replacement));
-    return index + replacement.length;
+    instructionList.addAll(index, replacement);
   }
 
   public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, DexCodeElement elemSought) {

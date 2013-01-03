@@ -206,7 +206,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     instrumentedCode.addAll(generatePostInternalCallCode(state));
 
     getMethodCode().replace(this,
-                            instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]));
+                            instrumentedCode);
   }
 
   private Pair<Boolean, Boolean> decideMethodCallDestination() {
@@ -413,7 +413,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     }
 
     getMethodCode().replace(this,
-                            instrumentedCode.toArray(new DexCodeElement[instrumentedCode.size()]));
+                            instrumentedCode);
   }
 
   @Override
