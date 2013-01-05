@@ -598,15 +598,7 @@ public class DexCode {
           throw e;
 
         val problematicInsn = e.getProblematicInstruction();
-
-        val newCode = new NoDuplicatesList<DexCodeElement>(this.instructionList.size() + 20); // 20 is kinda arbitrary here, should be enough
-        for (val insn : instructionList)
-          if (insn == problematicInsn)
-            newCode.addAll(problematicInsn.fixLongJump());
-          else
-            newCode.add(insn);
-
-        this.replaceInstructions(newCode);
+        replace(problematicInsn, problematicInsn.fixLongJump());
       }
     }
   }
