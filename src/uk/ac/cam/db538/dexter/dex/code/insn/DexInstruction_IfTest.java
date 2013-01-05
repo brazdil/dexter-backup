@@ -12,6 +12,7 @@ import org.jf.dexlib.Code.Format.Instruction22t;
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -115,4 +116,8 @@ public class DexInstruction_IfTest extends DexInstruction {
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_IfTest(getMethodCode(), mapping.get(regA), mapping.get(regB), target, insnOpcode);
   }
+
+  @Override
+  public void instrument(DexCode_InstrumentationState state) { }
+
 }
