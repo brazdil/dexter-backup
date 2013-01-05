@@ -1,6 +1,9 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import lombok.val;
@@ -10,9 +13,12 @@ import org.jf.dexlib.Code.Instruction;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public abstract class DexInstruction extends DexCodeElement {
@@ -125,6 +131,48 @@ public abstract class DexInstruction extends DexCodeElement {
       if (code.isBetween(tryBlockEnd.getBlockStart(), tryBlockEnd, this))
         return tryBlockEnd;
     return null;
+  }
+
+  protected final List<DexCodeElement> throwingInsn_GenerateSurroundingCatchBlock(DexCodeElement[] tryBlockCode, DexCodeElement[] catchBlockCode, DexRegister regException) {
+    val code = getMethodCode();
+
+    val catchAll = new DexCatchAll(code);
+    val tryStart = new DexTryBlockStart(code);
+    tryStart.setCatchAllHandler(catchAll);
+    val tryEnd = new DexTryBlockEnd(code, tryStart);
+
+    val labelSucc = new DexLabel(code);
+    val gotoSucc = new DexInstruction_Goto(code, labelSucc);
+
+    val moveException = new DexInstruction_MoveException(code, regException);
+    val throwException = new DexInstruction_Throw(code, regException);
+
+    val surroundingTryBlockEnd = this.getSurroundingTryBlock();
+    DexTryBlockStart surroundingTryBlockStart = null;
+    DexTryBlockEnd splitTryBlockEnd = null;
+    DexTryBlockStart splitTryBlockStart = null;
+    boolean hasSurroundingTryBlock = (surroundingTryBlockEnd != null);
+    if (hasSurroundingTryBlock) {
+      surroundingTryBlockStart = surroundingTryBlockEnd.getBlockStart();
+      splitTryBlockEnd = new DexTryBlockEnd(code, surroundingTryBlockStart);
+      splitTryBlockStart = new DexTryBlockStart(surroundingTryBlockStart);
+      surroundingTryBlockEnd.setBlockStart(splitTryBlockStart);
+    }
+
+    val instrumentedCode = new ArrayList<DexCodeElement>();
+    if (hasSurroundingTryBlock) instrumentedCode.add(splitTryBlockEnd);
+    instrumentedCode.add(tryStart);
+    instrumentedCode.addAll(Arrays.asList(tryBlockCode));
+    instrumentedCode.add(tryEnd);
+    instrumentedCode.add(gotoSucc);
+    instrumentedCode.add(catchAll);
+    instrumentedCode.add(moveException);
+    if (hasSurroundingTryBlock) instrumentedCode.add(splitTryBlockStart);
+    instrumentedCode.addAll(Arrays.asList(catchBlockCode));
+    instrumentedCode.add(throwException);
+    instrumentedCode.add(labelSucc);
+
+    return instrumentedCode;
   }
 
   static boolean fitsIntoBits_Signed(long value, int bits) {
