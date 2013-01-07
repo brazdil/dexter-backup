@@ -29,7 +29,9 @@ import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
+import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -165,6 +167,14 @@ public class DexCode {
     parsingState.placeLabels();
 
     parsingState.checkTryCatchBlocksPlaced();
+  }
+
+  public DexClass getParentClass() {
+    return parentMethod.getParentClass();
+  }
+
+  public Dex getParentFile() {
+    return parentMethod.getParentFile();
   }
 
   public List<DexCodeElement> getInstructionList() {
@@ -346,16 +356,15 @@ public class DexCode {
       insn.instrument(instrumentationState);
 
     if (instrumentationState.isNeedsCallInstrumentation() && parentMethod.getPrototype().hasPrimitiveArgument())
-      insertPostCallHandling(cache);
+      insertPostCallHandling();
 
     unwrapPseudoinstructions();
   }
 
-  private void insertPostCallHandling(DexInstrumentationCache cache) {
+  private void insertPostCallHandling() {
     val codePostCall = new NoDuplicatesList<DexCodeElement>();
-    val dex = parentMethod.getParentClass().getParentFile();
-
-    val parsingCache = cache.getParsingCache();
+    val dex = getParentFile();
+    val parsingCache = dex.getParsingCache();
     val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
 
     val regArray = new DexRegister();

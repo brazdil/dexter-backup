@@ -64,12 +64,12 @@ public abstract class DexInstruction extends DexCodeElement {
   protected final boolean throwingInsn_CanExitMethod() {
     return throwingInsn_CanExitMethod(
              DexClassType.parse("Ljava/lang/Throwable;",
-                                getMethodCode().getParentMethod().getParentClass().getParentFile().getParsingCache()));
+                                getParentFile().getParsingCache()));
   }
 
   protected final boolean throwingInsn_CanExitMethod(DexClassType thrownExceptionType) {
-    val code = this.getMethodCode();
-    val classHierarchy = code.getParentMethod().getParentClass().getParentFile().getClassHierarchy();
+    val code = getMethodCode();
+    val classHierarchy = getParentFile().getClassHierarchy();
 
     for (val tryBlockEnd : code.getTryBlocks()) {
       val tryBlockStart = tryBlockEnd.getBlockStart();
@@ -95,8 +95,8 @@ public abstract class DexInstruction extends DexCodeElement {
   protected final Set<DexCodeElement> throwingInsn_CatchHandlers(DexClassType thrownExceptionType) {
     val set = new HashSet<DexCodeElement>();
 
-    val code = this.getMethodCode();
-    val classHierarchy = code.getParentMethod().getParentClass().getParentFile().getClassHierarchy();
+    val code = getMethodCode();
+    val classHierarchy = getParentFile().getClassHierarchy();
 
     for (val tryBlockEnd : code.getTryBlocks()) {
       val tryBlockStart = tryBlockEnd.getBlockStart();

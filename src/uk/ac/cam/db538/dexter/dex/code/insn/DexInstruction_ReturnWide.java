@@ -56,7 +56,7 @@ public class DexInstruction_ReturnWide extends DexInstruction {
   @Override
   public void instrument(DexCode_InstrumentationState state) {
     if (state.isNeedsCallInstrumentation()) {
-      val dex = getMethodCode().getParentMethod().getParentClass().getParentFile();
+      val dex = getParentFile();
       val regResSemaphore = new DexRegister();
       val regTaint = new DexRegister();
 

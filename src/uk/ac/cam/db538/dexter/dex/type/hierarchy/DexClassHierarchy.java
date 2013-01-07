@@ -24,6 +24,7 @@ import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 public class DexClassHierarchy {
 
@@ -65,12 +66,20 @@ public class DexClassHierarchy {
     if (annotations == null)
       annotations = new HashSet<DexAnnotation>();
 
-    val classEntry = new ClassEntry(classType, superclassType, interfaces, annotations, new HashSet<MethodEntry>(), flagInterface);
+    val classEntry = new ClassEntry(classType, superclassType, interfaces, annotations, new HashSet<MethodEntry>(), new HashSet<FieldEntry>(), flagInterface);
     classes.put(classType, classEntry);
   }
 
-  public void addImplementedMethod(DexClassType classType, String methodName, DexPrototype methodPrototype) {
-    classes.get(classType).implementedMethods.add(new MethodEntry(methodName, methodPrototype));
+  public void addImplementedInterface(DexClassType clazz, DexClassType interfaceClazz) {
+    classes.get(clazz).getInterfaces().add(interfaceClazz);
+  }
+
+  public void addImplementedMethod(DexClassType classType, String methodName, DexPrototype methodPrototype, boolean isPrivate) {
+    classes.get(classType).implementedMethods.add(new MethodEntry(methodName, methodPrototype, isPrivate));
+  }
+
+  public void addDeclaredField(DexClassType classType, String fieldName, DexRegisterType fieldType, boolean isStatic, boolean isPrivate) {
+    classes.get(classType).declaredFields.add(new FieldEntry(fieldName, fieldType, isStatic, isPrivate));
   }
 
   public void addAllClassesFromJAR(File file, DexParsingCache cache) throws IOException {
@@ -105,7 +114,10 @@ public class DexClassHierarchy {
 
         for (val method : jarClass.getMethods())
           if (!method.isAbstract())
-            addImplementedMethod(classType, method.getName(), new DexPrototype(method.getSignature(), cache));
+            addImplementedMethod(classType, method.getName(), new DexPrototype(method.getSignature(), cache), method.isPrivate());
+
+        for (val field : jarClass.getFields())
+          addDeclaredField(classType, field.getName(), DexRegisterType.parse(field.getSignature(), cache), field.isStatic(), field.isPrivate());
       }
     }
   }
@@ -193,17 +205,26 @@ public class DexClassHierarchy {
   }
 
   public boolean implementsMethod(DexClassType clazz, String name, DexPrototype prototype) {
-    val lookingFor = new MethodEntry(name, prototype);
-
     for (val method : classes.get(clazz).implementedMethods)
-      if (method.equals(lookingFor))
+      if (method.getName().equals(name) && method.getPrototype().equals(prototype))
         return true;
 
     return false;
   }
 
-  public void addImplementedInterface(DexClassType clazz, DexClassType interfaceClazz) {
-    classes.get(clazz).getInterfaces().add(interfaceClazz);
+  public DexClassType getAccesedFieldDeclaringClass(DexClassType accessedClazz, String fieldName, DexRegisterType fieldType, boolean isStatic) {
+    for (val ancestor : getAllParents(accessedClazz, true))
+      for (val field : classes.get(ancestor).getDeclaredFields())
+        if (field.getName().equals(fieldName) && field.getType().equals(fieldType) && field.isDeclaredStatic() == isStatic) {
+          // if the field signature matches, return it if it can be accessed
+          // this is true if the field is not private, or if it is, but it is declared directly in the accessed class
+          // (we assume that the instruction is valid, i.e. that it can actually access the field)
+          if (!field.isDeclaredPrivate() || (ancestor == accessedClazz))
+            return ancestor;
+          else
+            return null;
+        }
+    return null;
   }
 
   private boolean wouldIntroduceLoop(DexClassType clazz, DexClassType superclazz) {
@@ -274,19 +295,23 @@ public class DexClassHierarchy {
     private final Set<DexClassType> interfaces;
     private final Set<DexAnnotation> annotations;
     private final Set<MethodEntry> implementedMethods;
+    private final Set<FieldEntry> declaredFields;
     private final boolean flaggedInterface;
   }
 
   @AllArgsConstructor
   @Getter
   private static class MethodEntry {
+    // must update hashCode and equals if new fields are added
     private final String name;
     private final DexPrototype prototype;
+    private final boolean declaredPrivate;
 
     @Override
     public int hashCode() {
       final int prime = 31;
       int result = 1;
+      result = prime * result + (this.declaredPrivate ? 1231 : 1237);
       result = prime * result
                + ((this.name == null) ? 0 : this.name.hashCode());
       result = prime * result
@@ -303,6 +328,8 @@ public class DexClassHierarchy {
       if (!(obj instanceof MethodEntry))
         return false;
       MethodEntry other = (MethodEntry) obj;
+      if (this.declaredPrivate != other.declaredPrivate)
+        return false;
       if (this.name == null) {
         if (other.name != null)
           return false;
@@ -312,6 +339,55 @@ public class DexClassHierarchy {
         if (other.prototype != null)
           return false;
       } else if (!this.prototype.equals(other.prototype))
+        return false;
+      return true;
+    }
+  }
+
+  @AllArgsConstructor
+  @Getter
+  private static class FieldEntry {
+    // must update hashCode and equals if new fields are added
+    private final String name;
+    private final DexRegisterType type;
+    private final boolean declaredStatic;
+    private final boolean declaredPrivate;
+
+    @Override
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + (this.declaredPrivate ? 1231 : 1237);
+      result = prime * result + (this.declaredStatic ? 1231 : 1237);
+      result = prime * result
+               + ((this.name == null) ? 0 : this.name.hashCode());
+      result = prime * result
+               + ((this.type == null) ? 0 : this.type.hashCode());
+      return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (!(obj instanceof FieldEntry))
+        return false;
+      FieldEntry other = (FieldEntry) obj;
+      if (this.declaredPrivate != other.declaredPrivate)
+        return false;
+      if (this.declaredStatic != other.declaredStatic)
+        return false;
+      if (this.name == null) {
+        if (other.name != null)
+          return false;
+      } else if (!this.name.equals(other.name))
+        return false;
+      if (this.type == null) {
+        if (other.type != null)
+          return false;
+      } else if (!this.type.equals(other.type))
         return false;
       return true;
     }

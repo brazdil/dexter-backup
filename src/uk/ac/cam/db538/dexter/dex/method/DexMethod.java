@@ -17,6 +17,7 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -43,7 +44,7 @@ public abstract class DexMethod {
 
     if (!isAbstract())
       this.parentClass.getParentFile().getClassHierarchy().addImplementedMethod(
-        parentClass.getType(), this.name, this.prototype);
+        parentClass.getType(), this.name, this.prototype, this.isPrivate());
   }
 
   public DexMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
@@ -58,12 +59,20 @@ public abstract class DexMethod {
     return Collections.unmodifiableSet(accessFlagSet);
   }
 
+  public Dex getParentFile() {
+    return parentClass.getParentFile();
+  }
+
   public boolean isStatic() {
     return accessFlagSet.contains(AccessFlags.STATIC);
   }
 
   public boolean isAbstract() {
     return accessFlagSet.contains(AccessFlags.ABSTRACT);
+  }
+
+  public boolean isPrivate() {
+    return accessFlagSet.contains(AccessFlags.PRIVATE);
   }
 
   public Set<DexAnnotation> getAnnotations() {

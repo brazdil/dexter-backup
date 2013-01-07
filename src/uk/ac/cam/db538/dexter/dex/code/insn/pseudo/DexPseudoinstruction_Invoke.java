@@ -90,8 +90,8 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
   private List<DexCodeElement> generatePreInternalCallCode(DexCode_InstrumentationState state) {
     val methodCode = getMethodCode();
-    val dex = methodCode.getParentMethod().getParentClass().getParentFile();
-    val parsingCache = state.getCache().getParsingCache();
+    val dex = getParentFile();
+    val parsingCache = dex.getParsingCache();
     val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
     val callPrototype = instructionInvoke.getMethodPrototype();
 
@@ -137,7 +137,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
   private List<DexCodeElement> generatePostInternalCallCode(DexCode_InstrumentationState state) {
     val methodCode = getMethodCode();
-    val dex = methodCode.getParentMethod().getParentClass().getParentFile();
+    val dex = getParentFile();
     val callPrototype = instructionInvoke.getMethodPrototype();
 
     val codePostInternalCall = new LinkedList<DexCodeElement>();
@@ -210,7 +210,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
   }
 
   private Pair<Boolean, Boolean> decideMethodCallDestination() {
-    val dex = getMethodCode().getParentMethod().getParentClass().getParentFile();
+    val dex = getParentFile();
     val classHierarchy = dex.getClassHierarchy();
 
     val invokedCallType = instructionInvoke.getCallType();
@@ -281,9 +281,9 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
   private void instrumentVirtual(DexCode_InstrumentationState state) {
     val instrumentedCode = new LinkedList<DexCodeElement>();
-    val dex = getMethodCode().getParentMethod().getParentClass().getParentFile();
     val methodCode = getMethodCode();
-    val parsingCache = state.getCache().getParsingCache();
+    val dex = getParentFile();
+    val parsingCache = dex.getParsingCache();
 
     val destAnalysis = decideMethodCallDestination();
     boolean canBeInternalCall = destAnalysis.getValA();

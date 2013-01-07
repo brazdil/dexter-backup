@@ -19,6 +19,7 @@ import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Triple;
@@ -37,6 +38,13 @@ public class DexField {
     this.type = type;
     this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
     this.annotations = (annotations == null) ? new HashSet<DexAnnotation>() : annotations;
+
+    parentClass.getParentFile().getClassHierarchy().addDeclaredField(
+      parentClass.getType(),
+      name,
+      type,
+      isStatic(),
+      isPrivate());
   }
 
   public DexField(DexClass parent, EncodedField fieldInfo, AnnotationSetItem encodedAnnotations) {
@@ -53,6 +61,10 @@ public class DexField {
 
   public boolean isStatic() {
     return accessFlagSet.contains(AccessFlags.STATIC);
+  }
+
+  public boolean isPrivate() {
+    return accessFlagSet.contains(AccessFlags.PRIVATE);
   }
 
   public Set<DexAnnotation> getAnnotations() {
@@ -92,5 +104,27 @@ public class DexField {
     val fieldAnno = new FieldAnnotation(cache.getField(parentClass.getType(), type, name), annoSet);
 
     return fieldAnno;
+  }
+
+  private String generateTaintFieldName() {
+    long suffix = 0L;
+    String baseFieldName = name + "$T";
+    String fieldName = baseFieldName;
+    while (parentClass.containsField(fieldName))
+      fieldName = baseFieldName + (suffix++);
+    return fieldName;
+  }
+
+  public DexField instrument() {
+    if (type instanceof DexPrimitiveType) {
+      val newName = generateTaintFieldName();
+      val newType = DexPrimitiveType.parse("I", parentClass.getParentFile().getParsingCache());
+
+      val newField = new DexField(parentClass, newName, newType, accessFlagSet, annotations);
+      parentClass.addField(newField);
+
+      return newField;
+    } else
+      return null;
   }
 }

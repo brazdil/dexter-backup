@@ -166,7 +166,7 @@ public class Dex {
   }
 
   public void instrument() {
-    val cache = new DexInstrumentationCache(parsingCache);
+    val cache = new DexInstrumentationCache();
 
     val extraClasses = parseExtraClasses();
 

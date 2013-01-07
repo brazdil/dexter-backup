@@ -31,7 +31,7 @@ public class DexPseudoinstruction_PrintStringConst extends DexPseudoinstruction 
   @Override
   public List<DexCodeElement> unwrap() {
     val code = getMethodCode();
-    val parsingCache = code.getParentMethod().getParentClass().getParentFile().getParsingCache();
+    val parsingCache = getParentFile().getParsingCache();
 
     val regString = new DexRegister();
     val regOut = new DexRegister();

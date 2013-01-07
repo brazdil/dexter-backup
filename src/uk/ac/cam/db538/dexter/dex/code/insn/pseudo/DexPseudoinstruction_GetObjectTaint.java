@@ -27,7 +27,7 @@ public class DexPseudoinstruction_GetObjectTaint extends DexPseudoinstruction {
   @Override
   public List<DexCodeElement> unwrap() {
     val code = getMethodCode();
-    val dex = code.getParentMethod().getParentClass().getParentFile();
+    val dex = getParentFile();
 
     val classStorage = dex.getObjectTaintStorage_Type();
     val methodGetTaint = dex.getObjectTaintStorage_Get();

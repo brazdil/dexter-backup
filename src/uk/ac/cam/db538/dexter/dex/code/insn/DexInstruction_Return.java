@@ -95,7 +95,7 @@ public class DexInstruction_Return extends DexInstruction {
   @Override
   public void instrument(DexCode_InstrumentationState state) {
     if (!objectMoving && state.isNeedsCallInstrumentation()) {
-      val dex = getMethodCode().getParentMethod().getParentClass().getParentFile();
+      val dex = getParentFile();
       val regResSemaphore = new DexRegister();
 
       getMethodCode().replace(this,

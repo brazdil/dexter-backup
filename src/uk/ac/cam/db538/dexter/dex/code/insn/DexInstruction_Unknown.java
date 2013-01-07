@@ -17,8 +17,8 @@ public class DexInstruction_Unknown extends DexInstruction {
   public DexInstruction_Unknown(DexCode methodCode, Instruction insn) {
     super(methodCode);
     opcode = insn.opcode.name();
-    System.out.println("Unknown instruction in " + methodCode.getParentMethod().getParentClass().getType().getPrettyName() +
-                       "..." + methodCode.getParentMethod().getName());
+    System.out.println("Unknown instruction in " + getParentClass().getType().getPrettyName() +
+                       "..." + getParentMethod().getName());
   }
 
   @Override

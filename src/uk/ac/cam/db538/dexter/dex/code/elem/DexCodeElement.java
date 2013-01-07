@@ -14,9 +14,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
+import uk.ac.cam.db538.dexter.dex.Dex;
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public abstract class DexCodeElement {
@@ -146,5 +149,17 @@ public abstract class DexCodeElement {
   @SafeVarargs
   protected final <T> List<T> createList(T ... elements) {
     return Arrays.asList(elements);
+  }
+
+  public Dex getParentFile() {
+    return methodCode.getParentFile();
+  }
+
+  public DexClass getParentClass() {
+    return methodCode.getParentClass();
+  }
+
+  public DexMethodWithCode getParentMethod() {
+    return methodCode.getParentMethod();
   }
 }

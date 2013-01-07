@@ -78,9 +78,9 @@ public class DexInstruction_Test {
     val code = new DexCode();
 
     // method will automatically assign itself to DexCode
-    val method = new DexDirectMethod(clazz, "m", null,
-                                     new DexPrototype(DexVoid.parse("V", null), null),
-                                     code, null);
+    new DexDirectMethod(clazz, "m", null,
+                        new DexPrototype(DexVoid.parse("V", null), null),
+                        code, null);
 
     return code;
   }
@@ -155,7 +155,7 @@ public class DexInstruction_Test {
     // we pretend that NOP can throw an exception
 
     val code = createDexCode();
-    val cache = code.getParentMethod().getParentClass().getParentFile().getParsingCache();
+    val cache = code.getParentFile().getParsingCache();
 
     val nop = new DexInstruction_Nop(code);
     val tryStart = new DexTryBlockStart(code);

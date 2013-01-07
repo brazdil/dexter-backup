@@ -30,7 +30,7 @@ public class DexPseudoinstruction_PrintInteger extends DexPseudoinstruction {
   @Override
   public List<DexCodeElement> unwrap() {
     val code = getMethodCode();
-    val parsingCache = code.getParentMethod().getParentClass().getParentFile().getParsingCache();
+    val parsingCache = getParentFile().getParsingCache();
 
     val regOut = new DexRegister();
 

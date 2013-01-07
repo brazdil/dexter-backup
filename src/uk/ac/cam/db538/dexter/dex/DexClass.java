@@ -262,4 +262,11 @@ public class DexClass {
     for (val method : methods)
       method.markMethodOriginal();
   }
+
+  public boolean containsField(String fieldName) {
+    for (val f : fields)
+      if (f.getName().equals(fieldName))
+        return true;
+    return false;
+  }
 }

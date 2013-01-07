@@ -1,11 +1,19 @@
 package uk.ac.cam.db538.dexter.dex;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import java.util.HashMap;
+import java.util.Map;
 
-@AllArgsConstructor
 public class DexInstrumentationCache {
 
-  @Getter private DexParsingCache parsingCache;
+  private final Map<DexField, DexField> fieldInstrumentation;
 
+  public DexInstrumentationCache() {
+    fieldInstrumentation = new HashMap<DexField, DexField>();
+  }
+
+  public DexField getTaintField(DexField f) {
+    if (!fieldInstrumentation.containsKey(f))
+      fieldInstrumentation.put(f, f.instrument());
+    return fieldInstrumentation.get(f);
+  }
 }

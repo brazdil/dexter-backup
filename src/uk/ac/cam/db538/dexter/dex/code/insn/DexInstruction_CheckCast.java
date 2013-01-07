@@ -40,7 +40,7 @@ public class DexInstruction_CheckCast extends DexInstruction {
     this.regObject = object;
     this.value = value;
 
-    this.classCastException = DexClassType.parse("Ljava/lang/ClassCastException;", methodCode.getParentMethod().getParentClass().getParentFile().getParsingCache());
+    this.classCastException = DexClassType.parse("Ljava/lang/ClassCastException;", getParentFile().getParsingCache());
   }
 
   public DexInstruction_CheckCast(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {

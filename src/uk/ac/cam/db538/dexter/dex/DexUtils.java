@@ -8,6 +8,9 @@ import lombok.val;
 
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+
 public class DexUtils {
 
   public static Set<AccessFlags> getNonNullAccessFlagSet(Set<AccessFlags> accessFlags) {
@@ -27,5 +30,16 @@ public class DexUtils {
     for (val flag : accessFlags)
       result |= flag.getValue();
     return result;
+  }
+
+  public static DexField getField(Dex dex, DexClassType fieldClass, String fieldName, DexRegisterType fieldType) {
+    for (val clazz : dex.getClasses())
+      if (clazz.getType().equals(fieldClass)) {
+        for (val field : clazz.getFields())
+          if (field.getName().equals(fieldName) && field.getType().equals(fieldType))
+            return field;
+        return null;
+      }
+    return null;
   }
 }
