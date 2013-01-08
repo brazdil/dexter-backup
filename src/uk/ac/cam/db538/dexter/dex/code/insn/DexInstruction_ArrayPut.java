@@ -12,9 +12,11 @@ import org.jf.dexlib.Code.Format.Instruction23x;
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_ArrayPut extends DexInstruction {
@@ -84,5 +86,27 @@ public class DexInstruction_ArrayPut extends DexInstruction {
              };
     } else
       return throwNoSuitableFormatFound();
+  }
+
+  @Override
+  public void instrument(DexCode_InstrumentationState state) {
+    // primitives should copy the the taint to the array object
+    // all types should copy the taint of the index to the array object
+    val code = getMethodCode();
+    if (opcode != Opcode_GetPut.Object) {
+      val regTotalTaint = new DexRegister();
+      code.replace(this,
+                   new DexCodeElement[] {
+                     this,
+                     new DexInstruction_BinaryOp(code, regTotalTaint, state.getTaintRegister(regFrom), state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt),
+                     new DexPseudoinstruction_SetObjectTaint(code, regArray, regTotalTaint)
+                   });
+    } else {
+      code.replace(this,
+                   new DexCodeElement[] {
+                     this,
+                     new DexPseudoinstruction_SetObjectTaint(code, regArray, state.getTaintRegister(regIndex))
+                   });
+    }
   }
 }
