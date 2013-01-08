@@ -19,7 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 
 public class DexInstruction_CompareWide extends DexInstruction {
 
-  @Getter private final DexRegister regTarget;
+  @Getter private final DexRegister regTo;
   @Getter private final DexRegister regSourceA1;
   @Getter private final DexRegister regSourceA2;
   @Getter private final DexRegister regSourceB1;
@@ -33,7 +33,7 @@ public class DexInstruction_CompareWide extends DexInstruction {
                                     Opcode_CompareWide opcode) {
     super(methodCode);
 
-    regTarget = target;
+    regTo = target;
     regSourceA1 = sourceA1;
     regSourceA2 = sourceA2;
     regSourceB1 = sourceB1;
@@ -56,7 +56,7 @@ public class DexInstruction_CompareWide extends DexInstruction {
     } else
       throw FORMAT_EXCEPTION;
 
-    regTarget = parsingState.getRegister(regA);
+    regTo = parsingState.getRegister(regA);
     regSourceA1 = parsingState.getRegister(regB);
     regSourceA2 = parsingState.getRegister(regB + 1);
     regSourceB1 = parsingState.getRegister(regC);
@@ -66,7 +66,7 @@ public class DexInstruction_CompareWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return insnOpcode.getAssemblyName() + " v" + regTarget.getOriginalIndexString()
+    return insnOpcode.getAssemblyName() + " v" + regTo.getOriginalIndexString()
            + ", v" + regSourceA1.getOriginalIndexString() + "|v" + regSourceA2.getOriginalIndexString()
            + ", v" + regSourceB1.getOriginalIndexString() + "|v" + regSourceB2.getOriginalIndexString();
   }
@@ -74,7 +74,7 @@ public class DexInstruction_CompareWide extends DexInstruction {
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
     val regAlloc = state.getRegisterAllocation();
-    int rTarget = regAlloc.get(regTarget);
+    int rTarget = regAlloc.get(regTo);
     int rSourceA1 = regAlloc.get(regSourceA1);
     int rSourceA2 = regAlloc.get(regSourceA2);
     int rSourceB1 = regAlloc.get(regSourceB1);
@@ -91,7 +91,7 @@ public class DexInstruction_CompareWide extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
-    return createSet(regTarget);
+    return createSet(regTo);
   }
 
   @Override
@@ -102,7 +102,7 @@ public class DexInstruction_CompareWide extends DexInstruction {
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(
-             new GcRangeConstraint(regTarget, ColorRange.RANGE_8BIT),
+             new GcRangeConstraint(regTo, ColorRange.RANGE_8BIT),
              new GcRangeConstraint(regSourceA1, ColorRange.RANGE_8BIT),
              new GcRangeConstraint(regSourceB1, ColorRange.RANGE_8BIT));
   }
@@ -118,7 +118,7 @@ public class DexInstruction_CompareWide extends DexInstruction {
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_CompareWide(
              getMethodCode(),
-             mapping.get(regTarget),
+             mapping.get(regTo),
              mapping.get(regSourceA1),
              mapping.get(regSourceA2),
              mapping.get(regSourceB1),
@@ -127,6 +127,17 @@ public class DexInstruction_CompareWide extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) { }
+  public void instrument(DexCode_InstrumentationState state) {
+    // need to combine the taint of the two wide registers (total of four) and assign that to the operation result
+    val code = getMethodCode();
+    val regTotalTaint = new DexRegister();
+    code.replace(this,
+                 new DexCodeElement[] {
+                   this,
+                   new DexInstruction_BinaryOp(code, regTotalTaint, state.getTaintRegister(regSourceA1), state.getTaintRegister(regSourceA2), Opcode_BinaryOp.OrInt),
+                   new DexInstruction_BinaryOp(code, regTotalTaint, regTotalTaint, state.getTaintRegister(regSourceB1), Opcode_BinaryOp.OrInt),
+                   new DexInstruction_BinaryOp(code, state.getTaintRegister(regTo), regTotalTaint, state.getTaintRegister(regSourceB2), Opcode_BinaryOp.OrInt),
+                 });
+  }
 }
 
