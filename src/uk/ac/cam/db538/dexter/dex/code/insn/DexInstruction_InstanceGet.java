@@ -140,7 +140,6 @@ public class DexInstruction_InstanceGet extends DexInstruction {
         // combine the taint stored in adjoined field with the taint of the object
         val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
         val regObjectTaint = new DexRegister();
-
         code.replace(this,
                      new DexCodeElement[] {
                        this,

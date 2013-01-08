@@ -12,12 +12,15 @@ import org.jf.dexlib.Code.Format.Instruction22c;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.DexField;
+import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -120,8 +123,48 @@ public class DexInstruction_InstancePut extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) {
-    if (opcode != Opcode_GetPut.Object)
-      super.instrument(state);
-  }
+    val code = getMethodCode();
+    val classHierarchy = getParentFile().getClassHierarchy();
 
+    val fieldDeclaringClass = classHierarchy.getAccesedFieldDeclaringClass(fieldClass, fieldName, fieldType, false);
+
+    if (opcode != Opcode_GetPut.Object) {
+      val regValueTaint = state.getTaintRegister(regFrom);
+
+      if (fieldDeclaringClass.isDefinedInternally()) {
+        // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
+        // store the taint to the taint field
+        val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
+        code.replace(this,
+                     new DexCodeElement[] {
+                       this,
+                       new DexInstruction_InstancePut(code, regValueTaint, regObject, state.getCache().getTaintField(field)),
+                     });
+
+      } else
+        // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
+        // assign the same taint to the object
+        code.replace(this,
+                     new DexCodeElement[] {
+                       this,
+                       new DexPseudoinstruction_SetObjectTaint(code, regObject, regValueTaint)
+                     });
+
+    } else {
+      if (!fieldDeclaringClass.isDefinedInternally()) {
+        // FIELD OF REFERENCE TYPE DEFINED EXTERNALLY
+        // need to copy the taint of the field value to the containing object
+        val regValueTaint = new DexRegister();
+        code.replace(this,
+                     new DexCodeElement[] {
+                       this,
+                       new DexPseudoinstruction_GetObjectTaint(code, regValueTaint, regFrom),
+                       new DexPseudoinstruction_SetObjectTaint(code, regObject, regValueTaint)
+                     });
+      }
+
+      // FIELD OF REFERENCE TYPE DEFINED INTERNALLY
+      // no need to do anything
+    }
+  }
 }
