@@ -6,6 +6,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -52,5 +53,16 @@ public class DexInstruction_ConvertFromWide extends DexInstruction {
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_ConvertFromWide(getMethodCode(), mapping.get(regTo), mapping.get(regFrom1), mapping.get(regFrom2), insnOpcode);
+  }
+
+  @Override
+  public void instrument(DexCode_InstrumentationState state) {
+    // need to combine the taint of the two wide registers and assign it the operation result
+    val code = getMethodCode();
+    code.replace(this,
+                 new DexCodeElement[] {
+                   this,
+                   new DexInstruction_BinaryOp(code, state.getTaintRegister(regTo), state.getTaintRegister(regFrom1), state.getTaintRegister(regFrom2), Opcode_BinaryOp.OrInt)
+                 });
   }
 }
