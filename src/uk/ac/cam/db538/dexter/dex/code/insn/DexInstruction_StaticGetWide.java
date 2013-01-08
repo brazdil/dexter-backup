@@ -13,8 +13,10 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.DexField;
+import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -120,5 +122,29 @@ public class DexInstruction_StaticGetWide extends DexInstruction {
              };
     } else
       return throwNoSuitableFormatFound();
+  }
+
+  @Override
+  public void instrument(DexCode_InstrumentationState state) {
+    val code = getMethodCode();
+    val classHierarchy = getParentFile().getClassHierarchy();
+
+    val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
+
+    if (fieldDeclaringClass.isDefinedInternally()) {
+      // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
+      // retrieve taint from the adjoined field
+      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
+      code.replace(this,
+                   new DexCodeElement[] {
+                     this,
+                     new DexInstruction_StaticGet(code, state.getTaintRegister(regTo1), state.getCache().getTaintField(field)),
+                     new DexInstruction_Move(code, state.getTaintRegister(regTo2), state.getTaintRegister(regTo1), false)
+                   });
+    } else {
+      // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
+      // need to figure out!!!
+      super.instrument(state);
+    }
   }
 }

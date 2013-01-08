@@ -13,8 +13,10 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.DexField;
+import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -120,5 +122,30 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
              };
     } else
       return throwNoSuitableFormatFound();
+  }
+
+  @Override
+  public void instrument(DexCode_InstrumentationState state) {
+    val code = getMethodCode();
+    val classHierarchy = getParentFile().getClassHierarchy();
+
+    val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
+    val regValueTaint = new DexRegister();
+
+    if (fieldDeclaringClass.isDefinedInternally()) {
+      // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
+      // store the taint to the taint field
+      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
+      code.replace(this,
+                   new DexCodeElement[] {
+                     this,
+                     new DexInstruction_BinaryOp(code, regValueTaint, state.getTaintRegister(regFrom1), state.getTaintRegister(regFrom2), Opcode_BinaryOp.OrInt),
+                     new DexInstruction_StaticPut(code, regValueTaint, state.getCache().getTaintField(field)),
+                   });
+
+    } else
+      // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
+      // need to figure out!!!
+      super.instrument(state);
   }
 }
