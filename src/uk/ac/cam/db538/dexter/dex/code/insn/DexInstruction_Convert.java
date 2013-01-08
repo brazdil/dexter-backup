@@ -6,6 +6,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -49,5 +50,16 @@ public class DexInstruction_Convert extends DexInstruction {
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_Convert(getMethodCode(), mapping.get(regTo), mapping.get(regFrom), insnOpcode);
+  }
+
+  @Override
+  public void instrument(DexCode_InstrumentationState state) {
+    // need to copy to taint across
+    val code = getMethodCode();
+    code.replace(this,
+                 new DexCodeElement[] {
+                   this,
+                   new DexInstruction_Move(code, state.getTaintRegister(regTo), state.getTaintRegister(regFrom), false)
+                 });
   }
 }
