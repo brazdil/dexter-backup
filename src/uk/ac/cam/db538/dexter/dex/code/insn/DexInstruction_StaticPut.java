@@ -116,7 +116,7 @@ public class DexInstruction_StaticPut extends DexInstruction {
     val code = getMethodCode();
     val classHierarchy = getParentFile().getClassHierarchy();
 
-    val fieldDeclaringClass = classHierarchy.getAccesedFieldDeclaringClass(fieldClass, fieldName, fieldType, false);
+    val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
 
     if (opcode != Opcode_GetPut.Object) {
       val regValueTaint = state.getTaintRegister(regFrom);

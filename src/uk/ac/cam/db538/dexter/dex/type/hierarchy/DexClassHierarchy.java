@@ -212,7 +212,7 @@ public class DexClassHierarchy {
     return false;
   }
 
-  public DexClassType getAccesedFieldDeclaringClass(DexClassType accessedClazz, String fieldName, DexRegisterType fieldType, boolean isStatic) {
+  public DexClassType getAccessedFieldDeclaringClass(DexClassType accessedClazz, String fieldName, DexRegisterType fieldType, boolean isStatic) {
     for (val ancestor : getAllParents(accessedClazz, true))
       for (val field : classes.get(ancestor).getDeclaredFields())
         if (field.getName().equals(fieldName) && field.getType().equals(fieldType) && field.isDeclaredStatic() == isStatic) {

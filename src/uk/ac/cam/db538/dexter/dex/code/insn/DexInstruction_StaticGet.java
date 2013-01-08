@@ -118,7 +118,7 @@ public class DexInstruction_StaticGet extends DexInstruction {
 
     if (opcode != Opcode_GetPut.Object) {
       val regValueTaint = state.getTaintRegister(regTo);
-      val fieldDeclaringClass = classHierarchy.getAccesedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
+      val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
 
       if (fieldDeclaringClass.isDefinedInternally()) {
         // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY

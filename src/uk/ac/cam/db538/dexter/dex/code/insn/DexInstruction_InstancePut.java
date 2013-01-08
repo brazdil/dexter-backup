@@ -126,7 +126,7 @@ public class DexInstruction_InstancePut extends DexInstruction {
     val code = getMethodCode();
     val classHierarchy = getParentFile().getClassHierarchy();
 
-    val fieldDeclaringClass = classHierarchy.getAccesedFieldDeclaringClass(fieldClass, fieldName, fieldType, false);
+    val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, false);
 
     if (opcode != Opcode_GetPut.Object) {
       val regValueTaint = state.getTaintRegister(regFrom);

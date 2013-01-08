@@ -133,7 +133,7 @@ public class DexInstruction_InstanceGet extends DexInstruction {
 
     if (opcode != Opcode_GetPut.Object) {
       val regValueTaint = state.getTaintRegister(regTo);
-      val fieldDeclaringClass = classHierarchy.getAccesedFieldDeclaringClass(fieldClass, fieldName, fieldType, false);
+      val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, false);
 
       if (fieldDeclaringClass.isDefinedInternally()) {
         // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
