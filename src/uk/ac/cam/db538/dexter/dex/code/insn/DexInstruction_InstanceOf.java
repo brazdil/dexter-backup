@@ -13,6 +13,7 @@ import org.jf.dexlib.Code.Format.Instruction22c;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -81,5 +82,16 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom);
+  }
+
+  @Override
+  public void instrument(DexCode_InstrumentationState state) {
+    // copy the taint across
+    val code = getMethodCode();
+    code.replace(this,
+                 new DexCodeElement[] {
+                   this,
+                   new DexInstruction_Move(code, regTo, regFrom, false)
+                 });
   }
 }
