@@ -131,7 +131,16 @@ public class MainWindow {
       doModal("Instrumenting " + tab.getOpenedFile_Filename(), new Thread(new Runnable() {
         public void run() {
           try {
-            dex.instrument();
+            val warnings = dex.instrument();
+            if (!warnings.isEmpty()) {
+              val str = new StringBuilder();
+              str.append("Warnings were produced during instrumentation:");
+              for (val warning : warnings) {
+                str.append("\n - ");
+                str.append(warning.getMessage());
+              }
+              JMessage.showWarningMessage(frame, str.toString());
+            }
             tab.getTreeListener().valueChanged(null);
             tab.updateClassTree();
           } catch (Throwable e) {

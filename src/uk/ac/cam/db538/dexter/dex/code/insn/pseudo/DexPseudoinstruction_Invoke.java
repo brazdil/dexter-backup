@@ -8,6 +8,7 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
+import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache.InstrumentationWarning;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -37,7 +38,6 @@ import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
-import uk.ac.cam.db538.dexter.dex.type.hierarchy.ClassHierarchyException;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
@@ -209,7 +209,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                             instrumentedCode);
   }
 
-  private Pair<Boolean, Boolean> decideMethodCallDestination() {
+  private Pair<Boolean, Boolean> decideMethodCallDestination(DexCode_InstrumentationState state) {
     val dex = getParentFile();
     val classHierarchy = dex.getClassHierarchy();
 
@@ -235,7 +235,8 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
             return new Pair<Boolean, Boolean>(false, true); // will always be external
         }
 
-      throw new ClassHierarchyException("Cannot determine the destination of super method call: " + invokedClassType.getPrettyName() + "." + invokedMethodName);
+      state.getCache().getWarnings().add(new InstrumentationWarning("Cannot determine the destination of super method call: " + invokedClassType.getPrettyName() + "." + invokedMethodName));
+      return new Pair<Boolean, Boolean>(false, true); // will probably be external
 
     } else {
 
@@ -272,8 +273,10 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
         }
       }
 
-      if (!canBeInternal && !canBeExternal)
-        throw new ClassHierarchyException("Cannot determine the destination of virtual/interface method call: " + invokedClassType.getPrettyName() + "." + invokedMethodName);
+      if (!canBeInternal && !canBeExternal) {
+        state.getCache().getWarnings().add(new InstrumentationWarning("Cannot determine the destination of virtual/interface method call: " + invokedClassType.getPrettyName() + "." + invokedMethodName));
+        canBeExternal = true;
+      }
 
       return new Pair<Boolean, Boolean>(canBeInternal, canBeExternal);
     }
@@ -285,7 +288,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
 
-    val destAnalysis = decideMethodCallDestination();
+    val destAnalysis = decideMethodCallDestination(state);
     boolean canBeInternalCall = destAnalysis.getValA();
     boolean canBeExternalCall = destAnalysis.getValB();
     boolean canBeAnyCall = canBeInternalCall && canBeExternalCall;

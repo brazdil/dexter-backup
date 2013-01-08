@@ -14,6 +14,7 @@ import lombok.val;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
+import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache.InstrumentationWarning;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
@@ -165,7 +166,7 @@ public class Dex {
     return Collections.unmodifiableList(classes);
   }
 
-  public void instrument() {
+  public List<InstrumentationWarning> instrument() {
     val cache = new DexInstrumentationCache();
 
     val extraClasses = parseExtraClasses();
@@ -176,6 +177,8 @@ public class Dex {
     classes.addAll(extraClasses);
 
     classHierarchy.checkConsistentency();
+
+    return cache.getWarnings();
   }
 
   public void writeToFile(File filename) throws IOException {
