@@ -13,11 +13,14 @@ import org.jf.dexlib.Code.Format.Instruction22c;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.DexField;
+import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -129,5 +132,38 @@ public class DexInstruction_InstanceGetWide extends DexInstruction {
              };
     } else
       return throwNoSuitableFormatFound();
+  }
+
+  @Override
+  public void instrument(DexCode_InstrumentationState state) {
+    // same as regular InstanceGet, just need to copy the taint to the second result register as well
+    val code = getMethodCode();
+    val classHierarchy = getParentFile().getClassHierarchy();
+
+    val regValueTaint = state.getTaintRegister(regTo1);
+    val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, false);
+    if (fieldDeclaringClass.isDefinedInternally()) {
+      // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
+      // combine the taint stored in adjoined field with the taint of the object
+      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
+      val regObjectTaint = new DexRegister();
+      code.replace(this,
+                   new DexCodeElement[] {
+                     this,
+                     new DexPseudoinstruction_GetObjectTaint(code, regObjectTaint, regObject),
+                     new DexInstruction_InstanceGet(code, regValueTaint, regObject, state.getCache().getTaintField(field)),
+                     new DexInstruction_BinaryOp(code, regValueTaint, regValueTaint, regObjectTaint, Opcode_BinaryOp.OrInt),
+                     new DexInstruction_Move(code, state.getTaintRegister(regTo2), regValueTaint, false)
+                   });
+
+    } else
+      // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
+      // assign the same taint as the containing object has
+      code.replace(this,
+                   new DexCodeElement[] {
+                     this,
+                     new DexPseudoinstruction_GetObjectTaint(code, regValueTaint, regObject),
+                     new DexInstruction_Move(code, state.getTaintRegister(regTo2), regValueTaint, false)
+                   });
   }
 }
