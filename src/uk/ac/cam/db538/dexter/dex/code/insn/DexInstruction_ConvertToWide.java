@@ -1,11 +1,14 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -67,5 +70,44 @@ public class DexInstruction_ConvertToWide extends DexInstruction {
                    new DexInstruction_Move(code, state.getTaintRegister(regTo1), state.getTaintRegister(regFrom), false),
                    new DexInstruction_Move(code, state.getTaintRegister(regTo2), state.getTaintRegister(regFrom), false)
                  });
+  }
+
+  @Override
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    val regAlloc = state.getRegisterAllocation();
+    int rTo1 = regAlloc.get(regTo1);
+    int rTo2 = regAlloc.get(regTo2);
+    int rFrom = regAlloc.get(regFrom);
+
+    if (!formWideRegister(rTo1, rTo2))
+      return throwWideRegistersExpected();
+
+    if (fitsIntoBits_Unsigned(rTo1, 4) && fitsIntoBits_Unsigned(rFrom, 4))
+      return new Instruction[] {
+               new Instruction12x(Opcode_ConvertToWide.convert(insnOpcode), (byte) rTo1, (byte) rFrom)
+             };
+    else
+      return throwNoSuitableFormatFound();
+  }
+
+  @Override
+  public Set<DexRegister> lvaDefinedRegisters() {
+    return createSet(regTo1, regTo2);
+  }
+
+  @Override
+  public Set<DexRegister> lvaReferencedRegisters() {
+    return createSet(regFrom);
+  }
+
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    return createSet(new GcRangeConstraint(regTo1, ColorRange.RANGE_4BIT),
+                     new GcRangeConstraint(regFrom, ColorRange.RANGE_4BIT));
+  }
+
+  @Override
+  public Set<GcFollowConstraint> gcFollowConstraints() {
+    return createSet(new GcFollowConstraint(regTo1, regTo2));
   }
 }
