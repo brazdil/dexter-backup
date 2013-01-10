@@ -50,7 +50,7 @@ public class DexInstruction_ConstClass extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "const-class v" + regTo.getOriginalIndexString() + ", " + value.getDescriptor();
+    return "const-class " + regTo.getOriginalIndexString() + ", " + value.getDescriptor();
   }
 
   @Override

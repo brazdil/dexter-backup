@@ -117,12 +117,19 @@ public class MethodPanel extends InfoPanel {
     // put instructions
     panelInstructions.removeAll();
     if (method instanceof DexMethodWithCode) {
+//    	val allInstructions = new NoDuplicatesList<DexCodeElement>();
+//    	allInstructions.addAll(((DexMethodWithCode) method).getParameterMoveInstructions().getInstructionList());
+//    	allInstructions.addAll(((DexMethodWithCode) method).getCode().getInstructionList());
+
       for (val insn : ((DexMethodWithCode) method).getCode().getInstructionList()) {
         val label = new WebHotkeyLabel(insn.getOriginalAssembly());
 
         // set its colour based on being original element or not
         if (!insn.isOriginalElement())
           label.setForeground(Color.GRAY);
+
+        if (insn.isAuxiliaryElement())
+          label.setForeground(Color.LIGHT_GRAY);
 
         // indent instructions (not labels)
         if (insn instanceof DexInstruction)

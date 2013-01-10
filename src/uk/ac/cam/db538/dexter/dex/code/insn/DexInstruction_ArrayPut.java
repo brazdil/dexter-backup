@@ -52,7 +52,7 @@ public class DexInstruction_ArrayPut extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "aput-" + opcode.getAssemblyName() + " v" + regFrom.getOriginalIndexString() + ", {v" + regArray.getOriginalIndexString() + "}[v" + regIndex.getOriginalIndexString() + "]";
+    return "aput-" + opcode.getAssemblyName() + " " + regFrom.getOriginalIndexString() + ", {" + regArray.getOriginalIndexString() + "}[" + regIndex.getOriginalIndexString() + "]";
   }
 
   @Override

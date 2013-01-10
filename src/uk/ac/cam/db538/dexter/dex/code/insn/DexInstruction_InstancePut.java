@@ -87,7 +87,7 @@ public class DexInstruction_InstancePut extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "iput-" + opcode.getAssemblyName() + " v" + regFrom.getOriginalIndexString() + ", {v" + regObject.getOriginalIndexString() + "}" + fieldClass.getPrettyName() + "." + fieldName;
+    return "iput-" + opcode.getAssemblyName() + " " + regFrom.getOriginalIndexString() + ", {" + regObject.getOriginalIndexString() + "}" + fieldClass.getPrettyName() + "." + fieldName;
   }
 
   @Override

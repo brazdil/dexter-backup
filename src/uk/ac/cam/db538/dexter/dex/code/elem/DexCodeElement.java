@@ -26,6 +26,7 @@ public abstract class DexCodeElement {
 
   @Getter private DexCode methodCode;
   @Getter @Setter private boolean originalElement = false;
+  @Getter @Setter private boolean auxiliaryElement = false;
 
   public DexCodeElement(DexCode methodCode) {
     this.methodCode = methodCode;

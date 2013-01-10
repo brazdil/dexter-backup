@@ -61,7 +61,7 @@ public class DexInstruction_Switch extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return (packed ? "packed" : "sparse") + "-switch v" + regTest.getOriginalIndexString() + ", L" + switchTable.getOriginalAbsoluteOffset();
+    return (packed ? "packed" : "sparse") + "-switch " + regTest.getOriginalIndexString() + ", L" + switchTable.getOriginalAbsoluteOffset();
   }
 
   @Override

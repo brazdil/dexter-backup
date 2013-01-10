@@ -154,7 +154,7 @@ public class DexInstruction_Invoke extends DexInstruction {
       for (val reg : argumentRegisters) {
         if (first) first = false;
         else str.append(", ");
-        str.append("v" + reg.getOriginalIndexString());
+        str.append(reg.getOriginalIndexString());
       }
       str.append(")");
 
@@ -167,7 +167,7 @@ public class DexInstruction_Invoke extends DexInstruction {
         if (second) second = false;
         else if (!first) str.append(", ");
 
-        str.append("v" + reg.getOriginalIndexString());
+        str.append(reg.getOriginalIndexString());
 
         if (first) {
           first = false;

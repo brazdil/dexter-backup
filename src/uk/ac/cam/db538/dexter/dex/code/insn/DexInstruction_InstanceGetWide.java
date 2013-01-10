@@ -89,7 +89,8 @@ public class DexInstruction_InstanceGetWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "iget-wide v" + regTo1.getOriginalIndexString() + ", {v" + regObject.getOriginalIndexString() + "}" + fieldClass.getPrettyName() + "." + fieldName;
+    return "iget-wide " + regTo1.getOriginalIndexString() + "|" + regTo2.getOriginalIndexString()
+           + ", {" + regObject.getOriginalIndexString() + "}" + fieldClass.getPrettyName() + "." + fieldName;
   }
 
   @Override

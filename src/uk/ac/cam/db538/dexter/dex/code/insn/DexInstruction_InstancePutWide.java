@@ -89,7 +89,7 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "iput-wide v" + regFrom1.getOriginalIndexString() + ", {v" + regObject.getOriginalIndexString() + "}" + fieldClass.getPrettyName() + "." + fieldName;
+    return "iput-wide " + regFrom1.getOriginalIndexString() + ", {" + regObject.getOriginalIndexString() + "}" + fieldClass.getPrettyName() + "." + fieldName;
   }
 
   @Override

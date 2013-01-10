@@ -47,7 +47,7 @@ public class DexInstruction_Monitor extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "monitor-" + (enter ? "enter" : "exit") +
-           " v" + reg.getOriginalIndexString();
+           " " + reg.getOriginalIndexString();
   }
 
   @Override

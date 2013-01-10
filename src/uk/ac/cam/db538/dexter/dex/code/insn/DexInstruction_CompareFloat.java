@@ -52,8 +52,8 @@ public class DexInstruction_CompareFloat extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return (ltBias ? "cmpl" : "cmpg") + "-float v" + regTo.getOriginalIndexString() +
-           ", v" + regSourceA.getOriginalIndexString() + ", v" + regSourceB.getOriginalIndexString();
+    return (ltBias ? "cmpl" : "cmpg") + "-float " + regTo.getOriginalIndexString() +
+           ", " + regSourceA.getOriginalIndexString() + ", " + regSourceB.getOriginalIndexString();
   }
 
   @Override

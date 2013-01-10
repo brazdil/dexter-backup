@@ -52,7 +52,7 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "move-result-wide v" + regTo1.getOriginalIndexString() + "|v" + regTo2.getOriginalIndexString();
+    return "move-result-wide " + regTo1.getOriginalIndexString() + "|" + regTo2.getOriginalIndexString();
   }
 
   @Override

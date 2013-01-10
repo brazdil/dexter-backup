@@ -48,7 +48,7 @@ public class DexInstruction_IfTestZero extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "if-" + insnOpcode.name() + " v" + reg.getOriginalIndexString() +
+    return "if-" + insnOpcode.name() + " " + reg.getOriginalIndexString() +
            ", L" + target.getOriginalAbsoluteOffset();
   }
 

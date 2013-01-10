@@ -59,7 +59,7 @@ public class DexInstruction_ConstString extends DexInstruction {
     String escapedVal = StringEscapeUtils.escapeJava(stringConstant);
     if (escapedVal.length() > 15)
       escapedVal = escapedVal.substring(0, 15) + "...";
-    return "const-string v" + regTo.getOriginalIndexString() + ", \"" + escapedVal + "\"";
+    return "const-string " + regTo.getOriginalIndexString() + ", \"" + escapedVal + "\"";
   }
 
   @Override

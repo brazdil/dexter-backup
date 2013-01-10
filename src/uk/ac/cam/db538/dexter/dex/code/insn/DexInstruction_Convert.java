@@ -44,7 +44,7 @@ public class DexInstruction_Convert extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return insnOpcode.getAssemblyName() + " v" + regTo.getOriginalIndexString() + ", v" + regFrom.getOriginalIndexString();
+    return insnOpcode.getAssemblyName() + " " + regTo.getOriginalIndexString() + ", " + regFrom.getOriginalIndexString();
   }
 
   @Override

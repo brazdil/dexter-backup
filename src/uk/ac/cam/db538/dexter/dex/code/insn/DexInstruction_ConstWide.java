@@ -75,7 +75,7 @@ public class DexInstruction_ConstWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "const-wide v" + regTo1.getOriginalIndexString() + "|v" + regTo2.getOriginalIndexString() + ", #" + value;
+    return "const-wide " + regTo1.getOriginalIndexString() + "|" + regTo2.getOriginalIndexString() + ", #" + value;
   }
 
   @Override
@@ -85,15 +85,19 @@ public class DexInstruction_ConstWide extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) {
-    getMethodCode().replace(this,
-                            new DexCodeElement[] {
-                              this,
-                              new DexInstruction_ConstWide(
-                                getMethodCode(),
-                                state.getTaintRegister(regTo1),
-                                state.getTaintRegister(regTo2),
-                                0)
-                            });
+    val code = getMethodCode();
+    code.replace(this,
+                 new DexCodeElement[] {
+                   this,
+                   new DexInstruction_Const(
+                     code,
+                     state.getTaintRegister(regTo1),
+                     0),
+                   new DexInstruction_Const(
+                     code,
+                     state.getTaintRegister(regTo2),
+                     0)
+                 });
   }
 
   @Override

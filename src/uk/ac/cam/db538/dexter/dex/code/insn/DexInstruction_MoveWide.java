@@ -1,6 +1,10 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Map;
+import java.util.Set;
+
+import lombok.Getter;
+import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
@@ -9,12 +13,10 @@ import org.jf.dexlib.Code.Format.Instruction22x;
 import org.jf.dexlib.Code.Format.Instruction32x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_MoveWide extends DexInstruction {
 
@@ -66,11 +68,53 @@ public class DexInstruction_MoveWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "move-wide v" + regTo1.getOriginalIndexString() + ", v" + regFrom1.getOriginalIndexString();
+    return "move-wide " + regTo1.getOriginalIndexString() + "|" + regTo2.getOriginalIndexString()
+           + ", " + regFrom1.getOriginalIndexString() + "|" + regFrom2.getOriginalIndexString();
   }
 
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_MoveWide(getMethodCode(), mapping.get(regTo1), mapping.get(regTo2), mapping.get(regFrom1), mapping.get(regFrom2));
+  }
+
+  @Override
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    val regAlloc = state.getRegisterAllocation();
+    int rTo1 = regAlloc.get(regTo1);
+    int rTo2 = regAlloc.get(regTo2);
+    int rFrom1 = regAlloc.get(regFrom1);
+    int rFrom2 = regAlloc.get(regFrom2);
+
+    if (!formWideRegister(rTo1, rTo2) || !formWideRegister(rFrom1, rFrom2))
+      return throwWideRegistersExpected();
+
+    if (fitsIntoBits_Unsigned(rTo1, 4) && fitsIntoBits_Unsigned(rFrom1, 4))
+      return new Instruction[] {
+               new Instruction12x(Opcode.MOVE_WIDE, (byte) rTo1, (byte) rFrom1)
+             };
+    else if (fitsIntoBits_Unsigned(rTo1, 8)) // rFrom1 fits into 16 bits
+      return new Instruction[] {
+               new Instruction22x(Opcode.MOVE_WIDE_FROM16, (short) rTo1, rFrom1)
+             };
+    else // both fit into 16 bits
+      return new Instruction[] {
+               new Instruction32x(Opcode.MOVE_WIDE_16, rTo1, rFrom1)
+             };
+  }
+
+  @Override
+  public Set<DexRegister> lvaDefinedRegisters() {
+    return createSet(regTo1, regTo2);
+  }
+
+  @Override
+  public Set<DexRegister> lvaReferencedRegisters() {
+    return createSet(regFrom1, regFrom2);
+  }
+
+  @Override
+  public Set<GcFollowConstraint> gcFollowConstraints() {
+    return createSet(new GcFollowConstraint(regTo1, regTo2),
+                     new GcFollowConstraint(regFrom1, regFrom2));
   }
 }

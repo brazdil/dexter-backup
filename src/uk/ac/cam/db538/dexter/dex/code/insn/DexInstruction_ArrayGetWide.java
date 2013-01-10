@@ -51,7 +51,8 @@ public class DexInstruction_ArrayGetWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "aget-wide v" + regTo1.getOriginalIndexString() + ", {v" + regArray.getOriginalIndexString() + "}[v" + regIndex.getOriginalIndexString() + "]";
+    return "aget-wide " + regTo1.getOriginalIndexString() + "|" + regTo2.getOriginalIndexString()
+           + ", {" + regArray.getOriginalIndexString() + "}[" + regIndex.getOriginalIndexString() + "]";
   }
 
   @Override

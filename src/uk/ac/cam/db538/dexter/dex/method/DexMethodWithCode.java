@@ -13,11 +13,8 @@ import org.jf.dexlib.AnnotationSetItem;
 import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
-import org.jf.dexlib.CodeItem.EncodedCatchHandler;
-import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.DebugInfoItem;
 import org.jf.dexlib.DexFile;
-import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring;
@@ -39,7 +36,6 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   private final NoDuplicatesList<DexRegister> parameterRegisters;
   private final Map<DexRegister, DexRegister> parameterRegistersMappings;
-  private final DexCode parameterMoveInstructions;
 
   public DexMethodWithCode(DexClass parent, String name, Set<AccessFlags> accessFlags,
                            DexPrototype prototype, DexCode code,
@@ -49,7 +45,6 @@ public abstract class DexMethodWithCode extends DexMethod {
     this.code = code;
     this.direct = direct;
     this.parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
-    this.parameterMoveInstructions = new DexCode();
     this.parameterRegistersMappings = new HashMap<DexRegister, DexRegister>();
 
     this.code.setParentMethod(this);
@@ -57,13 +52,9 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
     super(parent, methodInfo, encodedAnnotations);
-//    if (methodInfo.codeItem == null)
-//      code = new DexCode(this);
-//    else
     code = new DexCode(methodInfo.codeItem, this, parent.getParentFile().getParsingCache());
     direct = methodInfo.isDirect();
     parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
-    parameterMoveInstructions = new DexCode();
     this.parameterRegistersMappings = new HashMap<DexRegister, DexRegister>();
 
     val prototype = this.getPrototype();
@@ -90,16 +81,18 @@ public abstract class DexMethodWithCode extends DexMethod {
     }
   }
 
-  public void addParameterMapping_Single(int paramIndex, DexRegister codeReg) {
-    if (!code.getUsedRegisters().contains(codeReg))
-      return;
+  private void addParameterMapping_Single(int paramIndex, DexRegister codeReg) {
+//    if (!code.getUsedRegisters().contains(codeReg))
+//      return;
 
     val paramType = this.getPrototype().getParameterType(paramIndex, this.isStatic(), this.getParentClass());
 
     val regIndex = this.getPrototype().getFirstParameterRegisterIndex(paramIndex, isStatic());
     val paramReg = parameterRegisters.get(regIndex);
 
-    parameterMoveInstructions.add(new DexInstruction_Move(code, codeReg, paramReg, paramType instanceof DexReferenceType));
+    val moveInsn = new DexInstruction_Move(code, codeReg, paramReg, paramType instanceof DexReferenceType);
+    moveInsn.setAuxiliaryElement(true);
+    code.insertBefore(moveInsn, code.getStartingLabel());
 
     if (parameterRegistersMappings.containsKey(paramReg))
       throw new RuntimeException("Multiple mappings of the same parameter");
@@ -107,16 +100,18 @@ public abstract class DexMethodWithCode extends DexMethod {
       parameterRegistersMappings.put(paramReg, codeReg);
   }
 
-  public void addParameterMapping_Wide(int paramIndex, DexRegister codeReg1, DexRegister codeReg2) {
-    if (!code.getUsedRegisters().contains(codeReg1) && !code.getUsedRegisters().contains(codeReg2))
-      return;
+  private void addParameterMapping_Wide(int paramIndex, DexRegister codeReg1, DexRegister codeReg2) {
+//    if (!code.getUsedRegisters().contains(codeReg1) && !code.getUsedRegisters().contains(codeReg2))
+//      return;
 
     val firstRegIndex = this.getPrototype().getFirstParameterRegisterIndex(paramIndex, isStatic());
 
     val paramReg1 = parameterRegisters.get(firstRegIndex);
     val paramReg2 = parameterRegisters.get(firstRegIndex + 1);
 
-    parameterMoveInstructions.add(new DexInstruction_MoveWide(code, codeReg1, codeReg2, paramReg1, paramReg2));
+    val moveInsn = new DexInstruction_MoveWide(code, codeReg1, codeReg2, paramReg1, paramReg2);
+    moveInsn.setAuxiliaryElement(true);
+    code.insertBefore(moveInsn, code.getStartingLabel());
 
     if (parameterRegistersMappings.containsKey(paramReg1) || parameterRegistersMappings.containsKey(paramReg2))
       throw new RuntimeException("Multiple mappings of the same parameter");
@@ -185,20 +180,24 @@ public abstract class DexMethodWithCode extends DexMethod {
       if (!registerAllocation.containsKey(reg))
         registerAllocation.put(reg, 0);
 
-    val assembledMoveInstructions = parameterMoveInstructions.assembleBytecode(registerAllocation, cache, 0);
-    val assembledCode = code.assembleBytecode(registerAllocation, cache, assembledMoveInstructions.getTotalCodeLength());
+//    val assembledMoveInstructions = parameterMoveInstructions.assembleBytecode(registerAllocation, cache, 0);
+//    val assembledCode = code.assembleBytecode(registerAllocation, cache, assembledMoveInstructions.getTotalCodeLength());
+    val assembledCode = code.assembleBytecode(registerAllocation, cache, 0);
 
-    List<Instruction> instructions = new ArrayList<Instruction>();
-    instructions.addAll(assembledMoveInstructions.getInstructions());
-    instructions.addAll(assembledCode.getInstructions());
+//    List<Instruction> instructions = new ArrayList<Instruction>();
+//    instructions.addAll(assembledMoveInstructions.getInstructions());
+//    instructions.addAll(assembledCode.getInstructions());
+    val instructions = assembledCode.getInstructions();
 
-    List<TryItem> tries = new ArrayList<TryItem>();
-    tries.addAll(assembledMoveInstructions.getTries());
-    tries.addAll(assembledCode.getTries());
+//    List<TryItem> tries = new ArrayList<TryItem>();
+//    tries.addAll(assembledMoveInstructions.getTries());
+//    tries.addAll(assembledCode.getTries());
+    val tries = assembledCode.getTries();
 
-    List<EncodedCatchHandler> catchHandlers = new ArrayList<EncodedCatchHandler>();
-    catchHandlers.addAll(assembledMoveInstructions.getCatchHandlers());
-    catchHandlers.addAll(assembledCode.getCatchHandlers());
+//    List<EncodedCatchHandler> catchHandlers = new ArrayList<EncodedCatchHandler>();
+//    catchHandlers.addAll(assembledMoveInstructions.getCatchHandlers());
+//    catchHandlers.addAll(assembledCode.getCatchHandlers());
+    val catchHandlers = assembledCode.getCatchHandlers();
 
     int outWords = code.getOutWords();
 

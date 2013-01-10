@@ -50,7 +50,7 @@ public class DexInstruction_NewInstance extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "new-instance v" + regTo.getOriginalIndexString() + ", " + value.getDescriptor();
+    return "new-instance " + regTo.getOriginalIndexString() + ", " + value.getDescriptor();
   }
 
   @Override

@@ -65,8 +65,8 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return insnOpcode.name().toLowerCase() + "-int/lit v" + regTarget.getOriginalIndexString() +
-           ", v" + regSource.getOriginalIndexString() + ", #" + literal;
+    return insnOpcode.name().toLowerCase() + "-int/lit " + regTarget.getOriginalIndexString() +
+           ", " + regSource.getOriginalIndexString() + ", #" + literal;
   }
 
   private boolean isLiteral8bit() {

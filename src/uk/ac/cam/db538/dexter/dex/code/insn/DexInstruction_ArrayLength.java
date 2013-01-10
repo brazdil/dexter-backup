@@ -46,7 +46,7 @@ public class DexInstruction_ArrayLength extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "array-length v" + regTo.getOriginalIndexString() + ", {v" + regArray.getOriginalIndexString() + "}";
+    return "array-length " + regTo.getOriginalIndexString() + ", {" + regArray.getOriginalIndexString() + "}";
   }
 
   @Override

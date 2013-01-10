@@ -84,7 +84,8 @@ public class DexInstruction_StaticGetWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "sget-wide v" + regTo1.getOriginalIndexString() + ", " + fieldClass.getPrettyName() + "." + fieldName;
+    return "sget-wide " + regTo1.getOriginalIndexString() + "|" + regTo2.getOriginalIndexString()
+           + ", " + fieldClass.getPrettyName() + "." + fieldName;
   }
 
   @Override

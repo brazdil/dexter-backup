@@ -66,9 +66,9 @@ public class DexInstruction_CompareWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return insnOpcode.getAssemblyName() + " v" + regTo.getOriginalIndexString()
-           + ", v" + regSourceA1.getOriginalIndexString() + "|v" + regSourceA2.getOriginalIndexString()
-           + ", v" + regSourceB1.getOriginalIndexString() + "|v" + regSourceB2.getOriginalIndexString();
+    return insnOpcode.getAssemblyName() + " " + regTo.getOriginalIndexString()
+           + ", " + regSourceA1.getOriginalIndexString() + "|" + regSourceA2.getOriginalIndexString()
+           + ", " + regSourceB1.getOriginalIndexString() + "|" + regSourceB2.getOriginalIndexString();
   }
 
   @Override

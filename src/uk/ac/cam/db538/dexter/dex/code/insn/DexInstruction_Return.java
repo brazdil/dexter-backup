@@ -51,7 +51,7 @@ public class DexInstruction_Return extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "return" + (objectMoving ? "-object" : "") +
-           " v" + regFrom.getOriginalIndexString();
+           " " + regFrom.getOriginalIndexString();
   }
 
   @Override

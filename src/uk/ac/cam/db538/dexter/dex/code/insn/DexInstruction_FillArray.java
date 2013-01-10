@@ -54,7 +54,7 @@ public class DexInstruction_FillArray extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "fill-array v" + regArray.getOriginalIndexString() + ", L" + arrayTable.getOriginalAbsoluteOffset();
+    return "fill-array " + regArray.getOriginalIndexString() + ", L" + arrayTable.getOriginalAbsoluteOffset();
   }
 
   @Override

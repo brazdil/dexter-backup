@@ -53,7 +53,7 @@ public class DexInstruction_ArrayGet extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "aget-" + opcode.getAssemblyName() + " v" + regTo.getOriginalIndexString() + ", {v" + regArray.getOriginalIndexString() + "}[v" + regIndex.getOriginalIndexString() + "]";
+    return "aget-" + opcode.getAssemblyName() + " " + regTo.getOriginalIndexString() + ", {" + regArray.getOriginalIndexString() + "}[" + regIndex.getOriginalIndexString() + "]";
   }
 
   @Override

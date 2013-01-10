@@ -36,6 +36,7 @@ import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement.GcFollowConstraint;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeStart;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
@@ -95,15 +96,19 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionOffsetException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
@@ -111,6 +116,7 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 public class DexCode {
 
   private final NoDuplicatesList<DexCodeElement> instructionList;
+  @Getter private final DexCodeStart startingLabel;
   @Getter @Setter private DexMethodWithCode parentMethod;
 
   // stores information about original register mapping
@@ -127,6 +133,8 @@ public class DexCode {
   public DexCode(DexMethodWithCode parentMethod) {
     this.instructionList = new NoDuplicatesList<DexCodeElement>();
     this.parentMethod = parentMethod;
+    this.startingLabel = new DexCodeStart(this);
+    instructionList.add(startingLabel);
   }
 
   public DexCode(CodeItem methodInfo, DexMethodWithCode parentMethod, DexParsingCache cache) {
@@ -237,6 +245,10 @@ public class DexCode {
 
   public void insertBefore(DexCodeElement elem, DexCodeElement before) {
     instructionList.add(findElement(before), elem);
+  }
+
+  public void insertBefore(List<DexCodeElement> elem, DexCodeElement before) {
+    instructionList.addAll(findElement(before), elem);
   }
 
   public void insertAfter(DexCodeElement elem, DexCodeElement after) {
@@ -352,8 +364,11 @@ public class DexCode {
       if (elem instanceof DexInstruction)
         insns.add((DexInstruction) elem);
 
-    for (val insn : insns)
-      insn.instrument(instrumentationState);
+    for (val insn : insns) {
+      if (!insn.isAuxiliaryElement()) {
+        insn.instrument(instrumentationState);
+      }
+    }
 
     if (instrumentationState.isNeedsCallInstrumentation() && parentMethod.getPrototype().hasPrimitiveArgument())
       insertPostCallHandling();
@@ -366,32 +381,61 @@ public class DexCode {
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
     val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
+    boolean staticMethod = parentMethod.isStatic();
 
     val regArray = new DexRegister();
     val regIndex = new DexRegister();
     val regSemaphore = new DexRegister();
-
-    val argTaintRegs = parentMethod.getPrototype().generateArgumentTaintStoringRegisters(
-                         parentMethod.getParameterMappedRegisters(),
-                         parentMethod.isStatic(),
-                         instrumentationState);
+    val regArrayElement = new DexRegister();
 
     codePostCall.add(new DexPseudoinstruction_PrintStringConst(this,
                      "$$$ METHOD " + parentMethod.getParentClass().getType().getPrettyName() +
                      "..." + parentMethod.getName(),
                      true));
 
+    // if this isn't a static call, get the taint of the 'this' object
+    DexRegister regThis = null;
+    DexRegister regThisTaint = null;
+    if (!staticMethod) {
+      // get the 'this' object taint
+      regThis = parentMethod.getParameterMappedRegisters().get(0);
+      regThisTaint = instrumentationState.getTaintRegister(regThis);
+      codePostCall.add(new DexPseudoinstruction_GetObjectTaint(this, regThisTaint, regThis));
+    }
+
+    // get the ARG array
     codePostCall.add(new DexInstruction_StaticGet(this, regArray, dex.getMethodCallHelper_Arg()));
 
-    int arrayIndex = 0;
-    for (val argTaintReg : argTaintRegs) {
-      if (argTaintReg != null) {
-        codePostCall.add(new DexInstruction_Const(this, regIndex, arrayIndex));
-        codePostCall.add(new DexInstruction_ArrayGet(this, argTaintReg, regArray, regIndex, Opcode_GetPut.IntFloat));
-        codePostCall.add(new DexPseudoinstruction_PrintStringConst(this, "$$$  ARG[" + arrayIndex + "] = ", false));
-        codePostCall.add(new DexPseudoinstruction_PrintInteger(this, argTaintReg, true));
+    int paramRegIndex = staticMethod ? 0 : 1;
+    int paramTaintArrayIndex = 0;
+    for (val paramType : parentMethod.getPrototype().getParameterTypes()) {
+      if (paramType instanceof DexPrimitiveType) {
+        // for primitives, put the taint information in their respective taint registers
+        for (int i = 0; i < paramType.getRegisters(); paramRegIndex++, i++) {
+          val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
+          val regTaintParamMapping = instrumentationState.getTaintRegister(regParamMapping);
+
+          codePostCall.add(new DexInstruction_Const(this, regIndex, paramTaintArrayIndex));
+          codePostCall.add(new DexInstruction_ArrayGet(this, regArrayElement, regArray, regIndex, Opcode_GetPut.IntFloat));
+
+          if (staticMethod)
+            codePostCall.add(new DexInstruction_Move(this, regTaintParamMapping, regArrayElement, false));
+          else
+            codePostCall.add(new DexInstruction_BinaryOp(this, regTaintParamMapping, regArrayElement, regThisTaint, Opcode_BinaryOp.OrInt));
+
+          codePostCall.add(new DexPseudoinstruction_PrintStringConst(this, "$$$  ARG[" + paramTaintArrayIndex + "] = ", false));
+          codePostCall.add(new DexPseudoinstruction_PrintInteger(this, regArrayElement, true));
+
+          paramTaintArrayIndex++;
+        }
+
+      } else {
+        // for objects, assign the taint of the 'this' object
+        if (!staticMethod) {
+          val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
+          codePostCall.add(new DexPseudoinstruction_SetObjectTaint(this, regParamMapping, regThisTaint));
+        }
       }
-      arrayIndex++;
     }
 
     codePostCall.add(new DexInstruction_StaticGet(
@@ -406,8 +450,7 @@ public class DexCode {
                        Arrays.asList(new DexRegister[] { regSemaphore }),
                        Opcode_Invoke.Virtual));
 
-    codePostCall.addAll(instructionList);
-    replaceInstructions(codePostCall);
+    insertBefore(codePostCall, startingLabel);
   }
 
   public Map<DexRegister, ColorRange> getRangeConstraints() {
@@ -959,7 +1002,8 @@ public class DexCode {
   }
 
   public void markAllInstructionsOriginal() {
-    for (val elem : instructionList)
+    for (val elem : instructionList) {
       elem.setOriginalElement(true);
+    }
   }
 }

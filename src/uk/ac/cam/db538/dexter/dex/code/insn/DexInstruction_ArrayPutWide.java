@@ -50,7 +50,8 @@ public class DexInstruction_ArrayPutWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "aput-wide v" + regFrom1.getOriginalIndexString() + ", {v" + regArray.getOriginalIndexString() + "}[v" + regIndex.getOriginalIndexString() + "]";
+    return "aput-wide " + regFrom1.getOriginalIndexString() + "|" + regFrom2.getOriginalIndexString()
+           + ", {" + regArray.getOriginalIndexString() + "}[" + regIndex.getOriginalIndexString() + "]";
   }
 
   @Override

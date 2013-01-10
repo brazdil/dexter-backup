@@ -84,7 +84,8 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "sput-wide v" + regFrom1.getOriginalIndexString() + ", " + fieldClass.getPrettyName() + "." + fieldName;
+    return "sput-wide " + regFrom1.getOriginalIndexString() + "|" + regFrom2.getOriginalIndexString()
+           + ", " + fieldClass.getPrettyName() + "." + fieldName;
   }
 
   @Override

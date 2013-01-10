@@ -62,9 +62,13 @@ public class DexClassHierarchy {
 
     if (interfaces == null)
       interfaces = new HashSet<DexClassType>();
+    else
+      interfaces = new HashSet<DexClassType>(interfaces);
 
     if (annotations == null)
       annotations = new HashSet<DexAnnotation>();
+    else
+      annotations = new HashSet<DexAnnotation>(annotations);
 
     val classEntry = new ClassEntry(classType, superclassType, interfaces, annotations, new HashSet<MethodEntry>(), new HashSet<FieldEntry>(), flagInterface);
     classes.put(classType, classEntry);

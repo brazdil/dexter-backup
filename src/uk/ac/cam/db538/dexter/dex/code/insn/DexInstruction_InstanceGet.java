@@ -87,7 +87,7 @@ public class DexInstruction_InstanceGet extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "iget-" + opcode.getAssemblyName() + " v" + regTo.getOriginalIndexString() + ", {v" + regObject.getOriginalIndexString() + "}" + fieldClass.getPrettyName() + "." + fieldName;
+    return "iget-" + opcode.getAssemblyName() + " " + regTo.getOriginalIndexString() + ", {" + regObject.getOriginalIndexString() + "}" + fieldClass.getPrettyName() + "." + fieldName;
   }
 
   @Override

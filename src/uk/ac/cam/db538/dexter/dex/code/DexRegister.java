@@ -35,9 +35,9 @@ public class DexRegister {
 
   public String getOriginalIndexString() {
     if (originalIndex == null)
-      return "?";
+      return "v?";
     else
-      return originalIndex.toString();
+      return "v" + originalIndex.toString();
   }
 
   @Override

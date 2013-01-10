@@ -81,7 +81,7 @@ public class DexInstruction_StaticPut extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "sput-" + opcode.getAssemblyName() + " v" + regFrom.getOriginalIndexString() + ", " + fieldClass.getPrettyName() + "." + fieldName;
+    return "sput-" + opcode.getAssemblyName() + " " + regFrom.getOriginalIndexString() + ", " + fieldClass.getPrettyName() + "." + fieldName;
   }
 
   @Override

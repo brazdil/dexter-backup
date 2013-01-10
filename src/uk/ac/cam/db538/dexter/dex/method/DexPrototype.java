@@ -17,6 +17,7 @@ import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
@@ -143,7 +144,7 @@ public class DexPrototype {
 
     val paramWords = this.countParamWords(isStatic);
     for (int i = 0; i < paramWords; ++i)
-      regs.add(new DexRegister());
+      regs.add(new DexParameterRegister(i));
 
     return regs;
   }
@@ -154,7 +155,8 @@ public class DexPrototype {
     int i = isStatic ? 0 : 1;
     for (val paramType : parameterTypes) {
       if (paramType instanceof DexPrimitiveType)
-        argStoreRegs.add(state.getTaintRegister(argumentRegisters.get(i)));
+        for (int j = 0; j < paramType.getRegisters(); ++j)
+          argStoreRegs.add(state.getTaintRegister(argumentRegisters.get(i + j)));
       i += paramType.getRegisters();
     }
 
