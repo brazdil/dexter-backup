@@ -8,7 +8,6 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
-import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache.InstrumentationWarning;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -38,6 +37,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
+import uk.ac.cam.db538.dexter.dex.type.hierarchy.ClassHierarchyException;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
@@ -235,9 +235,9 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
             return new Pair<Boolean, Boolean>(false, true); // will always be external
         }
 
-      state.getCache().getWarnings().add(new InstrumentationWarning("Cannot determine the destination of super method call: " + invokedClassType.getPrettyName() + "." + invokedMethodName));
-      return new Pair<Boolean, Boolean>(false, true); // will probably be external
-
+//      state.getCache().getWarnings().add(new InstrumentationWarning("Cannot determine the destination of super method call: " + invokedClassType.getPrettyName() + "." + invokedMethodName));
+//      return new Pair<Boolean, Boolean>(false, true); // will probably be external
+      throw new ClassHierarchyException("Cannot determine the destination of super method call: " + invokedClassType.getPrettyName() + "." + invokedMethodName);
     } else {
 
       Set<DexClassType> potentialDestinationClasses;
@@ -274,8 +274,11 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       }
 
       if (!canBeInternal && !canBeExternal) {
-        state.getCache().getWarnings().add(new InstrumentationWarning("Cannot determine the destination of virtual/interface method call: " + invokedClassType.getPrettyName() + "." + invokedMethodName));
-        canBeExternal = true;
+//        state.getCache().getWarnings().add(new InstrumentationWarning(
+        throw new ClassHierarchyException(
+          "Invoke destination not found:" +
+          " calling " + invokedClassType.getPrettyName() + "." + invokedMethodName +
+          " inside " + getParentClass().getType().getPrettyName() + "." + getParentMethod().getName());
       }
 
       return new Pair<Boolean, Boolean>(canBeInternal, canBeExternal);
