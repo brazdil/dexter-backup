@@ -82,6 +82,10 @@ public class DexClassHierarchy {
     classes.get(classType).declaredFields.add(new FieldEntry(fieldName, fieldType, isStatic, isPrivate));
   }
 
+  public void addClassAnnotation(DexClassType clazz, DexAnnotation anno) {
+    classes.get(clazz).annotations.add(anno);
+  }
+
   public void addAllClassesFromJAR(File file, DexParsingCache cache) throws IOException {
     val jarFile = new JarFile(file);
 

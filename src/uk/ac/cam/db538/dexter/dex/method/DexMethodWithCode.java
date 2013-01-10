@@ -150,7 +150,7 @@ public abstract class DexMethodWithCode extends DexMethod {
 
     if (isVirtual())
       this.addAnnotation(
-        new DexAnnotation(this.getParentClass().getParentFile().getInternalMethodAnnotation_Type(),
+        new DexAnnotation(getParentFile().getInternalMethodAnnotation_Type(),
                           AnnotationVisibility.RUNTIME));
   }
 

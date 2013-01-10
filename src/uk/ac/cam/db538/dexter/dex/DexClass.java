@@ -16,6 +16,7 @@ import org.jf.dexlib.AnnotationDirectoryItem.MethodAnnotation;
 import org.jf.dexlib.AnnotationDirectoryItem.ParameterAnnotation;
 import org.jf.dexlib.AnnotationItem;
 import org.jf.dexlib.AnnotationSetItem;
+import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.ClassDataItem;
 import org.jf.dexlib.ClassDataItem.EncodedField;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
@@ -151,15 +152,19 @@ public class DexClass {
   }
 
   public DexClassType getSuperclassType() {
-    return this.parentFile.getClassHierarchy().getSuperclassType(type);
+    return parentFile.getClassHierarchy().getSuperclassType(type);
   }
 
   public Set<DexClassType> getInterfaces() {
-    return this.parentFile.getClassHierarchy().getInterfaces(type);
+    return parentFile.getClassHierarchy().getInterfaces(type);
   }
 
   public Set<DexAnnotation> getAnnotations() {
-    return this.parentFile.getClassHierarchy().getAnnotations(type);
+    return parentFile.getClassHierarchy().getAnnotations(type);
+  }
+
+  public void addAnnotation(DexAnnotation anno) {
+    parentFile.getClassHierarchy().addClassAnnotation(type, anno);
   }
 
   public boolean isAbstract() {
@@ -189,6 +194,10 @@ public class DexClass {
   public void instrument(DexInstrumentationCache cache) {
     for (val method : methods)
       method.instrument(cache);
+
+    this.addAnnotation(
+      new DexAnnotation(parentFile.getInternalClassAnnotation_Type(),
+                        AnnotationVisibility.RUNTIME));
   }
 
   public void writeToFile(DexFile outFile, DexAssemblingCache cache) {

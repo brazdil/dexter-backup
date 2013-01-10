@@ -35,6 +35,7 @@ public class Dex {
   @Getter private DexField methodCallHelper_SArg;
   @Getter private DexField methodCallHelper_SRes;
 
+  @Getter private DexClassType internalClassAnnotation_Type;
   @Getter private DexClassType internalMethodAnnotation_Type;
 
   @Getter private final DexParsingCache parsingCache;
@@ -102,16 +103,18 @@ public class Dex {
 
   private List<DexClass> parseExtraClasses() {
     // generate names
+    val clsInternalClassAnnotation = generateClassType();
+    val clsInternalMethodAnnotation = generateClassType();
     val clsObjTaint = generateClassType();
     val clsObjTaintEntry = generateClassType();
     val clsMethodCallHelper = generateClassType();
-    val clsInternalMethodAnnotation = generateClassType();
 
     // set descriptor replacements
+    parsingCache.setDescriptorReplacement(CLASS_INTERNALCLASS, clsInternalClassAnnotation.getDescriptor());
+    parsingCache.setDescriptorReplacement(CLASS_INTERNALMETHOD, clsInternalMethodAnnotation.getDescriptor());
     parsingCache.setDescriptorReplacement(CLASS_OBJTAINT, clsObjTaint.getDescriptor());
     parsingCache.setDescriptorReplacement(CLASS_OBJTAINTENTRY, clsObjTaintEntry.getDescriptor());
     parsingCache.setDescriptorReplacement(CLASS_METHODCALLHELPER, clsMethodCallHelper.getDescriptor());
-    parsingCache.setDescriptorReplacement(CLASS_INTERNALMETHOD, clsInternalMethodAnnotation.getDescriptor());
 
     // open the merge DEX file
     DexFile mergeDex;
@@ -125,15 +128,17 @@ public class Dex {
     val extraClasses = parseAllClasses(mergeDex);
 
     // remove descriptor replacements
+    parsingCache.removeDescriptorReplacement(CLASS_INTERNALCLASS);
+    parsingCache.removeDescriptorReplacement(CLASS_INTERNALMETHOD);
     parsingCache.removeDescriptorReplacement(CLASS_OBJTAINT);
     parsingCache.removeDescriptorReplacement(CLASS_OBJTAINTENTRY);
     parsingCache.removeDescriptorReplacement(CLASS_METHODCALLHELPER);
-    parsingCache.removeDescriptorReplacement(CLASS_INTERNALMETHOD);
 
     // store Object Taint Storage class type and method references
     // store MethodCallHelper class type & method and field references
     objectTaintStorage_Type = clsObjTaint;
     methodCallHelper_Type = clsMethodCallHelper;
+    internalClassAnnotation_Type = clsInternalClassAnnotation;
     internalMethodAnnotation_Type = clsInternalMethodAnnotation;
     for (val clazz : extraClasses)
 
@@ -207,5 +212,6 @@ public class Dex {
   private static final String CLASS_OBJTAINT = "Luk/ac/cam/db538/dexter/merge/ObjectTaintStorage;";
   private static final String CLASS_OBJTAINTENTRY = "Luk/ac/cam/db538/dexter/merge/ObjectTaintStorage$Entry;";
   private static final String CLASS_METHODCALLHELPER = "Luk/ac/cam/db538/dexter/merge/MethodCallHelper;";
+  private static final String CLASS_INTERNALCLASS = "Luk/ac/cam/db538/dexter/merge/InternalClassAnnotation;";
   private static final String CLASS_INTERNALMETHOD = "Luk/ac/cam/db538/dexter/merge/InternalMethodAnnotation;";
 }
