@@ -98,11 +98,15 @@ import uk.ac.cam.db538.dexter.dex.code.insn.InstructionOffsetException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalClassAnnotation;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetMethodCaller;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintString;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
@@ -364,93 +368,155 @@ public class DexCode {
       if (elem instanceof DexInstruction)
         insns.add((DexInstruction) elem);
 
-    for (val insn : insns) {
-      if (!insn.isAuxiliaryElement()) {
+    for (val insn : insns)
+      if (!insn.isAuxiliaryElement())
         insn.instrument(instrumentationState);
-      }
-    }
 
-    if (instrumentationState.isNeedsCallInstrumentation() && parentMethod.getPrototype().hasPrimitiveArgument())
+    if (instrumentationState.isNeedsCallInstrumentation())
       insertPostCallHandling();
 
     unwrapPseudoinstructions();
   }
 
   private void insertPostCallHandling() {
-    val codePostCall = new NoDuplicatesList<DexCodeElement>();
+    val addedCode = new NoDuplicatesList<DexCodeElement>();
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
     val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
     boolean staticMethod = parentMethod.isStatic();
+    boolean constructorMethod = parentMethod.isConstructor();
 
-    val regArray = new DexRegister();
-    val regIndex = new DexRegister();
-    val regSemaphore = new DexRegister();
-    val regArrayElement = new DexRegister();
+    // need to do different things for static/direct and virtual methods
+    // static/direct methods can never be called from external origin
+    // (they are defined internally, so they couldn't be referenced from outside)
+    boolean virtualMethod = parentMethod.isVirtual();
 
-    codePostCall.add(new DexPseudoinstruction_PrintStringConst(this,
-                     "$$$ METHOD " + parentMethod.getParentClass().getType().getPrettyName() +
-                     "..." + parentMethod.getName(),
-                     true));
+    addedCode.add(
+      new DexPseudoinstruction_PrintStringConst(
+        this,
+        "$$$ METHOD " +
+        parentMethod.getParentClass().getType().getPrettyName() +
+        "..." + parentMethod.getName(),
+        true));
+
+    // TEST CALL ORIGIN
+    // first, decide if the method was called from external or internal code
+
+    DexLabel labelExternalCallOrigin = null;
+    DexLabel labelEnd = null;
 
     // if this isn't a static call, get the taint of the 'this' object
     DexRegister regThis = null;
     DexRegister regThisTaint = null;
-    if (!staticMethod) {
+    if (!staticMethod && !constructorMethod) {
       // get the 'this' object taint
       regThis = parentMethod.getParameterMappedRegisters().get(0);
       regThisTaint = instrumentationState.getTaintRegister(regThis);
-      codePostCall.add(new DexPseudoinstruction_GetObjectTaint(this, regThisTaint, regThis));
+      addedCode.add(new DexPseudoinstruction_GetObjectTaint(this, regThisTaint, regThis));
     }
 
-    // get the ARG array
-    codePostCall.add(new DexInstruction_StaticGet(this, regArray, dex.getMethodCallHelper_Arg()));
+    if (virtualMethod) {
+      labelExternalCallOrigin = new DexLabel(this);
+      labelEnd = new DexLabel(this);
 
-    int paramRegIndex = staticMethod ? 0 : 1;
-    int paramTaintArrayIndex = 0;
-    for (val paramType : parentMethod.getPrototype().getParameterTypes()) {
-      if (paramType instanceof DexPrimitiveType) {
-        // for primitives, put the taint information in their respective taint registers
-        for (int i = 0; i < paramType.getRegisters(); paramRegIndex++, i++) {
-          val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
-          val regTaintParamMapping = instrumentationState.getTaintRegister(regParamMapping);
+      val regCallersName = new DexRegister();
+      val regInternalAnnotation = new DexRegister();
 
-          codePostCall.add(new DexInstruction_Const(this, regIndex, paramTaintArrayIndex));
-          codePostCall.add(new DexInstruction_ArrayGet(this, regArrayElement, regArray, regIndex, Opcode_GetPut.IntFloat));
+      addedCode.add(new DexPseudoinstruction_GetMethodCaller(this, regCallersName));
+      addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$$$ caller: ", false));
+      addedCode.add(new DexPseudoinstruction_PrintString(this, regCallersName, true));
+      addedCode.add(new DexPseudoinstruction_GetInternalClassAnnotation(this, regInternalAnnotation, regCallersName));
+      addedCode.add(new DexInstruction_IfTestZero(this, regInternalAnnotation, labelExternalCallOrigin, Opcode_IfTestZero.eqz));
+    }
 
-          if (staticMethod)
-            codePostCall.add(new DexInstruction_Move(this, regTaintParamMapping, regArrayElement, false));
-          else
-            codePostCall.add(new DexInstruction_BinaryOp(this, regTaintParamMapping, regArrayElement, regThisTaint, Opcode_BinaryOp.OrInt));
+    {
+      // INTERNAL CALL ORIGIN
 
-          codePostCall.add(new DexPseudoinstruction_PrintStringConst(this, "$$$  ARG[" + paramTaintArrayIndex + "] = ", false));
-          codePostCall.add(new DexPseudoinstruction_PrintInteger(this, regArrayElement, true));
+      addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$$$ internal origin ", true));
 
-          paramTaintArrayIndex++;
-        }
+      val regArray = new DexRegister();
+      val regIndex = new DexRegister();
+      val regSemaphore = new DexRegister();
+      val regArrayElement = new DexRegister();
 
-      } else {
-        // for objects, assign the taint of the 'this' object
-        if (!staticMethod) {
-          val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
-          codePostCall.add(new DexPseudoinstruction_SetObjectTaint(this, regParamMapping, regThisTaint));
+      // get the ARG array
+      addedCode.add(new DexInstruction_StaticGet(this, regArray, dex.getMethodCallHelper_Arg()));
+
+      int paramRegIndex = staticMethod ? 0 : 1;
+      int paramTaintArrayIndex = 0;
+      for (val paramType : parentMethod.getPrototype().getParameterTypes()) {
+        if (paramType instanceof DexPrimitiveType) {
+          // for primitives, put the taint information in their respective taint registers
+          for (int i = 0; i < paramType.getRegisters(); paramRegIndex++, i++) {
+            val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
+            val regTaintParamMapping = instrumentationState.getTaintRegister(regParamMapping);
+
+            addedCode.add(new DexInstruction_Const(this, regIndex, paramTaintArrayIndex));
+            addedCode.add(new DexInstruction_ArrayGet(this, regArrayElement, regArray, regIndex, Opcode_GetPut.IntFloat));
+
+            if (staticMethod || constructorMethod)
+              addedCode.add(new DexInstruction_Move(this, regTaintParamMapping, regArrayElement, false));
+            else
+              addedCode.add(new DexInstruction_BinaryOp(this, regTaintParamMapping, regArrayElement, regThisTaint, Opcode_BinaryOp.OrInt));
+
+            addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$$$  ARG[" + paramTaintArrayIndex + "] = ", false));
+            addedCode.add(new DexPseudoinstruction_PrintInteger(this, regArrayElement, true));
+
+            paramTaintArrayIndex++;
+          }
+
+        } else {
+          // for objects, assign the taint of the 'this' object
+          if (!staticMethod && !constructorMethod) {
+            val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
+            addedCode.add(new DexPseudoinstruction_SetObjectTaint(this, regParamMapping, regThisTaint));
+          }
         }
       }
+
+      addedCode.add(new DexInstruction_StaticGet(
+                      this,
+                      regSemaphore,
+                      dex.getMethodCallHelper_SArg()));
+      addedCode.add(new DexInstruction_Invoke(
+                      this,
+                      semaphoreClass,
+                      "release",
+                      new DexPrototype(DexType.parse("V", null), null),
+                      Arrays.asList(new DexRegister[] { regSemaphore }),
+                      Opcode_Invoke.Virtual));
     }
 
-    codePostCall.add(new DexInstruction_StaticGet(
-                       this,
-                       regSemaphore,
-                       dex.getMethodCallHelper_SArg()));
-    codePostCall.add(new DexInstruction_Invoke(
-                       this,
-                       semaphoreClass,
-                       "release",
-                       new DexPrototype(DexType.parse("V", null), null),
-                       Arrays.asList(new DexRegister[] { regSemaphore }),
-                       Opcode_Invoke.Virtual));
+    if (virtualMethod) { // by definition, the method can't be static or constructor, if it is virtual
 
-    insertBefore(codePostCall, startingLabel);
+      addedCode.add(new DexInstruction_Goto(this, labelEnd));
+
+      // EXTERNAL CALL ORIGIN
+
+      addedCode.add(labelExternalCallOrigin);
+      addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$$$ external origin ", true));
+
+      int paramRegIndex = 1;
+      for (val paramType : parentMethod.getPrototype().getParameterTypes()) {
+        // assign the taint information of 'this' object to all the params
+        if (paramType instanceof DexPrimitiveType) {
+          for (int i = 0; i < paramType.getRegisters(); paramRegIndex++, i++) {
+            val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
+            val regTaintParamMapping = instrumentationState.getTaintRegister(regParamMapping);
+            addedCode.add(new DexInstruction_Move(this, regTaintParamMapping, regThisTaint, false));
+          }
+        } else {
+          val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
+          addedCode.add(new DexPseudoinstruction_SetObjectTaint(this, regParamMapping, regThisTaint));
+        }
+      }
+
+      // END
+
+      addedCode.add(labelEnd);
+    }
+
+    insertBefore(addedCode, startingLabel);
   }
 
   public Map<DexRegister, ColorRange> getRangeConstraints() {

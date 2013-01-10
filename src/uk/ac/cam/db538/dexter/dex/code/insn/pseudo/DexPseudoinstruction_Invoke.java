@@ -97,39 +97,37 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
     val codePreInternalCall = new LinkedList<DexCodeElement>();
 
-    if (callPrototype.hasPrimitiveArgument()) {
-      val regArgSemaphore = new DexRegister();
-      val regArray = new DexRegister();
-      val regIndex = new DexRegister();
+    val regArgSemaphore = new DexRegister();
+    val regArray = new DexRegister();
+    val regIndex = new DexRegister();
 
-      val argTaintRegs = callPrototype.generateArgumentTaintStoringRegisters(
-                           instructionInvoke.getArgumentRegisters(),
-                           instructionInvoke.isStaticCall(),
-                           state);
+    val argTaintRegs = callPrototype.generateArgumentTaintStoringRegisters(
+                         instructionInvoke.getArgumentRegisters(),
+                         instructionInvoke.isStaticCall(),
+                         state);
 
-      codePreInternalCall.add(new DexPseudoinstruction_PrintStringConst(
-                                methodCode,
-                                "$$$ INTERNAL CALL | TAINTED ARGS: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
-                                true));
+    codePreInternalCall.add(new DexPseudoinstruction_PrintStringConst(
+                              methodCode,
+                              "$$$ INTERNAL CALL | TAINTED ARGS: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
+                              true));
 
-      codePreInternalCall.add(new DexInstruction_StaticGet(
-                                methodCode,
-                                regArgSemaphore,
-                                dex.getMethodCallHelper_SArg()));
-      codePreInternalCall.add(new DexInstruction_Invoke(
-                                methodCode,
-                                semaphoreClass,
-                                "acquire",
-                                new DexPrototype(DexType.parse("V", null), null),
-                                Arrays.asList(new DexRegister[] { regArgSemaphore }),
-                                Opcode_Invoke.Virtual));
+    codePreInternalCall.add(new DexInstruction_StaticGet(
+                              methodCode,
+                              regArgSemaphore,
+                              dex.getMethodCallHelper_SArg()));
+    codePreInternalCall.add(new DexInstruction_Invoke(
+                              methodCode,
+                              semaphoreClass,
+                              "acquire",
+                              new DexPrototype(DexType.parse("V", null), null),
+                              Arrays.asList(new DexRegister[] { regArgSemaphore }),
+                              Opcode_Invoke.Virtual));
 
-      codePreInternalCall.add(new DexInstruction_StaticGet(methodCode, regArray, dex.getMethodCallHelper_Arg()));
-      int arrayIndex = 0;
-      for (val argTaintReg : argTaintRegs) {
-        codePreInternalCall.add(new DexInstruction_Const(methodCode, regIndex, arrayIndex++));
-        codePreInternalCall.add(new DexInstruction_ArrayPut(methodCode, argTaintReg, regArray, regIndex, Opcode_GetPut.IntFloat));
-      }
+    codePreInternalCall.add(new DexInstruction_StaticGet(methodCode, regArray, dex.getMethodCallHelper_Arg()));
+    int arrayIndex = 0;
+    for (val argTaintReg : argTaintRegs) {
+      codePreInternalCall.add(new DexInstruction_Const(methodCode, regIndex, arrayIndex++));
+      codePreInternalCall.add(new DexInstruction_ArrayPut(methodCode, argTaintReg, regArray, regIndex, Opcode_GetPut.IntFloat));
     }
 
     return codePreInternalCall;
@@ -296,7 +294,6 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     boolean canBeExternalCall = destAnalysis.getValB();
     boolean canBeAnyCall = canBeInternalCall && canBeExternalCall;
 
-    val invokedClassType = instructionInvoke.getClassType();
     val invokedMethodName = instructionInvoke.getMethodName();
     val invokedMethodPrototype = instructionInvoke.getMethodPrototype();
 
@@ -326,7 +323,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       instrumentedCode.add(
         new DexInstruction_Invoke(
           methodCode,
-          invokedClassType,
+          DexClassType.parse("Ljava/lang/Object;", parsingCache),
           "getClass",
           new DexPrototype(
             DexClassType.parse("Ljava/lang/Class;", parsingCache),

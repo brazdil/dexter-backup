@@ -17,14 +17,14 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 
-public class DexPseudoinstruction_PrintInteger extends DexPseudoinstruction {
+public class DexPseudoinstruction_PrintString extends DexPseudoinstruction {
 
-  @Getter private final DexRegister regInteger;
+  @Getter private final DexRegister regString;
   @Getter private final boolean finishLine;
 
-  public DexPseudoinstruction_PrintInteger(DexCode methodCode, DexRegister regInt, boolean finishLine) {
+  public DexPseudoinstruction_PrintString(DexCode methodCode, DexRegister regString, boolean finishLine) {
     super(methodCode);
-    this.regInteger = regInt;
+    this.regString = regString;
     this.finishLine = finishLine;
   }
 
@@ -49,8 +49,8 @@ public class DexPseudoinstruction_PrintInteger extends DexPseudoinstruction {
                              finishLine ? "println" : "print",
                              new DexPrototype(
                                DexType.parse("V", parsingCache),
-                               createList(DexRegisterType.parse("I", parsingCache))),
-                             createList(regOut, regInteger),
+                               createList(DexRegisterType.parse("Ljava/lang/String;", parsingCache))),
+                             createList(regOut, regString),
                              Opcode_Invoke.Virtual)
                          });
   }

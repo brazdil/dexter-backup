@@ -75,6 +75,10 @@ public abstract class DexMethod {
     return accessFlagSet.contains(AccessFlags.PRIVATE);
   }
 
+  public boolean isConstructor() {
+    return getAccessFlagSet().contains(AccessFlags.CONSTRUCTOR);
+  }
+
   public Set<DexAnnotation> getAnnotations() {
     return Collections.unmodifiableSet(annotations);
   }
