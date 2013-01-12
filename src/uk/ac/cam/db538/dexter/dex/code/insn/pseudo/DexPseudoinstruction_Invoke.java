@@ -95,6 +95,8 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
     val callPrototype = instructionInvoke.getMethodPrototype();
 
+    boolean hasPrimitiveArgument = callPrototype.hasPrimitiveArgument();
+
     val codePreInternalCall = new LinkedList<DexCodeElement>();
 
     val regArgSemaphore = new DexRegister();
@@ -106,33 +108,35 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                               "$$$ INTERNAL CALL | TAINTED ARGS: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
                               true));
 
-    codePreInternalCall.add(new DexInstruction_StaticGet(
-                              methodCode,
-                              regArgSemaphore,
-                              dex.getMethodCallHelper_SArg()));
-    codePreInternalCall.add(new DexInstruction_Invoke(
-                              methodCode,
-                              semaphoreClass,
-                              "acquire",
-                              new DexPrototype(DexType.parse("V", null), null),
-                              Arrays.asList(new DexRegister[] { regArgSemaphore }),
-                              Opcode_Invoke.Virtual));
+    if (hasPrimitiveArgument) {
+      codePreInternalCall.add(new DexInstruction_StaticGet(
+                                methodCode,
+                                regArgSemaphore,
+                                dex.getMethodCallHelper_SArg()));
+      codePreInternalCall.add(new DexInstruction_Invoke(
+                                methodCode,
+                                semaphoreClass,
+                                "acquire",
+                                new DexPrototype(DexType.parse("V", null), null),
+                                Arrays.asList(new DexRegister[] { regArgSemaphore }),
+                                Opcode_Invoke.Virtual));
 
-    codePreInternalCall.add(new DexInstruction_StaticGet(methodCode, regArray, dex.getMethodCallHelper_Arg()));
-    int arrayIndex = 0;
-    int paramIndex = instructionInvoke.isStaticCall() ? 0 : 1;
-    for (val paramType : callPrototype.getParameterTypes()) {
-      if (paramType instanceof DexPrimitiveType) {
-        codePreInternalCall.add(new DexInstruction_Const(methodCode, regIndex, arrayIndex));
-        codePreInternalCall.add(new DexInstruction_ArrayPut(
-                                  methodCode,
-                                  state.getTaintRegister(instructionInvoke.getArgumentRegisters().get(paramIndex)),
-                                  regArray,
-                                  regIndex,
-                                  Opcode_GetPut.IntFloat));
-        arrayIndex++;
+      codePreInternalCall.add(new DexInstruction_StaticGet(methodCode, regArray, dex.getMethodCallHelper_Arg()));
+      int arrayIndex = 0;
+      int paramIndex = instructionInvoke.isStaticCall() ? 0 : 1;
+      for (val paramType : callPrototype.getParameterTypes()) {
+        if (paramType instanceof DexPrimitiveType) {
+          codePreInternalCall.add(new DexInstruction_Const(methodCode, regIndex, arrayIndex));
+          codePreInternalCall.add(new DexInstruction_ArrayPut(
+                                    methodCode,
+                                    state.getTaintRegister(instructionInvoke.getArgumentRegisters().get(paramIndex)),
+                                    regArray,
+                                    regIndex,
+                                    Opcode_GetPut.IntFloat));
+          arrayIndex++;
+        }
+        paramIndex += paramType.getRegisters();
       }
-      paramIndex += paramType.getRegisters();
     }
 
     return codePreInternalCall;

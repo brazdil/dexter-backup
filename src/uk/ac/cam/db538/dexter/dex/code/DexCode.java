@@ -383,6 +383,7 @@ public class DexCode {
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
     val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
+    boolean hasPrimitiveArgument = parentMethod.getPrototype().hasPrimitiveArgument();
     boolean staticMethod = parentMethod.isStatic();
     boolean constructorMethod = parentMethod.isConstructor();
 
@@ -440,7 +441,8 @@ public class DexCode {
       val regArrayElement = new DexRegister();
 
       // get the ARG array
-      addedCode.add(new DexInstruction_StaticGet(this, regArray, dex.getMethodCallHelper_Arg()));
+      if (hasPrimitiveArgument)
+        addedCode.add(new DexInstruction_StaticGet(this, regArray, dex.getMethodCallHelper_Arg()));
 
       int paramRegIndex = staticMethod ? 0 : 1;
       int paramTaintArrayIndex = 0;
@@ -472,17 +474,19 @@ public class DexCode {
         }
       }
 
-      addedCode.add(new DexInstruction_StaticGet(
-                      this,
-                      regSemaphore,
-                      dex.getMethodCallHelper_SArg()));
-      addedCode.add(new DexInstruction_Invoke(
-                      this,
-                      semaphoreClass,
-                      "release",
-                      new DexPrototype(DexType.parse("V", null), null),
-                      Arrays.asList(new DexRegister[] { regSemaphore }),
-                      Opcode_Invoke.Virtual));
+      if (hasPrimitiveArgument) {
+        addedCode.add(new DexInstruction_StaticGet(
+                        this,
+                        regSemaphore,
+                        dex.getMethodCallHelper_SArg()));
+        addedCode.add(new DexInstruction_Invoke(
+                        this,
+                        semaphoreClass,
+                        "release",
+                        new DexPrototype(DexType.parse("V", null), null),
+                        Arrays.asList(new DexRegister[] { regSemaphore }),
+                        Opcode_Invoke.Virtual));
+      }
     }
 
     if (virtualMethod) { // by definition, the method can't be static or constructor, if it is virtual
