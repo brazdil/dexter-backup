@@ -2,8 +2,6 @@ package uk.ac.cam.db538.dexter.merge;
 
 import java.lang.ref.WeakReference;
 
-// TODO: add synchronized !!!
-
 public class ObjectTaintStorage {
   private static Entry[] H; // hash table
   private static int S; // size of the hash table

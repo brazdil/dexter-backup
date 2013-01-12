@@ -46,6 +46,8 @@ public class Dex {
   @Getter private DexClassType internalClassAnnotation_Type;
   @Getter private DexClassType internalMethodAnnotation_Type;
 
+  @Getter private DexClassType taintConstants_Type;
+
   @Getter private DexClass externalStaticFieldTaint_Class;
   @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
 
@@ -103,7 +105,7 @@ public class Dex {
    */
   private DexClassType generateClassType() {
     String desc;
-    long suffix = 0;
+    long suffix = 0L;
     do {
       desc = "L$" + suffix + ";";
       suffix++;
@@ -114,6 +116,7 @@ public class Dex {
 
   private List<DexClass> parseExtraClasses() {
     // generate names
+    val clsTaintConstants = generateClassType();
     val clsInternalClassAnnotation = generateClassType();
     val clsInternalMethodAnnotation = generateClassType();
     val clsObjTaint = generateClassType();
@@ -121,6 +124,7 @@ public class Dex {
     val clsMethodCallHelper = generateClassType();
 
     // set descriptor replacements
+    parsingCache.setDescriptorReplacement(CLASS_TAINTCONSTANTS, clsTaintConstants.getDescriptor());
     parsingCache.setDescriptorReplacement(CLASS_INTERNALCLASS, clsInternalClassAnnotation.getDescriptor());
     parsingCache.setDescriptorReplacement(CLASS_INTERNALMETHOD, clsInternalMethodAnnotation.getDescriptor());
     parsingCache.setDescriptorReplacement(CLASS_OBJTAINT, clsObjTaint.getDescriptor());
@@ -139,6 +143,7 @@ public class Dex {
     val extraClasses = parseAllClasses(mergeDex);
 
     // remove descriptor replacements
+    parsingCache.removeDescriptorReplacement(CLASS_TAINTCONSTANTS);
     parsingCache.removeDescriptorReplacement(CLASS_INTERNALCLASS);
     parsingCache.removeDescriptorReplacement(CLASS_INTERNALMETHOD);
     parsingCache.removeDescriptorReplacement(CLASS_OBJTAINT);
@@ -147,12 +152,13 @@ public class Dex {
 
     // store Object Taint Storage class type and method references
     // store MethodCallHelper class type & method and field references
+    taintConstants_Type = clsTaintConstants;
     objectTaintStorage_Type = clsObjTaint;
     methodCallHelper_Type = clsMethodCallHelper;
     internalClassAnnotation_Type = clsInternalClassAnnotation;
     internalMethodAnnotation_Type = clsInternalMethodAnnotation;
-    for (val clazz : extraClasses)
 
+    for (val clazz : extraClasses)
       if (clazz.getType() == objectTaintStorage_Type) {
         for (val method : clazz.getMethods()) {
           if (! (method instanceof DexDirectMethod))
@@ -253,4 +259,5 @@ public class Dex {
   private static final String CLASS_METHODCALLHELPER = "Luk/ac/cam/db538/dexter/merge/MethodCallHelper;";
   private static final String CLASS_INTERNALCLASS = "Luk/ac/cam/db538/dexter/merge/InternalClassAnnotation;";
   private static final String CLASS_INTERNALMETHOD = "Luk/ac/cam/db538/dexter/merge/InternalMethodAnnotation;";
+  private static final String CLASS_TAINTCONSTANTS = "Luk/ac/cam/db538/dexter/merge/TaintConstants;";
 }
