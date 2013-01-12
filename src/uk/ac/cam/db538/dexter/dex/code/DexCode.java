@@ -421,7 +421,7 @@ public class DexCode {
       labelEnd = new DexLabel(this);
 
       val regCallersName = new DexRegister();
-      val regInternalAnnotation = new DexRegister();
+      val regInternalAnnotation = instrumentationState.getInternalClassAnnotationRegister();
 
       addedCode.add(new DexPseudoinstruction_GetMethodCaller(this, regCallersName));
       addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$$$ caller: ", false));

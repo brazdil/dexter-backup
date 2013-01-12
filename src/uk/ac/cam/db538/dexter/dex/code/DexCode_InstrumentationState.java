@@ -14,12 +14,14 @@ public class DexCode_InstrumentationState {
 
   @Getter private final DexInstrumentationCache cache;
   @Getter private final boolean needsCallInstrumentation;
+  @Getter private final DexRegister internalClassAnnotationRegister;
 
   public DexCode_InstrumentationState(DexCode code, DexInstrumentationCache cache) {
     this.cache = cache;
 
     val parentMethod = code.getParentMethod();
     this.needsCallInstrumentation = parentMethod != null && !parentMethod.isAbstract();
+    this.internalClassAnnotationRegister = (parentMethod != null && parentMethod.isVirtual()) ? new DexRegister() : null;
 
     registerMap = new HashMap<DexRegister, DexRegister>();
 

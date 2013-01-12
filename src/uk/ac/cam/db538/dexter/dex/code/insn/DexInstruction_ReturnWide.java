@@ -12,6 +12,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
@@ -57,21 +58,40 @@ public class DexInstruction_ReturnWide extends DexInstruction {
   public void instrument(DexCode_InstrumentationState state) {
     if (state.isNeedsCallInstrumentation()) {
       val dex = getParentFile();
+      val parentMethod = getParentMethod();
+      val code = getMethodCode();
+
       val regResSemaphore = new DexRegister();
 
-      getMethodCode().replace(this,
-                              new DexCodeElement[] {
-                                new DexInstruction_StaticGet(getMethodCode(), regResSemaphore, dex.getMethodCallHelper_SRes()),
-                                new DexInstruction_Invoke(
-                                  getMethodCode(),
-                                  (DexClassType) dex.getMethodCallHelper_SRes().getType(),
-                                  "acquire",
-                                  new DexPrototype(DexVoid.parse("V", null), null),
-                                  Arrays.asList(regResSemaphore),
-                                  Opcode_Invoke.Virtual),
-                                new DexInstruction_StaticPut(getMethodCode(), state.getTaintRegister(regFrom1), dex.getMethodCallHelper_Res()),
-                                this
-                              });
+      val insnGetSRES = new DexInstruction_StaticGet(code, regResSemaphore, dex.getMethodCallHelper_SRes());
+      val insnAcquireSRES = new DexInstruction_Invoke(
+        code,
+        (DexClassType) dex.getMethodCallHelper_SRes().getType(),
+        "acquire",
+        new DexPrototype(DexVoid.parse("V", null), null),
+        Arrays.asList(regResSemaphore),
+        Opcode_Invoke.Virtual);
+      val insnSetRES = new DexInstruction_StaticPut(code, state.getTaintRegister(regFrom1), dex.getMethodCallHelper_Res());
+
+      if (parentMethod.isVirtual()) {
+        val labelSkipTaintPassing = new DexLabel(code);
+
+        val insnTestInternalClassAnnotation = new DexInstruction_IfTestZero(
+          code,
+          state.getInternalClassAnnotationRegister(),
+          labelSkipTaintPassing,
+          Opcode_IfTestZero.eqz);
+
+        code.replace(this, new DexCodeElement[] {
+                       insnTestInternalClassAnnotation,
+                       insnGetSRES,
+                       insnAcquireSRES,
+                       insnSetRES,
+                       labelSkipTaintPassing,
+                       this
+                     });
+      } else
+        code.replace(this, new DexCodeElement[] {insnGetSRES, insnAcquireSRES, insnSetRES, this});
     }
   }
 }
