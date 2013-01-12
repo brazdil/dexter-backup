@@ -20,6 +20,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -119,8 +120,6 @@ public class DexInstruction_StaticPut extends DexInstruction {
     val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
 
     if (opcode != Opcode_GetPut.Object) {
-      val regValueTaint = state.getTaintRegister(regFrom);
-
       if (fieldDeclaringClass.isDefinedInternally()) {
         // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
         // store the taint to the taint field
@@ -128,13 +127,20 @@ public class DexInstruction_StaticPut extends DexInstruction {
         code.replace(this,
                      new DexCodeElement[] {
                        this,
-                       new DexInstruction_StaticPut(code, regValueTaint, state.getCache().getTaintField(field)),
+                       new DexInstruction_StaticPut(code, state.getTaintRegister(regFrom), state.getCache().getTaintField(field)),
                      });
 
       } else
         // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
-        // need to figure out!!!
-        super.instrument(state);
+        // store the taint to the adjoined field in special global class
+        code.replace(this,
+                     new DexCodeElement[] {
+                       this,
+                       new DexInstruction_StaticPut(
+                         code,
+                         state.getTaintRegister(regFrom),
+                         state.getCache().getTaintField_ExternalStatic(fieldClass, (DexPrimitiveType) fieldType, fieldName))
+                     });
 
     } else {
       // FIELD OF REFERENCE TYPE

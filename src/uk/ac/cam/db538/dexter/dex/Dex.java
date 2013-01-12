@@ -5,18 +5,26 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 
 import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.Util.AccessFlags;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache.InstrumentationWarning;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
+import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
@@ -37,6 +45,9 @@ public class Dex {
 
   @Getter private DexClassType internalClassAnnotation_Type;
   @Getter private DexClassType internalMethodAnnotation_Type;
+
+  @Getter private DexClass externalStaticFieldTaint_Class;
+  @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
 
   @Getter private final DexParsingCache parsingCache;
 
@@ -167,19 +178,47 @@ public class Dex {
     return extraClasses;
   }
 
+  private List<DexClass> generateExtraClasses() {
+    externalStaticFieldTaint_Class = new DexClass(
+      this,
+      generateClassType(),
+      DexClassType.parse("Ljava/lang/Object;", parsingCache),
+      EnumSet.of(AccessFlags.PUBLIC),
+      null,
+      null,
+      null,
+      null);
+
+    val clinitCode = new DexCode();
+    clinitCode.add(new DexInstruction_ReturnVoid(clinitCode));
+
+    externalStaticFieldTaint_Clinit = new DexDirectMethod(
+      externalStaticFieldTaint_Class,
+      "<clinit>",
+      EnumSet.of(AccessFlags.STATIC, AccessFlags.CONSTRUCTOR),
+      new DexPrototype(DexVoid.parse("V", parsingCache), null),
+      clinitCode,
+      null);
+    externalStaticFieldTaint_Class.addMethod(externalStaticFieldTaint_Clinit);
+
+    return Arrays.asList(new DexClass[] { externalStaticFieldTaint_Class });
+  }
+
   public List<DexClass> getClasses() {
     return Collections.unmodifiableList(classes);
   }
 
   public List<InstrumentationWarning> instrument() {
-    val cache = new DexInstrumentationCache();
+    val cache = new DexInstrumentationCache(this);
 
-    val extraClasses = parseExtraClasses();
+    val extraClassesLinked = parseExtraClasses();
+    val extraClassesGenerated = generateExtraClasses();
 
     for (val cls : classes)
       cls.instrument(cache);
 
-    classes.addAll(extraClasses);
+    classes.addAll(extraClassesLinked);
+    classes.addAll(extraClassesGenerated);
 
     classHierarchy.checkConsistentency();
 

@@ -21,6 +21,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -143,8 +144,15 @@ public class DexInstruction_StaticGetWide extends DexInstruction {
                    });
     } else {
       // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
-      // need to figure out!!!
-      super.instrument(state);
+      // get the taint from adjoined field in special global class
+      code.replace(this,
+                   new DexCodeElement[] {
+                     this,
+                     new DexInstruction_StaticGet(
+                       code,
+                       state.getTaintRegister(regTo1),
+                       state.getCache().getTaintField_ExternalStatic(fieldClass, (DexPrimitiveType) fieldType, fieldName))
+                   });
     }
   }
 }
