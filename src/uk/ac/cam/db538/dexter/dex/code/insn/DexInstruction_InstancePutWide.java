@@ -138,7 +138,6 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
     val code = getMethodCode();
     val classHierarchy = getParentFile().getClassHierarchy();
 
-    val regValueTaint = new DexRegister();
     val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, false);
     if (fieldDeclaringClass.isDefinedInternally()) {
       // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
@@ -147,8 +146,7 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
       code.replace(this,
                    new DexCodeElement[] {
                      this,
-                     new DexInstruction_BinaryOp(code, regValueTaint, state.getTaintRegister(regFrom1), state.getTaintRegister(regFrom2), Opcode_BinaryOp.OrInt),
-                     new DexInstruction_InstancePut(code, regValueTaint, regObject, state.getCache().getTaintField(field)),
+                     new DexInstruction_InstancePut(code, state.getTaintRegister(regFrom1), regObject, state.getCache().getTaintField(field)),
                    });
 
     } else
@@ -157,8 +155,7 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
       code.replace(this,
                    new DexCodeElement[] {
                      this,
-                     new DexInstruction_BinaryOp(code, regValueTaint, state.getTaintRegister(regFrom1), state.getTaintRegister(regFrom2), Opcode_BinaryOp.OrInt),
-                     new DexPseudoinstruction_SetObjectTaint(code, regObject, regValueTaint)
+                     new DexPseudoinstruction_SetObjectTaint(code, regObject, state.getTaintRegister(regFrom1))
                    });
   }
 }

@@ -62,7 +62,7 @@ public class DexInstruction_ConvertFromWide extends DexInstruction {
     code.replace(this,
                  new DexCodeElement[] {
                    this,
-                   new DexInstruction_BinaryOp(code, state.getTaintRegister(regTo), state.getTaintRegister(regFrom1), state.getTaintRegister(regFrom2), Opcode_BinaryOp.OrInt)
+                   new DexInstruction_Move(code, state.getTaintRegister(regTo), state.getTaintRegister(regFrom1), false)
                  });
   }
 }

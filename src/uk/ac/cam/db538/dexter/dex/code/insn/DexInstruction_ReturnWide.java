@@ -58,7 +58,6 @@ public class DexInstruction_ReturnWide extends DexInstruction {
     if (state.isNeedsCallInstrumentation()) {
       val dex = getParentFile();
       val regResSemaphore = new DexRegister();
-      val regTaint = new DexRegister();
 
       getMethodCode().replace(this,
                               new DexCodeElement[] {
@@ -70,8 +69,7 @@ public class DexInstruction_ReturnWide extends DexInstruction {
                                   new DexPrototype(DexVoid.parse("V", null), null),
                                   Arrays.asList(regResSemaphore),
                                   Opcode_Invoke.Virtual),
-                                new DexInstruction_BinaryOp(getMethodCode(), regTaint, state.getTaintRegister(regFrom1), state.getTaintRegister(regFrom2), Opcode_BinaryOp.OrInt),
-                                new DexInstruction_StaticPut(getMethodCode(), regTaint, dex.getMethodCallHelper_Res()),
+                                new DexInstruction_StaticPut(getMethodCode(), state.getTaintRegister(regFrom1), dex.getMethodCallHelper_Res()),
                                 this
                               });
     }

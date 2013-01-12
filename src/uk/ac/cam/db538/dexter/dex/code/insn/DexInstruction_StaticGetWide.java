@@ -139,8 +139,7 @@ public class DexInstruction_StaticGetWide extends DexInstruction {
       code.replace(this,
                    new DexCodeElement[] {
                      this,
-                     new DexInstruction_StaticGet(code, state.getTaintRegister(regTo1), state.getCache().getTaintField(field)),
-                     new DexInstruction_Move(code, state.getTaintRegister(regTo2), state.getTaintRegister(regTo1), false)
+                     new DexInstruction_StaticGet(code, state.getTaintRegister(regTo1), state.getCache().getTaintField(field))
                    });
     } else {
       // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY

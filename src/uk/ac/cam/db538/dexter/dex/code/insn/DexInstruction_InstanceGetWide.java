@@ -153,8 +153,7 @@ public class DexInstruction_InstanceGetWide extends DexInstruction {
                      this,
                      new DexPseudoinstruction_GetObjectTaint(code, regObjectTaint, regObject),
                      new DexInstruction_InstanceGet(code, regValueTaint, regObject, state.getCache().getTaintField(field)),
-                     new DexInstruction_BinaryOp(code, regValueTaint, regValueTaint, regObjectTaint, Opcode_BinaryOp.OrInt),
-                     new DexInstruction_Move(code, state.getTaintRegister(regTo2), regValueTaint, false)
+                     new DexInstruction_BinaryOp(code, regValueTaint, regValueTaint, regObjectTaint, Opcode_BinaryOp.OrInt)
                    });
 
     } else
@@ -163,8 +162,7 @@ public class DexInstruction_InstanceGetWide extends DexInstruction {
       code.replace(this,
                    new DexCodeElement[] {
                      this,
-                     new DexPseudoinstruction_GetObjectTaint(code, regValueTaint, regObject),
-                     new DexInstruction_Move(code, state.getTaintRegister(regTo2), regValueTaint, false)
+                     new DexPseudoinstruction_GetObjectTaint(code, regValueTaint, regObject)
                    });
   }
 }

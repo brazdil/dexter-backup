@@ -67,8 +67,7 @@ public class DexInstruction_ConvertToWide extends DexInstruction {
     code.replace(this,
                  new DexCodeElement[] {
                    this,
-                   new DexInstruction_Move(code, state.getTaintRegister(regTo1), state.getTaintRegister(regFrom), false),
-                   new DexInstruction_Move(code, state.getTaintRegister(regTo2), state.getTaintRegister(regFrom), false)
+                   new DexInstruction_Move(code, state.getTaintRegister(regTo1), state.getTaintRegister(regFrom), false)
                  });
   }
 

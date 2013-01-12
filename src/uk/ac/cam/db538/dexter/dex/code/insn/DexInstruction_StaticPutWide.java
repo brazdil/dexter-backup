@@ -131,7 +131,6 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
     val classHierarchy = getParentFile().getClassHierarchy();
 
     val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
-    val regValueTaint = new DexRegister();
 
     if (fieldDeclaringClass.isDefinedInternally()) {
       // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
@@ -140,8 +139,7 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
       code.replace(this,
                    new DexCodeElement[] {
                      this,
-                     new DexInstruction_BinaryOp(code, regValueTaint, state.getTaintRegister(regFrom1), state.getTaintRegister(regFrom2), Opcode_BinaryOp.OrInt),
-                     new DexInstruction_StaticPut(code, regValueTaint, state.getCache().getTaintField(field)),
+                     new DexInstruction_StaticPut(code, state.getTaintRegister(regFrom1), state.getCache().getTaintField(field)),
                    });
 
     } else

@@ -92,10 +92,6 @@ public class DexInstruction_ConstWide extends DexInstruction {
                    new DexInstruction_Const(
                      code,
                      state.getTaintRegister(regTo1),
-                     0),
-                   new DexInstruction_Const(
-                     code,
-                     state.getTaintRegister(regTo2),
                      0)
                  });
   }
