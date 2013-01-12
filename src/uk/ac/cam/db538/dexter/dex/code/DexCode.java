@@ -447,24 +447,22 @@ public class DexCode {
       for (val paramType : parentMethod.getPrototype().getParameterTypes()) {
         if (paramType instanceof DexPrimitiveType) {
           // for primitives, put the taint information in their respective taint registers
-          for (int i = 0; i < paramType.getRegisters(); paramRegIndex++, i++) {
-            val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
-            val regTaintParamMapping = instrumentationState.getTaintRegister(regParamMapping);
+          val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
+          val regTaintParamMapping = instrumentationState.getTaintRegister(regParamMapping);
 
-            addedCode.add(new DexInstruction_Const(this, regIndex, paramTaintArrayIndex));
-            addedCode.add(new DexInstruction_ArrayGet(this, regArrayElement, regArray, regIndex, Opcode_GetPut.IntFloat));
+          addedCode.add(new DexInstruction_Const(this, regIndex, paramTaintArrayIndex));
+          addedCode.add(new DexInstruction_ArrayGet(this, regArrayElement, regArray, regIndex, Opcode_GetPut.IntFloat));
 
-            if (staticMethod || constructorMethod)
-              addedCode.add(new DexInstruction_Move(this, regTaintParamMapping, regArrayElement, false));
-            else
-              addedCode.add(new DexInstruction_BinaryOp(this, regTaintParamMapping, regArrayElement, regThisTaint, Opcode_BinaryOp.OrInt));
+          if (staticMethod || constructorMethod)
+            addedCode.add(new DexInstruction_Move(this, regTaintParamMapping, regArrayElement, false));
+          else
+            addedCode.add(new DexInstruction_BinaryOp(this, regTaintParamMapping, regArrayElement, regThisTaint, Opcode_BinaryOp.OrInt));
 
-            addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$$$  ARG[" + paramTaintArrayIndex + "] = ", false));
-            addedCode.add(new DexPseudoinstruction_PrintInteger(this, regArrayElement, true));
+          addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$$$  ARG[" + paramTaintArrayIndex + "] = ", false));
+          addedCode.add(new DexPseudoinstruction_PrintInteger(this, regArrayElement, true));
 
-            paramTaintArrayIndex++;
-          }
-
+          paramTaintArrayIndex++;
+          paramRegIndex += paramType.getRegisters();
         } else {
           // for objects, assign the taint of the 'this' object
           if (!staticMethod && !constructorMethod) {
