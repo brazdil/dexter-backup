@@ -16,28 +16,22 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
-import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 import uk.ac.cam.db538.dexter.dex.type.hierarchy.ClassHierarchyException;
+import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
@@ -162,32 +156,13 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                                    "$$$  RES = ",
                                    false));
 
-        if (instructionMoveResult instanceof DexInstruction_MoveResult) {
-          val regTo = state.getTaintRegister(((DexInstruction_MoveResult) instructionMoveResult).getRegTo());
-          codePostInternalCall.add(new DexInstruction_StaticGet(
-                                     methodCode,
-                                     regTo,
-                                     dex.getMethodCallHelper_Res()));
-
-          codePostInternalCall.add(new DexPseudoinstruction_PrintInteger(
-                                     methodCode,
-                                     regTo,
-                                     true));
-        } else if (instructionMoveResult instanceof DexInstruction_MoveResultWide) {
-          val regTo1 = state.getTaintRegister(((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo1());
-          val regTo2 = state.getTaintRegister(((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo2());
-
-          codePostInternalCall.add(new DexInstruction_StaticGet(
-                                     methodCode,
-                                     regTo1,
-                                     dex.getMethodCallHelper_Res()));
-          codePostInternalCall.add(new DexInstruction_Move(methodCode, regTo2, regTo1, false));
-
-          codePostInternalCall.add(new DexPseudoinstruction_PrintInteger(
-                                     methodCode,
-                                     regTo1,
-                                     true));
-        }
+        DexRegister regTo = null;
+        if (instructionMoveResult instanceof DexInstruction_MoveResult)
+          regTo = state.getTaintRegister(((DexInstruction_MoveResult) instructionMoveResult).getRegTo());
+        else if (instructionMoveResult instanceof DexInstruction_MoveResultWide)
+          regTo = state.getTaintRegister(((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo1());
+        codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regTo, dex.getMethodCallHelper_Res()));
+        codePostInternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regTo, true));
       }
 
       codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regResSemaphore, dex.getMethodCallHelper_SRes()));
@@ -293,18 +268,13 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
   }
 
   private void instrumentVirtual(DexCode_InstrumentationState state) {
-    val instrumentedCode = new LinkedList<DexCodeElement>();
+    val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
     val methodCode = getMethodCode();
-    val dex = getParentFile();
-    val parsingCache = dex.getParsingCache();
 
     val destAnalysis = decideMethodCallDestination(state);
     boolean canBeInternalCall = destAnalysis.getValA();
     boolean canBeExternalCall = destAnalysis.getValB();
     boolean canBeAnyCall = canBeInternalCall && canBeExternalCall;
-
-    val invokedMethodName = instructionInvoke.getMethodName();
-    val invokedMethodPrototype = instructionInvoke.getMethodPrototype();
 
     DexLabel labelExternal = null;
     DexLabel labelEnd = null;
@@ -313,94 +283,17 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       labelExternal = new DexLabel(methodCode);
       labelEnd = new DexLabel(methodCode);
 
-      val regDestObjectInstance = instructionInvoke.getArgumentRegisters().get(0);
-      val regDestObjectClass = new DexRegister();
-      val regMethodName = new DexRegister();
-      val regMethodArgumentsArray = new DexRegister();
-      val regMethodArgumentsCount = new DexRegister();
-      val regMethodArgumentsIndex = new DexRegister();
-      val regMethodParamType = new DexRegister();
-      val regMethodObject = new DexRegister();
-      val regInternalAnnotationClass = new DexRegister();
       val regInternalAnnotationInstance = new DexRegister();
-
-      val paramTypes = invokedMethodPrototype.getParameterTypes();
+      val regDestObjectInstance = instructionInvoke.getArgumentRegisters().get(0);
 
       // test if the method has our annotation
+      instrumentedCode.add(new DexPseudoinstruction_GetInternalMethodAnnotation(
+                             methodCode,
+                             regInternalAnnotationInstance,
+                             regDestObjectInstance,
+                             instructionInvoke.getMethodName(),
+                             instructionInvoke.getMethodPrototype()));
 
-      // get Class instance of the invoked object
-      instrumentedCode.add(
-        new DexInstruction_Invoke(
-          methodCode,
-          DexClassType.parse("Ljava/lang/Object;", parsingCache),
-          "getClass",
-          new DexPrototype(
-            DexClassType.parse("Ljava/lang/Class;", parsingCache),
-            null),
-          Arrays.asList(new DexRegister[] { regDestObjectInstance } ),
-          Opcode_Invoke.Virtual));
-      instrumentedCode.add(new DexInstruction_MoveResult(methodCode, regDestObjectClass, true));
-      // load the method name
-      instrumentedCode.add(new DexInstruction_ConstString(methodCode, regMethodName, invokedMethodName));
-      // load the method-argument count
-      instrumentedCode.add(new DexInstruction_Const(methodCode, regMethodArgumentsCount, paramTypes.size()));
-      // create method-argument array
-      instrumentedCode.add(
-        new DexInstruction_NewArray(methodCode,
-                                    regMethodArgumentsArray,
-                                    regMethodArgumentsCount,
-                                    DexArrayType.parse("[Ljava/lang/Class;", parsingCache)));
-      // load all the params
-      int i = 0;
-      for (val paramType : paramTypes) {
-        // load the index
-        instrumentedCode.add(new DexInstruction_Const(methodCode, regMethodArgumentsIndex, i++));
-        // load the param type Class object
-        if (paramType instanceof DexPrimitiveType) {
-          val primitiveTypeClassField = ((DexPrimitiveType) paramType).getPrimitiveClassConstantField(parsingCache);
-          instrumentedCode.add(
-            new DexInstruction_StaticGet(
-              methodCode,
-              regMethodParamType,
-              primitiveTypeClassField.getValA(),
-              DexClassType.parse("Ljava/lang/Class;", parsingCache),
-              primitiveTypeClassField.getValB(),
-              Opcode_GetPut.Object));
-        } else
-          instrumentedCode.add(new DexInstruction_ConstClass(methodCode, regMethodParamType, (DexReferenceType) paramType));
-        // store it in the array
-        instrumentedCode.add(new DexInstruction_ArrayPut(methodCode, regMethodParamType, regMethodArgumentsArray, regMethodArgumentsIndex, Opcode_GetPut.Object));
-      }
-      // find the method
-      instrumentedCode.add(
-        new DexInstruction_Invoke(
-          methodCode,
-          DexClassType.parse("Ljava/lang/Class;", parsingCache),
-          "getMethod",
-          new DexPrototype(
-            DexClassType.parse("Ljava/lang/reflect/Method;", parsingCache),
-            Arrays.asList(new DexRegisterType[] {
-                            DexClassType.parse("Ljava/lang/String;", parsingCache),
-                            DexArrayType.parse("[Ljava/lang/Class;", parsingCache)
-                          })),
-          Arrays.asList(new DexRegister[] { regDestObjectClass, regMethodName, regMethodArgumentsArray } ),
-          Opcode_Invoke.Virtual));
-      instrumentedCode.add(new DexInstruction_MoveResult(methodCode, regMethodObject, true));
-      // ask if it implements the Internal annotation
-      instrumentedCode.add(new DexInstruction_ConstClass(methodCode, regInternalAnnotationClass, dex.getInternalMethodAnnotation_Type()));
-      instrumentedCode.add(
-        new DexInstruction_Invoke(
-          methodCode,
-          DexClassType.parse("Ljava/lang/reflect/Method;", parsingCache),
-          "getAnnotation",
-          new DexPrototype(
-            DexClassType.parse("Ljava/lang/annotation/Annotation;", parsingCache),
-            Arrays.asList(new DexRegisterType[] {
-                            DexClassType.parse("Ljava/lang/Class;", parsingCache)
-                          })),
-          Arrays.asList(new DexRegister[] { regMethodObject, regInternalAnnotationClass } ),
-          Opcode_Invoke.Virtual));
-      instrumentedCode.add(new DexInstruction_MoveResult(methodCode, regInternalAnnotationInstance, true));
       // jump to external if the result above is null
       instrumentedCode.add(new DexInstruction_IfTestZero(methodCode, regInternalAnnotationInstance, labelExternal, Opcode_IfTestZero.eqz));
     }
@@ -424,8 +317,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       instrumentedCode.add(labelEnd);
     }
 
-    getMethodCode().replace(this,
-                            instrumentedCode);
+    methodCode.replace(this, instrumentedCode);
   }
 
   @Override
