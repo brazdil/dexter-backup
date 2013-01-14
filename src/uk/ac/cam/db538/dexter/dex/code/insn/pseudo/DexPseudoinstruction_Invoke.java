@@ -13,6 +13,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
@@ -20,6 +21,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
@@ -85,9 +87,9 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
     val callPrototype = instructionInvoke.getMethodPrototype();
 
-    boolean hasPrimitiveArgument = callPrototype.hasPrimitiveArgument();
+    val hasPrimitiveArgument = callPrototype.hasPrimitiveArgument();
 
-    val codePreInternalCall = new LinkedList<DexCodeElement>();
+    val codePreInternalCall = new NoDuplicatesList<DexCodeElement>();
 
     val regArgSemaphore = new DexRegister();
     val regArray = new DexRegister();
@@ -137,7 +139,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     val dex = getParentFile();
     val callPrototype = instructionInvoke.getMethodPrototype();
 
-    val codePostInternalCall = new LinkedList<DexCodeElement>();
+    val codePostInternalCall = new NoDuplicatesList<DexCodeElement>();
 
     if (callPrototype.getReturnType() instanceof DexPrimitiveType) {
       val regResSemaphore = new DexRegister();
@@ -172,6 +174,39 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     }
 
     return codePostInternalCall;
+  }
+
+  private List<DexCodeElement> generatePreExternalCallCode(DexCode_InstrumentationState state) {
+    val codePreExternalCall = new NoDuplicatesList<DexCodeElement>();
+    val methodCode = getMethodCode();
+    val isStaticCall = (instructionInvoke.getCallType() == Opcode_Invoke.Static);
+
+    val methodParameterRegs = instructionInvoke.getArgumentRegisters();
+
+    // combine the taint of the object and all parameters
+
+    val regTotalTaint = new DexRegister();
+    val regObjectArgTaint = new DexRegister();
+    if (isStaticCall)
+      codePreExternalCall.add(new DexInstruction_Const(methodCode, regTotalTaint, 0));
+    else
+      codePreExternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regTotalTaint, methodParameterRegs.get(0)));
+
+    int paramIndex = isStaticCall ? 0 : 1;
+    for (val paramType : instructionInvoke.getMethodPrototype().getParameterTypes()) {
+      DexRegister regArgTaint;
+      if (paramType instanceof DexPrimitiveType)
+        regArgTaint = state.getTaintRegister(methodParameterRegs.get(paramIndex));
+      else {
+        codePreExternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regObjectArgTaint, methodParameterRegs.get(paramIndex)));
+        regArgTaint = regObjectArgTaint;
+      }
+      codePreExternalCall.add(new DexInstruction_BinaryOp(methodCode, regTotalTaint, regTotalTaint, regArgTaint, Opcode_BinaryOp.OrInt));
+      paramIndex += paramType.getRegisters();
+    }
+
+
+    return codePreExternalCall;
   }
 
   private void instrumentDirectExternal(DexCode_InstrumentationState state) { }
