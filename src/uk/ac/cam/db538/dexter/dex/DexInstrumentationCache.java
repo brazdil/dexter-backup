@@ -12,10 +12,12 @@ import lombok.val;
 
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
@@ -27,10 +29,10 @@ public class DexInstrumentationCache {
   private final Dex parentFile;
 
   private final Map<DexField, DexField> fieldInstrumentation;
-  private final Cache<Triple<DexClassType, DexPrimitiveType, String>, DexField> staticExternalFieldInstrumentation =
-  new Cache<Triple<DexClassType, DexPrimitiveType, String>, DexField>() {
+  private final Cache<Triple<DexClassType, DexPrimitiveType, String>, DexField>
+  staticExternalFieldInstrumentation = new Cache<Triple<DexClassType, DexPrimitiveType, String>, DexField>() {
     private boolean fieldExists(String name) {
-      for (val field : parentFile.getExternalStaticFieldTaint_Class().getFields())
+      for (DexField field : parentFile.getExternalStaticFieldTaint_Class().getFields())
         if (field.getName().equals(name))
           return true;
       return false;
@@ -47,10 +49,10 @@ public class DexInstrumentationCache {
 
     @Override
     protected DexField createNewEntry(Triple<DexClassType, DexPrimitiveType, String> key) {
-      val taintClass = parentFile.getExternalStaticFieldTaint_Class();
-      val taintClinit = parentFile.getExternalStaticFieldTaint_Clinit();
+      DexClass taintClass = parentFile.getExternalStaticFieldTaint_Class();
+      DexMethodWithCode taintClinit = parentFile.getExternalStaticFieldTaint_Clinit();
 
-      val newField = new DexField(
+      DexField newField = new DexField(
         taintClass,
         generateFieldName(),
         DexRegisterType.parse("I", parentFile.getParsingCache()),
@@ -59,8 +61,8 @@ public class DexInstrumentationCache {
       taintClass.addField(newField);
 
       // add initialisation to <clinit>
-      val taintClinit_Code = taintClinit.getCode();
-      val regZero = new DexRegister();
+      DexCode taintClinit_Code = taintClinit.getCode();
+      DexRegister regZero = new DexRegister();
       taintClinit_Code.insertAfter(
         new DexCodeElement[] {
           new DexInstruction_Const(taintClinit_Code, regZero, 0L),
@@ -69,7 +71,6 @@ public class DexInstrumentationCache {
         taintClinit_Code.getStartingLabel());
 
       return newField;
-
     }
   };
   @Getter private final List<InstrumentationWarning> warnings;
