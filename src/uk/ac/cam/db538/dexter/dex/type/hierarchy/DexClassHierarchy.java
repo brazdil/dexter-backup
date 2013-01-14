@@ -22,9 +22,11 @@ import org.apache.bcel.classfile.ClassParser;
 
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexClassHierarchy {
 
@@ -293,6 +295,63 @@ public class DexClassHierarchy {
         set.add(clazz);
 
     return set;
+  }
+
+  /*
+   * Returns a pair of booleans. The first is true if and only if
+   * the method call can be internal. Second is true if it can
+   * be an external call.
+   */
+  public Pair<Boolean, Boolean> decideMethodCallDestination(Opcode_Invoke callType, DexClassType callClass, String methodName, DexPrototype methodPrototype) {
+    if (callType == Opcode_Invoke.Super) {
+      // with super call we can always deduce the destination
+      // by going through the parents (DexClassHierarchy will
+      // return them ordered from the closest parent
+      // to Object) and deciding based on the first implementation
+      // we encounter
+
+      // need to put TRUE here, because classType is already a parent
+      for (val parentClass : this.getAllParents(callClass, true))
+        if (implementsMethod(parentClass, methodName, methodPrototype)) {
+          if (parentClass.isDefinedInternally())
+            return new Pair<Boolean, Boolean>(true, false); // will always be internal
+          else
+            return new Pair<Boolean, Boolean>(false, true); // will always be external
+        }
+      throw new ClassHierarchyException("Cannot determine the destination of super method call: " + callClass.getPrettyName() + "." + methodName);
+
+    } else if (callType == Opcode_Invoke.Virtual || callType == Opcode_Invoke.Interface) {
+
+      Set<DexClassType> potentialDestinationClasses;
+      if (callType == Opcode_Invoke.Virtual) {
+        // call destination class can be a child which implements the given method,
+        // or it can be a parent which implements the given method
+        potentialDestinationClasses = new HashSet<DexClassType>();
+        potentialDestinationClasses.addAll(this.getAllChildren(callClass));
+        potentialDestinationClasses.addAll(this.getAllParents(callClass, true));
+      } else {
+        // in the case of an interface, we need to look at all the classes
+        // that implement it; class hierarchy will automatically return
+        // all the ancestors of such classes as well
+        potentialDestinationClasses = this.getAllClassesImplementingInterface(callClass);
+      }
+
+      boolean canBeInternal = false;
+      boolean canBeExternal = false;
+
+      for (val destClass : potentialDestinationClasses)
+        if (implementsMethod(destClass, methodName, methodPrototype)) {
+          if (destClass.isDefinedInternally()) canBeInternal = true;
+          else canBeExternal = true;
+        }
+
+      if (!canBeInternal && !canBeExternal)
+        throw new ClassHierarchyException("Invoke destination not found: calling " + callClass.getPrettyName() + "." + methodName);
+      else
+        return new Pair<Boolean, Boolean>(canBeInternal, canBeExternal);
+
+    } else
+      throw new Error("Wrong call type");
   }
 
   @AllArgsConstructor
