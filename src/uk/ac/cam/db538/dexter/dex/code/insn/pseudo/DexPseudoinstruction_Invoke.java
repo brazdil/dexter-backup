@@ -1,10 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.code.insn.pseudo;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
@@ -30,9 +28,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
-import uk.ac.cam.db538.dexter.dex.type.hierarchy.ClassHierarchyException;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
-import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
