@@ -8,7 +8,6 @@ import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.val;
 
 import org.jf.dexlib.Util.AccessFlags;
 
