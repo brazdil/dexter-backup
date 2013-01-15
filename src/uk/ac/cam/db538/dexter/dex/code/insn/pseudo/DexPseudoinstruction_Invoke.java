@@ -17,6 +17,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
@@ -231,12 +232,36 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     return codePreExternalCall;
   }
 
+  private List<DexCodeElement> generatePostExternalCallCode(DexRegister regCombinedTaint, DexCode_InstrumentationState state) {
+    val codePostExternalCall = new NoDuplicatesList<DexCodeElement>();
+    val methodCode = getMethodCode();
+    val methodPrototype = instructionInvoke.getMethodPrototype();
+
+    if (movesResult()) {
+      if (methodPrototype.getReturnType() instanceof DexPrimitiveType) {
+        DexRegister regResult;
+        if (instructionMoveResult instanceof DexInstruction_MoveResult)
+          regResult = ((DexInstruction_MoveResult) instructionMoveResult).getRegTo();
+        else
+          regResult = ((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo1();
+        codePostExternalCall.add(
+          new DexInstruction_Move(methodCode, state.getTaintRegister(regResult), regCombinedTaint, false));
+
+      } else
+        codePostExternalCall.add(
+          new DexPseudoinstruction_SetObjectTaint(methodCode, ((DexInstruction_MoveResult) instructionMoveResult).getRegTo(), regCombinedTaint));
+    }
+
+    return codePostExternalCall;
+  }
+
   private void instrumentDirectExternal(DexCode_InstrumentationState state) {
     val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
     val regCombinedTaint = new DexRegister();
 
     instrumentedCode.addAll(generatePreExternalCallCode(regCombinedTaint, state));
     instrumentedCode.add(this);
+    instrumentedCode.addAll(generatePostExternalCallCode(regCombinedTaint, state));
 
     getMethodCode().replace(this, instrumentedCode);
   }
@@ -301,6 +326,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       val regCombinedTaint = new DexRegister();
       instrumentedCode.addAll(generatePreExternalCallCode(regCombinedTaint, state));
       instrumentedCode.add(this);
+      instrumentedCode.addAll(generatePostExternalCallCode(regCombinedTaint, state));
     }
 
     if (canBeAnyCall) {
