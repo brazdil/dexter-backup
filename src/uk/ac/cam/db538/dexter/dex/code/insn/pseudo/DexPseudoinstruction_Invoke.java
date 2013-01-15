@@ -1,7 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn.pseudo;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 import lombok.Getter;
@@ -18,6 +17,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
@@ -97,7 +97,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
     codePreInternalCall.add(new DexPseudoinstruction_PrintStringConst(
                               methodCode,
-                              "$$$ INTERNAL CALL | TAINTED ARGS: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
+                              "$$$ INTERNAL CALL: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
                               true));
 
     if (hasPrimitiveArgument) {
@@ -147,7 +147,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       if (movesResult()) {
         codePostInternalCall.add(new DexPseudoinstruction_PrintStringConst(
                                    methodCode,
-                                   "$$$ INTERNAL CALL | TAINTED RESULT: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
+                                   "$$$ INTERNAL RESULT: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
                                    true));
         codePostInternalCall.add(new DexPseudoinstruction_PrintStringConst(
                                    methodCode,
@@ -176,43 +176,75 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     return codePostInternalCall;
   }
 
-  private List<DexCodeElement> generatePreExternalCallCode(DexCode_InstrumentationState state) {
+  private List<DexCodeElement> generatePreExternalCallCode(DexRegister regCombinedTaint, DexCode_InstrumentationState state) {
     val codePreExternalCall = new NoDuplicatesList<DexCodeElement>();
     val methodCode = getMethodCode();
     val isStaticCall = (instructionInvoke.getCallType() == Opcode_Invoke.Static);
 
+    val methodPrototype = instructionInvoke.getMethodPrototype();
     val methodParameterRegs = instructionInvoke.getArgumentRegisters();
 
-    // combine the taint of the object and all parameters
+    codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(
+                              methodCode,
+                              "$$$ EXTERNAL CALL: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
+                              true));
 
-    val regTotalTaint = new DexRegister();
-    val regObjectArgTaint = new DexRegister();
-    if (isStaticCall)
-      codePreExternalCall.add(new DexInstruction_Const(methodCode, regTotalTaint, 0));
-    else
-      codePreExternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regTotalTaint, methodParameterRegs.get(0)));
+    // if there are any parameters...
+    if (!methodPrototype.getParameterTypes().isEmpty()) {
+      // combine the taint of the object (if not static call) and all the parameters
 
-    int paramIndex = isStaticCall ? 0 : 1;
-    for (val paramType : instructionInvoke.getMethodPrototype().getParameterTypes()) {
-      DexRegister regArgTaint;
-      if (paramType instanceof DexPrimitiveType)
-        regArgTaint = state.getTaintRegister(methodParameterRegs.get(paramIndex));
-      else {
-        codePreExternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regObjectArgTaint, methodParameterRegs.get(paramIndex)));
-        regArgTaint = regObjectArgTaint;
+      val regObjectArgTaint = new DexRegister();
+      if (isStaticCall)
+        codePreExternalCall.add(new DexInstruction_Const(methodCode, regCombinedTaint, 0));
+      else
+        codePreExternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regCombinedTaint, methodParameterRegs.get(0)));
+
+      int paramIndex = isStaticCall ? 0 : 1;
+      for (val paramType : methodPrototype.getParameterTypes()) {
+        DexRegister regArgTaint;
+        if (paramType instanceof DexPrimitiveType)
+          regArgTaint = state.getTaintRegister(methodParameterRegs.get(paramIndex));
+        else {
+          codePreExternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regObjectArgTaint, methodParameterRegs.get(paramIndex)));
+          regArgTaint = regObjectArgTaint;
+        }
+        codePreExternalCall.add(new DexInstruction_BinaryOp(methodCode, regCombinedTaint, regCombinedTaint, regArgTaint, Opcode_BinaryOp.OrInt));
+        paramIndex += paramType.getRegisters();
       }
-      codePreExternalCall.add(new DexInstruction_BinaryOp(methodCode, regTotalTaint, regTotalTaint, regArgTaint, Opcode_BinaryOp.OrInt));
-      paramIndex += paramType.getRegisters();
-    }
 
+      codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(methodCode, "$$$  TAINT = ", false));
+      codePreExternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regCombinedTaint, true));
+
+      // assign the combined taint to the object and all its arguments
+
+      if (!isStaticCall)
+        codePreExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, methodParameterRegs.get(0), regCombinedTaint));
+
+      paramIndex = isStaticCall ? 0 : 1;
+      for (val paramType : methodPrototype.getParameterTypes()) {
+        if (paramType instanceof DexPrimitiveType)
+          codePreExternalCall.add(new DexInstruction_Move(methodCode, state.getTaintRegister(methodParameterRegs.get(paramIndex)), regCombinedTaint, false));
+        else
+          codePreExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, methodParameterRegs.get(paramIndex), regCombinedTaint));
+        paramIndex += paramType.getRegisters();
+      }
+    }
 
     return codePreExternalCall;
   }
 
-  private void instrumentDirectExternal(DexCode_InstrumentationState state) { }
+  private void instrumentDirectExternal(DexCode_InstrumentationState state) {
+    val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
+    val regCombinedTaint = new DexRegister();
+
+    instrumentedCode.addAll(generatePreExternalCallCode(regCombinedTaint, state));
+    instrumentedCode.add(this);
+
+    getMethodCode().replace(this, instrumentedCode);
+  }
 
   private void instrumentDirectInternal(DexCode_InstrumentationState state) {
-    val instrumentedCode = new LinkedList<DexCodeElement>();
+    val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
 
     instrumentedCode.addAll(generatePreInternalCallCode(state));
     instrumentedCode.add(this);
@@ -268,6 +300,8 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     }
 
     if (canBeExternalCall) {
+      val regCombinedTaint = new DexRegister();
+      instrumentedCode.addAll(generatePreExternalCallCode(regCombinedTaint, state));
       instrumentedCode.add(this);
     }
 

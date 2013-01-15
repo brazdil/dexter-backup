@@ -9,6 +9,7 @@ public class ObjectTaintStorage {
 
   static {
     init(1024);
+    TaintConstants.init();
   }
 
   static final void init(int size) {
