@@ -28,6 +28,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
@@ -215,16 +216,14 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(methodCode, "$$$  TAINT = ", false));
       codePreExternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regCombinedTaint, true));
 
-      // assign the combined taint to the object and all its arguments
+      // assign the combined taint to the object and all its non-primitive arguments
 
       if (!isStaticCall)
         codePreExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, methodParameterRegs.get(0), regCombinedTaint));
 
       paramIndex = isStaticCall ? 0 : 1;
       for (val paramType : methodPrototype.getParameterTypes()) {
-        if (paramType instanceof DexPrimitiveType)
-          codePreExternalCall.add(new DexInstruction_Move(methodCode, state.getTaintRegister(methodParameterRegs.get(paramIndex)), regCombinedTaint, false));
-        else
+        if (paramType instanceof DexReferenceType)
           codePreExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, methodParameterRegs.get(paramIndex), regCombinedTaint));
         paramIndex += paramType.getRegisters();
       }
