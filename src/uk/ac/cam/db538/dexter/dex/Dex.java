@@ -231,7 +231,7 @@ public class Dex {
     return cache.getWarnings();
   }
 
-  public void writeToFile(File filename) throws IOException {
+  public byte[] writeToFile() {
     classHierarchy.checkConsistentency();
 
     val outFile = new DexFile();
@@ -249,9 +249,7 @@ public class Dex {
     DexFile.calcSignature(bytes);
     DexFile.calcChecksum(bytes);
 
-    val fos = new FileOutputStream(filename);
-    fos.write(bytes);
-    fos.close();
+    return bytes;
   }
 
   private static final String CLASS_OBJTAINT = "Luk/ac/cam/db538/dexter/merge/ObjectTaintStorage;";

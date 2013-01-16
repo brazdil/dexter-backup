@@ -11,7 +11,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import lombok.Getter;
 import lombok.val;
-import uk.ac.cam.db538.dexter.dex.Dex;
+import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
@@ -23,7 +23,7 @@ import com.alee.laf.tree.WebTree;
 public class FileTab extends WebSplitPane {
   private static final long serialVersionUID = -2012258240775133554L;
 
-  @Getter private final Dex openedFile;
+  @Getter private final Apk openedFile;
   @Getter private final String openedFile_Filename;
 
   private final ClassPanel selectedClassPanel;
@@ -31,7 +31,7 @@ public class FileTab extends WebSplitPane {
 
   @Getter private TreeSelectionListener TreeListener;
 
-  public FileTab(Dex file, String filename) {
+  public FileTab(Apk file, String filename) {
     super();
     openedFile = file;
     openedFile_Filename = filename;
@@ -52,7 +52,7 @@ public class FileTab extends WebSplitPane {
     val splitPane = this;
 
     val classTreeRoot = new DefaultMutableTreeNode(openedFile_Filename);
-    addClassesToTree(classTreeRoot, openedFile.getClasses());
+    addClassesToTree(classTreeRoot, openedFile.getDexFile().getClasses());
     val classTree = new WebTree(classTreeRoot);
     classTree.setShowsRootHandles(true);
     classTree.setVisibleRowCount(4);

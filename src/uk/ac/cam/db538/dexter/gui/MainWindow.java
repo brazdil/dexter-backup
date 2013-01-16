@@ -15,7 +15,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 
 import lombok.val;
-import uk.ac.cam.db538.dexter.dex.Dex;
+import uk.ac.cam.db538.dexter.apk.Apk;
 
 import com.alee.extended.window.WebProgressDialog;
 import com.alee.laf.menu.WebMenu;
@@ -108,7 +108,7 @@ public class MainWindow {
       doModal("Loading " + file.getName(), new Thread(new Runnable() {
         public void run() {
           try {
-            val splitPane = new FileTab(new Dex(file, new File("android.jar")), file.getName());
+            val splitPane = new FileTab(new Apk(file, new File("android.jar")), file.getName());
             tabbedPane.addTab(file.getName(), splitPane);
           } catch (Throwable e) {
             JMessage.showErrorMessage(frame, "A problem occurred while loading file \"" + file.getName() + "\".", e);
@@ -127,7 +127,7 @@ public class MainWindow {
         return;
 
       val tab = (FileTab) selected;
-      val dex = tab.getOpenedFile();
+      val dex = tab.getOpenedFile().getDexFile();
       doModal("Instrumenting " + tab.getOpenedFile_Filename(), new Thread(new Runnable() {
         public void run() {
           try {
