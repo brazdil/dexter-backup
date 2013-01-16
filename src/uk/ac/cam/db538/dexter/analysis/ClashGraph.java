@@ -27,11 +27,14 @@ public class ClashGraph implements Cloneable {
   };
 
   public ClashGraph(DexCode code) {
-
     val usedRegisters = code.getUsedRegisters();
 
+    int verticesInitialSize = usedRegisters.size();
+    if (verticesInitialSize < 1)
+      verticesInitialSize = 1;
+
     this.code = code;
-    this.vertices = new PriorityQueue<DexRegister>(usedRegisters.size(), vertexComparator);
+    this.vertices = new PriorityQueue<DexRegister>(verticesInitialSize, vertexComparator);
     this.edges = new HashMap<DexRegister, Set<DexRegister>>();
 
     this.vertices.addAll(usedRegisters);
@@ -40,8 +43,12 @@ public class ClashGraph implements Cloneable {
   }
 
   private ClashGraph(ClashGraph cg) {
+    int verticesInitialSize = cg.vertices.size();
+    if (verticesInitialSize < 1)
+      verticesInitialSize = 1;
+
     this.code = cg.code;
-    this.vertices = new PriorityQueue<DexRegister>(cg.vertices.size(), vertexComparator);
+    this.vertices = new PriorityQueue<DexRegister>(verticesInitialSize, vertexComparator);
     this.edges = new HashMap<DexRegister, Set<DexRegister>>();
 
     this.vertices.addAll(cg.vertices);
