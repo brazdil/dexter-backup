@@ -213,7 +213,7 @@ public abstract class DexInstruction extends DexCodeElement {
     return (reg1 + 1 == reg2);
   }
 
-  long computeRelativeOffset(DexCodeElement origin, DexCodeElement target, DexCode_AssemblingState state) {
+  protected final long computeRelativeOffset(DexCodeElement origin, DexCodeElement target, DexCode_AssemblingState state) {
     long offsetOrigin = state.getElementOffsets().get(origin);
     long offsetTarget = state.getElementOffsets().get(target);
     long offset = offsetTarget - offsetOrigin;
@@ -224,7 +224,7 @@ public abstract class DexInstruction extends DexCodeElement {
     return offset;
   }
 
-  long computeRelativeOffset(DexCodeElement target, DexCode_AssemblingState state) {
+  protected final long computeRelativeOffset(DexCodeElement target, DexCode_AssemblingState state) {
     return computeRelativeOffset(this, target, state);
   }
 }

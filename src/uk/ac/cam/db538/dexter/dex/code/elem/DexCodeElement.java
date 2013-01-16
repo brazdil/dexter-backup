@@ -24,7 +24,7 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 
 public abstract class DexCodeElement {
 
-  @Getter private DexCode methodCode;
+  @Getter private final DexCode methodCode;
   @Getter @Setter private boolean originalElement = false;
   @Getter @Setter private boolean auxiliaryElement = false;
 
@@ -34,7 +34,7 @@ public abstract class DexCodeElement {
 
   public abstract String getOriginalAssembly();
 
-  protected DexCodeElement getNextCodeElement() {
+  protected final DexCodeElement getNextCodeElement() {
     val insns = methodCode.getInstructionList();
 
     int location = insns.indexOf(this);
