@@ -12,6 +12,7 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -83,5 +84,17 @@ public class DexInstruction_ArrayLength extends DexInstruction {
                    this,
                    new DexPseudoinstruction_GetObjectTaint(code, state.getTaintRegister(regTo), regArray)
                  });
+  }
+
+  @Override
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    val regAlloc = state.getRegisterAllocation();
+    int rTo = regAlloc.get(regTo);
+    int rArray = regAlloc.get(regArray);
+
+    if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Unsigned(rArray, 4))
+      return new Instruction[] { new Instruction12x(Opcode.ARRAY_LENGTH, (byte) rTo, (byte) rArray) };
+    else
+      return throwNoSuitableFormatFound();
   }
 }
