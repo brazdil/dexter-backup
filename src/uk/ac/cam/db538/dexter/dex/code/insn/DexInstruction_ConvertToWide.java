@@ -82,9 +82,7 @@ public class DexInstruction_ConvertToWide extends DexInstruction {
       return throwWideRegistersExpected();
 
     if (fitsIntoBits_Unsigned(rTo1, 4) && fitsIntoBits_Unsigned(rFrom, 4))
-      return new Instruction[] {
-               new Instruction12x(Opcode_ConvertToWide.convert(insnOpcode), (byte) rTo1, (byte) rFrom)
-             };
+      return new Instruction[] { new Instruction12x(Opcode_ConvertToWide.convert(insnOpcode), (byte) rTo1, (byte) rFrom) };
     else
       return throwNoSuitableFormatFound();
   }

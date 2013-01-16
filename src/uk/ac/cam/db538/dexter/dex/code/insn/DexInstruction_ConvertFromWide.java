@@ -1,18 +1,21 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Map;
+import java.util.Set;
+
+import lombok.Getter;
+import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_ConvertFromWide extends DexInstruction {
 
@@ -64,5 +67,42 @@ public class DexInstruction_ConvertFromWide extends DexInstruction {
                    this,
                    new DexInstruction_Move(code, state.getTaintRegister(regTo), state.getTaintRegister(regFrom1), false)
                  });
+  }
+
+  @Override
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    val regAlloc = state.getRegisterAllocation();
+    int rTo = regAlloc.get(regTo);
+    int rFrom1 = regAlloc.get(regFrom1);
+    int rFrom2 = regAlloc.get(regFrom2);
+
+    if (!formWideRegister(rFrom1, rFrom2))
+      return throwWideRegistersExpected();
+
+    if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Unsigned(rFrom1, 4))
+      return new Instruction[] { new Instruction12x(Opcode_ConvertFromWide.convert(insnOpcode), (byte) rTo, (byte) rFrom1) };
+    else
+      return throwNoSuitableFormatFound();
+  }
+
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    return createSet(new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT),
+                     new GcRangeConstraint(regFrom1, ColorRange.RANGE_4BIT));
+  }
+
+  @Override
+  public Set<GcFollowConstraint> gcFollowConstraints() {
+    return createSet(new GcFollowConstraint(regFrom1, regFrom2));
+  }
+
+  @Override
+  public Set<DexRegister> lvaDefinedRegisters() {
+    return createSet(regTo);
+  }
+
+  @Override
+  public Set<DexRegister> lvaReferencedRegisters() {
+    return createSet(regFrom1, regFrom2);
   }
 }
