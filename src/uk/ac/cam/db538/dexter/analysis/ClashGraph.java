@@ -1,47 +1,75 @@
 package uk.ac.cam.db538.dexter.analysis;
 
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.utils.Pair;
-import uk.ac.cam.db538.dexter.utils.UnorderedPair;
 
 public class ClashGraph implements Cloneable {
 
-  private static class ClashGraph_Edge extends UnorderedPair<DexRegister> {
-    public ClashGraph_Edge(DexRegister rA, DexRegister rB) {
-      super(rA, rB);
-    }
-
-    public boolean formsEdge(DexRegister reg) {
-      return reg.equals(getValA()) || reg.equals(getValB());
-    }
-  }
-
   @Getter private final DexCode code;
 
-  private Set<DexRegister> vertices;
-  private Set<ClashGraph_Edge> edges;
+  private final PriorityQueue<DexRegister> vertices;
+  private final Map<DexRegister, Set<DexRegister>> edges;
+
+  private final Comparator<DexRegister> vertexComparator = new Comparator<DexRegister>() {
+    @Override
+    public int compare(DexRegister regA, DexRegister regB) {
+      return Integer.compare(getNodeDegree(regA), getNodeDegree(regB));
+    }
+  };
 
   public ClashGraph(DexCode code) {
+
+    val usedRegisters = code.getUsedRegisters();
+
     this.code = code;
+    this.vertices = new PriorityQueue<DexRegister>(usedRegisters.size(), vertexComparator);
+    this.edges = new HashMap<DexRegister, Set<DexRegister>>();
+
+    this.vertices.addAll(usedRegisters);
+
     update();
   }
 
   private ClashGraph(ClashGraph cg) {
-    code = cg.code;
-    vertices = new HashSet<DexRegister>(cg.vertices);
-    edges = new HashSet<ClashGraph_Edge>(cg.edges);
+    this.code = cg.code;
+    this.vertices = new PriorityQueue<DexRegister>(cg.vertices.size(), vertexComparator);
+    this.edges = new HashMap<DexRegister, Set<DexRegister>>();
+
+    this.vertices.addAll(cg.vertices);
+    for (val edgesEntry : cg.edges.entrySet()) {
+      val nodeA = edgesEntry.getKey();
+      for (val nodeB : edgesEntry.getValue())
+        addEdge(nodeA, nodeB);
+    }
+  }
+
+  private void addEdge(DexRegister nodeA, DexRegister nodeB) {
+    Set<DexRegister> setA = edges.get(nodeA);
+    Set<DexRegister> setB = edges.get(nodeB);
+
+    if (setA == null) {
+      setA = new HashSet<DexRegister>();
+      edges.put(nodeA, setA);
+    }
+    if (setB == null) {
+      setB = new HashSet<DexRegister>();
+      edges.put(nodeB, setB);
+    }
+
+    setA.add(nodeB);
+    setB.add(nodeA);
   }
 
   public void update() {
-    vertices = new HashSet<DexRegister>(code.getUsedRegisters());
-    edges = new HashSet<ClashGraph_Edge>();
-
     val LVA = new LiveVarAnalysis(code);
     for (val insn : code.getInstructionList()) {
       // generate all pairs of live-vars-out
@@ -49,7 +77,7 @@ public class ClashGraph implements Cloneable {
       val liveVarsOut = liveVarsOut_Set.toArray(new DexRegister[liveVarsOut_Set.size()]);
       for (int i = 0; i < liveVarsOut.length - 1; ++i)
         for (int j = i + 1; j < liveVarsOut.length; ++j)
-          edges.add(new ClashGraph_Edge(liveVarsOut[i], liveVarsOut[j]));
+          addEdge(liveVarsOut[i], liveVarsOut[j]);
 
       // generate pairs from the defined registers to live-vars-in
       val insnDefRegs = insn.lvaDefinedRegisters();
@@ -57,7 +85,7 @@ public class ClashGraph implements Cloneable {
       for (val defReg : insnDefRegs)
         for (val liveVar : liveVarsIn)
           if (defReg != liveVar)
-            edges.add(new ClashGraph_Edge(defReg, liveVar));
+            addEdge(defReg, liveVar);
     }
   }
 
@@ -70,54 +98,42 @@ public class ClashGraph implements Cloneable {
   }
 
   public boolean areClashing(DexRegister rA, DexRegister rB) {
-    return edges.contains(new ClashGraph_Edge(rA, rB));
+    val edgesA = edges.get(rA);
+    return (edges != null) && edgesA.contains(rB);
   }
 
   private int getNodeDegree(DexRegister reg) {
-    int degree = 0;
-    for (val edge : edges)
-      if (edge.formsEdge(reg))
-        degree++;
-    return degree;
-  }
-
-  private void removeNode(DexRegister node) {
-    vertices.remove(node);
-
-    val newEdges = new HashSet<ClashGraph_Edge>();
-    for (val edge : edges)
-      if (!edge.formsEdge(node))
-        newEdges.add(edge);
-    edges = newEdges;
+    val edgesReg = edges.get(reg);
+    if (edgesReg == null)
+      return 0;
+    else
+      return edgesReg.size();
   }
 
   public DexRegister removeLowestDegreeNode() {
-    Pair<Integer, DexRegister> lowest = null;
-    for (val reg : vertices) {
-      val degree = getNodeDegree(reg);
-      if (lowest == null || lowest.getValA() > degree)
-        lowest = new Pair<Integer, DexRegister>(degree, reg);
+    val lowest = vertices.poll();
+    if (lowest == null)
+      return null;
+
+    val neighbours = edges.get(lowest);
+    if (neighbours != null) {
+      for (val n : neighbours) {
+        val edgesN = edges.get(n);
+        if (edgesN != null)
+          edgesN.remove(lowest);
+      }
+      edges.remove(lowest);
     }
 
-    if (lowest != null) {
-      val reg = lowest.getValB();
-      removeNode(reg);
-      return reg;
-    } else
-      return null;
+    return lowest;
   }
 
   public Set<DexRegister> getNodeNeighbours(DexRegister node) {
-    val neighbours = new HashSet<DexRegister>();
-
-    for (val edge : edges) {
-      if (edge.getValA().equals(node))
-        neighbours.add(edge.getValB());
-      else if (edge.getValB().equals(node))
-        neighbours.add(edge.getValA());
-    }
-
-    return neighbours;
+    val neighbours = edges.get(node);
+    if (neighbours == null)
+      return new HashSet<DexRegister>();
+    else
+      return neighbours;
   }
 
   @Override

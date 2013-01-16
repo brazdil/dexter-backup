@@ -246,11 +246,12 @@ public class DexClass {
       else
         asmInstanceFields.add(field.writeToFile(outFile, cache));
 
-    for (val method : methods)
+    for (val method : methods) {
       if (method instanceof DexDirectMethod)
         asmDirectMethods.add(method.writeToFile(outFile, cache));
       else if ((method instanceof DexVirtualMethod) || (method instanceof DexAbstractMethod))
         asmVirtualMethods.add(method.writeToFile(outFile, cache));
+    }
 
     val classData = ClassDataItem.internClassDataItem(
                       outFile,
