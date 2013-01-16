@@ -213,14 +213,18 @@ public abstract class DexInstruction extends DexCodeElement {
     return (reg1 + 1 == reg2);
   }
 
-  long computeRelativeOffset(DexLabel target, DexCode_AssemblingState state) {
-    long offsetThis = state.getElementOffsets().get(this);
+  long computeRelativeOffset(DexCodeElement origin, DexCodeElement target, DexCode_AssemblingState state) {
+    long offsetOrigin = state.getElementOffsets().get(origin);
     long offsetTarget = state.getElementOffsets().get(target);
-    long offset = offsetTarget - offsetThis;
+    long offset = offsetTarget - offsetOrigin;
 
     if (offset == 0)
       throw new InstructionAssemblyException("Cannot have zero offset");
 
     return offset;
+  }
+
+  long computeRelativeOffset(DexCodeElement target, DexCode_AssemblingState state) {
+    return computeRelativeOffset(this, target, state);
   }
 }

@@ -1,8 +1,10 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
@@ -11,6 +13,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -69,4 +72,27 @@ public class DexInstruction_PackedSwitchData extends DexInstruction {
   @Override
   public void instrument(DexCode_InstrumentationState state) { }
 
+  @Override
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    val targetOffsets = new int[targets.size()];
+    for (int i = 0; i < targets.size(); ++i) {
+      long offset = computeRelativeOffset(parentInstruction, targets.get(i), state);
+      if (fitsIntoBits_Signed(offset, 32))
+        targetOffsets[i] = (int) offset;
+      else
+        return throwNoSuitableFormatFound();
+    }
+
+    return new Instruction[] { new PackedSwitchDataPseudoInstruction(firstKey, targetOffsets) };
+  }
+
+  @Override
+  public boolean cfgEndsBasicBlock() {
+    return true;
+  }
+
+  @Override
+  public Set<DexCodeElement> cfgGetSuccessors() {
+    return new HashSet<DexCodeElement>(targets);
+  }
 }
