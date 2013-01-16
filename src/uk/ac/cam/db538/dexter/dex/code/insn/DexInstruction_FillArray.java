@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Map;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
@@ -9,7 +10,9 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction31t;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -65,5 +68,34 @@ public class DexInstruction_FillArray extends DexInstruction {
   @Override
   public void instrument(DexCode_InstrumentationState state) { }
 
+  @Override
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    int rArray = state.getRegisterAllocation().get(regArray);
+    long offset = computeRelativeOffset(arrayTable, state);
 
+    if (fitsIntoBits_Unsigned(rArray, 8) && fitsIntoBits_Signed(offset, 32))
+      return new Instruction[] { new Instruction31t(Opcode.FILL_ARRAY_DATA, (short) rArray, (int) offset) };
+    else
+      return throwNoSuitableFormatFound();
+  }
+
+  @Override
+  public boolean cfgEndsBasicBlock() {
+    return true;
+  }
+
+  @Override
+  public Set<DexCodeElement> cfgGetSuccessors() {
+    return createSet((DexCodeElement) arrayTable);
+  }
+
+  @Override
+  public Set<DexRegister> lvaReferencedRegisters() {
+    return createSet(regArray);
+  }
+
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    return createSet(new GcRangeConstraint(regArray, ColorRange.RANGE_8BIT));
+  }
 }

@@ -74,7 +74,7 @@ public class DexInstruction_Switch extends DexInstruction {
     int rTest = state.getRegisterAllocation().get(regTest);
     long offset = computeRelativeOffset(switchTable, state);
 
-    if (!fitsIntoBits_Unsigned(rTest, 8))
+    if ((!fitsIntoBits_Unsigned(rTest, 8)) || (!fitsIntoBits_Signed(offset, 32)))
       return throwNoSuitableFormatFound();
 
     if (packed)

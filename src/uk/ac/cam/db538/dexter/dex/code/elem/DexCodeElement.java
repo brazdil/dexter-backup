@@ -34,7 +34,7 @@ public abstract class DexCodeElement {
 
   public abstract String getOriginalAssembly();
 
-  protected final DexCodeElement getNextCodeElement() {
+  public final DexCodeElement getNextCodeElement() {
     val insns = methodCode.getInstructionList();
 
     int location = insns.indexOf(this);
