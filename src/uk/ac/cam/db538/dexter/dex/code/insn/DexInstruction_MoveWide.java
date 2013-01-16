@@ -14,6 +14,7 @@ import org.jf.dexlib.Code.Format.Instruction32x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -117,4 +118,14 @@ public class DexInstruction_MoveWide extends DexInstruction {
     return createSet(new GcFollowConstraint(regTo1, regTo2),
                      new GcFollowConstraint(regFrom1, regFrom2));
   }
+
+  @Override
+  public void instrument(DexCode_InstrumentationState state) {
+    val code = getMethodCode();
+    code.replace(this, new DexCodeElement[] {
+                   this,
+                   new DexInstruction_Move(code, state.getTaintRegister(regTo1), state.getTaintRegister(regFrom1), false)
+                 });
+  }
+
 }
