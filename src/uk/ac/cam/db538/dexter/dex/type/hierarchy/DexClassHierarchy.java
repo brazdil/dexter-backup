@@ -347,7 +347,7 @@ public class DexClassHierarchy {
 
       // TODO: don't have complete runtime class list
       // therefore cannot decide if the call can be external
-      canBeExternal = true;
+      canBeExternal = !callClass.isDefinedInternally();
 
       if (!canBeInternal && !canBeExternal)
         throw new ClassHierarchyException("Invoke destination not found: calling " + callClass.getPrettyName() + "." + methodName);
