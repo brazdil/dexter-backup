@@ -98,22 +98,22 @@ public class DexInstruction_ArrayGet extends DexInstruction {
   public void instrument(DexCode_InstrumentationState state) {
     // need to combine the taint of the array object and the index
     val code = getMethodCode();
-    val regArrayTaint = new DexRegister();
+    val regArrayTaint = state.getTaintRegister(regArray);
     if (opcode != Opcode_GetPut.Object) {
       code.replace(this,
                    new DexCodeElement[] {
+              	new DexPseudoinstruction_GetObjectTaint(code, regArrayTaint, regArray),
                      this,
-                     new DexPseudoinstruction_GetObjectTaint(code, regArrayTaint, regArray),
-                     new DexInstruction_BinaryOp(code, state.getTaintRegister(regTo), regArrayTaint, state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt),
+                   	new DexInstruction_BinaryOp(code, state.getTaintRegister(regTo), regArrayTaint, state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt)
                    });
     } else {
       val regTotalTaint = new DexRegister();
       code.replace(this,
                    new DexCodeElement[] {
-                     this,
                      new DexPseudoinstruction_GetObjectTaint(code, regArrayTaint, regArray),
                      new DexInstruction_BinaryOp(code, regTotalTaint, regArrayTaint, state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt),
-                     new DexPseudoinstruction_SetObjectTaint(code, regArray, regTotalTaint)
+                     this,
+                     new DexPseudoinstruction_SetObjectTaint(code, state.getTaintRegister(regTo), regTotalTaint)
                    });
     }
   }

@@ -139,13 +139,14 @@ public class DexInstruction_InstanceGet extends DexInstruction {
         // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
         // combine the taint stored in adjoined field with the taint of the object
         val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
-        val regObjectTaint = new DexRegister();
+        val regObjectTaint = state.getTaintRegister(regObject);
         code.replace(this,
                      new DexCodeElement[] {
-                       this,
-                       new DexPseudoinstruction_GetObjectTaint(code, regObjectTaint, regObject),
-                       new DexInstruction_InstanceGet(code, regValueTaint, regObject, state.getCache().getTaintField(field)),
-                       new DexInstruction_BinaryOp(code, regValueTaint, regValueTaint, regObjectTaint, Opcode_BinaryOp.OrInt)
+        		// must get the object taint BEFORE the original instruction, or the object reference could be overwritten
+        				new DexPseudoinstruction_GetObjectTaint(code, regObjectTaint, regObject),
+                        new DexInstruction_InstanceGet(code, regValueTaint, regObject, state.getCache().getTaintField(field)),
+                        new DexInstruction_BinaryOp(code, regValueTaint, regValueTaint, regObjectTaint, Opcode_BinaryOp.OrInt),
+                       this
                      });
 
       } else
@@ -153,8 +154,8 @@ public class DexInstruction_InstanceGet extends DexInstruction {
         // assign the same taint as the containing object has
         code.replace(this,
                      new DexCodeElement[] {
-                       this,
-                       new DexPseudoinstruction_GetObjectTaint(code, regValueTaint, regObject)
+                       new DexPseudoinstruction_GetObjectTaint(code, regValueTaint, regObject),
+                       this
                      });
 
     } else {

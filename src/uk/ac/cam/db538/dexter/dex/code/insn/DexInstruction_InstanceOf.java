@@ -17,22 +17,23 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_InstanceOf extends DexInstruction {
 
   @Getter private final DexRegister regTo;
-  @Getter private final DexRegister regFrom;
+  @Getter private final DexRegister regObject;
   @Getter private final DexReferenceType value;
 
   // CAREFUL: likely to throw exception
 
-  public DexInstruction_InstanceOf(DexCode methodCode, DexRegister to, DexRegister from, DexReferenceType value) {
+  public DexInstruction_InstanceOf(DexCode methodCode, DexRegister to, DexRegister object, DexReferenceType value) {
     super(methodCode);
 
     this.regTo = to;
-    this.regFrom = from;
+    this.regObject = object;
     this.value = value;
   }
 
@@ -43,7 +44,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
 
       val insnInstanceOf = (Instruction22c) insn;
       regTo = parsingState.getRegister(insnInstanceOf.getRegisterA());
-      regFrom = parsingState.getRegister(insnInstanceOf.getRegisterB());
+      regObject = parsingState.getRegister(insnInstanceOf.getRegisterB());
       value = DexReferenceType.parse(
                 ((TypeIdItem) insnInstanceOf.getReferencedItem()).getTypeDescriptor(),
                 parsingState.getCache());
@@ -54,7 +55,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    return "instance-of " + regTo.getOriginalIndexString() + ", " + regFrom.getOriginalIndexString() +
+    return "instance-of " + regTo.getOriginalIndexString() + ", " + regObject.getOriginalIndexString() +
            ", " + value.getDescriptor();
   }
 
@@ -62,7 +63,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(
              new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT),
-             new GcRangeConstraint(regFrom, ColorRange.RANGE_4BIT));
+             new GcRangeConstraint(regObject, ColorRange.RANGE_4BIT));
   }
 
   @Override
@@ -70,7 +71,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
     return new DexInstruction_InstanceOf(
              getMethodCode(),
              mapping.get(regTo),
-             mapping.get(regFrom),
+             mapping.get(regObject),
              value);
   }
 
@@ -81,7 +82,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
-    return createSet(regFrom);
+    return createSet(regObject);
   }
 
   @Override
@@ -90,8 +91,8 @@ public class DexInstruction_InstanceOf extends DexInstruction {
     val code = getMethodCode();
     code.replace(this,
                  new DexCodeElement[] {
-                   this,
-                   new DexInstruction_Move(code, regTo, regFrom, false)
+    			   new DexPseudoinstruction_GetObjectTaint(code, state.getTaintRegister(regTo), regObject),
+                   this
                  });
   }
 }
