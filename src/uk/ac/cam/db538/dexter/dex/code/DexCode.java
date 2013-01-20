@@ -27,6 +27,7 @@ import org.jf.dexlib.Code.Format.Instruction10x;
 import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
+import sun.management.counter.perf.InstrumentationException;
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
 import uk.ac.cam.db538.dexter.dex.Dex;
@@ -325,8 +326,7 @@ public class DexCode {
       if (thisInsn instanceof DexInstruction_Invoke) {
         val nextInsnPair = nextInstruction(insns, i);
 
-        // replace INVOKE & MOVE_RESULT pairs with single
-        // Invoke pseudoinstruction
+        // replace INVOKE & MOVE_RESULT pairs with a single Invoke pseudoinstruction
         if (nextInsnPair != null &&
             (nextInsnPair.getValA() instanceof DexInstruction_MoveResult) ||
             (nextInsnPair.getValA() instanceof DexInstruction_MoveResultWide)) {
@@ -335,8 +335,13 @@ public class DexCode {
                          (DexInstruction_Invoke) thisInsn,
                          (DexInstruction) nextInsnPair.getValA()));
           // add the non-instructions which might be between the call and result move
-          for (int j = i + 1; j < nextInsnPair.getValB(); ++j)
-            newInsns.add(insns.get(j));
+          for (int j = i + 1; j < nextInsnPair.getValB(); ++j) {
+            val middleInsn = insns.get(j);
+            if (middleInsn instanceof DexTryBlockEnd)
+              newInsns.add(middleInsn);
+            else
+              throw new InstrumentationException("Unexpected jump-to code element between invoke and move-result");
+          }
           // jump to the following insn
           i = nextInsnPair.getValB();
 
