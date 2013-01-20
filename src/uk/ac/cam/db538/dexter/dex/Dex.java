@@ -47,6 +47,7 @@ public class Dex {
   @Getter private DexClassType internalMethodAnnotation_Type;
 
   @Getter private DexClassType taintConstants_Type;
+  @Getter private DexDirectMethod taintConstants_QueryTaint;
 
   @Getter private DexClass externalStaticFieldTaint_Class;
   @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
@@ -160,14 +161,13 @@ public class Dex {
 
     for (val clazz : extraClasses)
       if (clazz.getType() == objectTaintStorage_Type) {
-        for (val method : clazz.getMethods()) {
-          if (! (method instanceof DexDirectMethod))
+        for (val method : clazz.getMethods())
+          if (!(method instanceof DexDirectMethod))
             continue;
-          if (method.getName().equals("get"))
+          else if (method.getName().equals("get"))
             objectTaintStorage_Get = (DexDirectMethod) method;
           else if (method.getName().equals("set"))
             objectTaintStorage_Set = (DexDirectMethod) method;
-        }
 
       } else if (clazz.getType() == methodCallHelper_Type) {
         for (val field : clazz.getFields())
@@ -179,6 +179,14 @@ public class Dex {
             methodCallHelper_SArg = field;
           else if (field.getName().equals("S_RES"))
             methodCallHelper_SRes = field;
+
+      } else if (clazz.getType() == taintConstants_Type) {
+        for (val method : clazz.getMethods())
+          if (!(method instanceof DexDirectMethod))
+            continue;
+          else if (method.getName().equals("queryTaint"))
+            taintConstants_QueryTaint = (DexDirectMethod) method;
+
       }
 
     return extraClasses;
