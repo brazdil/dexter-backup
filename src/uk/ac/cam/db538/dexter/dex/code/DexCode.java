@@ -356,17 +356,23 @@ public class DexCode {
   }
 
   private void unwrapPseudoinstructions() {
-    val insns = instructionList;
-    val codeLength = insns.size();
-    val newInsns = new NoDuplicatesList<DexCodeElement>(codeLength);
+    boolean unwrappedSomething;
+    do {
+      unwrappedSomething = false;
 
-    for (val insn : insns)
-      if (insn instanceof DexPseudoinstruction)
-        newInsns.addAll(((DexPseudoinstruction) insn).unwrap());
-      else
-        newInsns.add(insn);
+      val insns = instructionList;
+      val codeLength = insns.size();
+      val newInsns = new NoDuplicatesList<DexCodeElement>(codeLength);
 
-    replaceInstructions(newInsns);
+      for (val insn : insns)
+        if (insn instanceof DexPseudoinstruction) {
+          newInsns.addAll(((DexPseudoinstruction) insn).unwrap());
+          unwrappedSomething = true;
+        } else
+          newInsns.add(insn);
+
+      replaceInstructions(newInsns);
+    } while (unwrappedSomething);
   }
 
   public void instrument(DexInstrumentationCache cache) {
@@ -632,6 +638,9 @@ public class DexCode {
   }
 
   public AssembledCode assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache, int absoluteAddressOffset) {
+    if (getParentClass().getType().getDescriptor().equals("L$0;"))
+      System.out.println("SHITT");
+
     while (true) {
       try {
         val asmState = new DexCode_AssemblingState(this, cache, regAlloc);
@@ -640,9 +649,11 @@ public class DexCode {
 
         // keep updating the offsets of instructions
         // until they converge
-        boolean offsetsChanged;
+        boolean offsetsChanged = true;
+        boolean didSecondPass;
         do {
           bytecode.clear();
+          didSecondPass = !offsetsChanged;
           offsetsChanged = false;
 
           // assemble each instruction
@@ -662,7 +673,7 @@ public class DexCode {
 
             long previousOffset = asmState.getElementOffsets().get(elem);
             offsetsChanged |= (offset != previousOffset);
-            asmState.setElementOffset(elem, offset);
+            asmState.setNextPassElementOffset(elem, offset);
 
             if (elem instanceof DexInstruction) {
               val insn = (DexInstruction) elem;
@@ -675,9 +686,9 @@ public class DexCode {
             }
           }
 
-
           totalCodeLength = (int) offset;
-        } while (offsetsChanged);
+          asmState.swapElementOffsetBuffers();
+        } while (offsetsChanged || !didSecondPass);
 
         // all is ready, let's create the result
 

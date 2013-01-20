@@ -16,6 +16,7 @@ public class DexCode_AssemblingState {
   @Getter private DexAssemblingCache cache;
   private Map<DexRegister, Integer> registerAllocation;
   private Map<DexCodeElement, Long> elementOffsets;
+  private Map<DexCodeElement, Long> elementOffsets_NextPass;
 
   public DexCode_AssemblingState(DexCode code, DexAssemblingCache cache, Map<DexRegister, Integer> regAlloc) {
     this.cache = cache;
@@ -26,6 +27,7 @@ public class DexCode_AssemblingState {
     // start by setting the size of each instruction to 1
     // later on, it will get increased iteratively
     this.elementOffsets = new HashMap<DexCodeElement, Long>();
+    this.elementOffsets_NextPass = new HashMap<DexCodeElement, Long>();
     if (this.code != null) {
       long offset = 0;
       for (val elem : this.code.getInstructionList()) {
@@ -44,7 +46,13 @@ public class DexCode_AssemblingState {
     return Collections.unmodifiableMap(elementOffsets);
   }
 
-  public void setElementOffset(DexCodeElement elem, long offset) {
-    elementOffsets.put(elem, offset);
+  public void setNextPassElementOffset(DexCodeElement elem, long offset) {
+    elementOffsets_NextPass.put(elem, offset);
+  }
+
+  public void swapElementOffsetBuffers() {
+    val temp = elementOffsets;
+    elementOffsets = elementOffsets_NextPass;
+    elementOffsets_NextPass = temp;
   }
 }
