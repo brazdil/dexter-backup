@@ -638,9 +638,6 @@ public class DexCode {
   }
 
   public AssembledCode assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache, int absoluteAddressOffset) {
-    if (getParentClass().getType().getDescriptor().equals("L$0;"))
-      System.out.println("SHITT");
-
     while (true) {
       try {
         val asmState = new DexCode_AssemblingState(this, cache, regAlloc);
