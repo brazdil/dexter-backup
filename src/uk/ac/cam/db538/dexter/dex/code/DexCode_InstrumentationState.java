@@ -5,14 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Getter;
+import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.ContentResolverInstrumentor;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.ExternalCallInstrumentor;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.String_GetBytesInstrumentor;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.Cursor_GetStringInstrumentor;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexCode_InstrumentationState {
   private final Map<DexRegister, DexRegister> registerMap;
