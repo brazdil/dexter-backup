@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.dex.code.insn.pseudo;
+package uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,23 +12,23 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalMethodAnnotation;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
-import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
@@ -54,7 +54,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     this(methodCode, insnInvoke, null);
   }
 
-  private boolean movesResult() {
+  public boolean movesResult() {
     return instructionMoveResult != null;
   }
 
@@ -177,93 +177,34 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     return codePostInternalCall;
   }
 
-  private List<DexCodeElement> generatePreExternalCallCode(DexRegister regCombinedTaint, DexCode_InstrumentationState state) {
-    val codePreExternalCall = new NoDuplicatesList<DexCodeElement>();
-    val methodCode = getMethodCode();
-    val isStaticCall = (instructionInvoke.getCallType() == Opcode_Invoke.Static);
+  private List<DexCodeElement> generateExternalCallCode(DexCode_InstrumentationState state) {
+    ExternalCallInstrumentor instrumentor = null;
 
-    val methodPrototype = instructionInvoke.getMethodPrototype();
-    val methodParameterRegs = instructionInvoke.getArgumentRegisters();
-
-    codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(
-                              methodCode,
-                              "$$$ EXTERNAL CALL: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
-                              true));
-
-    // if there are any parameters...
-    if (!methodPrototype.getParameterTypes().isEmpty()) {
-      // combine the taint of the object (if not static call) and all the parameters
-
-      val regObjectArgTaint = new DexRegister();
-      if (isStaticCall)
-        codePreExternalCall.add(new DexInstruction_Const(methodCode, regCombinedTaint, 0));
-      else
-        codePreExternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regCombinedTaint, methodParameterRegs.get(0)));
-
-      int paramIndex = isStaticCall ? 0 : 1;
-      for (val paramType : methodPrototype.getParameterTypes()) {
-        DexRegister regArgTaint;
-        if (paramType instanceof DexPrimitiveType)
-          regArgTaint = state.getTaintRegister(methodParameterRegs.get(paramIndex));
-        else {
-          codePreExternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regObjectArgTaint, methodParameterRegs.get(paramIndex)));
-          regArgTaint = regObjectArgTaint;
-        }
-        codePreExternalCall.add(new DexInstruction_BinaryOp(methodCode, regCombinedTaint, regCombinedTaint, regArgTaint, Opcode_BinaryOp.OrInt));
-        paramIndex += paramType.getRegisters();
-      }
-
-      codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(methodCode, "$$$  TAINT = ", false));
-      codePreExternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regCombinedTaint, true));
-
-      // assign the combined taint to the object and all its non-primitive arguments
-
-      if (!isStaticCall)
-        codePreExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, methodParameterRegs.get(0), regCombinedTaint));
-
-      paramIndex = isStaticCall ? 0 : 1;
-      for (val paramType : methodPrototype.getParameterTypes()) {
-        if (paramType instanceof DexReferenceType)
-          codePreExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, methodParameterRegs.get(paramIndex), regCombinedTaint));
-        paramIndex += paramType.getRegisters();
-      }
-    }
-
-    return codePreExternalCall;
-  }
-
-  private List<DexCodeElement> generatePostExternalCallCode(DexRegister regCombinedTaint, DexCode_InstrumentationState state) {
-    val codePostExternalCall = new NoDuplicatesList<DexCodeElement>();
-    val methodCode = getMethodCode();
-    val methodPrototype = instructionInvoke.getMethodPrototype();
-
-    if (movesResult()) {
-      if (methodPrototype.getReturnType() instanceof DexPrimitiveType) {
-        DexRegister regResult;
-        if (instructionMoveResult instanceof DexInstruction_MoveResult)
-          regResult = ((DexInstruction_MoveResult) instructionMoveResult).getRegTo();
+    for (val inst : state.getExternalCallInstrumentors()) {
+      if (inst.canBeApplied(this)) {
+        if (instrumentor == null)
+          instrumentor = inst;
         else
-          regResult = ((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo1();
-        codePostExternalCall.add(
-          new DexInstruction_Move(methodCode, state.getTaintRegister(regResult), regCombinedTaint, false));
-
-      } else
-        codePostExternalCall.add(
-          new DexPseudoinstruction_SetObjectTaint(methodCode, ((DexInstruction_MoveResult) instructionMoveResult).getRegTo(), regCombinedTaint));
+          throw new Error("Multiple instrumentors can be applied to external call: " +
+                          instructionInvoke.getClassType().getPrettyName() + "." + instructionInvoke.getMethodName());
+      }
     }
 
-    return codePostExternalCall;
+    if (instrumentor == null)
+      instrumentor = new FallbackInstrumentor();
+
+    val instrumentation = instrumentor.generateInstrumentation(this, state);
+
+    val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
+    instrumentedCode.addAll(instrumentation.getValA());
+    instrumentedCode.add(this);
+    instrumentedCode.addAll(instrumentation.getValB());
+
+    return instrumentedCode;
   }
 
   private void instrumentDirectExternal(DexCode_InstrumentationState state) {
-    val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
-    val regCombinedTaint = new DexRegister();
-
-    instrumentedCode.addAll(generatePreExternalCallCode(regCombinedTaint, state));
-    instrumentedCode.add(this);
-    instrumentedCode.addAll(generatePostExternalCallCode(regCombinedTaint, state));
-
-    getMethodCode().replace(this, instrumentedCode);
+    getMethodCode().replace(this, generateExternalCallCode(state));
   }
 
   private void instrumentDirectInternal(DexCode_InstrumentationState state) {
@@ -323,10 +264,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     }
 
     if (canBeExternalCall) {
-      val regCombinedTaint = new DexRegister();
-      instrumentedCode.addAll(generatePreExternalCallCode(regCombinedTaint, state));
-      instrumentedCode.add(this);
-      instrumentedCode.addAll(generatePostExternalCallCode(regCombinedTaint, state));
+      instrumentedCode.addAll(generateExternalCallCode(state));
     }
 
     if (canBeAnyCall) {

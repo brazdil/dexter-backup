@@ -91,7 +91,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
     val code = getMethodCode();
     code.replace(this,
                  new DexCodeElement[] {
-    			   new DexPseudoinstruction_GetObjectTaint(code, state.getTaintRegister(regTo), regObject),
+                   new DexPseudoinstruction_GetObjectTaint(code, state.getTaintRegister(regTo), regObject),
                    this
                  });
   }

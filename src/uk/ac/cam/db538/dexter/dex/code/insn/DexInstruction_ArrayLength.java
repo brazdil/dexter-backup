@@ -81,7 +81,7 @@ public class DexInstruction_ArrayLength extends DexInstruction {
     val code = getMethodCode();
     code.replace(this,
                  new DexCodeElement[] {
-            new DexPseudoinstruction_GetObjectTaint(code, state.getTaintRegister(regTo), regArray),
+                   new DexPseudoinstruction_GetObjectTaint(code, state.getTaintRegister(regTo), regArray),
                    this
                  });
   }

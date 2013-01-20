@@ -38,8 +38,10 @@ public class Apk {
 
   public void writeToFile(File filename) throws IOException {
     // prepare the new dex file
+    System.out.println("Generating new DEX");
     final byte[] newDex = dexFile.writeToFile();
 
+    System.out.println("Replacing DEX");
     try {
       // replace classes.dex in the original file
       ZipParameters parameters = new ZipParameters();
@@ -63,64 +65,67 @@ public class Apk {
       throw new IOException(e);
     }
 
+    System.out.println("Generating a signature");
     // generate a key
     val keyFile = File.createTempFile("dexter-", ".keystore");
     keyFile.delete();
-    val keyToolPB = new ProcessBuilder("keytool", 
-    		"-genkey", 
-    		"-keystore", keyFile.getAbsolutePath(),
-    	    "-storepass", "dexter", 
-    	    "-alias", "DexterKey", 
-    	    "-keypass", "dexter", 
-    	    "-keyalg", "RSA", 
-    	    "-keysize", "2048",
-    	    "-dname", "CN=Android Debug,O=Android,C=US", 
-    	    "-validity", "10000");
+    val keyToolPB = new ProcessBuilder("keytool",
+                                       "-genkey",
+                                       "-keystore", keyFile.getAbsolutePath(),
+                                       "-storepass", "dexter",
+                                       "-alias", "DexterKey",
+                                       "-keypass", "dexter",
+                                       "-keyalg", "RSA",
+                                       "-keysize", "2048",
+                                       "-dname", "CN=Android Debug,O=Android,C=US",
+                                       "-validity", "10000");
     keyToolPB.redirectErrorStream(true);
     val keyToolProcess = keyToolPB.start();
-    
-	val keyToolExecOutputReader = new BufferedReader(new InputStreamReader(keyToolProcess.getInputStream()));
-	String keyToolExecOutputLine;
-	while ((keyToolExecOutputLine = keyToolExecOutputReader.readLine()) != null)
-		System.err.println(keyToolExecOutputLine);
-	
+
+    val keyToolExecOutputReader = new BufferedReader(new InputStreamReader(keyToolProcess.getInputStream()));
+    String keyToolExecOutputLine;
+    while ((keyToolExecOutputLine = keyToolExecOutputReader.readLine()) != null)
+      System.err.println(keyToolExecOutputLine);
+
     int keyToolExecResult;
-	try {
-		keyToolExecResult = keyToolProcess.waitFor();
-	} catch (InterruptedException e) {
-		keyToolExecResult = -99;
-	}
+    try {
+      keyToolExecResult = keyToolProcess.waitFor();
+    } catch (InterruptedException e) {
+      keyToolExecResult = -99;
+    }
     if (keyToolExecResult != 0) {
-    	throw new IOException("Keytool execution failed (code " + keyToolExecResult + ")");
+      throw new IOException("Keytool execution failed (code " + keyToolExecResult + ")");
     }
 
+    System.out.println("Signing the APK");
     // sign the file
     val jarsignerPB = new ProcessBuilder("jarsigner",
-    		"-keystore", keyFile.getAbsolutePath(),
-    	    "-storepass", "dexter", 
-    	    "-keypass", "dexter", 
-    	    "-sigalg", "MD5withRSA", 
-    	    "-digestalg", "SHA1",
-    	    temporaryFilename.getAbsolutePath(), 
-    	    "DexterKey"); 
-      jarsignerPB.redirectErrorStream(true);
+                                         "-keystore", keyFile.getAbsolutePath(),
+                                         "-storepass", "dexter",
+                                         "-keypass", "dexter",
+                                         "-sigalg", "MD5withRSA",
+                                         "-digestalg", "SHA1",
+                                         temporaryFilename.getAbsolutePath(),
+                                         "DexterKey");
+    jarsignerPB.redirectErrorStream(true);
     val jarsignerProcess = jarsignerPB.start();
-    
-	val jarsignerExecOutputReader = new BufferedReader(new InputStreamReader(jarsignerProcess.getInputStream()));
-	String jarsignerExecOutputLine;
-	while ((jarsignerExecOutputLine = jarsignerExecOutputReader.readLine()) != null)
-		System.err.println(jarsignerExecOutputLine);
-	
+
+    val jarsignerExecOutputReader = new BufferedReader(new InputStreamReader(jarsignerProcess.getInputStream()));
+    String jarsignerExecOutputLine;
+    while ((jarsignerExecOutputLine = jarsignerExecOutputReader.readLine()) != null)
+      System.err.println(jarsignerExecOutputLine);
+
     int jarsignerExecResult;
-	try {
-		jarsignerExecResult = jarsignerProcess.waitFor();
-	} catch (InterruptedException e) {
-		jarsignerExecResult = -99;
-	}
-    if (jarsignerExecResult != 0) {
-    	throw new IOException("Jarsigner execution failed (code " + jarsignerExecResult + ")");
+    try {
+      jarsignerExecResult = jarsignerProcess.waitFor();
+    } catch (InterruptedException e) {
+      jarsignerExecResult = -99;
     }
-    
+    if (jarsignerExecResult != 0) {
+      throw new IOException("Jarsigner execution failed (code " + jarsignerExecResult + ")");
+    }
+
+    System.out.println("Saving APK to given file");
     // copy the temp file to the given location
     FileUtils.copyFile(temporaryFilename, filename);
   }

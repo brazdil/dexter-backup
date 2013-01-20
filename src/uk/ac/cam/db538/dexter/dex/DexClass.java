@@ -201,6 +201,7 @@ public class DexClass {
   }
 
   public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
+    System.out.println("Assembling class " + this.getType().getPrettyName());
     val interfaces = this.getInterfaces();
     val classAnnotations = this.getAnnotations();
 

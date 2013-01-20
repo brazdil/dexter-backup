@@ -319,6 +319,8 @@ public class DexCode {
 
     for (int i = 0; i < codeLength; i++) {
       val thisInsn = insns.get(i);
+      if (getParentClass().getType().getDescriptor().contains("MyService$4"))
+        System.out.println(i + " - " + thisInsn.getOriginalAssembly());
 
       if (thisInsn instanceof DexInstruction_Invoke) {
         val nextInsnPair = nextInstruction(insns, i);
@@ -332,10 +334,14 @@ public class DexCode {
                          this,
                          (DexInstruction_Invoke) thisInsn,
                          (DexInstruction) nextInsnPair.getValA()));
+          // add the non-instructions which might be between the call and result move
+          for (int j = i + 1; j < nextInsnPair.getValB(); ++j)
+            newInsns.add(insns.get(j));
+          // jump to the following insn
           i = nextInsnPair.getValB();
 
-          // to conform, replace other INVOKEs as well
         } else
+          // to conform, replace other INVOKEs as well
           newInsns.add(new DexPseudoinstruction_Invoke(
                          this,
                          (DexInstruction_Invoke) thisInsn));
@@ -362,6 +368,9 @@ public class DexCode {
 
   public void instrument(DexInstrumentationCache cache) {
     generatePseudoinstructions();
+
+    if (getParentClass().getType().getDescriptor().contains("MyService$4"))
+      System.out.println("SHITTT");
 
     instrumentationState = new DexCode_InstrumentationState(this, cache);
 
