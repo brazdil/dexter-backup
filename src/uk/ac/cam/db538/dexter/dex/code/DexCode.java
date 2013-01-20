@@ -320,8 +320,6 @@ public class DexCode {
 
     for (int i = 0; i < codeLength; i++) {
       val thisInsn = insns.get(i);
-      if (getParentClass().getType().getDescriptor().contains("MyService$4"))
-        System.out.println(i + " - " + thisInsn.getOriginalAssembly());
 
       if (thisInsn instanceof DexInstruction_Invoke) {
         val nextInsnPair = nextInstruction(insns, i);
@@ -373,9 +371,6 @@ public class DexCode {
 
   public void instrument(DexInstrumentationCache cache) {
     generatePseudoinstructions();
-
-    if (getParentClass().getType().getDescriptor().contains("MyService$4"))
-      System.out.println("SHITTT");
 
     instrumentationState = new DexCode_InstrumentationState(this, cache);
 
