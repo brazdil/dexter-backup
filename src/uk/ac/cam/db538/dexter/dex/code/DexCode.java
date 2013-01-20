@@ -104,11 +104,11 @@ import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalClassAnnotation;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetMethodCaller;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintString;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.DexPseudoinstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -277,11 +277,13 @@ public class DexCode {
     boolean hitStart = false, hitEnd = false;
 
     for (val elem : instructionList) {
+      // order of the ifs matters here!
+      // if elemSought equals elemStart or elemEnd, we still want to return true
+      if (elem == elemStart)
+        hitStart = true;
       if (elem == elemSought)
         return hitStart && !hitEnd;
-      else if (elem == elemStart)
-        hitStart = true;
-      else if (elem == elemEnd)
+      if (elem == elemEnd)
         hitEnd = true;
     }
 
@@ -464,7 +466,6 @@ public class DexCode {
           addedCode.add(new DexPseudoinstruction_PrintInteger(this, regArrayElement, true));
 
           paramTaintArrayIndex++;
-          paramRegIndex += paramType.getRegisters();
         } else {
           // for objects, assign the taint of the 'this' object
           if (!staticMethod && !constructorMethod) {
@@ -472,6 +473,7 @@ public class DexCode {
             addedCode.add(new DexPseudoinstruction_SetObjectTaint(this, regParamMapping, regThisTaint));
           }
         }
+        paramRegIndex += paramType.getRegisters();
       }
 
       if (hasPrimitiveArgument) {

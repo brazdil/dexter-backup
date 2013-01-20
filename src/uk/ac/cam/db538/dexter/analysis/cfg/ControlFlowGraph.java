@@ -27,6 +27,14 @@ public class ControlFlowGraph {
     generateCFG();
   }
 
+  private CfgBlock getBlockByFirstInsn(DexCodeElement firstInsn, HashMap<DexCodeElement, CfgBasicBlock> insnBlockMap) {
+    val block = insnBlockMap.get(firstInsn);
+    if (block == null)
+      throw new CfgException("Successor of a block doesn't point to a different block");
+    else
+      return block;
+  }
+
   private void generateCFG() {
 
     val insns = code.getInstructionList();
@@ -76,16 +84,24 @@ public class ControlFlowGraph {
         val lastInsn = block.getLastInstruction();
         val lastInsnSuccs = lastInsn.cfgGetSuccessors();
 
-        // if a block ends with a returning instruction
-        // connect it to EXIT
+        for (val succ : lastInsnSuccs)
+          CfgBlock.createEdge(block, getBlockByFirstInsn(succ, insnBlockMap));
+
+        // if a block ends with a returning instruction connect it to EXIT
         if (lastInsn.cfgExitsMethod() || lastInsnSuccs.isEmpty())
           CfgBlock.createEdge(block, exitBlock);
 
-        for (val succ : lastInsnSuccs) {
-          val blockSucc = insnBlockMap.get(succ);
-          if (blockSucc == null)
-            throw new CfgException("Successor of a block doesn't point to a different block");
-          CfgBlock.createEdge(block, blockSucc);
+        // if one of the instructions (pick any) is inside a try block,
+        // connect the whole block to the catch blocks
+        // (depends on the fact that try block starts and ends a basic block)
+        for (val tryEnd : code.getTryBlocks()) {
+          val tryStart = tryEnd.getBlockStart();
+          if (code.isBetween(tryStart, tryEnd, lastInsn)) {
+            if (tryStart.getCatchAllHandler() != null)
+              CfgBlock.createEdge(block, getBlockByFirstInsn(tryStart.getCatchAllHandler(), insnBlockMap));
+            for (val catchBlock : tryStart.getCatchHandlers())
+              CfgBlock.createEdge(block, getBlockByFirstInsn(catchBlock, insnBlockMap));
+          }
         }
       }
     }
