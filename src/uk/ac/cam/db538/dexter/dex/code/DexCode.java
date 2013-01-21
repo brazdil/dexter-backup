@@ -409,14 +409,6 @@ public class DexCode {
     // (they are defined internally, so they couldn't be referenced from outside)
     boolean virtualMethod = parentMethod.isVirtual();
 
-    addedCode.add(
-      new DexPseudoinstruction_PrintStringConst(
-        this,
-        "$$$ METHOD " +
-        parentMethod.getParentClass().getType().getPrettyName() +
-        "..." + parentMethod.getName(),
-        true));
-
     // TEST CALL ORIGIN
     // first, decide if the method was called from external or internal code
 
@@ -441,7 +433,7 @@ public class DexCode {
       val regInternalAnnotation = instrumentationState.getInternalClassAnnotationRegister();
 
       addedCode.add(new DexPseudoinstruction_GetMethodCaller(this, regCallersName));
-      addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$$$ caller: ", false));
+      addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$  - caller: ", false));
       addedCode.add(new DexPseudoinstruction_PrintString(this, regCallersName, true));
       addedCode.add(new DexPseudoinstruction_GetInternalClassAnnotation(this, regInternalAnnotation, regCallersName));
       addedCode.add(new DexInstruction_IfTestZero(this, regInternalAnnotation, labelExternalCallOrigin, Opcode_IfTestZero.eqz));
@@ -450,7 +442,14 @@ public class DexCode {
     {
       // INTERNAL CALL ORIGIN
 
-      addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$$$ internal origin ", true));
+      addedCode.add(
+        new DexPseudoinstruction_PrintStringConst(
+          this,
+          "$ Entering method " +
+          parentMethod.getParentClass().getType().getPrettyName() +
+          " -> " + parentMethod.getName() +
+          " (internal origin)",
+          true));
 
       val regArray = new DexRegister();
       val regIndex = new DexRegister();
@@ -477,7 +476,7 @@ public class DexCode {
           else
             addedCode.add(new DexInstruction_BinaryOp(this, regTaintParamMapping, regArrayElement, regThisTaint, Opcode_BinaryOp.OrInt));
 
-          addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$$$  ARG[" + paramTaintArrayIndex + "] = ", false));
+          addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$  - ARG[" + paramTaintArrayIndex + "] = ", false));
           addedCode.add(new DexPseudoinstruction_PrintInteger(this, regArrayElement, true));
 
           paramTaintArrayIndex++;
@@ -513,7 +512,14 @@ public class DexCode {
       // EXTERNAL CALL ORIGIN
 
       addedCode.add(labelExternalCallOrigin);
-      addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$$$ external origin ", true));
+      addedCode.add(
+        new DexPseudoinstruction_PrintStringConst(
+          this,
+          "$ Entering method " +
+          parentMethod.getParentClass().getType().getPrettyName() +
+          " -> " + parentMethod.getName() +
+          " (external origin)",
+          true));
 
       int paramRegIndex = 1;
       for (val paramType : parentMethod.getPrototype().getParameterTypes()) {

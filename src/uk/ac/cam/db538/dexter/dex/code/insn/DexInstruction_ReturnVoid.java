@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.val;
+
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10x;
@@ -14,6 +16,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
 
 public class DexInstruction_ReturnVoid extends DexInstruction {
 
@@ -34,7 +37,16 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState mapping) { }
+  public void instrument(DexCode_InstrumentationState mapping) {
+    val code = getMethodCode();
+    val insnPrintDebug = new DexPseudoinstruction_PrintStringConst(
+      code,
+      "$ Exiting method " +
+      getParentClass().getType().getPrettyName() +
+      " -> " + getParentMethod().getName(),
+      true);
+    code.replace(this, new DexCodeElement[] { insnPrintDebug, this });
+  }
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {

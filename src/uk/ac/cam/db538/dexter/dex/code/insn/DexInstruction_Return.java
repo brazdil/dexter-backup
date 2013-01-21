@@ -19,6 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
@@ -95,10 +96,17 @@ public class DexInstruction_Return extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) {
-    if (!objectMoving && state.isNeedsCallInstrumentation()) {
+    val code = getMethodCode();
+    val insnPrintDebug = new DexPseudoinstruction_PrintStringConst(
+      code,
+      "$ Exiting method " +
+      getParentClass().getType().getPrettyName() +
+      " -> " + getParentMethod().getName(),
+      true);
+
+    if (!objectMoving) {
       val dex = getParentFile();
       val parentMethod = getParentMethod();
-      val code = getMethodCode();
 
       val regResSemaphore = new DexRegister();
 
@@ -127,10 +135,12 @@ public class DexInstruction_Return extends DexInstruction {
                        insnAcquireSRES,
                        insnSetRES,
                        labelSkipTaintPassing,
+                       insnPrintDebug,
                        this
                      });
       } else
-        code.replace(this, new DexCodeElement[] {insnGetSRES, insnAcquireSRES, insnSetRES, this});
-    }
+        code.replace(this, new DexCodeElement[] {insnGetSRES, insnAcquireSRES, insnSetRES, insnPrintDebug, this});
+    } else
+      code.replace(this, new DexCodeElement[] {insnPrintDebug, this});
   }
 }
