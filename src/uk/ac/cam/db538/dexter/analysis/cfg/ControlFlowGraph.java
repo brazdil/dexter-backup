@@ -56,7 +56,7 @@ public class ControlFlowGraph {
 
       currentBlock.add(insn);
 
-      if ((insn.cfgEndsBasicBlock() || insn.cfgExitsMethod()) && !currentBlock.isEmpty()) {
+      if ((insn.cfgEndsBasicBlock() || insn.cfgExitsMethod() || insn.cfgGetSuccessors().size() > 1) && !currentBlock.isEmpty()) {
         val block = new CfgBasicBlock(currentBlock);
         basicBlocks.add(block);
         insnBlockMap.put(block.getFirstInstruction(), block);

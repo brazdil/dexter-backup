@@ -81,11 +81,6 @@ public class DexInstruction_CheckCast extends DexInstruction {
   }
 
   @Override
-  public boolean cfgEndsBasicBlock() {
-    return true;
-  }
-
-  @Override
   public boolean cfgExitsMethod() {
     return throwingInsn_CanExitMethod(classCastException);
   }
