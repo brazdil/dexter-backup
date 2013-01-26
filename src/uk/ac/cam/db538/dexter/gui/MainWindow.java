@@ -108,7 +108,7 @@ public class MainWindow {
       doModal("Loading " + file.getName(), new Thread(new Runnable() {
         public void run() {
           try {
-            val splitPane = new FileTab(new Apk(file, new File("android.jar")), file.getName());
+            val splitPane = new FileTab(new Apk(file, new File("framework/")), file.getName());
             tabbedPane.addTab(file.getName(), splitPane);
           } catch (Throwable e) {
             JMessage.showErrorMessage(frame, "A problem occurred while loading file \"" + file.getName() + "\".", e);

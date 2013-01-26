@@ -12,8 +12,8 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 
 public class DexVirtualMethod extends DexMethodWithCode {
 
-  public DexVirtualMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
-    super(parent, methodInfo, encodedAnnotations);
+  public DexVirtualMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, boolean parseInstructions) {
+    super(parent, methodInfo, encodedAnnotations, parseInstructions);
   }
 
   public DexVirtualMethod(DexClass parent, String name,

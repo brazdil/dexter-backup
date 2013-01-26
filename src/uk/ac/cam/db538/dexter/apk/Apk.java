@@ -15,6 +15,9 @@ import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
 import uk.ac.cam.db538.dexter.dex.Dex;
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
 
 import com.alee.utils.FileUtils;
 
@@ -24,8 +27,19 @@ public class Apk {
   @Getter private final ZipFile originalFile;
   @Getter private final File temporaryFilename;
 
-  public Apk(File filename, File androidJar) throws IOException {
-    this.dexFile = new Dex(filename, androidJar);
+  @Getter private final DexClassHierarchy classHierarchy;
+  @Getter private final DexParsingCache parsingCache;
+
+  public Apk(File filename, File frameworkDir) throws IOException {
+    this.parsingCache = new DexParsingCache();
+    this.classHierarchy = new DexClassHierarchy(DexClassType.parse("Ljava/lang/Object;", parsingCache));
+
+    this.dexFile = new Dex(filename, true, this);
+    for (val file : frameworkDir.listFiles())
+      if (file.isFile() && (file.getName().endsWith(".dex") || file.getName().endsWith(".odex")))
+        new Dex(file, false, this);
+    classHierarchy.checkConsistentency();
+
     this.temporaryFilename = File.createTempFile("dexter-", ".apk");
     FileUtils.copyFile(filename, this.temporaryFilename);
     try {

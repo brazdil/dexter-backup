@@ -13,8 +13,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 
 public class DexDirectMethod extends DexMethodWithCode {
 
-  public DexDirectMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
-    super(parent, methodInfo, encodedAnnotations);
+  public DexDirectMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, boolean parseInstructions) {
+    super(parent, methodInfo, encodedAnnotations, parseInstructions);
   }
 
   public DexDirectMethod(DexClass parent, String name,

@@ -41,9 +41,9 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
     val code = getMethodCode();
     val insnPrintDebug = new DexPseudoinstruction_PrintStringConst(
       code,
-      "$ Exiting method " +
+      "$# exiting method " +
       getParentClass().getType().getPrettyName() +
-      " -> " + getParentMethod().getName(),
+      "->" + getParentMethod().getName(),
       true);
     code.replace(this, new DexCodeElement[] { insnPrintDebug, this });
   }

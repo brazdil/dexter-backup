@@ -23,6 +23,7 @@ import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.ClassDefItem.StaticFieldInitializer;
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.Util.AccessFlags;
 
@@ -70,10 +71,17 @@ public class DexClass {
     return false;
   }
 
-  public DexClass(Dex parent, ClassDefItem clsInfo) {
+  private static String getSuperclassTypeDesc(TypeIdItem classType, TypeIdItem superclassType) {
+    if (superclassType == null)
+      return classType.getTypeDescriptor();
+    else
+      return superclassType.getTypeDescriptor();
+  }
+
+  public DexClass(Dex parent, ClassDefItem clsInfo, boolean parseInstructions) {
     this(parent,
          DexClassType.parse(clsInfo.getClassType().getTypeDescriptor(), parent.getParsingCache()),
-         DexClassType.parse(clsInfo.getSuperclass().getTypeDescriptor(), parent.getParsingCache()),
+         DexClassType.parse(getSuperclassTypeDesc(clsInfo.getClassType(), clsInfo.getSuperclass()), parent.getParsingCache()),
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForClass(clsInfo.getAccessFlags())),
          null,
          parseTypeList(clsInfo.getInterfaces(), parent.getParsingCache()),
@@ -96,12 +104,12 @@ public class DexClass {
         fields.add(new DexField(this, instanceFieldInfo, findFieldAnnotation(instanceFieldInfo, fieldAnnotations)));
 
       for (val directMethodInfo : clsData.getDirectMethods())
-        methods.add(new DexDirectMethod(this, directMethodInfo, findMethodAnnotation(directMethodInfo, methodAnnotations)));
+        methods.add(new DexDirectMethod(this, directMethodInfo, findMethodAnnotation(directMethodInfo, methodAnnotations), parseInstructions));
       for (val virtualMethodInfo : clsData.getVirtualMethods()) {
         if (isMethodAbstract(virtualMethodInfo.accessFlags))
           methods.add(new DexAbstractMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations)));
         else
-          methods.add(new DexVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations)));
+          methods.add(new DexVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations), parseInstructions));
       }
     }
   }

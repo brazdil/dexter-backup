@@ -106,7 +106,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInter
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetMethodCaller;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintString;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.DexPseudoinstruction_Invoke;
@@ -390,12 +389,12 @@ public class DexCode {
         insn.instrument(instrumentationState);
 
     if (instrumentationState.isNeedsCallInstrumentation())
-      insertPostCallHandling();
+      insertCallHandling();
 
     unwrapPseudoinstructions();
   }
 
-  private void insertPostCallHandling() {
+  private void insertCallHandling() {
     val addedCode = new NoDuplicatesList<DexCodeElement>();
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
@@ -433,8 +432,6 @@ public class DexCode {
       val regInternalAnnotation = instrumentationState.getInternalClassAnnotationRegister();
 
       addedCode.add(new DexPseudoinstruction_GetMethodCaller(this, regCallersName));
-      addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$  - caller: ", false));
-      addedCode.add(new DexPseudoinstruction_PrintString(this, regCallersName, true));
       addedCode.add(new DexPseudoinstruction_GetInternalClassAnnotation(this, regInternalAnnotation, regCallersName));
       addedCode.add(new DexInstruction_IfTestZero(this, regInternalAnnotation, labelExternalCallOrigin, Opcode_IfTestZero.eqz));
     }
@@ -445,9 +442,9 @@ public class DexCode {
       addedCode.add(
         new DexPseudoinstruction_PrintStringConst(
           this,
-          "$ Entering method " +
-          parentMethod.getParentClass().getType().getPrettyName() +
-          " -> " + parentMethod.getName() +
+          "$# entering method " +
+          getParentClass().getType().getPrettyName() +
+          "->" + parentMethod.getName() +
           " (internal origin)",
           true));
 
@@ -476,7 +473,10 @@ public class DexCode {
           else
             addedCode.add(new DexInstruction_BinaryOp(this, regTaintParamMapping, regArrayElement, regThisTaint, Opcode_BinaryOp.OrInt));
 
-          addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "$  - ARG[" + paramTaintArrayIndex + "] = ", false));
+          addedCode.add(new DexPseudoinstruction_PrintStringConst(this,
+                        "$ " + getParentClass().getType().getShortName() + "->" + parentMethod.getName() + ": " +
+                        "ARG[" + paramTaintArrayIndex + "] = ",
+                        false));
           addedCode.add(new DexPseudoinstruction_PrintInteger(this, regArrayElement, true));
 
           paramTaintArrayIndex++;
@@ -515,9 +515,9 @@ public class DexCode {
       addedCode.add(
         new DexPseudoinstruction_PrintStringConst(
           this,
-          "$ Entering method " +
-          parentMethod.getParentClass().getType().getPrettyName() +
-          " -> " + parentMethod.getName() +
+          "$# entering method " +
+          getParentClass().getType().getPrettyName() +
+          "->" + parentMethod.getName() +
           " (external origin)",
           true));
 

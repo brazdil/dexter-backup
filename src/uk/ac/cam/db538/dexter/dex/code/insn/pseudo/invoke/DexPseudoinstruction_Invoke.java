@@ -98,7 +98,8 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
 
     codePreInternalCall.add(new DexPseudoinstruction_PrintStringConst(
                               methodCode,
-                              "$$$ INTERNAL CALL: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
+                              "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                              "internal call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName(),
                               true));
 
     if (hasPrimitiveArgument) {
@@ -148,11 +149,9 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       if (movesResult()) {
         codePostInternalCall.add(new DexPseudoinstruction_PrintStringConst(
                                    methodCode,
-                                   "$$$ INTERNAL RESULT: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
-                                   true));
-        codePostInternalCall.add(new DexPseudoinstruction_PrintStringConst(
-                                   methodCode,
-                                   "$$$  RES = ",
+                                   "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                   "internal result from " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
+                                   " => ",
                                    false));
 
         DexRegister regTo = null;

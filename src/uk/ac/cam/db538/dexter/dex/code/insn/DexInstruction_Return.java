@@ -99,9 +99,9 @@ public class DexInstruction_Return extends DexInstruction {
     val code = getMethodCode();
     val insnPrintDebug = new DexPseudoinstruction_PrintStringConst(
       code,
-      "$ Exiting method " +
+      "$# exiting method " +
       getParentClass().getType().getPrettyName() +
-      " -> " + getParentMethod().getName(),
+      "->" + getParentMethod().getName(),
       true);
 
     if (!objectMoving) {

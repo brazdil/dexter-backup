@@ -17,6 +17,7 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.AccessFlags;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
+import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache.InstrumentationWarning;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
@@ -30,8 +31,9 @@ import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class Dex {
 
+  @Getter final Apk parentApk;
+
   private final List<DexClass> classes;
-  @Getter private final DexClassHierarchy classHierarchy;
 
   @Getter private DexClassType objectTaintStorage_Type;
   @Getter private DexDirectMethod objectTaintStorage_Get;
@@ -52,26 +54,31 @@ public class Dex {
   @Getter private DexClass externalStaticFieldTaint_Class;
   @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
 
-  @Getter private final DexParsingCache parsingCache;
-
   public Dex() {
-    classes = new NoDuplicatesList<DexClass>();
-    parsingCache = new DexParsingCache();
-    classHierarchy = new DexClassHierarchy(DexClassType.parse("Ljava/lang/Object;", parsingCache));
+    this(null);
   }
 
-  public Dex(File filename, File androidJar) throws IOException {
-    this();
+  public Dex(Apk parent) {
+    classes = new NoDuplicatesList<DexClass>();
+    parentApk = parent;
+  }
 
-    classHierarchy.addAllClassesFromJAR(androidJar, parsingCache);
+  public Dex(File filename, boolean parseInstructions, Apk parent) throws IOException {
+    this(parent);
 
     val originalFile = new DexFile(filename);
-    classes.addAll(parseAllClasses(originalFile));
+    classes.addAll(parseAllClasses(originalFile, parseInstructions));
 
     for (val clazz : classes)
       clazz.markMethodsOriginal();
+  }
 
-    classHierarchy.checkConsistentency();
+  public DexClassHierarchy getClassHierarchy() {
+    return parentApk.getClassHierarchy();
+  }
+
+  public DexParsingCache getParsingCache() {
+    return parentApk.getParsingCache();
   }
 
   private static File getMergeFile() throws IOException {
@@ -91,12 +98,12 @@ public class Dex {
     return tempFile;
   }
 
-  private List<DexClass> parseAllClasses(DexFile file) {
+  private List<DexClass> parseAllClasses(DexFile file, boolean parseInstructions) {
     val dexClsInfos = file.ClassDefsSection.getItems();
     val classList = new ArrayList<DexClass>(dexClsInfos.size());
 
     for (val dexClsInfo : dexClsInfos)
-      classList.add(new DexClass(this, dexClsInfo));
+      classList.add(new DexClass(this, dexClsInfo, parseInstructions));
 
     return classList;
   }
@@ -105,6 +112,7 @@ public class Dex {
    * Needs to generate a short, but unique class name
    */
   private DexClassType generateClassType() {
+    val parsingCache = getParsingCache();
     String desc;
     long suffix = 0L;
     do {
@@ -116,6 +124,8 @@ public class Dex {
   }
 
   private List<DexClass> parseExtraClasses() {
+    val parsingCache = getParsingCache();
+
     // generate names
     val clsTaintConstants = generateClassType();
     val clsInternalClassAnnotation = generateClassType();
@@ -141,7 +151,7 @@ public class Dex {
     }
 
     // parse the classes
-    val extraClasses = parseAllClasses(mergeDex);
+    val extraClasses = parseAllClasses(mergeDex, true);
 
     // remove descriptor replacements
     parsingCache.removeDescriptorReplacement(CLASS_TAINTCONSTANTS);
@@ -193,6 +203,8 @@ public class Dex {
   }
 
   private List<DexClass> generateExtraClasses() {
+    val parsingCache = getParsingCache();
+
     externalStaticFieldTaint_Class = new DexClass(
       this,
       generateClassType(),
@@ -223,6 +235,7 @@ public class Dex {
   }
 
   public List<InstrumentationWarning> instrument() {
+    val classHierarchy = getClassHierarchy();
     val cache = new DexInstrumentationCache(this);
 
     val extraClassesLinked = parseExtraClasses();
@@ -240,6 +253,9 @@ public class Dex {
   }
 
   public byte[] writeToFile() {
+    val classHierarchy = getClassHierarchy();
+    val parsingCache = getParsingCache();
+
     classHierarchy.checkConsistentency();
 
     val outFile = new DexFile();

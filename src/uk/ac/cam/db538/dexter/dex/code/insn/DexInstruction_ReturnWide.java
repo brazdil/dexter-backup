@@ -65,9 +65,9 @@ public class DexInstruction_ReturnWide extends DexInstruction {
 
     val insnPrintDebug = new DexPseudoinstruction_PrintStringConst(
       code,
-      "$ Exiting method " +
+      "$# exiting method " +
       getParentClass().getType().getPrettyName() +
-      " -> " + getParentMethod().getName(),
+      "->" + getParentMethod().getName(),
       true);
     val insnGetSRES = new DexInstruction_StaticGet(code, regResSemaphore, dex.getMethodCallHelper_SRes());
     val insnAcquireSRES = new DexInstruction_Invoke(

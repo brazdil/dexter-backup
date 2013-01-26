@@ -40,11 +40,6 @@ public class FallbackInstrumentor implements ExternalCallInstrumentor {
     val methodPrototype = instructionInvoke.getMethodPrototype();
     val methodParameterRegs = instructionInvoke.getArgumentRegisters();
 
-    codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(
-                              methodCode,
-                              "$$$ EXTERNAL CALL: " + instructionInvoke.getClassType().getPrettyName() + "..." + instructionInvoke.getMethodName(),
-                              true));
-
     // if there are any parameters or result is moved
     if (!methodPrototype.getParameterTypes().isEmpty() || insn.movesResult()) {
       // combine the taint of the object (if not static call) and all the parameters
@@ -68,7 +63,12 @@ public class FallbackInstrumentor implements ExternalCallInstrumentor {
         paramIndex += paramType.getRegisters();
       }
 
-      codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(methodCode, "$$$  TAINT = ", false));
+      codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(
+                                methodCode,
+                                "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                "external call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
+                                " => T=",
+                                false));
       codePreExternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regCombinedTaint, true));
 
       // assign the combined taint to the object and all its non-primitive arguments
@@ -82,7 +82,12 @@ public class FallbackInstrumentor implements ExternalCallInstrumentor {
           codePreExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, methodParameterRegs.get(paramIndex), regCombinedTaint));
         paramIndex += paramType.getRegisters();
       }
-    }
+    } else
+      codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(
+                                methodCode,
+                                "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                "external call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName(),
+                                true));
 
     return codePreExternalCall;
   }

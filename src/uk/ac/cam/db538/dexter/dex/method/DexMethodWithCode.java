@@ -47,38 +47,43 @@ public abstract class DexMethodWithCode extends DexMethod {
     this.parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
     this.parameterRegistersMappings = new HashMap<DexRegister, DexRegister>();
 
-    this.code.setParentMethod(this);
+    if (this.code != null)
+      this.code.setParentMethod(this);
   }
 
-  public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
+  public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, boolean parseInstructions) {
     super(parent, methodInfo, encodedAnnotations);
-    code = new DexCode(methodInfo.codeItem, this, parent.getParentFile().getParsingCache());
-    direct = methodInfo.isDirect();
-    parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
+    this.direct = methodInfo.isDirect();
+    this.parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
     this.parameterRegistersMappings = new HashMap<DexRegister, DexRegister>();
 
-    val prototype = this.getPrototype();
-    val isStatic = this.isStatic();
-    val clazz = this.getParentClass();
+    if (parseInstructions) {
+      this.code = new DexCode(methodInfo.codeItem, this, parent.getParentFile().getParsingCache());
 
-    // create the parameter-register mappings
-    val regCount = methodInfo.codeItem.getRegisterCount();
-    val paramCount = prototype.getParameterCount(isStatic);
-    for (int i = 0; i < paramCount; ++i) {
-      val paramRegId = prototype.getParameterRegisterId(i, regCount, isStatic);
-      val paramType = prototype.getParameterType(i, isStatic, clazz);
-      switch (paramType.getTypeSize()) {
-      case SINGLE:
-        val regSingle = code.getRegisterByOriginalNumber(paramRegId);
-        addParameterMapping_Single(i, regSingle);
-        break;
-      case WIDE:
-        val regWide1 = code.getRegisterByOriginalNumber(paramRegId);
-        val regWide2 = code.getRegisterByOriginalNumber(paramRegId + 1);
-        addParameterMapping_Wide(i, regWide1, regWide2);
-        break;
+      val prototype = this.getPrototype();
+      val isStatic = this.isStatic();
+      val clazz = this.getParentClass();
+
+      // create the parameter-register mappings
+      val regCount = methodInfo.codeItem.getRegisterCount();
+      val paramCount = prototype.getParameterCount(isStatic);
+      for (int i = 0; i < paramCount; ++i) {
+        val paramRegId = prototype.getParameterRegisterId(i, regCount, isStatic);
+        val paramType = prototype.getParameterType(i, isStatic, clazz);
+        switch (paramType.getTypeSize()) {
+        case SINGLE:
+          val regSingle = code.getRegisterByOriginalNumber(paramRegId);
+          addParameterMapping_Single(i, regSingle);
+          break;
+        case WIDE:
+          val regWide1 = code.getRegisterByOriginalNumber(paramRegId);
+          val regWide2 = code.getRegisterByOriginalNumber(paramRegId + 1);
+          addParameterMapping_Wide(i, regWide1, regWide2);
+          break;
+        }
       }
-    }
+    } else
+      this.code = null;
   }
 
   private void addParameterMapping_Single(int paramIndex, DexRegister codeReg) {
@@ -208,6 +213,7 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   @Override
   public void markMethodOriginal() {
-    code.markAllInstructionsOriginal();
+    if (code != null)
+      code.markAllInstructionsOriginal();
   }
 }
