@@ -9,7 +9,6 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.val;
 
-import org.apache.bcel.classfile.AnnotationEntry;
 import org.jf.dexlib.AnnotationItem;
 import org.jf.dexlib.AnnotationSetItem;
 import org.jf.dexlib.AnnotationVisibility;
@@ -52,13 +51,13 @@ public class DexAnnotation {
       addParam(encAnno.names[i].getStringValue(), encAnno.values[i]);
   }
 
-  public DexAnnotation(AnnotationEntry anno, DexParsingCache cache) {
-    this(DexClassType.parse(anno.getAnnotationType(), cache),
-         (anno.isRuntimeVisible()) ? AnnotationVisibility.RUNTIME : AnnotationVisibility.SYSTEM);
-
-    // TODO: load parameters of the annotation
-    // not necessary though, this is used to load android.jar
-  }
+//  public DexAnnotation(AnnotationEntry anno, DexParsingCache cache) {
+//    this(DexClassType.parse(anno.getAnnotationType(), cache),
+//         (anno.isRuntimeVisible()) ? AnnotationVisibility.RUNTIME : AnnotationVisibility.SYSTEM);
+//
+//    // TODO: load parameters of the annotation
+//    // not necessary though, this is used to load android.jar
+//  }
 
   public void addParam(String name, EncodedValue value) {
     params.put(name, value);
