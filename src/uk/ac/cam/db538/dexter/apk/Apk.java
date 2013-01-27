@@ -24,7 +24,6 @@ import com.alee.utils.FileUtils;
 public class Apk {
 
   @Getter private final Dex dexFile;
-  @Getter private final ZipFile originalFile;
   @Getter private final File temporaryFilename;
 
   @Getter private final DexClassHierarchy classHierarchy;
@@ -42,18 +41,22 @@ public class Apk {
 
     this.temporaryFilename = File.createTempFile("dexter-", ".apk");
     FileUtils.copyFile(filename, this.temporaryFilename);
-    try {
-      this.originalFile = new ZipFile(this.temporaryFilename);
-    }
-    catch (ZipException e) {
-      throw new IOException(e);
-    }
   }
 
   public void writeToFile(File filename) throws IOException {
     // prepare the new dex file
     System.out.println("Generating new DEX");
     final byte[] newDex = dexFile.writeToFile();
+
+    val fileCopy = File.createTempFile("dexter-", ".apk");
+    FileUtils.copyFile(this.temporaryFilename, fileCopy);
+    ZipFile originalFile;
+    try {
+      originalFile = new ZipFile(fileCopy);
+    }
+    catch (ZipException e) {
+      throw new IOException(e);
+    }
 
     System.out.println("Replacing DEX");
     try {
@@ -119,7 +122,7 @@ public class Apk {
                                          "-keypass", "dexter",
                                          "-sigalg", "MD5withRSA",
                                          "-digestalg", "SHA1",
-                                         temporaryFilename.getAbsolutePath(),
+                                         fileCopy.getAbsolutePath(),
                                          "DexterKey");
     jarsignerPB.redirectErrorStream(true);
     val jarsignerProcess = jarsignerPB.start();
@@ -141,6 +144,6 @@ public class Apk {
 
     System.out.println("Saving APK to given file");
     // copy the temp file to the given location
-    FileUtils.copyFile(temporaryFilename, filename);
+    FileUtils.copyFile(fileCopy, filename);
   }
 }
