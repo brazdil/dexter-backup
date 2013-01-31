@@ -1,15 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.ContentResolverInstrumentor;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.ExternalCallInstrumentor;
 
 public class DexCode_InstrumentationState {
   private final Map<DexRegister, DexRegister> registerMap;
@@ -51,11 +47,5 @@ public class DexCode_InstrumentationState {
       return newReg;
     } else
       return taintReg;
-  }
-
-  public List<ExternalCallInstrumentor> getExternalCallInstrumentors() {
-    val instrumentors = new ArrayList<ExternalCallInstrumentor>();
-    instrumentors.add(new ContentResolverInstrumentor());
-    return instrumentors;
   }
 }

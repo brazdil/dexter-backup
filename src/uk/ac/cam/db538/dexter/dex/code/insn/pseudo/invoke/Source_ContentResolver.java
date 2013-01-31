@@ -16,7 +16,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
-public class ContentResolverInstrumentor extends FallbackInstrumentor {
+public class Source_ContentResolver extends FallbackInstrumentor {
 
   private boolean fitsAPI1(DexPrototype methodPrototype) {
     val methodParamTypes = methodPrototype.getParameterTypes();

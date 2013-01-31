@@ -179,7 +179,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
   private List<DexCodeElement> generateExternalCallCode(DexCode_InstrumentationState state) {
     ExternalCallInstrumentor instrumentor = null;
 
-    for (val inst : state.getExternalCallInstrumentors()) {
+    for (val inst : ExternalCallInstrumentor.getInstrumentors()) {
       if (inst.canBeApplied(this)) {
         if (instrumentor == null)
           instrumentor = inst;

@@ -23,7 +23,9 @@ import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
-public class FallbackInstrumentor implements ExternalCallInstrumentor {
+public class FallbackInstrumentor extends ExternalCallInstrumentor {
+
+  protected DexRegister regCombinedTaint;
 
   @Override
   public boolean canBeApplied(DexPseudoinstruction_Invoke insn) {
@@ -119,7 +121,7 @@ public class FallbackInstrumentor implements ExternalCallInstrumentor {
 
   @Override
   public Pair<List<DexCodeElement>, List<DexCodeElement>> generateInstrumentation(DexPseudoinstruction_Invoke insn, DexCode_InstrumentationState state) {
-    val regCombinedTaint = new DexRegister();
+    regCombinedTaint = new DexRegister();
     return new Pair<List<DexCodeElement>, List<DexCodeElement>>(
              generatePreExternalCallCode(insn, regCombinedTaint, state),
              generatePostExternalCallCode(insn, regCombinedTaint, state));

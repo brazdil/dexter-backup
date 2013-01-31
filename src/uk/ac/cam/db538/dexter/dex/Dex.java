@@ -63,11 +63,11 @@ public class Dex {
     parentApk = parent;
   }
 
-  public Dex(File filename, boolean parseInstructions, Apk parent) throws IOException {
+  public Dex(File filename, boolean isInternal, Apk parent) throws IOException {
     this(parent);
 
     val originalFile = new DexFile(filename);
-    classes.addAll(parseAllClasses(originalFile, parseInstructions));
+    classes.addAll(parseAllClasses(originalFile, isInternal));
 
     for (val clazz : classes)
       clazz.markMethodsOriginal();
@@ -98,12 +98,12 @@ public class Dex {
     return tempFile;
   }
 
-  private List<DexClass> parseAllClasses(DexFile file, boolean parseInstructions) {
+  private List<DexClass> parseAllClasses(DexFile file, boolean isInternal) {
     val dexClsInfos = file.ClassDefsSection.getItems();
     val classList = new ArrayList<DexClass>(dexClsInfos.size());
 
     for (val dexClsInfo : dexClsInfos)
-      classList.add(new DexClass(this, dexClsInfo, parseInstructions));
+      classList.add(new DexClass(this, dexClsInfo, isInternal));
 
     return classList;
   }
@@ -213,7 +213,8 @@ public class Dex {
       null,
       null,
       null,
-      null);
+      null,
+      true);
 
     val clinitCode = new DexCode();
     clinitCode.add(new DexInstruction_ReturnVoid(clinitCode));
