@@ -24,6 +24,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalMethodAnnotation;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
@@ -154,13 +155,13 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                                    " => ",
                                    false));
 
-        DexRegister regTo = null;
+        DexRegister regToTaint = null;
         if (instructionMoveResult instanceof DexInstruction_MoveResult)
-          regTo = state.getTaintRegister(((DexInstruction_MoveResult) instructionMoveResult).getRegTo());
+          regToTaint = state.getTaintRegister(((DexInstruction_MoveResult) instructionMoveResult).getRegTo());
         else if (instructionMoveResult instanceof DexInstruction_MoveResultWide)
-          regTo = state.getTaintRegister(((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo1());
-        codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regTo, dex.getMethodCallHelper_Res()));
-        codePostInternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regTo, true));
+          regToTaint = state.getTaintRegister(((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo1());
+        codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regToTaint, dex.getMethodCallHelper_Res()));
+        codePostInternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regToTaint, true));
       }
 
       codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regResSemaphore, dex.getMethodCallHelper_SRes()));
@@ -171,6 +172,19 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                                  new DexPrototype(DexVoid.parse("V", null), null),
                                  Arrays.asList(regResSemaphore),
                                  Opcode_Invoke.Virtual));
+    } else {
+      if (movesResult()) {
+        val regResult = ((DexInstruction_MoveResult) instructionMoveResult).getRegTo();
+        val regResultTaint = state.getTaintRegister(regResult);
+        codePostInternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regResultTaint, regResult));
+        codePostInternalCall.add(new DexPseudoinstruction_PrintStringConst(
+                                   methodCode,
+                                   "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                   "internal result from " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
+                                   " => ",
+                                   false));
+        codePostInternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regResultTaint, true));
+      }
     }
 
     return codePostInternalCall;

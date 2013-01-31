@@ -112,7 +112,7 @@ public class DexInstruction_ArrayGet extends DexInstruction {
   public void instrument(DexCode_InstrumentationState state) {
     // need to combine the taint of the array object and the index
     val code = getMethodCode();
-    val regArrayTaint = (regTo == regArray) ? new DexRegister() : state.getTaintRegister(regTo);
+    val regArrayTaint = (regTo == regArray) ? new DexRegister() : state.getTaintRegister(regArray);
     if (opcode != Opcode_GetPut.Object) {
       code.replace(this,
                    new DexCodeElement[] {
