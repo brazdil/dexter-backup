@@ -354,10 +354,7 @@ public class DexClassHierarchy {
           else canBeExternal = true;
         }
 
-      if (!canBeInternal && !canBeExternal)
-        throw new ClassHierarchyException("Invoke destination not found: calling " + callClass.getPrettyName() + "." + methodName);
-      else
-        return new Pair<Boolean, Boolean>(canBeInternal, canBeExternal);
+      return new Pair<Boolean, Boolean>(canBeInternal, canBeExternal);
 
     } else
       throw new Error("Wrong call type");

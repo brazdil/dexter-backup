@@ -72,6 +72,7 @@ public class DexInstrumentationCache {
       return newField;
     }
   };
+
   @Getter private final List<InstrumentationWarning> warnings;
 
   public DexInstrumentationCache(Dex parentFile) {
