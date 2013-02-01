@@ -108,7 +108,7 @@ public class DexInstruction_ArrayPut extends DexInstruction {
     // all types should copy the taint of the index to the array object
     val code = getMethodCode();
     if (opcode != Opcode_GetPut.Object) {
-      val regTotalTaint = new DexRegister();
+      val regTotalTaint = state.getTaintRegister(regArray);
       code.replace(this,
                    new DexCodeElement[] {
                      this,
