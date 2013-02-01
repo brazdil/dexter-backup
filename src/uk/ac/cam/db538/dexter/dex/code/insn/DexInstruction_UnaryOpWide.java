@@ -1,17 +1,21 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Map;
+import java.util.Set;
+
+import lombok.Getter;
+import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_UnaryOpWide extends DexInstruction {
 
@@ -54,5 +58,55 @@ public class DexInstruction_UnaryOpWide extends DexInstruction {
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_UnaryOpWide(getMethodCode(), mapping.get(regTo1), mapping.get(regTo2), mapping.get(regFrom1), mapping.get(regFrom2), insnOpcode);
+  }
+
+  @Override
+  public void instrument(DexCode_InstrumentationState state) {
+    val code = getMethodCode();
+    code.replace(this, new DexCodeElement[] {
+                   this,
+                   new DexInstruction_Move(code, state.getTaintRegister(regTo1), state.getTaintRegister(regFrom1), false)
+                 });
+  }
+
+  @Override
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    val regAlloc = state.getRegisterAllocation();
+    int rTo1 = regAlloc.get(regTo1);
+    int rTo2 = regAlloc.get(regTo2);
+    int rFrom1 = regAlloc.get(regFrom1);
+    int rFrom2 = regAlloc.get(regFrom2);
+
+    if (!formWideRegister(rTo1, rTo2) || !formWideRegister(rFrom1, rFrom2))
+      return throwWideRegistersExpected();
+
+    if (fitsIntoBits_Unsigned(rTo1, 4) && fitsIntoBits_Unsigned(rFrom1, 4))
+      return new Instruction[] { new Instruction12x(Opcode_UnaryOpWide.convert(insnOpcode), (byte) rTo1, (byte) rFrom1) };
+    else
+      return throwNoSuitableFormatFound();
+  }
+
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    return createSet(
+             new GcRangeConstraint(regTo1, ColorRange.RANGE_4BIT),
+             new GcRangeConstraint(regFrom1, ColorRange.RANGE_4BIT));
+  }
+
+  @Override
+  public Set<GcFollowConstraint> gcFollowConstraints() {
+    return createSet(
+             new GcFollowConstraint(regTo1, regTo2),
+             new GcFollowConstraint(regFrom1, regFrom2));
+  }
+
+  @Override
+  public Set<DexRegister> lvaDefinedRegisters() {
+    return createSet(regTo1, regTo2);
+  }
+
+  @Override
+  public Set<DexRegister> lvaReferencedRegisters() {
+    return createSet(regFrom1, regFrom2);
   }
 }
