@@ -3,7 +3,6 @@ package uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke;
 import java.util.List;
 
 import lombok.val;
-
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -43,7 +42,7 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     val methodParameterRegs = instructionInvoke.getArgumentRegisters();
 
     // if there are any parameters or result is moved
-    if (!methodPrototype.getParameterTypes().isEmpty() || insn.movesResult()) {
+    if (!methodPrototype.getParameterTypes().isEmpty() || insn.movesResult() || isConstructorCall) {
       // combine the taint of the object (if not static call) and all the parameters
 
       val regObjectArgTaint = new DexRegister();
@@ -100,6 +99,7 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     val instructionInvoke = insn.getInstructionInvoke();
     val instructionMoveResult = insn.getInstructionMoveResult();
     val methodPrototype = instructionInvoke.getMethodPrototype();
+    val isConstructorCall = instructionInvoke.getMethodName().equals("<init>");
 
     if (insn.movesResult()) {
       if (methodPrototype.getReturnType() instanceof DexPrimitiveType) {
@@ -108,12 +108,17 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
           regResult = ((DexInstruction_MoveResult) instructionMoveResult).getRegTo();
         else
           regResult = ((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo1();
-        codePostExternalCall.add(
-          new DexInstruction_Move(methodCode, state.getTaintRegister(regResult), regCombinedTaint, false));
+        codePostExternalCall.add(new DexInstruction_Move(methodCode, state.getTaintRegister(regResult), regCombinedTaint, false));
 
-      } else
-        codePostExternalCall.add(
-          new DexPseudoinstruction_SetObjectTaint(methodCode, ((DexInstruction_MoveResult) instructionMoveResult).getRegTo(), regCombinedTaint));
+      } else {
+        val regResult = ((DexInstruction_MoveResult) instructionMoveResult).getRegTo();
+        codePostExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, regResult, regCombinedTaint));
+      }
+
+    }
+    else if (isConstructorCall) {
+      val regInitializedObject = instructionInvoke.getArgumentRegisters().get(0);
+      codePostExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, regInitializedObject, regCombinedTaint));
     }
 
     return codePostExternalCall;

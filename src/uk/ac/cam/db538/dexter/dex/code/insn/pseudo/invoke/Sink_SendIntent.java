@@ -15,7 +15,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
-public class Sink_SendBroadcast extends FallbackInstrumentor {
+public class Sink_SendIntent extends FallbackInstrumentor {
 
   @Override
   public boolean canBeApplied(DexPseudoinstruction_Invoke insn) {
@@ -29,12 +29,15 @@ public class Sink_SendBroadcast extends FallbackInstrumentor {
 
     // there's methods like sendStickyOrderedBroadcastAsUser, etc..
     val methodName = insnInvoke.getMethodName();
-    if (!methodName.contains("send") || !methodName.contains("Broadcast"))
+    if (!(methodName.contains("send") && methodName.contains("Broadcast")) &&
+        !methodName.equals("startActivity") &&
+        !methodName.equals("startActivities"))
       return false;
 
     val methodParamTypes = insnInvoke.getMethodPrototype().getParameterTypes();
     if (methodParamTypes.size() < 1 ||
-        !methodParamTypes.get(0).getDescriptor().equals("Landroid/content/Intent;"))
+        !(methodParamTypes.get(0).getDescriptor().equals("Landroid/content/Intent;") ||
+          methodParamTypes.get(0).getDescriptor().equals("[Landroid/content/Intent;")))
       return false;
 
     if (!classHierarchy.isAncestor(insnInvoke.getClassType(),
@@ -52,11 +55,13 @@ public class Sink_SendBroadcast extends FallbackInstrumentor {
     val methodCode = insn.getMethodCode();
     val preCode = new NoDuplicatesList<DexCodeElement>(fallback.getValA().size() + 20);
 
+    val methodName = insn.getInstructionInvoke().getMethodName();
+
     // check the combined taint
     val labelAfter = new DexLabel(methodCode);
     preCode.addAll(fallback.getValA());
     preCode.add(new DexInstruction_IfTestZero(methodCode, regCombinedTaint, labelAfter, Opcode_IfTestZero.eqz));
-    preCode.add(new DexPseudoinstruction_PrintStringConst(methodCode, "$! tainted data passed to Context.SendBroadcast => T=", false));
+    preCode.add(new DexPseudoinstruction_PrintStringConst(methodCode, "$! tainted data passed to Context." + methodName + " => T=", false));
     preCode.add(new DexPseudoinstruction_PrintInteger(methodCode, regCombinedTaint, true));
     preCode.add(labelAfter);
 
