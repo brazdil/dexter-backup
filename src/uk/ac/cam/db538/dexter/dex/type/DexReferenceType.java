@@ -23,4 +23,8 @@ public abstract class DexReferenceType extends DexRegisterType {
 
     throw new UnknownTypeException(typeDescriptor);
   }
+
+  public boolean isDefinedInternally() {
+    return false;
+  }
 }

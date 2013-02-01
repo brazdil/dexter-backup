@@ -1,7 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.utils.Cache;
@@ -11,7 +10,7 @@ public class DexClassType extends DexReferenceType {
   @Getter private final String shortName;
   @Getter private final String packageName;
 
-  @Getter @Setter private boolean definedInternally;
+  private boolean definedInternally;
 
   private static String checkDescriptor(String descriptor) {
     if (!descriptor.startsWith("L") || !descriptor.endsWith(";"))
@@ -46,5 +45,14 @@ public class DexClassType extends DexReferenceType {
         return new DexClassType(typeDescriptor);
       }
     };
+  }
+
+  @Override
+  public boolean isDefinedInternally() {
+    return definedInternally;
+  }
+
+  public void setDefinedInternally(boolean val) {
+    definedInternally = val;
   }
 }

@@ -16,6 +16,7 @@ import org.jf.dexlib.TypeListItem;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.utils.Cache;
@@ -29,7 +30,7 @@ public class DexAssemblingCache {
   private final Cache<String, StringIdItem> stringConstants;
   private final Cache<DexPrototype, ProtoIdItem> prototypes;
   private final Cache<Triple<DexClassType, DexRegisterType, String>, FieldIdItem> fields;
-  private final Cache<Triple<DexClassType, DexPrototype, String>, MethodIdItem> methods;
+  private final Cache<Triple<DexReferenceType, DexPrototype, String>, MethodIdItem> methods;
 
   public DexAssemblingCache(final DexFile outFile, DexParsingCache parsingCache) {
     this.parsingCache = parsingCache;
@@ -71,7 +72,7 @@ public class DexAssemblingCache {
     return fields.getCachedEntry(new Triple<DexClassType, DexRegisterType, String>(classType, fieldType, name));
   }
 
-  public MethodIdItem getMethod(DexClassType classType, DexPrototype methodPrototype, String name) {
-    return methods.getCachedEntry(new Triple<DexClassType, DexPrototype, String>(classType, methodPrototype, name));
+  public MethodIdItem getMethod(DexReferenceType classType, DexPrototype methodPrototype, String name) {
+    return methods.getCachedEntry(new Triple<>(classType, methodPrototype, name));
   }
 }

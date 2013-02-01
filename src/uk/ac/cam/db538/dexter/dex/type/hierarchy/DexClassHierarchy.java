@@ -15,6 +15,7 @@ import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -175,7 +176,9 @@ public class DexClassHierarchy {
 
   }
 
-  public boolean isAncestor(DexClassType clazz, DexClassType ancestor) {
+  public boolean isAncestor(DexReferenceType refType, DexClassType ancestor) {
+    DexClassType clazz = getTrueCalledClass(refType);
+
     // start at clazz and work our way up the hierarchy tree
     // checking equality at each level
 
@@ -191,7 +194,9 @@ public class DexClassHierarchy {
     return false;
   }
 
-  public boolean implementsInterface(DexClassType clazz, DexClassType intrface) {
+  public boolean implementsInterface(DexReferenceType refType, DexClassType intrface) {
+    DexClassType clazz = getTrueCalledClass(refType);
+
     // start at clazz and work our way up the hierarchy tree
     // searching through implemented interfaces at each level
 
@@ -207,7 +212,9 @@ public class DexClassHierarchy {
     return false;
   }
 
-  public boolean implementsMethod(DexClassType clazz, String name, DexPrototype prototype) {
+  public boolean implementsMethod(DexReferenceType refType, String name, DexPrototype prototype) {
+    DexClassType clazz = getTrueCalledClass(refType);
+
     for (val method : classes.get(clazz).implementedMethods)
       if (method.getName().equals(name) && method.getPrototype().equals(prototype))
         return true;
@@ -290,12 +297,21 @@ public class DexClassHierarchy {
     return set;
   }
 
+  private DexClassType getTrueCalledClass(DexReferenceType refType) {
+    if (refType instanceof DexClassType)
+      return (DexClassType) refType;
+    else
+      return rootClass;
+  }
+
   /*
    * Returns a pair of booleans. The first is true if and only if
    * the method call can be internal. Second is true if it can
    * be an external call.
    */
-  public Pair<Boolean, Boolean> decideMethodCallDestination(Opcode_Invoke callType, DexClassType callClass, String methodName, DexPrototype methodPrototype) {
+  public Pair<Boolean, Boolean> decideMethodCallDestination(Opcode_Invoke callType, DexReferenceType refType, String methodName, DexPrototype methodPrototype) {
+    DexClassType callClass = getTrueCalledClass(refType);
+
     if (callType == Opcode_Invoke.Super) {
       // with super call we can always deduce the destination
       // by going through the parents (DexClassHierarchy will

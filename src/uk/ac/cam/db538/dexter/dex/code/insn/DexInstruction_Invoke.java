@@ -23,17 +23,17 @@ import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 
 public class DexInstruction_Invoke extends DexInstruction {
 
-  @Getter private final DexClassType classType;
+  @Getter private final DexReferenceType classType;
   @Getter private final String methodName;
   @Getter private final DexPrototype methodPrototype;
   private final List<DexRegister> argumentRegisters;
   @Getter private final Opcode_Invoke callType;
 
-  public DexInstruction_Invoke(DexCode methodCode, DexClassType classType, String methodName, DexPrototype prototype, List<DexRegister> argumentRegisters, Opcode_Invoke callType) {
+  public DexInstruction_Invoke(DexCode methodCode, DexReferenceType classType, String methodName, DexPrototype prototype, List<DexRegister> argumentRegisters, Opcode_Invoke callType) {
     super(methodCode);
 
     this.classType = classType;
@@ -96,7 +96,7 @@ public class DexInstruction_Invoke extends DexInstruction {
     } else
       throw FORMAT_EXCEPTION;
 
-    classType = DexClassType.parse(methodInfo.getContainingClass().getTypeDescriptor(), parsingState.getCache());
+    classType = DexReferenceType.parse(methodInfo.getContainingClass().getTypeDescriptor(), parsingState.getCache());
 
     methodName = methodInfo.getMethodName().getStringValue();
     methodPrototype = new DexPrototype(methodInfo.getPrototype(), cache);

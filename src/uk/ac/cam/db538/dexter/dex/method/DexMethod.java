@@ -8,9 +8,9 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.val;
 
+import org.jf.dexlib.AnnotationDirectoryItem.MethodAnnotation;
 import org.jf.dexlib.AnnotationItem;
 import org.jf.dexlib.AnnotationSetItem;
-import org.jf.dexlib.AnnotationDirectoryItem.MethodAnnotation;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
@@ -23,7 +23,7 @@ import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Triple;
 
@@ -102,10 +102,10 @@ public abstract class DexMethod {
     return new EncodedMethod(methodItem, DexUtils.assembleAccessFlags(accessFlagSet), generateCodeItem(outFile, cache));
   }
 
-  public static Cache<Triple<DexClassType, DexPrototype, String>, MethodIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
-    return new Cache<Triple<DexClassType, DexPrototype, String>, MethodIdItem>() {
+  public static Cache<Triple<DexReferenceType, DexPrototype, String>, MethodIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
+    return new Cache<Triple<DexReferenceType, DexPrototype, String>, MethodIdItem>() {
       @Override
-      protected MethodIdItem createNewEntry(Triple<DexClassType, DexPrototype, String> key) {
+      protected MethodIdItem createNewEntry(Triple<DexReferenceType, DexPrototype, String> key) {
         return MethodIdItem.internMethodIdItem(
                  outFile,
                  cache.getType(key.getValA()),
