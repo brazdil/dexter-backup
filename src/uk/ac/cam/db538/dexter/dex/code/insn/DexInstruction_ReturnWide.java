@@ -2,12 +2,18 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
+
+import lombok.Getter;
+import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
+import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -17,9 +23,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStr
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_ReturnWide extends DexInstruction {
 
@@ -99,5 +102,45 @@ public class DexInstruction_ReturnWide extends DexInstruction {
                    });
     } else
       code.replace(this, new DexCodeElement[] {insnGetSRES, insnAcquireSRES, insnSetRES, insnPrintDebug, this});
+  }
+
+  @Override
+  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    val regAlloc = state.getRegisterAllocation();
+    int rFrom1 = regAlloc.get(regFrom1);
+    int rFrom2 = regAlloc.get(regFrom2);
+
+    if (!formWideRegister(rFrom1, rFrom2))
+      return throwWideRegistersExpected();
+
+    if (fitsIntoBits_Unsigned(rFrom1, 8))
+      return new Instruction[] { new Instruction11x(Opcode.RETURN_WIDE, (short) rFrom1) };
+    else
+      return throwNoSuitableFormatFound();
+  }
+
+  @Override
+  public boolean cfgEndsBasicBlock() {
+    return true;
+  }
+
+  @Override
+  public boolean cfgExitsMethod() {
+    return true;
+  }
+
+  @Override
+  public Set<DexRegister> lvaReferencedRegisters() {
+    return createSet(regFrom1, regFrom2);
+  }
+
+  @Override
+  public Set<GcRangeConstraint> gcRangeConstraints() {
+    return createSet(new GcRangeConstraint(regFrom1, ColorRange.RANGE_8BIT));
+  }
+
+  @Override
+  public Set<GcFollowConstraint> gcFollowConstraints() {
+    return createSet(new GcFollowConstraint(regFrom1, regFrom2));
   }
 }
