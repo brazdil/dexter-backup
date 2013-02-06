@@ -90,7 +90,7 @@ public class DexInstruction_Switch extends DexInstruction {
 
   @Override
   public Set<DexCodeElement> cfgGetSuccessors() {
-    return createSet((DexCodeElement) switchTable);
+    return createSet(getNextCodeElement(), (DexCodeElement) switchTable);
   }
 
   @Override
