@@ -1,5 +1,9 @@
 package com.example.dextertest;
 
+import uk.ac.cam.uk.db538.dextertest.Sink;
+import uk.ac.cam.uk.db538.dextertest.Sink_ApacheHTTPClient;
+import uk.ac.cam.uk.db538.dextertest.Source;
+import uk.ac.cam.uk.db538.dextertest.Source_Contacts;
 import android.os.Bundle;
 import android.app.Activity;
 import android.app.AlertDialog;
