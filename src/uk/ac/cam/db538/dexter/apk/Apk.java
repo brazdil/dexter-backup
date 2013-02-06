@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.jar.JarFile;
 
 import lombok.Getter;
 import lombok.val;
@@ -34,9 +35,16 @@ public class Apk {
     this.classHierarchy = new DexClassHierarchy(DexClassType.parse("Ljava/lang/Object;", parsingCache));
 
     this.dexFile = new Dex(filename, true, this);
-    for (val file : frameworkDir.listFiles())
+    for (val file : frameworkDir.listFiles()) {
       if (file.isFile() && (file.getName().endsWith(".dex") || file.getName().endsWith(".odex")))
         new Dex(file, false, this);
+      else if (file.isFile() && file.getName().endsWith(".jar")) {
+    	val jar = new JarFile(file);
+        if (jar.getJarEntry("classes.dex") != null)
+          new Dex(file, false, this);
+        jar.close();
+      }
+    }
     classHierarchy.checkConsistentency();
 
     this.temporaryFilename = File.createTempFile("dexter-", ".apk");
