@@ -431,7 +431,9 @@ public class DexCode {
       val regCallersName = new DexRegister();
       val regInternalAnnotation = instrumentationState.getInternalClassAnnotationRegister();
 
+      addedCode.add(new DexInstruction_Const(this, regInternalAnnotation, 0));
       addedCode.add(new DexPseudoinstruction_GetMethodCaller(this, regCallersName));
+      addedCode.add(new DexInstruction_IfTestZero(this, regCallersName, labelExternalCallOrigin, Opcode_IfTestZero.eqz));
       addedCode.add(new DexPseudoinstruction_GetInternalClassAnnotation(this, regInternalAnnotation, regCallersName));
       addedCode.add(new DexInstruction_IfTestZero(this, regInternalAnnotation, labelExternalCallOrigin, Opcode_IfTestZero.eqz));
     }

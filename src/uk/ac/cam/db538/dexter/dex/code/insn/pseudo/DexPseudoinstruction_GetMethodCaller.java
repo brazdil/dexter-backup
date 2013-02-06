@@ -8,12 +8,17 @@ import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
@@ -42,8 +47,12 @@ public class DexPseudoinstruction_GetMethodCaller extends DexPseudoinstruction {
 
     val regException = new DexRegister();
     val regStackArray = new DexRegister();
-    val regArrayIndex = new DexRegister();
+    val regStackArrayLength = new DexRegister();
+    val regConstOne = new DexRegister();
     val regCallerInfo = new DexRegister();
+
+    val labelStackArrayNonempty = new DexLabel(code);
+    val labelEnd = new DexLabel(code);
 
     return Arrays.asList(new DexCodeElement[] {
                            // regException = new Exception()
@@ -70,13 +79,23 @@ public class DexPseudoinstruction_GetMethodCaller extends DexPseudoinstruction {
                              code,
                              regStackArray,
                              true),
-                           // regCallerInfo = regStackArray[regArrayIndex = 1]
-                           new DexInstruction_Const(code, regArrayIndex, 1),
+                           // regConstOne = 1
+                           new DexInstruction_Const(code, regConstOne, 1),
+                           // if regStackArray.length <= 1
+                           new DexInstruction_ArrayLength(code, regStackArrayLength, regStackArray),
+                           new DexInstruction_IfTest(code, regStackArrayLength, regConstOne, labelStackArrayNonempty, Opcode_IfTest.gt),
+                           // regTo = null
+                           new DexInstruction_Const(code, regTo, 0),
+                           // exit
+                           new DexInstruction_Goto(code, labelEnd),
+                           // else
+                           labelStackArrayNonempty,
+                           // regCallerInfo = regStackArray[regConstOne]
                            new DexInstruction_ArrayGet(
                              code,
                              regCallerInfo,
                              regStackArray,
-                             regArrayIndex,
+                             regConstOne,
                              Opcode_GetPut.Object),
                            // regTo = regCallerInfo.getClassName()
                            new DexInstruction_Invoke(
@@ -89,7 +108,8 @@ public class DexPseudoinstruction_GetMethodCaller extends DexPseudoinstruction {
                            new DexInstruction_MoveResult(
                              code,
                              regTo,
-                             true)
+                             true),
+                           labelEnd
                          });
   }
 }
