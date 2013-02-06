@@ -17,6 +17,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -119,6 +120,8 @@ public class DexInstruction_ArrayPut extends DexInstruction {
       code.replace(this,
                    new DexCodeElement[] {
                      this,
+                     new DexPseudoinstruction_GetObjectTaint(code, state.getTaintRegister(regFrom), regFrom),
+                     new DexPseudoinstruction_SetObjectTaint(code, regArray, state.getTaintRegister(regFrom)),
                      new DexPseudoinstruction_SetObjectTaint(code, regArray, state.getTaintRegister(regIndex))
                    });
     }
