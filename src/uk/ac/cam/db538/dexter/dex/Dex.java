@@ -66,6 +66,8 @@ public class Dex {
   public Dex(File filename, boolean isInternal, Apk parent) throws IOException {
     this(parent);
 
+    System.out.println("Loading " + filename.getPath());
+
     val originalFile = new DexFile(filename);
     classes.addAll(parseAllClasses(originalFile, isInternal));
 

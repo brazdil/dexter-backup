@@ -11,6 +11,7 @@ import java.lang.Thread.State;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 
@@ -104,11 +105,23 @@ public class MainWindow {
       if (FileChooser.showOpenDialog(frame) != JFileChooser.APPROVE_OPTION)
         return;
 
+      String[] frameworkOptions = { "framework-2.3/", "framework-4.2/" };
+      int choice = JOptionPane.showOptionDialog(
+                     null,
+                     "Which framework do you want to use?",
+                     "Framework",
+                     JOptionPane.YES_NO_CANCEL_OPTION,
+                     JOptionPane.QUESTION_MESSAGE,
+                     null,
+                     frameworkOptions,
+                     frameworkOptions[0]);
+      val framework = frameworkOptions[choice];
+
       val file = FileChooser.getSelectedFile();
       doModal("Loading " + file.getName(), new Thread(new Runnable() {
         public void run() {
           try {
-            val splitPane = new FileTab(new Apk(file, new File("framework/")), file.getName());
+            val splitPane = new FileTab(new Apk(file, new File(framework)), file.getName());
             tabbedPane.addTab(file.getName(), splitPane);
           } catch (Throwable e) {
             JMessage.showErrorMessage(frame, "A problem occurred while loading file \"" + file.getName() + "\".", e);

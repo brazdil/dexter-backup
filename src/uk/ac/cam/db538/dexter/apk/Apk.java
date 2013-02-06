@@ -39,7 +39,7 @@ public class Apk {
       if (file.isFile() && (file.getName().endsWith(".dex") || file.getName().endsWith(".odex")))
         new Dex(file, false, this);
       else if (file.isFile() && file.getName().endsWith(".jar")) {
-    	val jar = new JarFile(file);
+        val jar = new JarFile(file);
         if (jar.getJarEntry("classes.dex") != null)
           new Dex(file, false, this);
         jar.close();
