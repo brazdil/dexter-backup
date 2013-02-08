@@ -17,6 +17,7 @@ public abstract class ExternalCallInstrumentor {
   public static List<ExternalCallInstrumentor> getInstrumentors() {
     val instrumentors = new ArrayList<ExternalCallInstrumentor>();
     instrumentors.add(new Source_ContentResolver());
+    instrumentors.add(new Source_SystemService());
     instrumentors.add(new Sink_SendIntent());
     instrumentors.add(new Sink_HttpClient());
     instrumentors.add(new Sanitizer_StringBuilder_Append());

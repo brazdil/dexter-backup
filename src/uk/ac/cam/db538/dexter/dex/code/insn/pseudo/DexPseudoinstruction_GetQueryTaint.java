@@ -49,7 +49,7 @@ public class DexPseudoinstruction_GetQueryTaint extends DexPseudoinstruction {
                            new DexInstruction_Invoke(code, methodQueryTaint, Arrays.asList(new DexRegister[] { regStrQuery })),
                            new DexInstruction_MoveResult(code, regTo, false),
                            // print debug info
-                           new DexPseudoinstruction_PrintStringConst(code, "$ Content query: ", false),
+                           new DexPseudoinstruction_PrintStringConst(code, "$ content query: ", false),
                            new DexPseudoinstruction_PrintString(code, regStrQuery, false),
                            new DexPseudoinstruction_PrintStringConst(code, " => ", false),
                            new DexPseudoinstruction_PrintInteger(code, regTo, true)
