@@ -4,6 +4,7 @@ public class TaintConstants {
 
   public static final int TAINT_SOURCE_CONTACTS = 1 << 0;
   public static final int TAINT_SOURCE_SMS = 1 << 1;
+  public static final int TAINT_SOURCE_CALL_LOG = 1 << 2;
 
   public static final int TAINT_SINK_OUT = 1 << 31;
   public static final int TAINT_SINK_NET = 1 << 30;
@@ -13,10 +14,12 @@ public class TaintConstants {
   }
 
   public static final int queryTaint(String query) {
-    if (query.startsWith("content://sms"))
-      return TAINT_SOURCE_SMS;
-    else if (query.startsWith("content://com.android.contacts"))
+    if (query.startsWith("content://com.android.contacts"))
       return TAINT_SOURCE_CONTACTS;
+    else if (query.startsWith("content://sms"))
+      return TAINT_SOURCE_SMS;
+    else if (query.startsWith("content://call_log"))
+      return TAINT_SOURCE_CALL_LOG;
     return 0;
   }
 }
