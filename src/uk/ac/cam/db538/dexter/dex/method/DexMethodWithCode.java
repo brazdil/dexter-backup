@@ -165,15 +165,19 @@ public abstract class DexMethodWithCode extends DexMethod {
     val registerAllocation = new HashMap<DexRegister, Integer>(codeColoring.getColoring());
     int registerCount = codeColoring.getColorsUsed();
     val inWords = this.getPrototype().countParamWords(this.isStatic());
-    if (registerCount >= inWords) {
-      int startReg = registerCount - inWords;
-      for (int i = 0; i < inWords; ++i)
-        registerAllocation.put(parameterRegisters.get(i), startReg + i);
-    } else {
-      for (int i = 0; i < inWords; ++i)
-        registerAllocation.put(parameterRegisters.get(i), i);
-      registerCount = inWords;
-    }
+//    if (registerCount >= inWords) {
+//      int startReg = registerCount - inWords;
+//      for (int i = 0; i < inWords; ++i)
+//        registerAllocation.put(parameterRegisters.get(i), startReg + i);
+//    } else {
+//      for (int i = 0; i < inWords; ++i)
+//        registerAllocation.put(parameterRegisters.get(i), i);
+//      registerCount = inWords;
+//    }
+    if (registerCount + inWords >= (1 << 16))
+      throw new RuntimeException("Cannot allocate paramter registers");
+    for (int i = 0; i < inWords; ++i)
+      registerAllocation.put(parameterRegisters.get(i), registerCount++);
 
     // sometimes a register is not used in the code
     // and thus would not get allocated...
