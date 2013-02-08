@@ -1,5 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.val;
@@ -31,7 +33,8 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     return true;
   }
 
-  private List<DexCodeElement> generatePreExternalCallCode(DexPseudoinstruction_Invoke insn, DexRegister regCombinedTaint, DexCode_InstrumentationState state) {
+  private List<DexCodeElement> generatePreExternalCallCode(DexPseudoinstruction_Invoke insn, DexRegister regCombinedTaint, DexCode_InstrumentationState state,
+      Collection<Integer> excludeFromTaintAcquirement, Collection<Integer> excludeFromTaintAssignment) {
     val codePreExternalCall = new NoDuplicatesList<DexCodeElement>();
     val methodCode = insn.getMethodCode();
     val instructionInvoke = insn.getInstructionInvoke();
@@ -46,22 +49,27 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
       // combine the taint of the object (if not static call) and all the parameters
 
       val regObjectArgTaint = new DexRegister();
-      if (isStaticCall || isConstructorCall)
+      if (isStaticCall || isConstructorCall || excludeFromTaintAcquirement.contains(0))
         codePreExternalCall.add(new DexInstruction_Const(methodCode, regCombinedTaint, 0));
       else
         codePreExternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regCombinedTaint, methodParameterRegs.get(0)));
 
-      int paramIndex = isStaticCall ? 0 : 1;
+      int paramRegIndex = isStaticCall ? 0 : 1;
+      int paramIndex = paramRegIndex;
       for (val paramType : methodPrototype.getParameterTypes()) {
-        DexRegister regArgTaint;
-        if (paramType instanceof DexPrimitiveType)
-          regArgTaint = state.getTaintRegister(methodParameterRegs.get(paramIndex));
-        else {
-          codePreExternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regObjectArgTaint, methodParameterRegs.get(paramIndex)));
-          regArgTaint = regObjectArgTaint;
+        if (!excludeFromTaintAcquirement.contains(paramIndex)) {
+          DexRegister regArgTaint;
+          if (paramType instanceof DexPrimitiveType)
+            regArgTaint = state.getTaintRegister(methodParameterRegs.get(paramRegIndex));
+          else {
+            codePreExternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regObjectArgTaint, methodParameterRegs.get(paramRegIndex)));
+            regArgTaint = regObjectArgTaint;
+          }
+          codePreExternalCall.add(new DexInstruction_BinaryOp(methodCode, regCombinedTaint, regCombinedTaint, regArgTaint, Opcode_BinaryOp.OrInt));
         }
-        codePreExternalCall.add(new DexInstruction_BinaryOp(methodCode, regCombinedTaint, regCombinedTaint, regArgTaint, Opcode_BinaryOp.OrInt));
-        paramIndex += paramType.getRegisters();
+
+        paramRegIndex += paramType.getRegisters();
+        paramIndex++;
       }
 
       codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(
@@ -74,14 +82,18 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
 
       // assign the combined taint to the object and all its non-primitive arguments
 
-      if (!isStaticCall && !isConstructorCall)
+      if (!isStaticCall && !isConstructorCall && !excludeFromTaintAssignment.contains(0))
         codePreExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, methodParameterRegs.get(0), regCombinedTaint));
 
-      paramIndex = isStaticCall ? 0 : 1;
+      paramRegIndex = isStaticCall ? 0 : 1;
+      paramIndex = paramRegIndex;
       for (val paramType : methodPrototype.getParameterTypes()) {
-        if (paramType instanceof DexReferenceType)
-          codePreExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, methodParameterRegs.get(paramIndex), regCombinedTaint));
-        paramIndex += paramType.getRegisters();
+        if (!excludeFromTaintAssignment.contains(paramIndex))
+          if (paramType instanceof DexReferenceType)
+            codePreExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, methodParameterRegs.get(paramRegIndex), regCombinedTaint));
+
+        paramRegIndex += paramType.getRegisters();
+        paramIndex++;
       }
     } else
       codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(
@@ -93,7 +105,8 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     return codePreExternalCall;
   }
 
-  private List<DexCodeElement> generatePostExternalCallCode(DexPseudoinstruction_Invoke insn, DexRegister regCombinedTaint, DexCode_InstrumentationState state) {
+  private List<DexCodeElement> generatePostExternalCallCode(DexPseudoinstruction_Invoke insn, DexRegister regCombinedTaint, DexCode_InstrumentationState state,
+      Collection<Integer> excludeFromTaintAssignment, boolean excludeResultFromTaintAssignment) {
     val codePostExternalCall = new NoDuplicatesList<DexCodeElement>();
     val methodCode = insn.getMethodCode();
     val instructionInvoke = insn.getInstructionInvoke();
@@ -114,7 +127,6 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
         val regResult = ((DexInstruction_MoveResult) instructionMoveResult).getRegTo();
         codePostExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, regResult, regCombinedTaint));
       }
-
     }
     else if (isConstructorCall) {
       val regInitializedObject = instructionInvoke.getArgumentRegisters().get(0);
@@ -124,12 +136,20 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     return codePostExternalCall;
   }
 
-  @Override
-  public Pair<List<DexCodeElement>, List<DexCodeElement>> generateInstrumentation(DexPseudoinstruction_Invoke insn, DexCode_InstrumentationState state) {
+  protected Pair<List<DexCodeElement>, List<DexCodeElement>> generateExternalCallCode(DexPseudoinstruction_Invoke insn,
+      DexCode_InstrumentationState state,
+      Collection<Integer> excludeFromTaintAcquirement,
+      Collection<Integer> excludeFromTaintAssignment,
+      boolean excludeResultFromTaintAssignment) {
     regCombinedTaint = new DexRegister();
     return new Pair<List<DexCodeElement>, List<DexCodeElement>>(
-             generatePreExternalCallCode(insn, regCombinedTaint, state),
-             generatePostExternalCallCode(insn, regCombinedTaint, state));
+             generatePreExternalCallCode(insn, regCombinedTaint, state, excludeFromTaintAcquirement, excludeFromTaintAssignment),
+             generatePostExternalCallCode(insn, regCombinedTaint, state, excludeFromTaintAssignment, excludeResultFromTaintAssignment));
+  }
+
+  @Override
+  public Pair<List<DexCodeElement>, List<DexCodeElement>> generateInstrumentation(DexPseudoinstruction_Invoke insn, DexCode_InstrumentationState state) {
+    return generateExternalCallCode(insn, state, Collections.<Integer> emptySet(), Collections.<Integer> emptySet(), false);
   }
 
 }
