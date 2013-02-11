@@ -103,6 +103,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalClassAnnotation;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetMethodCaller;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
@@ -348,6 +349,30 @@ public class DexCode {
           newInsns.add(new DexPseudoinstruction_Invoke(
                          this,
                          (DexInstruction_Invoke) thisInsn));
+      } else if (thisInsn instanceof DexInstruction_FilledNewArray) {
+
+        val nextInsnPair = nextInstruction(insns, i);
+
+        // replace FILLED_NEW_ARRAY & MOVE_RESULT pairs with a single FilledNewArray pseudoinstruction
+        if (nextInsnPair != null && nextInsnPair.getValA() instanceof DexInstruction_MoveResult) {
+          newInsns.add(new DexPseudoinstruction_FilledNewArray(
+                         this,
+                         (DexInstruction_FilledNewArray) thisInsn,
+                         (DexInstruction_MoveResult) nextInsnPair.getValA()));
+          // add the non-instructions which might be between the call and result move
+          for (int j = i + 1; j < nextInsnPair.getValB(); ++j) {
+            val middleInsn = insns.get(j);
+            if (middleInsn instanceof DexTryBlockEnd)
+              newInsns.add(middleInsn);
+            else
+              throw new InstrumentationException("Unexpected jump-to code element between invoke and move-result");
+          }
+          // jump to the following insn
+          i = nextInsnPair.getValB();
+
+        } else
+          throw new InstrumentationException("FilledNewArray instruction must be followed by a MoveResult");
+
       } else
         newInsns.add(thisInsn);
     }
