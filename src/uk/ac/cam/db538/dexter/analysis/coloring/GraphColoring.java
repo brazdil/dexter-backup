@@ -1,11 +1,13 @@
 package uk.ac.cam.db538.dexter.analysis.coloring;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Stack;
 
 import lombok.Getter;
@@ -20,6 +22,7 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 public class GraphColoring {
 
   private static final int MAX_COLOR = 65536;
+  private static final Random RANDOM = new Random(System.currentTimeMillis());
 
   @Getter private final DexCode code;
 
@@ -35,8 +38,9 @@ public class GraphColoring {
     boolean colored = false;
     while (!colored) {
       val nodeMap = generateNodeStates(code);
+      val clashGraph = new ClashGraph(code);
       try {
-        colorGraph(nodeMap, new ClashGraph(code));
+        colorGraph(nodeMap, clashGraph);
         val result = generateUngappedColoring(nodeMap);
 
         coloring = result.getValA();
@@ -44,9 +48,19 @@ public class GraphColoring {
 
         colored = true;
       } catch (GraphUncolorableException e) {
-        if (getStrictestColorRange(e.getProblematicNodeRun(), nodeMap) == ColorRange.RANGE_16BIT)
+        val strictestColorRange = getStrictestColorRange(e.getProblematicNodeRun(), nodeMap);
+        if (strictestColorRange == ColorRange.RANGE_16BIT)
           throw new RuntimeException(e);
-        spillNodeInCode(code, e.getProblematicNodeRun());
+
+        val similarNodeRuns = new ArrayList<NodeRun>();
+        for (val nodeState : nodeMap.values()) {
+          val nodeRun = nodeState.getNodeRun();
+          if (getStrictestColorRange(nodeRun, nodeMap).ordinal() <= strictestColorRange.ordinal())
+            similarNodeRuns.add(nodeRun);
+        }
+
+        val randomNodeRun = similarNodeRuns.get(RANDOM.nextInt(similarNodeRuns.size()));
+        spillNodeInCode(code, randomNodeRun);
       }
     }
   }
