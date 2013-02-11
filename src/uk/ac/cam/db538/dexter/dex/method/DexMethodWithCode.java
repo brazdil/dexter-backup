@@ -57,7 +57,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     this.parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
     this.parameterRegistersMappings = new HashMap<DexRegister, DexRegister>();
 
-    if (parseInstructions) {
+    if (parseInstructions && methodInfo.codeItem != null) {
       this.code = new DexCode(methodInfo.codeItem, this, parent.getParentFile().getParsingCache());
 
       val prototype = this.getPrototype();
@@ -146,7 +146,8 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   @Override
   public void instrument(DexInstrumentationCache cache) {
-    code.instrument(cache);
+    if (code != null)
+      code.instrument(cache);
 
     if (isVirtual())
       this.addAnnotation(

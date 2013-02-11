@@ -274,8 +274,7 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(
-    Map<DexRegister, DexRegister> mapping) {
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     val newArgRegs = new LinkedList<DexRegister>();
     for (val argReg : argumentRegisters) {
       val mapReg = mapping.get(argReg);
