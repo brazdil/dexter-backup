@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
@@ -22,7 +23,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 
 public class DexInstruction_PackedSwitchData extends DexInstruction {
 
-  @Getter private final DexInstruction_Switch parentInstruction;
+  @Getter @Setter private DexInstruction_Switch parentInstruction;
   @Getter private final int firstKey;
   @Getter private final List<DexLabel> targets;
 
@@ -74,6 +75,7 @@ public class DexInstruction_PackedSwitchData extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
+    System.out.println(getMethodCode().getParentMethod().getName());
     val targetOffsets = new int[targets.size()];
     for (int i = 0; i < targets.size(); ++i) {
       long offset = computeRelativeOffset(parentInstruction, targets.get(i), state);

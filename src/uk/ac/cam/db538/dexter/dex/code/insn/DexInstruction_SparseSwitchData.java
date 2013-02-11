@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
@@ -25,7 +26,7 @@ public class DexInstruction_SparseSwitchData extends DexInstruction {
 
   // CAREFUL: keys must be sorted low-to-high
 
-  @Getter private final DexInstruction_Switch parentInstruction;
+  @Getter @Setter private DexInstruction_Switch parentInstruction;
   @Getter private final List<Pair<Integer, DexLabel>> keyTargetPairs;
 
   public DexInstruction_SparseSwitchData(DexCode methodCode, DexInstruction_Switch parentInsn, List<Pair<Integer, DexLabel>> keyTargetPairs) {
