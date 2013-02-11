@@ -66,7 +66,18 @@ public class DexInstruction_Switch extends DexInstruction {
 
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_Switch(getMethodCode(), mapping.get(regTest), switchTable, packed);
+    val code = getMethodCode();
+    val insnReplacement = new DexInstruction_Switch(getMethodCode(), mapping.get(regTest), switchTable, packed);
+    val insnSwitchData = code.getFollowingInstruction(switchTable);
+
+    if (insnSwitchData instanceof DexInstruction_PackedSwitchData)
+      ((DexInstruction_PackedSwitchData) insnSwitchData).setParentInstruction(insnReplacement);
+    else if (insnSwitchData instanceof DexInstruction_SparseSwitchData)
+      ((DexInstruction_SparseSwitchData) insnSwitchData).setParentInstruction(insnReplacement);
+    else
+      throw new RuntimeException("Target instruction of Switch is not Packed/SparseSwitchData");
+
+    return insnReplacement;
   }
 
   @Override
