@@ -62,6 +62,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertToWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
@@ -1089,6 +1090,10 @@ public class DexCode {
 
     case FILL_ARRAY_DATA:
       return new DexInstruction_FillArray(this, insn, parsingState);
+
+    case FILLED_NEW_ARRAY:
+    case FILLED_NEW_ARRAY_RANGE:
+      return new DexInstruction_FilledNewArray(this, insn, parsingState);
 
     default:
       // TODO: throw exception
