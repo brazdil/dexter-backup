@@ -75,7 +75,6 @@ public class DexInstruction_PackedSwitchData extends DexInstruction {
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    System.out.println(getMethodCode().getParentMethod().getName());
     val targetOffsets = new int[targets.size()];
     for (int i = 0; i < targets.size(); ++i) {
       long offset = computeRelativeOffset(parentInstruction, targets.get(i), state);
