@@ -127,7 +127,7 @@ public class DexInstruction_ArrayGet extends DexInstruction {
                      new DexPseudoinstruction_GetObjectTaint(code, regArrayTaint, regArray),
                      new DexInstruction_BinaryOp(code, regTotalTaint, regArrayTaint, state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt),
                      this,
-                     new DexPseudoinstruction_SetObjectTaint(code, state.getTaintRegister(regTo), regTotalTaint)
+                     new DexPseudoinstruction_SetObjectTaint(code, regTo, regTotalTaint)
                    });
     }
   }
