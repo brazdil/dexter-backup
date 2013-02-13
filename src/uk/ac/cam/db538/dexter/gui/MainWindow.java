@@ -107,7 +107,7 @@ public class MainWindow {
 
       String[] frameworkOptions = { "framework-2.3/", "framework-4.2/" };
       int choice = JOptionPane.showOptionDialog(
-                     null,
+                     frame,
                      "Which framework do you want to use?",
                      "Framework",
                      JOptionPane.YES_NO_CANCEL_OPTION,
