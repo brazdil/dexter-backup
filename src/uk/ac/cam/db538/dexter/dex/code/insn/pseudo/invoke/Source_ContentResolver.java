@@ -73,6 +73,7 @@ public class Source_ContentResolver extends FallbackInstrumentor {
     val insnMoveResult = insn.getInstructionMoveResult();
 
     val methodCode = insn.getMethodCode();
+    val preCode = new NoDuplicatesList<DexCodeElement>(fallback.getValA().size() + 20);
     val postCode = new NoDuplicatesList<DexCodeElement>(fallback.getValB().size() + 20);
 
     DexRegister regResult = null;
@@ -84,11 +85,13 @@ public class Source_ContentResolver extends FallbackInstrumentor {
     val regResultTaint = state.getTaintRegister(regResult);
 
     // add taint to the result
-    postCode.addAll(fallback.getValB());
-    postCode.add(new DexPseudoinstruction_GetQueryTaint(methodCode, regResultTaint, insnInvoke.getArgumentRegisters().get(1)));
-    postCode.add(new DexPseudoinstruction_SetObjectTaint(methodCode, regResult, regResultTaint));
+    preCode.addAll(fallback.getValA());
+    preCode.add(new DexPseudoinstruction_GetQueryTaint(methodCode, regResultTaint, insnInvoke.getArgumentRegisters().get(1)));
 
-    return new Pair<List<DexCodeElement>, List<DexCodeElement>>(fallback.getValA(), postCode);
+    postCode.add(new DexPseudoinstruction_SetObjectTaint(methodCode, regResult, regResultTaint));
+    postCode.addAll(fallback.getValB());
+
+    return new Pair<List<DexCodeElement>, List<DexCodeElement>>(preCode, postCode);
   }
 
 }
