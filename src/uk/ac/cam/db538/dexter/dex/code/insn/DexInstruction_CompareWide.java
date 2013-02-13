@@ -130,13 +130,10 @@ public class DexInstruction_CompareWide extends DexInstruction {
   public void instrument(DexCode_InstrumentationState state) {
     // need to combine the taint of the two wide registers (total of four) and assign that to the operation result
     val code = getMethodCode();
-    val regTotalTaint = new DexRegister();
     code.replace(this,
                  new DexCodeElement[] {
                    this,
-                   new DexInstruction_BinaryOp(code, regTotalTaint, state.getTaintRegister(regSourceA1), state.getTaintRegister(regSourceA2), Opcode_BinaryOp.OrInt),
-                   new DexInstruction_BinaryOp(code, regTotalTaint, regTotalTaint, state.getTaintRegister(regSourceB1), Opcode_BinaryOp.OrInt),
-                   new DexInstruction_BinaryOp(code, state.getTaintRegister(regTo), regTotalTaint, state.getTaintRegister(regSourceB2), Opcode_BinaryOp.OrInt),
+                   new DexInstruction_BinaryOp(code, state.getTaintRegister(regTo), state.getTaintRegister(regSourceA1), state.getTaintRegister(regSourceB1), Opcode_BinaryOp.OrInt),
                  });
   }
 }
