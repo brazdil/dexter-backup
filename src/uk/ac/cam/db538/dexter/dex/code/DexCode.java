@@ -553,15 +553,14 @@ public class DexCode {
       for (val paramType : parentMethod.getPrototype().getParameterTypes()) {
         // assign the taint information of 'this' object to all the params
         if (paramType instanceof DexPrimitiveType) {
-          for (int i = 0; i < paramType.getRegisters(); paramRegIndex++, i++) {
-            val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
-            val regTaintParamMapping = instrumentationState.getTaintRegister(regParamMapping);
-            addedCode.add(new DexInstruction_Move(this, regTaintParamMapping, regThisTaint, false));
-          }
+	        val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
+	        val regTaintParamMapping = instrumentationState.getTaintRegister(regParamMapping);
+	        addedCode.add(new DexInstruction_Move(this, regTaintParamMapping, regThisTaint, false));
         } else {
           val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
           addedCode.add(new DexPseudoinstruction_SetObjectTaint(this, regParamMapping, regThisTaint));
         }
+        paramRegIndex += paramType.getRegisters();        
       }
 
       // END
