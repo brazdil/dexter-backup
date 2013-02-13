@@ -157,9 +157,9 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   @Override
   protected CodeItem generateCodeItem(DexFile outFile, DexAssemblingCache cache) {
-	  if (code == null)
-		  return null;
-	  
+    if (code == null)
+      return null;
+
     // do register allocation
     // note that this changes the code itself
     // (adds temporaries, inserts move instructions)
