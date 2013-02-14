@@ -519,6 +519,7 @@ public class DexCode {
       }
 
       if (hasPrimitiveArgument) {
+        addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "releasing S_ARG", true));
         addedCode.add(new DexInstruction_StaticGet(
                         this,
                         regSemaphore,
@@ -530,6 +531,7 @@ public class DexCode {
                         new DexPrototype(DexType.parse("V", null), null),
                         Arrays.asList(new DexRegister[] { regSemaphore }),
                         Opcode_Invoke.Virtual));
+        addedCode.add(new DexPseudoinstruction_PrintStringConst(this, "released S_ARG", true));
       }
     }
 
