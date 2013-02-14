@@ -73,6 +73,15 @@ public class DexInstruction_IfTest extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    // TODO: this is wrong!!! regs can be objects as well
+    if (reg.equals(regA) || reg.equals(regB))
+      return gcRegType.PrimitiveSingle;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
     int rA = state.getRegisterAllocation().get(regA);
     int rB = state.getRegisterAllocation().get(regB);
