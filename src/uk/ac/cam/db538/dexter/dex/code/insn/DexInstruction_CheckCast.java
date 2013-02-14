@@ -99,11 +99,25 @@ public class DexInstruction_CheckCast extends DexInstruction {
   }
 
   @Override
+  public Set<DexRegister> lvaDefinedRegisters() {
+    // it defines it, because the object gets its type changed inside the VM
+    return createSet(regObject);
+  }
+
+  @Override
   protected gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (reg.equals(regObject))
       return gcRegType.Object;
     else
       return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regObject))
+      return gcRegType.Object;
+    else
+      return super.gcDefinedRegisterType(reg);
   }
 
   @Override
