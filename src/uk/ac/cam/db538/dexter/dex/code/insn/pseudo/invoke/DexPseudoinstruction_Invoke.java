@@ -105,6 +105,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                               true));
 
     if (hasPrimitiveArgument) {
+      codePreInternalCall.add(new DexPseudoinstruction_PrintStringConst(methodCode, "acquiring S_ARG", true));
       codePreInternalCall.add(new DexInstruction_StaticGet(
                                 methodCode,
                                 regArgSemaphore,
@@ -116,6 +117,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                                 new DexPrototype(DexType.parse("V", null), null),
                                 Arrays.asList(new DexRegister[] { regArgSemaphore }),
                                 Opcode_Invoke.Virtual));
+      codePreInternalCall.add(new DexPseudoinstruction_PrintStringConst(methodCode, "acquired S_ARG", true));
 
       codePreInternalCall.add(new DexInstruction_StaticGet(methodCode, regArray, dex.getMethodCallHelper_Arg()));
       int arrayIndex = 0;
