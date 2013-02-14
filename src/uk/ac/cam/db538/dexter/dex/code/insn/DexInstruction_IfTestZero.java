@@ -86,6 +86,15 @@ public class DexInstruction_IfTestZero extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    // TODO: this is wrong!!! reg can be object as well
+    if (reg.equals(reg))
+      return gcRegType.PrimitiveSingle;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(reg, ColorRange.RANGE_8BIT));
   }
