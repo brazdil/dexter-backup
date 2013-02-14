@@ -23,7 +23,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 
 public class DexInstruction_FilledNewArray extends DexInstruction {
 
@@ -158,6 +158,16 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return new HashSet<DexRegister>(argumentRegisters);
+  }
+
+  @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (argumentRegisters.contains(reg))
+      return (arrayType.getElementType() instanceof DexPrimitiveType) ?
+             gcRegType.PrimitiveSingle :
+             gcRegType.Object;
+    else
+      return super.gcReferencedRegisterType(reg);
   }
 
   @Override

@@ -4,6 +4,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.val;
+
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
@@ -18,9 +21,6 @@ import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_ConstClass extends DexInstruction {
 
@@ -77,6 +77,14 @@ public class DexInstruction_ConstClass extends DexInstruction {
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     return createSet(regTo);
+  }
+
+  @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo))
+      return gcRegType.Object;
+    else
+      return super.gcDefinedRegisterType(reg);
   }
 
   @Override

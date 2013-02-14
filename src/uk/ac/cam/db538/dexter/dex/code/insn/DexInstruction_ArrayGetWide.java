@@ -59,13 +59,33 @@ public class DexInstruction_ArrayGetWide extends DexInstruction {
   }
 
   @Override
+  public Set<DexRegister> lvaReferencedRegisters() {
+    return createSet(regArray, regIndex);
+  }
+
+  @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     return createSet(regTo1, regTo2);
   }
 
   @Override
-  public Set<DexRegister> lvaReferencedRegisters() {
-    return createSet(regArray, regIndex);
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regArray))
+      return gcRegType.Object;
+    else if (reg.equals(regIndex))
+      return gcRegType.PrimitiveSingle;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo1))
+      return gcRegType.PrimitiveWide_High;
+    else if (reg.equals(regTo2))
+      return gcRegType.PrimitiveWide_Low;
+    else
+      return super.gcDefinedRegisterType(reg);
   }
 
   @Override

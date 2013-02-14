@@ -100,6 +100,24 @@ public class DexInstruction_CompareWide extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regSourceA1) || reg.equals(regSourceB1))
+      return gcRegType.PrimitiveWide_High;
+    else if (reg.equals(regSourceA2) || reg.equals(regSourceB2))
+      return gcRegType.PrimitiveWide_Low;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo))
+      return gcRegType.PrimitiveSingle;
+    else
+      return super.gcDefinedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(
              new GcRangeConstraint(regTo, ColorRange.RANGE_8BIT),

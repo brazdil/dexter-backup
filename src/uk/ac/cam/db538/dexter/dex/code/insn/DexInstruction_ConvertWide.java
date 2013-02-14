@@ -99,6 +99,26 @@ public class DexInstruction_ConvertWide extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regFrom1))
+      return gcRegType.PrimitiveWide_High;
+    else if (reg.equals(regFrom2))
+      return gcRegType.PrimitiveWide_Low;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo1))
+      return gcRegType.PrimitiveWide_High;
+    else if (reg.equals(regTo2))
+      return gcRegType.PrimitiveWide_Low;
+    else
+      return super.gcDefinedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regTo1, ColorRange.RANGE_4BIT),
                      new GcRangeConstraint(regFrom1, ColorRange.RANGE_4BIT));

@@ -106,6 +106,14 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo))
+      return gcRegType.PrimitiveSingle;
+    else
+      return super.gcDefinedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regTo, ColorRange.RANGE_8BIT));
   }
