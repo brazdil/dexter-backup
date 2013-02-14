@@ -102,6 +102,22 @@ public class DexInstruction_InstanceGet extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regObject))
+      return gcRegType.Object;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo))
+      return (opcode == Opcode_GetPut.Object) ? gcRegType.Object : gcRegType.PrimitiveSingle;
+    else
+      return super.gcDefinedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(
              new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT),

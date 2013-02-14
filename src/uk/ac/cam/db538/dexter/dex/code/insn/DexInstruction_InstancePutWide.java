@@ -99,6 +99,18 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regObject))
+      return gcRegType.Object;
+    else if (reg.equals(regFrom1))
+      return gcRegType.PrimitiveWide_High;
+    else if (reg.equals(regFrom2))
+      return gcRegType.PrimitiveWide_Low;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcFollowConstraint> gcFollowConstraints() {
     return createSet(new GcFollowConstraint(regFrom1, regFrom2));
   }

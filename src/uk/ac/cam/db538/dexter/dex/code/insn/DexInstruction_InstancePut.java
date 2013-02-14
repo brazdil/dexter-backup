@@ -97,6 +97,16 @@ public class DexInstruction_InstancePut extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regObject))
+      return gcRegType.Object;
+    else if (reg.equals(regFrom))
+      return (opcode == Opcode_GetPut.Object) ? gcRegType.Object : gcRegType.PrimitiveSingle;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
   public boolean cfgExitsMethod() {
     return throwingInsn_CanExitMethod();
   }
