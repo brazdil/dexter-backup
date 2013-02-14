@@ -23,6 +23,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 
 public class DexInstruction_Invoke extends DexInstruction {
@@ -231,6 +232,35 @@ public class DexInstruction_Invoke extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return new HashSet<DexRegister>(argumentRegisters);
+  }
+
+  @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (argumentRegisters.contains(reg)) {
+      int regIndex = argumentRegisters.indexOf(reg); // can be present multiple times, but the type must match
+      if (!isStaticCall()) {
+        if (regIndex == 0)
+          return gcRegType.Object;
+        else
+          regIndex--;
+      }
+      for (val paramType : methodPrototype.getParameterTypes()) {
+        if (regIndex == 0) {
+          if (paramType instanceof DexPrimitiveType) {
+            if (paramType.isWide())
+              return gcRegType.PrimitiveWide_High;
+            else
+              return gcRegType.PrimitiveSingle;
+          } else
+            return gcRegType.Object;
+        } else if (regIndex == 1 && paramType instanceof DexPrimitiveType && paramType.isWide())
+          return gcRegType.PrimitiveWide_Low;
+
+        regIndex -= paramType.getRegisters();
+      }
+    }
+
+    return super.gcReferencedRegisterType(reg);
   }
 
   @Override
