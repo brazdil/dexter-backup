@@ -3,6 +3,9 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.val;
+
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
@@ -13,9 +16,6 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_ConvertToWide extends DexInstruction {
 
@@ -95,6 +95,24 @@ public class DexInstruction_ConvertToWide extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom);
+  }
+
+  @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regFrom))
+      return gcRegType.PrimitiveSingle;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo1))
+      return gcRegType.PrimitiveWide_High;
+    else if (reg.equals(regTo2))
+      return gcRegType.PrimitiveWide_Low;
+    else
+      return super.gcDefinedRegisterType(reg);
   }
 
   @Override

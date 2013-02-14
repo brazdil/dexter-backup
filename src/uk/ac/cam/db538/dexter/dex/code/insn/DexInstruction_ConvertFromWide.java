@@ -105,4 +105,23 @@ public class DexInstruction_ConvertFromWide extends DexInstruction {
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom1, regFrom2);
   }
+
+  @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regFrom1))
+      return gcRegType.PrimitiveWide_High;
+    else if (reg.equals(regFrom2))
+      return gcRegType.PrimitiveWide_Low;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo))
+      return gcRegType.PrimitiveSingle;
+    else
+      return super.gcDefinedRegisterType(reg);
+  }
+
 }

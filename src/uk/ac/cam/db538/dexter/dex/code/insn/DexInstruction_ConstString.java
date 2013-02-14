@@ -82,6 +82,14 @@ public class DexInstruction_ConstString extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo))
+      return gcRegType.Object;
+    else
+      return super.gcDefinedRegisterType(reg);
+  }
+
+  @Override
   public boolean cfgExitsMethod() {
     return throwingInsn_CanExitMethod();
   }

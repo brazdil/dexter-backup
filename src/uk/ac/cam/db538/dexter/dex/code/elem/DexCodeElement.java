@@ -1,7 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.elem;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +18,7 @@ import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -113,32 +113,86 @@ public abstract class DexCodeElement {
     return Collections.emptySet();
   }
 
-  public final List<DexCodeElement> gcAddTemporaries(Collection<DexRegister> spilledRegs) {
+  public final List<DexCodeElement> gcAddTemporaries(List<DexRegister> regList) {
     val tempMapping = new HashMap<DexRegister, DexRegister>();
     val methodCode = getMethodCode();
+    val referencedRegs = lvaReferencedRegisters();
+    val definedRegs = lvaDefinedRegisters();
+    val newElem = new LinkedList<DexCodeElement>();
 
     for (val usedReg : lvaUsedRegisters())
-      if (spilledRegs.contains(usedReg))
+      if (regList.contains(usedReg))
         tempMapping.put(usedReg, new DexRegister());
       else
         tempMapping.put(usedReg, usedReg);
 
-    val referencedRegs = lvaReferencedRegisters();
-    val definedRegs = lvaDefinedRegisters();
+    for (int i = 0; i < regList.size(); ++i) {
+      val spilledReg = regList.get(i);
+      if (referencedRegs.contains(spilledReg)) {
+        val spilledRegType = gcReferencedRegisterType(spilledReg);
+        switch (spilledRegType) {
+        case Object:
+          newElem.add(new DexInstruction_Move(methodCode, tempMapping.get(spilledReg), spilledReg, true));
+          break;
+        case PrimitiveSingle:
+          newElem.add(new DexInstruction_Move(methodCode, tempMapping.get(spilledReg), spilledReg, false));
+          break;
+        case PrimitiveWide_High:
+          val nextReg = regList.get(i + 1);
+          if (gcReferencedRegisterType(nextReg) != gcRegType.PrimitiveWide_Low)
+            throw new RuntimeException("Register type inconsistency");
+          newElem.add(new DexInstruction_MoveWide(methodCode, tempMapping.get(spilledReg), tempMapping.get(nextReg), spilledReg, nextReg));
+          break;
+        default:
+          break;
+        }
+      }
+    }
 
-    val newElem = new LinkedList<DexCodeElement>();
-    for (val spilledReg : spilledRegs)
-      if (referencedRegs.contains(spilledReg))
-        newElem.add(new DexInstruction_Move(methodCode, tempMapping.get(spilledReg), spilledReg, false));
     newElem.add(gcReplaceWithTemporaries(tempMapping));
-    for (val spilledReg : spilledRegs)
-      if (definedRegs.contains(spilledReg))
-        newElem.add(new DexInstruction_Move(methodCode, spilledReg, tempMapping.get(spilledReg), false));
+
+    for (int i = 0; i < regList.size(); ++i) {
+      val spilledReg = regList.get(i);
+      if (definedRegs.contains(spilledReg)) {
+        val spilledRegType = gcDefinedRegisterType(spilledReg);
+        switch (spilledRegType) {
+        case Object:
+          newElem.add(new DexInstruction_Move(methodCode, spilledReg, tempMapping.get(spilledReg), true));
+          break;
+        case PrimitiveSingle:
+          newElem.add(new DexInstruction_Move(methodCode, spilledReg, tempMapping.get(spilledReg), false));
+          break;
+        case PrimitiveWide_High:
+          val nextReg = regList.get(i + 1);
+          if (gcDefinedRegisterType(nextReg) != gcRegType.PrimitiveWide_Low)
+            throw new RuntimeException("Register type inconsistency");
+          newElem.add(new DexInstruction_MoveWide(methodCode, spilledReg, nextReg, tempMapping.get(spilledReg), tempMapping.get(nextReg)));
+          break;
+        default:
+          break;
+        }
+      }
+    }
 
     return newElem;
   }
 
   protected abstract DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping);
+
+  protected enum gcRegType {
+    Object,
+    PrimitiveSingle,
+    PrimitiveWide_High,
+    PrimitiveWide_Low
+  }
+
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have referenced register type information");
+  }
+
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have defined register type information");
+  }
 
   // UTILS
 

@@ -95,6 +95,14 @@ public class DexInstruction_FillArray extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regArray))
+      return gcRegType.Object;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regArray, ColorRange.RANGE_8BIT));
   }

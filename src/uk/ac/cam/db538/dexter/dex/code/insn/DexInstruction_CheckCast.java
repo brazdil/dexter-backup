@@ -99,6 +99,14 @@ public class DexInstruction_CheckCast extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regObject))
+      return gcRegType.Object;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regObject, ColorRange.RANGE_8BIT));
   }
