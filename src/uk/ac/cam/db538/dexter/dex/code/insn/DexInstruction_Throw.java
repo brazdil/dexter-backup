@@ -67,6 +67,14 @@ public class DexInstruction_Throw extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regFrom))
+      return gcRegType.Object;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regFrom, ColorRange.RANGE_8BIT));
   }

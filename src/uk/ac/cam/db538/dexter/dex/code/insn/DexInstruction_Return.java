@@ -85,6 +85,14 @@ public class DexInstruction_Return extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regFrom))
+      return (objectMoving) ? gcRegType.Object : gcRegType.PrimitiveSingle;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regFrom, ColorRange.RANGE_8BIT));
   }

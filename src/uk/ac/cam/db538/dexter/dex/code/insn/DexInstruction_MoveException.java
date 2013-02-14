@@ -64,6 +64,14 @@ public class DexInstruction_MoveException extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo))
+      return gcRegType.Object;
+    else
+      return super.gcDefinedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regTo, ColorRange.RANGE_8BIT));
   }

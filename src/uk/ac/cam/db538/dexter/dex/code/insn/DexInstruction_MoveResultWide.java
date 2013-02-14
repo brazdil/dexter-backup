@@ -3,6 +3,9 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.val;
+
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
@@ -13,9 +16,6 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-
-import lombok.Getter;
-import lombok.val;
 
 public class DexInstruction_MoveResultWide extends DexInstruction {
 
@@ -80,6 +80,16 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     return createSet(regTo1, regTo2);
+  }
+
+  @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo1))
+      return gcRegType.PrimitiveWide_High;
+    else if (reg.equals(regTo2))
+      return gcRegType.PrimitiveWide_Low;
+    else
+      return super.gcDefinedRegisterType(reg);
   }
 
   @Override

@@ -83,6 +83,22 @@ public class DexInstruction_NewArray extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regSize))
+      return gcRegType.PrimitiveSingle;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo))
+      return gcRegType.Object;
+    else
+      return super.gcDefinedRegisterType(reg);
+  }
+
+  @Override
   public boolean cfgExitsMethod() {
     return throwingInsn_CanExitMethod();
   }

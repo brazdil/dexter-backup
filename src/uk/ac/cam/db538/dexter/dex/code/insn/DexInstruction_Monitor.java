@@ -20,13 +20,13 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 
 public class DexInstruction_Monitor extends DexInstruction {
 
-  @Getter private final DexRegister reg;
+  @Getter private final DexRegister regMonitor;
   @Getter private final boolean enter;
 
   public DexInstruction_Monitor(DexCode methodCode, DexRegister reg, boolean entering) {
     super(methodCode);
 
-    this.reg = reg;
+    this.regMonitor = reg;
     this.enter = entering;
   }
 
@@ -37,7 +37,7 @@ public class DexInstruction_Monitor extends DexInstruction {
         (insn.opcode == Opcode.MONITOR_ENTER || insn.opcode == Opcode.MONITOR_EXIT)) {
 
       val insnMonitor = (Instruction11x) insn;
-      reg = parsingState.getRegister(insnMonitor.getRegisterA());
+      regMonitor = parsingState.getRegister(insnMonitor.getRegisterA());
       enter = insn.opcode == Opcode.MONITOR_ENTER;
 
     } else
@@ -47,12 +47,12 @@ public class DexInstruction_Monitor extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "monitor-" + (enter ? "enter" : "exit") +
-           " " + reg.getOriginalIndexString();
+           " " + regMonitor.getOriginalIndexString();
   }
 
   @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    int rObj = state.getRegisterAllocation().get(reg);
+    int rObj = state.getRegisterAllocation().get(regMonitor);
 
     if (fitsIntoBits_Unsigned(rObj, 8))
       return new Instruction[] {
@@ -64,17 +64,25 @@ public class DexInstruction_Monitor extends DexInstruction {
 
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
-    return createSet(reg);
+    return createSet(regMonitor);
+  }
+
+  @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regMonitor))
+      return gcRegType.Object;
+    else
+      return super.gcReferencedRegisterType(reg);
   }
 
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(new GcRangeConstraint(reg, ColorRange.RANGE_8BIT));
+    return createSet(new GcRangeConstraint(regMonitor, ColorRange.RANGE_8BIT));
   }
 
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_Monitor(getMethodCode(), mapping.get(reg), enter);
+    return new DexInstruction_Monitor(getMethodCode(), mapping.get(regMonitor), enter);
   }
 
   @Override

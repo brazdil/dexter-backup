@@ -114,6 +114,26 @@ public class DexInstruction_MoveWide extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regFrom1))
+      return gcRegType.PrimitiveWide_High;
+    else if (reg.equals(regFrom2))
+      return gcRegType.PrimitiveWide_Low;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo1))
+      return gcRegType.PrimitiveWide_High;
+    else if (reg.equals(regTo2))
+      return gcRegType.PrimitiveWide_Low;
+    else
+      return super.gcDefinedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcFollowConstraint> gcFollowConstraints() {
     return createSet(new GcFollowConstraint(regTo1, regTo2),
                      new GcFollowConstraint(regFrom1, regFrom2));

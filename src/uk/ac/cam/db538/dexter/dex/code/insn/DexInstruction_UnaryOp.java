@@ -90,4 +90,20 @@ public class DexInstruction_UnaryOp extends DexInstruction {
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom);
   }
+
+  @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regFrom))
+      return gcRegType.PrimitiveSingle;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
+  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo))
+      return gcRegType.PrimitiveSingle;
+    else
+      return super.gcDefinedRegisterType(reg);
+  }
 }

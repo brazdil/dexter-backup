@@ -110,6 +110,14 @@ public class DexInstruction_Switch extends DexInstruction {
   }
 
   @Override
+  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regTest))
+      return gcRegType.PrimitiveSingle;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regTest, ColorRange.RANGE_8BIT));
   }
