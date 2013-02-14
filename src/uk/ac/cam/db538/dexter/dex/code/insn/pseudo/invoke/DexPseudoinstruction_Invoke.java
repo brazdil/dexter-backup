@@ -105,7 +105,6 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                               true));
 
     if (hasPrimitiveArgument) {
-      codePreInternalCall.add(new DexPseudoinstruction_PrintStringConst(methodCode, "acquiring S_ARG", true));
       codePreInternalCall.add(new DexInstruction_StaticGet(
                                 methodCode,
                                 regArgSemaphore,
@@ -117,7 +116,6 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                                 new DexPrototype(DexType.parse("V", null), null),
                                 Arrays.asList(new DexRegister[] { regArgSemaphore }),
                                 Opcode_Invoke.Virtual));
-      codePreInternalCall.add(new DexPseudoinstruction_PrintStringConst(methodCode, "acquired S_ARG", true));
 
       codePreInternalCall.add(new DexInstruction_StaticGet(methodCode, regArray, dex.getMethodCallHelper_Arg()));
       int arrayIndex = 0;
@@ -219,6 +217,18 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     return instrumentedCode;
   }
 
+  private void instrumentStatic(DexCode_InstrumentationState state) {
+    val destAnalysis = getParentFile().getClassHierarchy().decideMethodCallDestination(
+                         instructionInvoke.getCallType(),
+                         instructionInvoke.getClassType(),
+                         instructionInvoke.getMethodName(),
+                         instructionInvoke.getMethodPrototype());
+    if (destAnalysis.getValA())
+      instrumentDirectInternal(state);
+    else if (destAnalysis.getValB())
+      instrumentDirectExternal(state);
+  }
+
   private void instrumentDirectExternal(DexCode_InstrumentationState state) {
     getMethodCode().replace(this, generateExternalCallCode(state));
   }
@@ -304,11 +314,13 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
   public void instrument(DexCode_InstrumentationState state) {
     switch (instructionInvoke.getCallType()) {
     case Direct:
-    case Static:
       if (instructionInvoke.getClassType().isDefinedInternally())
         instrumentDirectInternal(state);
       else
         instrumentDirectExternal(state);
+      break;
+    case Static:
+      instrumentStatic(state);
       break;
     case Interface:
     case Super:

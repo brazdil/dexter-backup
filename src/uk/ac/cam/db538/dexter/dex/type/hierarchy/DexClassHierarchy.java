@@ -312,8 +312,8 @@ public class DexClassHierarchy {
   public Pair<Boolean, Boolean> decideMethodCallDestination(Opcode_Invoke callType, DexReferenceType refType, String methodName, DexPrototype methodPrototype) {
     DexClassType callClass = getTrueCalledClass(refType);
 
-    if (callType == Opcode_Invoke.Super) {
-      // with super call we can always deduce the destination
+    if (callType == Opcode_Invoke.Super || callType == Opcode_Invoke.Static) {
+      // with super/static call we can always deduce the destination
       // by going through the parents (DexClassHierarchy will
       // return them ordered from the closest parent
       // to Object) and deciding based on the first implementation
