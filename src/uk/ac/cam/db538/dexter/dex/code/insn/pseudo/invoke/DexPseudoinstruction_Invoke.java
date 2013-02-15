@@ -217,7 +217,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     return instrumentedCode;
   }
 
-  private void instrumentStatic(DexCode_InstrumentationState state) {
+  private void instrumentDirectStatic(DexCode_InstrumentationState state) {
     val destAnalysis = getParentFile().getClassHierarchy().decideMethodCallDestination(
                          instructionInvoke.getCallType(),
                          instructionInvoke.getClassType(),
@@ -314,13 +314,8 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
   public void instrument(DexCode_InstrumentationState state) {
     switch (instructionInvoke.getCallType()) {
     case Direct:
-      if (instructionInvoke.getClassType().isDefinedInternally())
-        instrumentDirectInternal(state);
-      else
-        instrumentDirectExternal(state);
-      break;
     case Static:
-      instrumentStatic(state);
+      instrumentDirectStatic(state);
       break;
     case Interface:
     case Super:

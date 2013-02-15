@@ -44,7 +44,7 @@ public abstract class DexMethod {
 
     if (!isAbstract())
       this.parentClass.getParentFile().getClassHierarchy().addImplementedMethod(
-        parentClass.getType(), this.name, this.prototype, this.isPrivate());
+        parentClass.getType(), this.name, this.prototype, this.isPrivate(), this.isNative());
   }
 
   public DexMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
@@ -73,6 +73,10 @@ public abstract class DexMethod {
 
   public boolean isPrivate() {
     return accessFlagSet.contains(AccessFlags.PRIVATE);
+  }
+
+  public boolean isNative() {
+    return accessFlagSet.contains(AccessFlags.NATIVE);
   }
 
   public boolean isConstructor() {
