@@ -14,6 +14,7 @@ import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
@@ -71,8 +72,8 @@ public class DexClassHierarchy {
     classes.get(clazz).getInterfaces().add(interfaceClazz);
   }
 
-  public void addImplementedMethod(DexClassType classType, String methodName, DexPrototype methodPrototype, boolean isPrivate) {
-    classes.get(classType).implementedMethods.add(new MethodEntry(methodName, methodPrototype, isPrivate));
+  public void addImplementedMethod(DexClassType classType, String methodName, DexPrototype methodPrototype, boolean isPrivate, boolean isNative) {
+    classes.get(classType).implementedMethods.add(new MethodEntry(methodName, methodPrototype, isPrivate, isNative));
   }
 
   public void addDeclaredField(DexClassType classType, String fieldName, DexRegisterType fieldType, boolean isStatic, boolean isPrivate) {
@@ -222,6 +223,16 @@ public class DexClassHierarchy {
     return false;
   }
 
+  public boolean isMethodNative(DexReferenceType refType, String name, DexPrototype prototype) {
+    DexClassType clazz = getTrueCalledClass(refType);
+
+    for (val method : classes.get(clazz).implementedMethods)
+      if (method.getName().equals(name) && method.getPrototype().equals(prototype))
+        return method.isDeclaredNative();
+
+    return false;
+  }
+
   public DexClassType getAccessedFieldDeclaringClass(DexClassType accessedClazz, String fieldName, DexRegisterType fieldType, boolean isStatic) {
     for (val ancestor : getAllParents(accessedClazz, true))
       for (val field : classes.get(ancestor).getDeclaredFields())
@@ -300,9 +311,14 @@ public class DexClassHierarchy {
   private DexClassType getTrueCalledClass(DexReferenceType refType) {
     if (refType instanceof DexClassType)
       return (DexClassType) refType;
-    else
+    else if (refType instanceof DexArrayType)
       return rootClass;
+    else
+      throw new Error();
   }
+
+  private static final Pair<Boolean, Boolean> CALL_INTERNAL = new Pair<Boolean, Boolean>(true, false);
+  private static final Pair<Boolean, Boolean> CALL_EXTERNAL = new Pair<Boolean, Boolean>(false, true);
 
   /*
    * Returns a pair of booleans. The first is true if and only if
@@ -312,7 +328,12 @@ public class DexClassHierarchy {
   public Pair<Boolean, Boolean> decideMethodCallDestination(Opcode_Invoke callType, DexReferenceType refType, String methodName, DexPrototype methodPrototype) {
     DexClassType callClass = getTrueCalledClass(refType);
 
-    if (callType == Opcode_Invoke.Super || callType == Opcode_Invoke.Static) {
+    if (callType == Opcode_Invoke.Direct) {
+      if (callClass.isDefinedInternally() && !isMethodNative(callClass, methodName, methodPrototype))
+        return CALL_INTERNAL;
+      else
+        return CALL_EXTERNAL;
+    } else if (callType == Opcode_Invoke.Super || callType == Opcode_Invoke.Static) {
       // with super/static call we can always deduce the destination
       // by going through the parents (DexClassHierarchy will
       // return them ordered from the closest parent
@@ -320,14 +341,16 @@ public class DexClassHierarchy {
       // we encounter
 
       // need to put TRUE here, because classType is already a parent
-      for (val parentClass : this.getAllParents(callClass, true))
+      for (val parentClass : this.getAllParents(callClass, true)) {
         if (implementsMethod(parentClass, methodName, methodPrototype)) {
-          if (parentClass.isDefinedInternally())
-            return new Pair<Boolean, Boolean>(true, false); // will always be internal
+          if (parentClass.isDefinedInternally() && !isMethodNative(parentClass, methodName, methodPrototype))
+            return CALL_INTERNAL;
           else
-            return new Pair<Boolean, Boolean>(false, true); // will always be external
+            return CALL_EXTERNAL;
         }
-      throw new ClassHierarchyException("Cannot determine the destination of super method call: " + callClass.getPrettyName() + "." + methodName);
+      }
+
+      throw new ClassHierarchyException("Cannot determine the destination of super/static method call: " + callClass.getPrettyName() + "." + methodName);
 
     } else if (callType == Opcode_Invoke.Virtual || callType == Opcode_Invoke.Interface) {
 
@@ -350,8 +373,10 @@ public class DexClassHierarchy {
 
       for (val destClass : potentialDestinationClasses)
         if (implementsMethod(destClass, methodName, methodPrototype)) {
-          if (destClass.isDefinedInternally()) canBeInternal = true;
-          else canBeExternal = true;
+          if (destClass.isDefinedInternally() && !isMethodNative(destClass, methodName, methodPrototype))
+            canBeInternal = true;
+          else
+            canBeExternal = true;
         }
 
       return new Pair<Boolean, Boolean>(canBeInternal, canBeExternal);
@@ -379,12 +404,14 @@ public class DexClassHierarchy {
     private final String name;
     private final DexPrototype prototype;
     private final boolean declaredPrivate;
+    private final boolean declaredNative;
 
     @Override
     public int hashCode() {
       final int prime = 31;
       int result = 1;
       result = prime * result + (this.declaredPrivate ? 1231 : 1237);
+      result = prime * result + (this.declaredNative ? 1231 : 1237);
       result = prime * result
                + ((this.name == null) ? 0 : this.name.hashCode());
       result = prime * result
@@ -402,6 +429,8 @@ public class DexClassHierarchy {
         return false;
       MethodEntry other = (MethodEntry) obj;
       if (this.declaredPrivate != other.declaredPrivate)
+        return false;
+      if (this.declaredNative != other.declaredNative)
         return false;
       if (this.name == null) {
         if (other.name != null)
