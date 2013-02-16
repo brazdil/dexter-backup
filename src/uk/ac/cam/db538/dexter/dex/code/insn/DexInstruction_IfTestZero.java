@@ -87,7 +87,8 @@ public class DexInstruction_IfTestZero extends DexInstruction {
 
   @Override
   protected gcRegType gcReferencedRegisterType(DexRegister reg) {
-    // TODO: this is wrong!!! reg can be object as well
+    if (insnOpcode == Opcode_IfTestZero.eqz || insnOpcode == Opcode_IfTestZero.nez)
+      throw new UnsupportedOperationException();
     if (reg.equals(reg))
       return gcRegType.PrimitiveSingle;
     else

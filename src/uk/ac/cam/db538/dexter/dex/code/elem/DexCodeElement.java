@@ -19,6 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -113,7 +114,7 @@ public abstract class DexCodeElement {
     return Collections.emptySet();
   }
 
-  public final List<DexCodeElement> gcAddTemporaries(List<DexRegister> regList) {
+  public final Map<DexCodeElement, List<DexCodeElement>> gcAddTemporaries(List<DexRegister> regList) {
     val tempMapping = new HashMap<DexRegister, DexRegister>();
     val methodCode = getMethodCode();
     val referencedRegs = lvaReferencedRegisters();
@@ -149,7 +150,8 @@ public abstract class DexCodeElement {
       }
     }
 
-    newElem.add(gcReplaceWithTemporaries(tempMapping));
+    val insnReplacement = gcReplaceWithTemporaries(tempMapping);
+    newElem.add(insnReplacement);
 
     for (int i = 0; i < regList.size(); ++i) {
       val spilledReg = regList.get(i);
@@ -174,7 +176,16 @@ public abstract class DexCodeElement {
       }
     }
 
-    return newElem;
+
+    val replacementMapping = new HashMap<DexCodeElement, List<DexCodeElement>>();
+    replacementMapping.put(this, newElem);
+
+    if (this instanceof DexInstruction_Switch) {
+      val thisSwitch = (DexInstruction_Switch) this;
+      replacementMapping.put(this, Arrays.asList( thisSwitch.gcReplaceSwitchTableParentReference((DexInstruction_Switch) insnReplacement) ));
+    }
+
+    return replacementMapping;
   }
 
   protected abstract DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping);

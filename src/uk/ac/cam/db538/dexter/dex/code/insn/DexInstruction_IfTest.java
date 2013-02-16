@@ -74,8 +74,9 @@ public class DexInstruction_IfTest extends DexInstruction {
 
   @Override
   protected gcRegType gcReferencedRegisterType(DexRegister reg) {
-    // TODO: this is wrong!!! regs can be objects as well
-    if (reg.equals(regA) || reg.equals(regB))
+    if (insnOpcode == Opcode_IfTest.eq || insnOpcode == Opcode_IfTest.ne)
+      throw new UnsupportedOperationException();
+    else if (reg.equals(regA) || reg.equals(regB))
       return gcRegType.PrimitiveSingle;
     else
       return super.gcReferencedRegisterType(reg);

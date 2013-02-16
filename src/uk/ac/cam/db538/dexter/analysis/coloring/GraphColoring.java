@@ -16,7 +16,6 @@ import uk.ac.cam.db538.dexter.analysis.ClashGraph;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class GraphColoring {
@@ -59,8 +58,19 @@ public class GraphColoring {
             similarNodeRuns.add(nodeRun);
         }
 
-        val randomNodeRun = similarNodeRuns.get(RANDOM.nextInt(similarNodeRuns.size()));
-        spillNodeInCode(code, randomNodeRun);
+        boolean spilled = false;
+        while (!spilled) {
+          val originalInstructionList = new ArrayList<DexCodeElement>(code.getInstructionList());
+          try {
+            int randomInt = RANDOM.nextInt(similarNodeRuns.size());
+            val randomNodeRun = similarNodeRuns.get(randomInt);
+            spillNodeInCode(code, randomNodeRun);
+            spilled = true;
+          } catch (UnsupportedOperationException ex) {
+            // revert changes
+            code.replaceInstructions(originalInstructionList);
+          }
+        }
       }
     }
   }
@@ -247,16 +257,17 @@ public class GraphColoring {
   }
 
   private static void spillNodeInCode(DexCode code, NodeRun nodeRun) {
-    val newInstructions = new NoDuplicatesList<DexCodeElement>();
-
+    val replacedInstructions = new HashSet<DexCodeElement>();
     for (val insn : code.getInstructionList()) {
       if (containsAnyOfNodes(insn.lvaUsedRegisters(), nodeRun))
-        newInstructions.addAll(insn.gcAddTemporaries(nodeRun.getNodes()));
-      else
-        newInstructions.add(insn);
+        replacedInstructions.add(insn);
     }
 
-    code.replaceInstructions(newInstructions);
+    for (val insn : replacedInstructions) {
+      val replacementMapping = insn.gcAddTemporaries(nodeRun.getNodes());
+      for (val entry : replacementMapping.entrySet())
+        code.replace(entry.getKey(), entry.getValue());
+    }
   }
 
   private static Pair<Map<DexRegister, Integer>, Integer> generateUngappedColoring(NodeStatesMap nodeMap) {
