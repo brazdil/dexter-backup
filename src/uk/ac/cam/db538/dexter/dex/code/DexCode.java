@@ -401,10 +401,13 @@ public class DexCode {
   }
 
   public void instrument(DexInstrumentationCache cache) {
-    generatePseudoinstructions();
-
     instrumentationState = new DexCode_InstrumentationState(this, cache);
+    
+    boolean shouldInstrument = !(getParentClass().getType().getDescriptor().startsWith("Lcom/quicinc/vellamo/benchmarks/html5/"));
 
+    if (shouldInstrument) {
+    generatePseudoinstructions();
+    
     val insns = new HashSet<DexInstruction>();
     for (val elem : instructionList)
       if (elem instanceof DexInstruction)
@@ -413,6 +416,7 @@ public class DexCode {
     for (val insn : insns)
       if (!insn.isAuxiliaryElement())
         insn.instrument(instrumentationState);
+    }
 
     if (instrumentationState.isNeedsCallInstrumentation())
       insertCallHandling();
