@@ -18,6 +18,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexInstruction_Switch extends DexInstruction {
 
@@ -69,21 +70,23 @@ public class DexInstruction_Switch extends DexInstruction {
     return new DexInstruction_Switch(getMethodCode(), mapping.get(regTest), switchTable, packed);
   }
 
-  public DexCodeElement gcReplaceSwitchTableParentReference(DexInstruction_Switch replacementSwitch) {
+  public Pair<DexCodeElement, DexCodeElement> gcReplaceSwitchTableParentReference(DexInstruction_Switch replacementSwitch) {
     val code = getMethodCode();
     val insnSwitchData = code.getFollowingInstruction(switchTable);
 
     if (insnSwitchData instanceof DexInstruction_PackedSwitchData) {
       val insnPackedSwitchData = (DexInstruction_PackedSwitchData) insnSwitchData;
-      return new DexInstruction_PackedSwitchData(code,
+      return new Pair<DexCodeElement, DexCodeElement>(insnPackedSwitchData, 
+    		  new DexInstruction_PackedSwitchData(code,
              replacementSwitch,
              insnPackedSwitchData.getFirstKey(),
-             insnPackedSwitchData.getTargets());
+             insnPackedSwitchData.getTargets()));
     } else if (insnSwitchData instanceof DexInstruction_SparseSwitchData) {
       val insnSparseSwitchData = (DexInstruction_SparseSwitchData) insnSwitchData;
-      return new DexInstruction_SparseSwitchData(code,
+      return new Pair<DexCodeElement, DexCodeElement>(insnSparseSwitchData, 
+      new DexInstruction_SparseSwitchData(code,
              replacementSwitch,
-             insnSparseSwitchData.getKeyTargetPairs());
+             insnSparseSwitchData.getKeyTargetPairs()));
     } else
       throw new RuntimeException("Target instruction of Switch is not Packed/SparseSwitchData");
   }

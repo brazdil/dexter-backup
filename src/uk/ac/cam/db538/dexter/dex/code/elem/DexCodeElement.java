@@ -176,13 +176,13 @@ public abstract class DexCodeElement {
       }
     }
 
-
     val replacementMapping = new HashMap<DexCodeElement, List<DexCodeElement>>();
     replacementMapping.put(this, newElem);
 
     if (this instanceof DexInstruction_Switch) {
       val thisSwitch = (DexInstruction_Switch) this;
-      replacementMapping.put(this, Arrays.asList( thisSwitch.gcReplaceSwitchTableParentReference((DexInstruction_Switch) insnReplacement) ));
+      val switchTableReplacement = thisSwitch.gcReplaceSwitchTableParentReference((DexInstruction_Switch) insnReplacement);
+      replacementMapping.put(switchTableReplacement.getValA(), Arrays.asList( switchTableReplacement.getValB() ));
     }
 
     return replacementMapping;
