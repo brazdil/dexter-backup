@@ -27,4 +27,20 @@ public abstract class DexReferenceType extends DexRegisterType {
   public boolean isDefinedInternally() {
     return false;
   }
+
+  public boolean isImmutable() {
+    switch (this.getDescriptor()) {
+    case "Ljava/lang/String;":
+    case "Ljava/lang/Boolean;":
+    case "Ljava/lang/Byte;":
+    case "Ljava/lang/Character;":
+    case "Ljava/lang/Double;":
+    case "Ljava/lang/Float;":
+    case "Ljava/lang/Integer;":
+    case "Ljava/lang/Long;":
+    case "Ljava/lang/Short;":
+      return true;
+    }
+    return false;
+  }
 }

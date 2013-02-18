@@ -21,7 +21,6 @@ public abstract class ExternalCallInstrumentor {
     instrumentors.add(new Sink_SendIntent());
     instrumentors.add(new Sink_HttpClient());
     instrumentors.add(new Sink_Log());
-    instrumentors.add(new Sanitizer_StringBuilder_Append());
     return instrumentors;
   }
 }

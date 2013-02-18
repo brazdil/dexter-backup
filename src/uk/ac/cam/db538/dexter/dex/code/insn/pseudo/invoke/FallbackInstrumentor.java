@@ -89,7 +89,7 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
       paramIndex = paramRegIndex;
       for (val paramType : methodPrototype.getParameterTypes()) {
         if (!excludeFromTaintAssignment.contains(paramIndex))
-          if (paramType instanceof DexReferenceType)
+          if (paramType instanceof DexReferenceType && !((DexReferenceType) paramType).isImmutable())
             codePreExternalCall.add(new DexPseudoinstruction_SetObjectTaint(methodCode, methodParameterRegs.get(paramRegIndex), regCombinedTaint));
 
         paramRegIndex += paramType.getRegisters();
