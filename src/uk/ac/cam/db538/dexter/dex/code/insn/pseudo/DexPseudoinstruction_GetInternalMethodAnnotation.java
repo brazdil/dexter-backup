@@ -111,7 +111,7 @@ public class DexPseudoinstruction_GetInternalMethodAnnotation extends DexPseudoi
       new DexInstruction_Invoke(
         methodCode,
         DexClassType.parse("Ljava/lang/Class;", parsingCache),
-        "getMethod",
+        "getDeclaredMethod",
         new DexPrototype(
           DexClassType.parse("Ljava/lang/reflect/Method;", parsingCache),
           Arrays.asList(new DexRegisterType[] {
