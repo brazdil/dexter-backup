@@ -72,8 +72,8 @@ public class DexClassHierarchy {
     classes.get(clazz).getInterfaces().add(interfaceClazz);
   }
 
-  public void addImplementedMethod(DexClassType classType, String methodName, DexPrototype methodPrototype, boolean isPrivate, boolean isNative) {
-    classes.get(classType).implementedMethods.add(new MethodEntry(methodName, methodPrototype, isPrivate, isNative));
+  public void addImplementedMethod(DexClassType classType, String methodName, DexPrototype methodPrototype, boolean isPrivate, boolean isNative, boolean isPublic) {
+    classes.get(classType).implementedMethods.add(new MethodEntry(methodName, methodPrototype, isPrivate, isNative, isPublic));
   }
 
   public void addDeclaredField(DexClassType classType, String fieldName, DexRegisterType fieldType, boolean isStatic, boolean isPrivate) {
@@ -229,6 +229,16 @@ public class DexClassHierarchy {
     for (val method : classes.get(clazz).implementedMethods)
       if (method.getName().equals(name) && method.getPrototype().equals(prototype))
         return method.isDeclaredNative();
+
+    return false;
+  }
+
+  public boolean isMethodPublic(DexReferenceType refType, String name, DexPrototype prototype) {
+    DexClassType clazz = getTrueCalledClass(refType);
+
+    for (val method : classes.get(clazz).implementedMethods)
+      if (method.getName().equals(name) && method.getPrototype().equals(prototype))
+        return method.isDeclaredPublic();
 
     return false;
   }
@@ -405,6 +415,7 @@ public class DexClassHierarchy {
     private final DexPrototype prototype;
     private final boolean declaredPrivate;
     private final boolean declaredNative;
+    private final boolean declaredPublic;
 
     @Override
     public int hashCode() {
@@ -412,6 +423,7 @@ public class DexClassHierarchy {
       int result = 1;
       result = prime * result + (this.declaredPrivate ? 1231 : 1237);
       result = prime * result + (this.declaredNative ? 1231 : 1237);
+      result = prime * result + (this.declaredPublic ? 1231 : 1237);
       result = prime * result
                + ((this.name == null) ? 0 : this.name.hashCode());
       result = prime * result
