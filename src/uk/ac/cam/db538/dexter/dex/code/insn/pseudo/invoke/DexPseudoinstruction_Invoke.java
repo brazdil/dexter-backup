@@ -281,6 +281,7 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
                              methodCode,
                              regInternalAnnotationInstance,
                              regDestObjectInstance,
+                             instructionInvoke.getClassType(),
                              instructionInvoke.getMethodName(),
                              instructionInvoke.getMethodPrototype()));
 
