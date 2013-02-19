@@ -54,17 +54,19 @@ public class GraphColoring {
         val similarNodeRuns = new ArrayList<NodeRun>();
         for (val nodeState : nodeMap.values()) {
           val nodeRun = nodeState.getNodeRun();
-          if (getStrictestColorRange(nodeRun, nodeMap).ordinal() <= strictestColorRange.ordinal())
+          if (!onlyContainsSpilledRegisters(nodeRun) && getStrictestColorRange(nodeRun, nodeMap).ordinal() <= strictestColorRange.ordinal())
             similarNodeRuns.add(nodeRun);
         }
 
         boolean spilled = false;
         while (!spilled) {
+          if (similarNodeRuns.isEmpty())
+            throw new RuntimeException("Cannot color registers");
           val originalInstructionList = new ArrayList<DexCodeElement>(code.getInstructionList());
+          int randomInt = RANDOM.nextInt(similarNodeRuns.size());
+          val randomNodeRun = similarNodeRuns.get(randomInt);
+          System.out.print(code.getParentMethod().getName() + ": spilled " + randomInt + "/" + similarNodeRuns.size() + " [" + randomNodeRun.getNodes().size() + "] ... ");
           try {
-            int randomInt = RANDOM.nextInt(similarNodeRuns.size());
-            val randomNodeRun = similarNodeRuns.get(randomInt);
-            System.out.print(code.getParentMethod().getName() + ": spilled " + randomInt + "/" + similarNodeRuns.size() + " [" + randomNodeRun.getNodes().size() + "] ... ");
             spillNodeInCode(code, randomNodeRun);
             spilled = true;
             System.out.println("ok");
@@ -72,10 +74,19 @@ public class GraphColoring {
             System.out.println("forbidden");
             // revert changes
             code.replaceInstructions(originalInstructionList);
+            // remove node run from set
+            similarNodeRuns.remove(randomInt);
           }
         }
       }
     }
+  }
+
+  private boolean onlyContainsSpilledRegisters(NodeRun run) {
+    for (val reg : run.getNodes())
+      if (!reg.isSpilledRegister())
+        return false;
+    return true;
   }
 
   private static NodeStatesMap generateNodeStates(DexCode code) {

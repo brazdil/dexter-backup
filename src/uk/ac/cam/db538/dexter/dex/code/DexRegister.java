@@ -1,5 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import lombok.Getter;
+import lombok.Setter;
 import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexRegister {
@@ -8,8 +10,11 @@ public class DexRegister {
 
   private final Integer originalIndex;
 
+  @Getter @Setter private boolean spilledRegister;
+
   public DexRegister() {
     this.originalIndex = REG_COUNTER;
+    this.spilledRegister = false;
 
     REG_COUNTER--;
     if (REG_COUNTER >= 0)
