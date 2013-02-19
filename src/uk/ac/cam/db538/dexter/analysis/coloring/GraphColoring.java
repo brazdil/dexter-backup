@@ -64,9 +64,12 @@ public class GraphColoring {
           try {
             int randomInt = RANDOM.nextInt(similarNodeRuns.size());
             val randomNodeRun = similarNodeRuns.get(randomInt);
+            System.out.print(code.getParentMethod().getName() + ": spilled " + randomInt + "/" + similarNodeRuns.size() + " [" + randomNodeRun.getNodes().size() + "] ... ");
             spillNodeInCode(code, randomNodeRun);
             spilled = true;
+            System.out.println("ok");
           } catch (UnsupportedOperationException ex) {
+            System.out.println("forbidden");
             // revert changes
             code.replaceInstructions(originalInstructionList);
           }
@@ -249,8 +252,8 @@ public class GraphColoring {
     return MAX_COLOR;
   }
 
-  private static boolean containsAnyOfNodes(Collection<DexRegister> collection, NodeRun nodeRun) {
-    for (val node : nodeRun.getNodes())
+  private static boolean containsAnyOfNodes(Collection<DexRegister> collection, Collection<DexRegister> nodeRun) {
+    for (val node : nodeRun)
       if (collection.contains(node))
         return true;
     return false;
@@ -258,10 +261,9 @@ public class GraphColoring {
 
   private static void spillNodeInCode(DexCode code, NodeRun nodeRun) {
     val replacedInstructions = new HashSet<DexCodeElement>();
-    for (val insn : code.getInstructionList()) {
-      if (containsAnyOfNodes(insn.lvaUsedRegisters(), nodeRun))
+    for (val insn : code.getInstructionList())
+      if (containsAnyOfNodes(insn.lvaUsedRegisters(), nodeRun.getNodes()))
         replacedInstructions.add(insn);
-    }
 
     for (val insn : replacedInstructions) {
       val replacementMapping = insn.gcAddTemporaries(nodeRun.getNodes());
