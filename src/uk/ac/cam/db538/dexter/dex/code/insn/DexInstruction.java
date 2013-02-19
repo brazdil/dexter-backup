@@ -147,27 +147,13 @@ public abstract class DexInstruction extends DexCodeElement {
     val moveException = new DexInstruction_MoveException(code, regException);
     val throwException = new DexInstruction_Throw(code, regException);
 
-    val surroundingTryBlockEnd = this.getSurroundingTryBlock();
-    DexTryBlockStart surroundingTryBlockStart = null;
-    DexTryBlockEnd splitTryBlockEnd = null;
-    DexTryBlockStart splitTryBlockStart = null;
-    boolean hasSurroundingTryBlock = (surroundingTryBlockEnd != null);
-    if (hasSurroundingTryBlock) {
-      surroundingTryBlockStart = surroundingTryBlockEnd.getBlockStart();
-      splitTryBlockEnd = new DexTryBlockEnd(code, surroundingTryBlockStart);
-      splitTryBlockStart = new DexTryBlockStart(surroundingTryBlockStart);
-      surroundingTryBlockEnd.setBlockStart(splitTryBlockStart);
-    }
-
     val instrumentedCode = new ArrayList<DexCodeElement>();
-    if (hasSurroundingTryBlock) instrumentedCode.add(splitTryBlockEnd);
     instrumentedCode.add(tryStart);
     instrumentedCode.addAll(Arrays.asList(tryBlockCode));
     instrumentedCode.add(tryEnd);
     instrumentedCode.add(gotoSucc);
     instrumentedCode.add(catchAll);
     instrumentedCode.add(moveException);
-    if (hasSurroundingTryBlock) instrumentedCode.add(splitTryBlockStart);
     instrumentedCode.addAll(Arrays.asList(catchBlockCode));
     instrumentedCode.add(throwException);
     instrumentedCode.add(labelSucc);
