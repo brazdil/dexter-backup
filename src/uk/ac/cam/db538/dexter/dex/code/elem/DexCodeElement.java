@@ -122,9 +122,11 @@ public abstract class DexCodeElement {
     val newElem = new LinkedList<DexCodeElement>();
 
     for (val usedReg : lvaUsedRegisters())
-      if (regList.contains(usedReg))
-        tempMapping.put(usedReg, new DexRegister());
-      else
+      if (regList.contains(usedReg)) {
+        val newReg = new DexRegister();
+        newReg.setSpilledRegister(true);
+        tempMapping.put(usedReg, newReg);
+      } else
         tempMapping.put(usedReg, usedReg);
 
     for (int i = 0; i < regList.size(); ++i) {
