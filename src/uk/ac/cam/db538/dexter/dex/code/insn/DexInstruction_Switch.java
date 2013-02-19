@@ -76,17 +76,17 @@ public class DexInstruction_Switch extends DexInstruction {
 
     if (insnSwitchData instanceof DexInstruction_PackedSwitchData) {
       val insnPackedSwitchData = (DexInstruction_PackedSwitchData) insnSwitchData;
-      return new Pair<DexCodeElement, DexCodeElement>(insnPackedSwitchData, 
-    		  new DexInstruction_PackedSwitchData(code,
-             replacementSwitch,
-             insnPackedSwitchData.getFirstKey(),
-             insnPackedSwitchData.getTargets()));
+      return new Pair<DexCodeElement, DexCodeElement>(insnPackedSwitchData,
+             new DexInstruction_PackedSwitchData(code,
+                 replacementSwitch,
+                 insnPackedSwitchData.getFirstKey(),
+                 insnPackedSwitchData.getTargets()));
     } else if (insnSwitchData instanceof DexInstruction_SparseSwitchData) {
       val insnSparseSwitchData = (DexInstruction_SparseSwitchData) insnSwitchData;
-      return new Pair<DexCodeElement, DexCodeElement>(insnSparseSwitchData, 
-      new DexInstruction_SparseSwitchData(code,
-             replacementSwitch,
-             insnSparseSwitchData.getKeyTargetPairs()));
+      return new Pair<DexCodeElement, DexCodeElement>(insnSparseSwitchData,
+             new DexInstruction_SparseSwitchData(code,
+                 replacementSwitch,
+                 insnSparseSwitchData.getKeyTargetPairs()));
     } else
       throw new RuntimeException("Target instruction of Switch is not Packed/SparseSwitchData");
   }
