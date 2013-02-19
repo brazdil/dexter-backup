@@ -40,6 +40,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement.GcFollowConstraint;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeStart;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
@@ -400,28 +401,60 @@ public class DexCode {
     } while (unwrappedSomething);
   }
 
+  private void fixOverlappingTryBlocks() {
+    boolean somethingChanged = true;
+    while (somethingChanged) {
+      somethingChanged = false;
+
+      val tryBlocks = this.getTryBlocks();
+      for (val outerBlock : tryBlocks)
+        for (val innerBlock : tryBlocks) {
+          if (outerBlock != innerBlock) {
+            boolean startInside = isBetween(outerBlock.getBlockStart(), outerBlock, innerBlock.getBlockStart());
+            boolean endInside = isBetween(outerBlock.getBlockStart(), outerBlock, innerBlock);
+
+            if (startInside && endInside) {
+              System.out.println("overlapping try blocks in " + getParentClass().getType().getPrettyName() + "." + getParentMethod().getName());
+              // inner block really nested
+              val outerNewEnd = new DexTryBlockEnd(this, outerBlock.getBlockStart());
+              val outerNewStart = new DexTryBlockStart(outerBlock.getBlockStart());
+
+              insertBefore(outerNewEnd, innerBlock.getBlockStart());
+              insertAfter(outerNewStart, innerBlock);
+              outerBlock.setBlockStart(outerNewStart);
+
+              somethingChanged = true;
+            } else if (startInside || endInside) {
+              throw new InstrumentationException("Try blocks overlapping but not nested");
+            }
+          }
+        }
+    }
+  }
+
   public void instrument(DexInstrumentationCache cache) {
     instrumentationState = new DexCode_InstrumentationState(this, cache);
-    
+
     boolean shouldInstrument = !(getParentClass().getType().getDescriptor().startsWith("Lcom/quicinc/vellamo/benchmarks/html5/"));
 
     if (shouldInstrument) {
-    generatePseudoinstructions();
-    
-    val insns = new HashSet<DexInstruction>();
-    for (val elem : instructionList)
-      if (elem instanceof DexInstruction)
-        insns.add((DexInstruction) elem);
+      generatePseudoinstructions();
 
-    for (val insn : insns)
-      if (!insn.isAuxiliaryElement())
-        insn.instrument(instrumentationState);
+      val insns = new HashSet<DexInstruction>();
+      for (val elem : instructionList)
+        if (elem instanceof DexInstruction)
+          insns.add((DexInstruction) elem);
+
+      for (val insn : insns)
+        if (!insn.isAuxiliaryElement())
+          insn.instrument(instrumentationState);
     }
 
     if (instrumentationState.isNeedsCallInstrumentation())
       insertCallHandling();
 
     unwrapPseudoinstructions();
+    fixOverlappingTryBlocks();
   }
 
   private void insertCallHandling() {
