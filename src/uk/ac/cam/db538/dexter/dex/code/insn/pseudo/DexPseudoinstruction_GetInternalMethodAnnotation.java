@@ -7,12 +7,18 @@ import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
@@ -32,14 +38,16 @@ public class DexPseudoinstruction_GetInternalMethodAnnotation extends DexPseudoi
 
   @Getter private final DexRegister regTo;
   @Getter private final DexRegister regDestObjectInstance;
+  @Getter private final DexReferenceType invokedClass;
   @Getter private final String invokedMethodName;
   @Getter private final DexPrototype invokedMethodPrototype;
 
   public DexPseudoinstruction_GetInternalMethodAnnotation(DexCode methodCode, DexRegister regTo, DexRegister regDestObjectInstance,
-      String methodName, DexPrototype methodPrototype) {
+      DexReferenceType invokedClass, String methodName, DexPrototype methodPrototype) {
     super(methodCode);
     this.regTo = regTo;
     this.regDestObjectInstance = regDestObjectInstance;
+    this.invokedClass = invokedClass;
     this.invokedMethodName = methodName;
     this.invokedMethodPrototype = methodPrototype;
   }
@@ -49,6 +57,7 @@ public class DexPseudoinstruction_GetInternalMethodAnnotation extends DexPseudoi
     val methodCode = getMethodCode();
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
+    val classHierarchy = dex.getClassHierarchy();
 
     val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
 
@@ -107,20 +116,42 @@ public class DexPseudoinstruction_GetInternalMethodAnnotation extends DexPseudoi
       instrumentedCode.add(new DexInstruction_ArrayPut(methodCode, regMethodParamType, regMethodArgumentsArray, regMethodArgumentsIndex, Opcode_GetPut.Object));
     }
     // find the method
-    instrumentedCode.add(
-      new DexInstruction_Invoke(
-        methodCode,
-        DexClassType.parse("Ljava/lang/Class;", parsingCache),
-        "getDeclaredMethod",
-        new DexPrototype(
-          DexClassType.parse("Ljava/lang/reflect/Method;", parsingCache),
-          Arrays.asList(new DexRegisterType[] {
-                          DexClassType.parse("Ljava/lang/String;", parsingCache),
-                          DexArrayType.parse("[Ljava/lang/Class;", parsingCache)
-                        })),
-        Arrays.asList(new DexRegister[] { regDestObjectClass, regMethodName, regMethodArgumentsArray } ),
-        Opcode_Invoke.Virtual));
-    instrumentedCode.add(new DexInstruction_MoveResult(methodCode, regMethodObject, true));
+    val classType = DexClassType.parse("Ljava/lang/Class;", parsingCache);
+    val getMethodPrototype = new DexPrototype(
+      DexClassType.parse("Ljava/lang/reflect/Method;", parsingCache),
+      Arrays.asList(new DexRegisterType[] {
+                      DexClassType.parse("Ljava/lang/String;", parsingCache),
+                      DexArrayType.parse("[Ljava/lang/Class;", parsingCache)
+                    }));
+    if (classHierarchy.isMethodPublic(invokedClass, invokedMethodName, invokedMethodPrototype)) {
+      val getMethodParams = Arrays.asList(new DexRegister[] { regDestObjectClass, regMethodName, regMethodArgumentsArray } );
+      instrumentedCode.add(new DexInstruction_Invoke(methodCode, classType, "getMethod", getMethodPrototype, getMethodParams, Opcode_Invoke.Virtual));
+      instrumentedCode.add(new DexInstruction_MoveResult(methodCode, regMethodObject, true));
+    } else {
+      val catchBlock = new DexCatch(methodCode, DexClassType.parse("Ljava/lang/NoSuchMethodException;", parsingCache));
+      val tryStart = new DexTryBlockStart(methodCode);
+      val tryEnd = new DexTryBlockEnd(methodCode, tryStart);
+      val labelBefore = new DexLabel(methodCode);
+      val labelAfter = new DexLabel(methodCode);
+      tryStart.addCatchHandler(catchBlock);
+
+      val regCurrentClass = new DexRegister();
+      val getMethodParams = Arrays.asList(new DexRegister[] { regCurrentClass, regMethodName, regMethodArgumentsArray } );
+
+      instrumentedCode.add(new DexInstruction_Move(methodCode, regCurrentClass, regDestObjectClass, true));
+      instrumentedCode.add(labelBefore);
+      instrumentedCode.add(tryStart);
+      instrumentedCode.add(new DexInstruction_Invoke(methodCode, classType, "getDeclaredMethod", getMethodPrototype, getMethodParams, Opcode_Invoke.Virtual));
+      instrumentedCode.add(new DexInstruction_MoveResult(methodCode, regMethodObject, true));
+      instrumentedCode.add(new DexInstruction_Goto(methodCode, labelAfter));
+      instrumentedCode.add(tryEnd);
+      instrumentedCode.add(catchBlock);
+      instrumentedCode.add(new DexInstruction_Invoke(methodCode, classType, "getSuperclass", new DexPrototype(classType, null), Arrays.asList(regCurrentClass), Opcode_Invoke.Virtual));
+      instrumentedCode.add(new DexInstruction_MoveResult(methodCode, regCurrentClass, true));
+      instrumentedCode.add(new DexInstruction_Goto(methodCode, labelBefore));
+      instrumentedCode.add(labelAfter);
+
+    }
     // ask if it implements the Internal annotation
     instrumentedCode.add(new DexInstruction_ConstClass(methodCode, regInternalAnnotationClass, dex.getInternalMethodAnnotation_Type()));
     instrumentedCode.add(
