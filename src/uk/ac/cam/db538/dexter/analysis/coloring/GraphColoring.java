@@ -65,7 +65,8 @@ public class GraphColoring {
           val originalInstructionList = new ArrayList<DexCodeElement>(code.getInstructionList());
           int randomInt = RANDOM.nextInt(similarNodeRuns.size());
           val randomNodeRun = similarNodeRuns.get(randomInt);
-          System.out.print(code.getParentMethod().getName() + ": spilled " + randomInt + "/" + similarNodeRuns.size() + " [" + randomNodeRun.getNodes().size() + "] ... ");
+          System.out.print(code.getParentClass().getType().getPrettyName() + "." + code.getParentMethod().getName() +
+                           ": spilled " + randomInt + "/" + similarNodeRuns.size() + " [" + randomNodeRun.getNodes().size() + "]...");
           try {
             spillNodeInCode(code, randomNodeRun);
             spilled = true;
