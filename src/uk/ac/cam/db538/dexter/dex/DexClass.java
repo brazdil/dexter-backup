@@ -202,6 +202,8 @@ public class DexClass {
   }
 
   public void instrument(DexInstrumentationCache cache) {
+    System.out.println("Instrumenting class " + this.getType().getPrettyName());
+
     for (val method : methods)
       method.instrument(cache);
 
