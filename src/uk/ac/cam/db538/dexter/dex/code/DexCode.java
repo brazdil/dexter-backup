@@ -414,8 +414,9 @@ public class DexCode {
             boolean endInside = isBetween(outerBlock.getBlockStart(), outerBlock, innerBlock);
 
             if (startInside && endInside) {
-              System.out.println("overlapping try blocks in " + getParentClass().getType().getPrettyName() + "." + getParentMethod().getName());
               // inner block really nested
+              //System.out.println("overlapping try blocks in " + getParentClass().getType().getPrettyName() + "." + getParentMethod().getName());
+
               val outerNewEnd = new DexTryBlockEnd(this, outerBlock.getBlockStart());
               val outerNewStart = new DexTryBlockStart(outerBlock.getBlockStart());
 
