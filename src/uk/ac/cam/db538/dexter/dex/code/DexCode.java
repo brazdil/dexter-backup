@@ -95,7 +95,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionOffsetException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
@@ -1158,8 +1157,7 @@ public class DexCode {
       return new DexInstruction_FilledNewArray(this, insn, parsingState);
 
     default:
-      // TODO: throw exception
-      return new DexInstruction_Unknown(this, insn);
+      throw new InstructionParsingException("Unknown instruction " + insn.opcode.name());
     }
   }
 
