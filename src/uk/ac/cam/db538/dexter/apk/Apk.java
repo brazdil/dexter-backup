@@ -152,6 +152,8 @@ public class Apk {
 
     System.out.println("Saving APK to given file");
     // copy the temp file to the given location
+    System.out.println("fileCopy = " + fileCopy.getAbsolutePath());
+    System.out.println("filename = " + filename.getAbsolutePath());
     FileUtils.copyFile(fileCopy, filename);
   }
 }
