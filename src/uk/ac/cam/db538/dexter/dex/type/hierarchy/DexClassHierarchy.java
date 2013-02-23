@@ -1,17 +1,23 @@
 package uk.ac.cam.db538.dexter.dex.type.hierarchy;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
@@ -48,8 +54,10 @@ public class DexClassHierarchy {
   }
 
   public void addMember(DexClassType classType, DexClassType superclassType, Set<DexClassType> interfaces, Set<DexAnnotation> annotations, boolean flagInterface) {
-    if (classes.containsKey(classType))
-      throw new ClassHierarchyException("Class " + classType.getPrettyName() + " defined multiple times");
+    if (classes.containsKey(classType)) {
+      System.err.println("warning: class " + classType.getDescriptor() + " is defined multiple times");
+      return;
+    }
 
     if (classType != rootClass && wouldIntroduceLoop(classType, superclassType))
       throw new ClassHierarchyException("Class " + classType.getPrettyName() + " introduces a loop in the class hierarchy");
@@ -73,10 +81,24 @@ public class DexClassHierarchy {
   }
 
   public void addImplementedMethod(DexClassType classType, String methodName, DexPrototype methodPrototype, boolean isPrivate, boolean isNative, boolean isPublic) {
+    for (val method : classes.get(classType).implementedMethods)
+      if (method.getName().equals(methodName) &&
+          method.getPrototype().equals(methodPrototype)) {
+        System.err.println("warning: method " + classType.getDescriptor() + "->" + methodName + " is defined multiple times");
+        return;
+      }
+
     classes.get(classType).implementedMethods.add(new MethodEntry(methodName, methodPrototype, isPrivate, isNative, isPublic));
   }
 
   public void addDeclaredField(DexClassType classType, String fieldName, DexRegisterType fieldType, boolean isStatic, boolean isPrivate) {
+    for (val field : classes.get(classType).declaredFields)
+      if (field.getName().equals(fieldName) &&
+          field.getType().equals(fieldType)) {
+        System.err.println("warning: field " + classType.getDescriptor() + "->" + fieldName + " is defined multiple times");
+        return;
+      }
+
     classes.get(classType).declaredFields.add(new FieldEntry(fieldName, fieldType, isStatic, isPrivate));
   }
 
@@ -84,48 +106,48 @@ public class DexClassHierarchy {
     classes.get(clazz).annotations.add(anno);
   }
 
-//  public void addAllClassesFromJAR(File file, DexParsingCache cache) throws IOException {
-//    val jarFile = new JarFile(file);
-//    try {
-//    for (Enumeration<JarEntry> jarEntryEnum = jarFile.entries(); jarEntryEnum.hasMoreElements();) {
-//      val jarEntry = jarEntryEnum.nextElement();
-//
-//      if (!jarEntry.isDirectory() && jarEntry.getName().endsWith(".class")) {
-//
-//        val jarClass = new ClassParser(jarFile.getInputStream(jarEntry), jarEntry.getName()).parse();
-//
-//        val setInterfaces = new HashSet<DexClassType>();
-//        for (val i : jarClass.getInterfaceNames())
-//          setInterfaces.add(DexClassType.parse(createDescriptor(i), cache));
-//
-//        val setAnnotations = new HashSet<DexAnnotation>();
-//        for (val attr : jarClass.getAttributes())
-//          if (attr instanceof Annotations)
-//            for (val anno : ((Annotations) attr).getAnnotationEntries())
-//              setAnnotations.add(new DexAnnotation(anno, cache));
-//
-//        val classType = DexClassType.parse(createDescriptor(jarClass.getClassName()), cache);
-//
-//        addMember(
-//          classType,
-//          DexClassType.parse(createDescriptor(jarClass.getSuperclassName()), cache),
-//          setInterfaces,
-//          setAnnotations,
-//          jarClass.isInterface()
-//        );
-//
-//        for (val method : jarClass.getMethods())
-//          if (!method.isAbstract())
-//            addImplementedMethod(classType, method.getName(), new DexPrototype(method.getSignature(), cache), method.isPrivate());
-//
-//        for (val field : jarClass.getFields())
-//          addDeclaredField(classType, field.getName(), DexRegisterType.parse(field.getSignature(), cache), field.isStatic(), field.isPrivate());
-//      }
-//    }
-//    } finally {
-//    	jarFile.close();
-//    }
-//  }
+  public void addAllClassesFromJAR(File file, DexParsingCache cache) throws IOException {
+    val jarFile = new JarFile(file);
+    try {
+      for (Enumeration<JarEntry> jarEntryEnum = jarFile.entries(); jarEntryEnum.hasMoreElements();) {
+        val jarEntry = jarEntryEnum.nextElement();
+
+        if (!jarEntry.isDirectory() && jarEntry.getName().endsWith(".class")) {
+
+          val jarClass = new ClassParser(jarFile.getInputStream(jarEntry), jarEntry.getName()).parse();
+
+          val setInterfaces = new HashSet<DexClassType>();
+          for (val i : jarClass.getInterfaceNames())
+            setInterfaces.add(DexClassType.parse(createDescriptor(i), cache));
+
+          val setAnnotations = new HashSet<DexAnnotation>();
+          for (val attr : jarClass.getAttributes())
+            if (attr instanceof Annotations)
+              for (val anno : ((Annotations) attr).getAnnotationEntries())
+                setAnnotations.add(new DexAnnotation(anno, cache));
+
+          val classType = DexClassType.parse(createDescriptor(jarClass.getClassName()), cache);
+
+          addMember(
+            classType,
+            DexClassType.parse(createDescriptor(jarClass.getSuperclassName()), cache),
+            setInterfaces,
+            setAnnotations,
+            jarClass.isInterface()
+          );
+
+          for (val method : jarClass.getMethods())
+            if (!method.isAbstract())
+              addImplementedMethod(classType, method.getName(), new DexPrototype(method.getSignature(), cache), method.isPrivate());
+
+          for (val field : jarClass.getFields())
+            addDeclaredField(classType, field.getName(), DexRegisterType.parse(field.getSignature(), cache), field.isStatic(), field.isPrivate());
+        }
+      }
+    } finally {
+      jarFile.close();
+    }
+  }
 
   public DexClassType getSuperclassType(DexClassType clazz) {
     return classes.get(clazz).getSuperclassType();
