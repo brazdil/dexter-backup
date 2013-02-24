@@ -18,6 +18,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexInstruction_FillArray extends DexInstruction {
 
@@ -63,6 +64,20 @@ public class DexInstruction_FillArray extends DexInstruction {
   @Override
   protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
     return new DexInstruction_FillArray(getMethodCode(), mapping.get(regArray), arrayTable);
+  }
+
+  public Pair<DexCodeElement, DexCodeElement> gcReplaceFillArrayDataReference(DexInstruction_FillArray replacementFillArray) {
+    val code = getMethodCode();
+    val insnTarget = code.getFollowingInstruction(arrayTable);
+
+    if (insnTarget instanceof DexInstruction_FillArrayData) {
+      val insnFillArrayData = (DexInstruction_FillArrayData) insnTarget;
+      return new Pair<DexCodeElement, DexCodeElement>(insnFillArrayData,
+             new DexInstruction_FillArrayData(code,
+                                              replacementFillArray,
+                                              insnFillArrayData.getElementData()));
+    } else
+      throw new RuntimeException("Target instruction of FillArray is not FillArrayData");
   }
 
   @Override
