@@ -38,10 +38,12 @@ public class Apk {
     for (val file : frameworkDir.listFiles()) {
       if (file.isFile() && (file.getName().endsWith(".dex") || file.getName().endsWith(".odex")))
         new Dex(file, false, this);
-      else if (file.isFile() && file.getName().endsWith(".jar")) {
+      else if (file.isFile() && (file.getName().endsWith(".jar") || file.getName().endsWith(".apk"))) {
         val jar = new JarFile(file);
         if (jar.getJarEntry("classes.dex") != null)
           new Dex(file, false, this);
+        else
+          classHierarchy.addAllClassesFromJAR(file, parsingCache);
         jar.close();
       }
     }
