@@ -6,6 +6,7 @@ public class TaintConstants {
   public static final int TAINT_SOURCE_SMS = 		1 << 1;
   public static final int TAINT_SOURCE_CALL_LOG = 	1 << 2;
   public static final int TAINT_SOURCE_LOCATION = 	1 << 3;
+  public static final int TAINT_SOURCE_BROWSER = 	1 << 4;
 
   public static final int TAINT_SINK_NET = 			1 << 30;
   public static final int TAINT_SINK_OUT = 			1 << 31;

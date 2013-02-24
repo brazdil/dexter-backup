@@ -36,6 +36,7 @@ public class Apk {
 
     this.dexFile = new Dex(filename, true, this);
     for (val file : frameworkDir.listFiles()) {
+    	System.out.println("Framework file " + file.getPath());
       if (file.isFile() && (file.getName().endsWith(".dex") || file.getName().endsWith(".odex")))
         new Dex(file, false, this);
       else if (file.isFile() && (file.getName().endsWith(".jar") || file.getName().endsWith(".apk"))) {
