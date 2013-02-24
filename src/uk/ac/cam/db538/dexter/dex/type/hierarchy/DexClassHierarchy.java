@@ -108,13 +108,13 @@ public class DexClassHierarchy {
   public void addClassAnnotation(DexClassType clazz, DexAnnotation anno) {
     classes.get(clazz).annotations.add(anno);
   }
-  
+
   private String createDescriptor(String desc) {
-	  return "L" + desc.replace(".", "/") + ";";
+    return "L" + desc.replace(".", "/") + ";";
   }
 
   public void addAllClassesFromJAR(File file, DexParsingCache cache) throws IOException {
-	  System.out.println("Loading " + file.getPath());
+    System.out.println("Loading " + file.getPath());
     val jarFile = new JarFile(file);
     try {
       for (Enumeration<JarEntry> jarEntryEnum = jarFile.entries(); jarEntryEnum.hasMoreElements();) {
@@ -158,7 +158,8 @@ public class DexClassHierarchy {
   }
 
   public DexClassType getSuperclassType(DexClassType clazz) {
-	  System.out.println("returning superclass of " + clazz.getDescriptor());
+    if (classes.get(clazz) == null)
+      System.out.println("returning superclass of " + clazz.getDescriptor());
     return classes.get(clazz).getSuperclassType();
   }
 
