@@ -17,6 +17,7 @@ import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
@@ -185,6 +186,10 @@ public abstract class DexCodeElement {
       val thisSwitch = (DexInstruction_Switch) this;
       val switchTableReplacement = thisSwitch.gcReplaceSwitchTableParentReference((DexInstruction_Switch) insnReplacement);
       replacementMapping.put(switchTableReplacement.getValA(), Arrays.asList( switchTableReplacement.getValB() ));
+    } else if (this instanceof DexInstruction_FillArray) {
+      val thisFillArray = (DexInstruction_FillArray) this;
+      val arrayDataReplacement = thisFillArray.gcReplaceFillArrayDataReference((DexInstruction_FillArray) insnReplacement);
+      replacementMapping.put(arrayDataReplacement.getValA(), Arrays.asList( arrayDataReplacement.getValB() ));
     }
 
     return replacementMapping;
