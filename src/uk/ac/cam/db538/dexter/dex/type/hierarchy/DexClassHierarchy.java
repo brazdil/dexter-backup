@@ -13,6 +13,9 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.apache.bcel.classfile.Annotations;
+import org.apache.bcel.classfile.ClassParser;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.val;
@@ -105,8 +108,13 @@ public class DexClassHierarchy {
   public void addClassAnnotation(DexClassType clazz, DexAnnotation anno) {
     classes.get(clazz).annotations.add(anno);
   }
+  
+  private String createDescriptor(String desc) {
+	  return "L" + desc.replace(".", "/") + ";";
+  }
 
   public void addAllClassesFromJAR(File file, DexParsingCache cache) throws IOException {
+	  System.out.println("Loading " + file.getPath());
     val jarFile = new JarFile(file);
     try {
       for (Enumeration<JarEntry> jarEntryEnum = jarFile.entries(); jarEntryEnum.hasMoreElements();) {
@@ -138,7 +146,7 @@ public class DexClassHierarchy {
 
           for (val method : jarClass.getMethods())
             if (!method.isAbstract())
-              addImplementedMethod(classType, method.getName(), new DexPrototype(method.getSignature(), cache), method.isPrivate());
+              addImplementedMethod(classType, method.getName(), new DexPrototype(method.getSignature(), cache), method.isPrivate(), method.isNative(), method.isPublic());
 
           for (val field : jarClass.getFields())
             addDeclaredField(classType, field.getName(), DexRegisterType.parse(field.getSignature(), cache), field.isStatic(), field.isPrivate());
