@@ -18,6 +18,7 @@ public abstract class ExternalCallInstrumentor {
     val instrumentors = new ArrayList<ExternalCallInstrumentor>();
     instrumentors.add(new Source_ContentResolver());
     instrumentors.add(new Source_SystemService());
+    instrumentors.add(new Source_Browser());
     instrumentors.add(new Sink_SendIntent());
     instrumentors.add(new Sink_HttpClient());
     instrumentors.add(new Sink_Log());
