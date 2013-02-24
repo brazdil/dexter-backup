@@ -158,6 +158,7 @@ public class DexClassHierarchy {
   }
 
   public DexClassType getSuperclassType(DexClassType clazz) {
+	  System.out.println("returning superclass of " + clazz.getDescriptor());
     return classes.get(clazz).getSuperclassType();
   }
 
