@@ -6,11 +6,12 @@ import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetServiceTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
@@ -68,7 +69,7 @@ public class Source_SystemService extends FallbackInstrumentor {
     preCode.addAll(fallback.getValA());
     preCode.add(new DexPseudoinstruction_GetServiceTaint(methodCode, regResultTaint, insnInvoke.getArgumentRegisters().get(1)));
 
-    postCode.add(new DexPseudoinstruction_SetObjectTaint(methodCode, regResult, regResultTaint));
+    postCode.add(new DexInstruction_BinaryOp(methodCode, regCombinedTaint, regCombinedTaint, regResultTaint, Opcode_BinaryOp.OrInt));
     postCode.addAll(fallback.getValB());
 
     return new Pair<List<DexCodeElement>, List<DexCodeElement>>(preCode, postCode);
