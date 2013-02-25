@@ -11,11 +11,19 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
+import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
-public class Sink_SendIntent extends FallbackInstrumentor {
+public class Sink_IPC extends FallbackInstrumentor {
+
+  private boolean hasIntentParam(DexPrototype prototype) {
+    for (val paramType : prototype.getParameterTypes())
+      if (paramType.getDescriptor().equals("Landroid/content/Intent;") || paramType.getDescriptor().equals("[Landroid/content/Intent;"))
+        return true;
+    return false;
+  }
 
   @Override
   public boolean canBeApplied(DexPseudoinstruction_Invoke insn) {
@@ -27,21 +35,10 @@ public class Sink_SendIntent extends FallbackInstrumentor {
     if (insnInvoke.getCallType() != Opcode_Invoke.Virtual)
       return false;
 
-    // there's methods like sendStickyOrderedBroadcastAsUser, etc..
-    val methodName = insnInvoke.getMethodName();
-    if (!(methodName.contains("send") && methodName.contains("Broadcast")) &&
-        !methodName.equals("startActivity") &&
-        !methodName.equals("startActivities"))
+    if (!classHierarchy.isAncestor(insnInvoke.getClassType(), DexClassType.parse("Landroid/content/Context;", parsingCache)))
       return false;
 
-    val methodParamTypes = insnInvoke.getMethodPrototype().getParameterTypes();
-    if (methodParamTypes.size() < 1 ||
-        !(methodParamTypes.get(0).getDescriptor().equals("Landroid/content/Intent;") ||
-          methodParamTypes.get(0).getDescriptor().equals("[Landroid/content/Intent;")))
-      return false;
-
-    if (!classHierarchy.isAncestor(insnInvoke.getClassType(),
-                                   DexClassType.parse("Landroid/content/Context;", parsingCache)))
+    if (!hasIntentParam(insnInvoke.getMethodPrototype()))
       return false;
 
     return true;
