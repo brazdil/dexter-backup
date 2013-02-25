@@ -51,6 +51,7 @@ public class Dex {
   @Getter private DexClassType taintConstants_Type;
   @Getter private DexDirectMethod taintConstants_QueryTaint;
   @Getter private DexDirectMethod taintConstants_ServiceTaint;
+  @Getter private DexDirectMethod taintConstants_HasSourceAndSinkTaint;
 
   @Getter private DexClass externalStaticFieldTaint_Class;
   @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
@@ -201,6 +202,8 @@ public class Dex {
             taintConstants_QueryTaint = (DexDirectMethod) method;
           else if (method.getName().equals("serviceTaint"))
             taintConstants_ServiceTaint = (DexDirectMethod) method;
+          else if (method.getName().equals("hasSourceAndSinkTaint"))
+            taintConstants_HasSourceAndSinkTaint = (DexDirectMethod) method;
       }
 
     return extraClasses;
