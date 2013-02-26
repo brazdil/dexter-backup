@@ -84,6 +84,8 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
   }
 
   private List<DexCodeElement> generatePreInternalCallCode(DexCode_InstrumentationState state) {
+    val printDebug = state.getCache().isInsertDebugLogging();
+
     val methodCode = getMethodCode();
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
@@ -98,11 +100,13 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
     val regArray = new DexRegister();
     val regIndex = new DexRegister();
 
-    codePreInternalCall.add(new DexPseudoinstruction_PrintStringConst(
-                              methodCode,
-                              "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
-                              "internal call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName(),
-                              true));
+    if (printDebug) {
+      codePreInternalCall.add(new DexPseudoinstruction_PrintStringConst(
+                                methodCode,
+                                "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                "internal call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName(),
+                                true));
+    }
 
     if (hasPrimitiveArgument) {
       codePreInternalCall.add(new DexInstruction_StaticGet(
@@ -139,6 +143,8 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
   }
 
   private List<DexCodeElement> generatePostInternalCallCode(DexCode_InstrumentationState state) {
+    val printDebug = state.getCache().isInsertDebugLogging();
+
     val methodCode = getMethodCode();
     val dex = getParentFile();
     val callPrototype = instructionInvoke.getMethodPrototype();
@@ -149,12 +155,14 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
       val regResSemaphore = new DexRegister();
 
       if (movesResult()) {
-        codePostInternalCall.add(new DexPseudoinstruction_PrintStringConst(
-                                   methodCode,
-                                   "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
-                                   "internal result from " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
-                                   " => ",
-                                   false));
+        if (printDebug) {
+          codePostInternalCall.add(new DexPseudoinstruction_PrintStringConst(
+                                     methodCode,
+                                     "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                     "internal result from " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
+                                     " => ",
+                                     false));
+        }
 
         DexRegister regToTaint = null;
         if (instructionMoveResult instanceof DexInstruction_MoveResult)
@@ -162,7 +170,10 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
         else if (instructionMoveResult instanceof DexInstruction_MoveResultWide)
           regToTaint = state.getTaintRegister(((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo1());
         codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regToTaint, dex.getMethodCallHelper_Res()));
-        codePostInternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regToTaint, true));
+
+        if (printDebug) {
+          codePostInternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regToTaint, true));
+        }
       }
 
       codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regResSemaphore, dex.getMethodCallHelper_SRes()));
@@ -178,13 +189,16 @@ public class DexPseudoinstruction_Invoke extends DexPseudoinstruction {
         val regResult = ((DexInstruction_MoveResult) instructionMoveResult).getRegTo();
         val regResultTaint = state.getTaintRegister(regResult);
         codePostInternalCall.add(new DexPseudoinstruction_GetObjectTaint(methodCode, regResultTaint, regResult));
-        codePostInternalCall.add(new DexPseudoinstruction_PrintStringConst(
-                                   methodCode,
-                                   "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
-                                   "internal result from " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
-                                   " => ",
-                                   false));
-        codePostInternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regResultTaint, true));
+
+        if (printDebug) {
+          codePostInternalCall.add(new DexPseudoinstruction_PrintStringConst(
+                                     methodCode,
+                                     "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                     "internal result from " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
+                                     " => ",
+                                     false));
+          codePostInternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regResultTaint, true));
+        }
       }
     }
 

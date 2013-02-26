@@ -8,6 +8,7 @@ import java.util.Map;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import org.jf.dexlib.Util.AccessFlags;
 
@@ -26,6 +27,8 @@ import uk.ac.cam.db538.dexter.utils.Triple;
 public class DexInstrumentationCache {
 
   private final Dex parentFile;
+
+  @Getter @Setter private boolean insertDebugLogging = false;
 
   private final Map<DexField, DexField> fieldInstrumentation;
   private final Cache<Triple<DexClassType, DexPrimitiveType, String>, DexField>
