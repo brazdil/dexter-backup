@@ -60,6 +60,8 @@ public class DexInstruction_ReturnWide extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) {
+    val printDebug = state.getCache().isInsertDebugLogging();
+
     val dex = getParentFile();
     val parentMethod = getParentMethod();
     val code = getMethodCode();
@@ -91,17 +93,33 @@ public class DexInstruction_ReturnWide extends DexInstruction {
         labelSkipTaintPassing,
         Opcode_IfTestZero.eqz);
 
-      code.replace(this, new DexCodeElement[] {
-                     insnTestInternalClassAnnotation,
-                     insnGetSRES,
-                     insnAcquireSRES,
-                     insnSetRES,
-                     labelSkipTaintPassing,
-                     insnPrintDebug,
-                     this
-                   });
-    } else
-      code.replace(this, new DexCodeElement[] {insnGetSRES, insnAcquireSRES, insnSetRES, insnPrintDebug, this});
+      if (printDebug) {
+        code.replace(this, new DexCodeElement[] {
+                       insnTestInternalClassAnnotation,
+                       insnGetSRES,
+                       insnAcquireSRES,
+                       insnSetRES,
+                       labelSkipTaintPassing,
+                       insnPrintDebug,
+                       this
+                     });
+      } else {
+        code.replace(this, new DexCodeElement[] {
+                       insnTestInternalClassAnnotation,
+                       insnGetSRES,
+                       insnAcquireSRES,
+                       insnSetRES,
+                       labelSkipTaintPassing,
+                       this
+                     });
+      }
+    } else {
+      if (printDebug) {
+        code.replace(this, new DexCodeElement[] {insnGetSRES, insnAcquireSRES, insnSetRES, insnPrintDebug, this});
+      } else {
+        code.replace(this, new DexCodeElement[] {insnGetSRES, insnAcquireSRES, insnSetRES, this});
+      }
+    }
   }
 
   @Override

@@ -35,6 +35,8 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
 
   private List<DexCodeElement> generatePreExternalCallCode(DexPseudoinstruction_Invoke insn, DexRegister regCombinedTaint, DexCode_InstrumentationState state,
       Collection<Integer> excludeFromTaintAcquirement, Collection<Integer> excludeFromTaintAssignment) {
+    val printDebug = state.getCache().isInsertDebugLogging();
+
     val codePreExternalCall = new NoDuplicatesList<DexCodeElement>();
     val methodCode = insn.getMethodCode();
     val instructionInvoke = insn.getInstructionInvoke();
@@ -72,13 +74,15 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
         paramIndex++;
       }
 
-      codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(
-                                methodCode,
-                                "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
-                                "external call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
-                                " => T=",
-                                false));
-      codePreExternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regCombinedTaint, true));
+      if (printDebug) {
+        codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(
+                                  methodCode,
+                                  "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                  "external call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
+                                  " => T=",
+                                  false));
+        codePreExternalCall.add(new DexPseudoinstruction_PrintInteger(methodCode, regCombinedTaint, true));
+      }
 
       // assign the combined taint to the object and all its non-primitive arguments
 
@@ -95,12 +99,15 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
         paramRegIndex += paramType.getRegisters();
         paramIndex++;
       }
-    } else
-      codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(
-                                methodCode,
-                                "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
-                                "external call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName(),
-                                true));
+    } else {
+      if (printDebug) {
+        codePreExternalCall.add(new DexPseudoinstruction_PrintStringConst(
+                                  methodCode,
+                                  "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                  "external call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName(),
+                                  true));
+      }
+    }
 
     return codePreExternalCall;
   }

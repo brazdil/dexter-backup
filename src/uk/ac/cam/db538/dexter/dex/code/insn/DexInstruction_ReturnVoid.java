@@ -37,15 +37,21 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState mapping) {
-    val code = getMethodCode();
-    val insnPrintDebug = new DexPseudoinstruction_PrintStringConst(
-      code,
-      "$# exiting method " +
-      getParentClass().getType().getPrettyName() +
-      "->" + getParentMethod().getName(),
-      true);
-    code.replace(this, new DexCodeElement[] { insnPrintDebug, this });
+  public void instrument(DexCode_InstrumentationState state) {
+    val printDebug = state.getCache().isInsertDebugLogging();
+
+    if (printDebug) {
+      val code = getMethodCode();
+
+      val insnPrintDebug = new DexPseudoinstruction_PrintStringConst(
+        code,
+        "$# exiting method " +
+        getParentClass().getType().getPrettyName() +
+        "->" + getParentMethod().getName(),
+        true);
+
+      code.replace(this, new DexCodeElement[] { insnPrintDebug, this });
+    }
   }
 
   @Override

@@ -451,13 +451,15 @@ public class DexCode {
     }
 
     if (instrumentationState.isNeedsCallInstrumentation())
-      insertCallHandling();
+      insertCallHandling(instrumentationState);
 
     unwrapPseudoinstructions();
     fixOverlappingTryBlocks();
   }
 
-  private void insertCallHandling() {
+  private void insertCallHandling(DexCode_InstrumentationState state) {
+    val printDebug = state.getCache().isInsertDebugLogging();
+
     val addedCode = new NoDuplicatesList<DexCodeElement>();
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
@@ -504,14 +506,16 @@ public class DexCode {
     {
       // INTERNAL CALL ORIGIN
 
-      addedCode.add(
-        new DexPseudoinstruction_PrintStringConst(
-          this,
-          "$# entering method " +
-          getParentClass().getType().getPrettyName() +
-          "->" + parentMethod.getName() +
-          " (internal origin)",
-          true));
+      if (printDebug) {
+        addedCode.add(
+          new DexPseudoinstruction_PrintStringConst(
+            this,
+            "$# entering method " +
+            getParentClass().getType().getPrettyName() +
+            "->" + parentMethod.getName() +
+            " (internal origin)",
+            true));
+      }
 
       val regArray = new DexRegister();
       val regIndex = new DexRegister();
@@ -538,11 +542,13 @@ public class DexCode {
           else
             addedCode.add(new DexInstruction_BinaryOp(this, regTaintParamMapping, regArrayElement, regThisTaint, Opcode_BinaryOp.OrInt));
 
-          addedCode.add(new DexPseudoinstruction_PrintStringConst(this,
-                        "$ " + getParentClass().getType().getShortName() + "->" + parentMethod.getName() + ": " +
-                        "ARG[" + paramTaintArrayIndex + "] = ",
-                        false));
-          addedCode.add(new DexPseudoinstruction_PrintInteger(this, regArrayElement, true));
+          if (printDebug) {
+            addedCode.add(new DexPseudoinstruction_PrintStringConst(this,
+                          "$ " + getParentClass().getType().getShortName() + "->" + parentMethod.getName() + ": " +
+                          "ARG[" + paramTaintArrayIndex + "] = ",
+                          false));
+            addedCode.add(new DexPseudoinstruction_PrintInteger(this, regArrayElement, true));
+          }
 
           paramTaintArrayIndex++;
         } else {
@@ -577,14 +583,17 @@ public class DexCode {
       // EXTERNAL CALL ORIGIN
 
       addedCode.add(labelExternalCallOrigin);
-      addedCode.add(
-        new DexPseudoinstruction_PrintStringConst(
-          this,
-          "$# entering method " +
-          getParentClass().getType().getPrettyName() +
-          "->" + parentMethod.getName() +
-          " (external origin)",
-          true));
+
+      if (printDebug) {
+        addedCode.add(
+          new DexPseudoinstruction_PrintStringConst(
+            this,
+            "$# entering method " +
+            getParentClass().getType().getPrettyName() +
+            "->" + parentMethod.getName() +
+            " (external origin)",
+            true));
+      }
 
       int paramRegIndex = 1;
       for (val paramType : parentMethod.getPrototype().getParameterTypes()) {

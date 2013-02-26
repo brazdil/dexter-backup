@@ -104,6 +104,8 @@ public class DexInstruction_Return extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) {
+    val printDebug = state.getCache().isInsertDebugLogging();
+
     val code = getMethodCode();
     val insnPrintDebug = new DexPseudoinstruction_PrintStringConst(
       code,
@@ -137,18 +139,37 @@ public class DexInstruction_Return extends DexInstruction {
           labelSkipTaintPassing,
           Opcode_IfTestZero.eqz);
 
-        code.replace(this, new DexCodeElement[] {
-                       insnTestInternalClassAnnotation,
-                       insnGetSRES,
-                       insnAcquireSRES,
-                       insnSetRES,
-                       labelSkipTaintPassing,
-                       insnPrintDebug,
-                       this
-                     });
-      } else
-        code.replace(this, new DexCodeElement[] {insnGetSRES, insnAcquireSRES, insnSetRES, insnPrintDebug, this});
-    } else
-      code.replace(this, new DexCodeElement[] {insnPrintDebug, this});
+        if (printDebug) {
+          code.replace(this, new DexCodeElement[] {
+                         insnTestInternalClassAnnotation,
+                         insnGetSRES,
+                         insnAcquireSRES,
+                         insnSetRES,
+                         labelSkipTaintPassing,
+                         insnPrintDebug,
+                         this
+                       });
+        } else {
+          code.replace(this, new DexCodeElement[] {
+                         insnTestInternalClassAnnotation,
+                         insnGetSRES,
+                         insnAcquireSRES,
+                         insnSetRES,
+                         labelSkipTaintPassing,
+                         this
+                       });
+        }
+      } else {
+        if (printDebug) {
+          code.replace(this, new DexCodeElement[] {insnGetSRES, insnAcquireSRES, insnSetRES, insnPrintDebug, this});
+        } else {
+          code.replace(this, new DexCodeElement[] {insnGetSRES, insnAcquireSRES, insnSetRES, this});
+        }
+      }
+    } else {
+      if (printDebug) {
+        code.replace(this, new DexCodeElement[] {insnPrintDebug, this});
+      }
+    }
   }
 }
