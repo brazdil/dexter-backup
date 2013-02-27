@@ -150,8 +150,8 @@ public abstract class DexInstruction extends DexCodeElement {
     val instrumentedCode = new ArrayList<DexCodeElement>();
     instrumentedCode.add(tryStart);
     instrumentedCode.addAll(Arrays.asList(tryBlockCode));
-    instrumentedCode.add(tryEnd);
     instrumentedCode.add(gotoSucc);
+    instrumentedCode.add(tryEnd);
     instrumentedCode.add(catchAll);
     instrumentedCode.add(moveException);
     instrumentedCode.addAll(Arrays.asList(catchBlockCode));
