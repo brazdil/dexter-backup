@@ -120,8 +120,8 @@ public class DexInstruction_ArrayPut extends DexInstruction {
     // primitives should copy the the taint to the array object
     // all types should copy the taint of the index to the array object
     val code = getMethodCode();
+    val regTotalTaint = state.getTaintRegister(regArray);
     if (opcode != Opcode_GetPut.Object) {
-      val regTotalTaint = state.getTaintRegister(regArray);
       code.replace(this,
                    new DexCodeElement[] {
                      this,
@@ -133,8 +133,8 @@ public class DexInstruction_ArrayPut extends DexInstruction {
                    new DexCodeElement[] {
                      this,
                      new DexPseudoinstruction_GetObjectTaint(code, state.getTaintRegister(regFrom), regFrom),
-                     new DexPseudoinstruction_SetObjectTaint(code, regArray, state.getTaintRegister(regFrom)),
-                     new DexPseudoinstruction_SetObjectTaint(code, regArray, state.getTaintRegister(regIndex))
+                     new DexInstruction_BinaryOp(code, regTotalTaint, state.getTaintRegister(regFrom), state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt),
+                     new DexPseudoinstruction_SetObjectTaint(code, regArray, state.getTaintRegister(regFrom))
                    });
     }
   }
