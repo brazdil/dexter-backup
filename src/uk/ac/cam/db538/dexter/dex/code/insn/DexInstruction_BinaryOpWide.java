@@ -17,6 +17,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
 
 public class DexInstruction_BinaryOpWide extends DexInstruction {
 
@@ -86,18 +87,22 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState mapping) {
+  public void instrument(DexCode_InstrumentationState state) {
     val code = getMethodCode();
-    code.replace(this,
-                 new DexCodeElement[] {
-                   this,
-                   new DexInstruction_BinaryOp(
-                     code,
-                     mapping.getTaintRegister(regTarget1),
-                     mapping.getTaintRegister(regSourceA1),
-                     mapping.getTaintRegister(regSourceB1),
-                     Opcode_BinaryOp.OrInt)
-                 });
+    val insnCombineTaintForResult = new DexInstruction_BinaryOp(code, state.getTaintRegister(regTarget1), state.getTaintRegister(regSourceA1), state.getTaintRegister(regSourceB1), Opcode_BinaryOp.OrInt);
+
+    if (insnOpcode == Opcode_BinaryOpWide.DivLong) {
+      val regException = new DexRegister();
+      val regExceptionTaint = new DexRegister();
+      val insnCombineTaintForException = new DexInstruction_BinaryOp(code, regExceptionTaint, state.getTaintRegister(regSourceA1), state.getTaintRegister(regSourceB1), Opcode_BinaryOp.OrInt);
+      val insnAssignTaintToException = new DexPseudoinstruction_SetObjectTaint(code, regException, regExceptionTaint);
+
+      code.replace(this, throwingInsn_GenerateSurroundingCatchBlock(
+                     new DexCodeElement[] { this, insnCombineTaintForResult },
+                     new DexCodeElement[] { insnCombineTaintForException, insnAssignTaintToException },
+                     regException));
+    } else
+      code.replace(this, new DexCodeElement[] { this, insnCombineTaintForResult });
   }
 
   @Override
