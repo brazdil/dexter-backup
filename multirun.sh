@@ -21,11 +21,20 @@ do
 		exit;
 	fi
 
+	echo " - clearing the system log"
+	adb logcat -c
+
 	echo " - launching the application"
 	adb shell am start -n "$PACKAGE"/."$ACTIVITY"
 
-	echo " - please press ENTER"
-	read X
+#	echo " - please press ENTER"
+#	read X
+
+	echo " - waiting 5 seconds..."
+	sleep 5
+
+	echo " - saving logcat"
+	adb logcat -d > "multirun-$i-original.logcat"
 
 	echo " - uninstalling the package"
 	adb uninstall $PACKAGE > /dev/null
@@ -39,9 +48,18 @@ do
 		exit;
 	fi
 
+	echo " - clearing the system log"
+	adb logcat -c
+
 	echo " - launching the application"
 	adb shell am start -n "$PACKAGE"/."$ACTIVITY"
 
-	echo " - please press ENTER"
-	read X
+#	echo " - please press ENTER"
+#	read X
+
+	echo " - waiting 5 seconds..."
+	sleep 5
+
+	echo " - saving logcat"
+	adb logcat -d > "multirun-$i-instrumented.logcat"
 done
