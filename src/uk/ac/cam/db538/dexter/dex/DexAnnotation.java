@@ -142,6 +142,22 @@ public class DexAnnotation {
       val typeValue = (TypeEncodedValue) value;
       return new TypeEncodedValue(asmCache.getType(DexType.parse(typeValue.value.getTypeDescriptor(), parsingCache)));
 
+    case VALUE_ANNOTATION:
+      val annotationValue = (AnnotationEncodedSubValue) value;
+
+      val newNames = new StringIdItem[annotationValue.names.length];
+      for (int i = 0; i < annotationValue.names.length; ++i)
+        newNames[i] = asmCache.getStringConstant(annotationValue.names[i].getStringValue());
+
+      val newEncodedValues = new EncodedValue[annotationValue.values.length];
+      for (int i = 0; i < annotationValue.values.length; ++i)
+        newEncodedValues[i] = cloneEncodedValue(annotationValue.values[i], outFile, asmCache);
+
+      return new AnnotationEncodedSubValue(
+               asmCache.getType(DexType.parse(annotationValue.annotationType.getTypeDescriptor(), parsingCache)),
+               newNames,
+               newEncodedValues);
+
     default:
       throw new RuntimeException("Unexpected EncodedValue type: " + value.getValueType().name());
     }
