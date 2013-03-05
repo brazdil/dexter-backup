@@ -158,9 +158,11 @@ public class DexClassHierarchy {
   }
 
   public DexClassType getSuperclassType(DexClassType clazz) {
-    if (classes.get(clazz) == null)
-      System.out.println("returning superclass of " + clazz.getDescriptor());
-    return classes.get(clazz).getSuperclassType();
+    if (classes.get(clazz) == null) {
+      System.err.println("warning: missing class hierarchy entry for " + clazz.getDescriptor());
+      return rootClass;
+    } else
+      return classes.get(clazz).getSuperclassType();
   }
 
   public Set<DexClassType> getInterfaces(DexClassType clazz) {
@@ -181,9 +183,9 @@ public class DexClassHierarchy {
 
       // hierarchy is consistent if all classes have their parents in the hierarchy as well
       if (!classes.containsKey(superclazz))
-        throw new ClassHierarchyException("Class hierarchy not consistent (" +
-                                          clazz.getPrettyName() + " needs its parent " +
-                                          superclazz.getPrettyName() + ")");
+        System.err.println("warning: Class hierarchy not consistent (" +
+                           clazz.getPrettyName() + " needs its parent " +
+                           superclazz.getPrettyName() + ")");
 
       if (isInterface) {
         if (superclazz != rootClass)
@@ -192,10 +194,10 @@ public class DexClassHierarchy {
       } else {
         for (val i : clazzInterfaces) {
           if (!classes.containsKey(i))
-            throw new ClassHierarchyException("Class hierarchy not consistent (" +
-                                              clazz.getPrettyName() + " needs its interface " +
-                                              i.getPrettyName() + ")");
-          if (!classes.get(i).isFlaggedInterface())
+            System.err.println("warning: Class hierarchy not consistent (" +
+                               clazz.getPrettyName() + " needs its interface " +
+                               i.getPrettyName() + ")");
+          else if (!classes.get(i).isFlaggedInterface())
             throw new ClassHierarchyException("Class hierarchy not consistent (class " +
                                               clazz.getPrettyName() + " implements non-interface " +
                                               i.getPrettyName() + ")");
@@ -235,7 +237,10 @@ public class DexClassHierarchy {
 
     DexClassType prevClazz = null;
     do {
-      if (classes.get(clazz).getInterfaces().contains(intrface))
+      if (classes.get(clazz) == null) {
+        System.err.println("warning: missing class hierarchy entry for " + clazz.getDescriptor());
+        return false;
+      } else if (classes.get(clazz).getInterfaces().contains(intrface))
         return true;
 
       prevClazz = clazz;
