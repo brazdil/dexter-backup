@@ -30,11 +30,11 @@ do
 #	echo " - please press ENTER"
 #	read X
 
-	echo " - waiting 5 seconds..."
-	sleep 5
+	echo " - waiting 2 seconds..."
+	sleep 2
 
 	echo " - saving logcat"
-	adb logcat -d > "multirun-$i-original.logcat"
+	adb logcat -d > "multirun-$i-o.logcat"
 
 	echo " - uninstalling the package"
 	adb uninstall $PACKAGE > /dev/null
@@ -57,9 +57,9 @@ do
 #	echo " - please press ENTER"
 #	read X
 
-	echo " - waiting 5 seconds..."
-	sleep 5
+	echo " - waiting 2 seconds..."
+	sleep 2
 
 	echo " - saving logcat"
-	adb logcat -d > "multirun-$i-instrumented.logcat"
+	adb logcat -d > "multirun-$i-i.logcat"
 done
