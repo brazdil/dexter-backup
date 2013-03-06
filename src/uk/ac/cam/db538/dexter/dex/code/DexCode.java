@@ -836,6 +836,10 @@ public class DexCode {
 
     return maxWords;
   }
+  
+  public void transformSSA() {
+	  
+  }
 
   private DexInstruction parseInstruction(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
     switch (insn.opcode) {
