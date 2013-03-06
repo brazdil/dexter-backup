@@ -142,7 +142,10 @@ public class DexInstruction_StaticGet extends DexInstruction {
     if (opcode != Opcode_GetPut.Object) {
       val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
 
-      if (fieldDeclaringClass.isDefinedInternally()) {
+      if (fieldDeclaringClass == null)
+        System.err.println("warning: cannot find accessed static field " + fieldClass.getPrettyName() + "." + fieldName);
+
+      if (fieldDeclaringClass != null && fieldDeclaringClass.isDefinedInternally()) {
         // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
         // retrieve taint from the adjoined field
         val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
@@ -155,6 +158,7 @@ public class DexInstruction_StaticGet extends DexInstruction {
 
       } else {
         // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
+        // OR NOT FOUND
         // get the taint from adjoined field in special global class
         code.replace(this,
                      new DexCodeElement[] {
