@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.analysis;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,6 +13,7 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.analysis.cfg.CfgBasicBlock;
+import uk.ac.cam.db538.dexter.analysis.cfg.CfgBlock;
 import uk.ac.cam.db538.dexter.analysis.cfg.ControlFlowGraph;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.utils.ListReverser;
@@ -21,6 +23,7 @@ public class DominanceAnalysis {
   @Getter private final DexCode code;
   @Getter private ControlFlowGraph cfg;
   private Map<CfgBasicBlock, CfgBasicBlock> dominance;
+  private Map<CfgBasicBlock, Set<CfgBasicBlock>> dominanceFrontier;
 
   public DominanceAnalysis(DexCode code) {
     this.code = code;
@@ -29,6 +32,7 @@ public class DominanceAnalysis {
 
   private void generateDominance() {
     dominance = new HashMap<>();
+    dominanceFrontier = new HashMap<>();
     cfg = new ControlFlowGraph(code);
     val listAllBlocks = Collections.unmodifiableList(cfg.getBasicBlocks());
 
@@ -50,11 +54,12 @@ public class DominanceAnalysis {
           continue;
 
         // init new dominance to one of processed predecessor's
-        CfgBasicBlock newDom = getSomePredecessorsDominance(block);
+        CfgBasicBlock processedPred = getSomeProcessedPredecessor(block);
+        CfgBasicBlock newDom = processedPred;
 
         // intersect with dominance set of all predecessors
         for (val pred : block.getPredecessors()) {
-          if (pred instanceof CfgBasicBlock) {
+          if (pred != processedPred && pred instanceof CfgBasicBlock) {
             val predDom = dominance.get(((CfgBasicBlock) pred));
             if (predDom != null)
               newDom = intersection(newDom, predDom);
@@ -69,14 +74,39 @@ public class DominanceAnalysis {
         }
       }
     } while (somethingChanged);
+
+    // generate dominance frontier
+    for (val block : listAllBlocks)
+      dominanceFrontier.put(block, new HashSet<CfgBasicBlock>());
+    for (val block : listAllBlocks) {
+      val dominator = dominance.get(block);
+      val predecessors = filterBasicBlocks(block.getPredecessors());
+      if (predecessors.size() >= 2)
+        for (val pred : predecessors) {
+          CfgBasicBlock runner = pred;
+          while (runner != dominator) {
+            dominanceFrontier.get(runner).add(block);
+            runner = dominance.get(runner);
+          }
+        }
+    }
   }
 
-  private CfgBasicBlock getSomePredecessorsDominance(CfgBasicBlock block) {
+  private List<CfgBasicBlock> filterBasicBlocks(Collection<CfgBlock> list) {
+    val result = new ArrayList<CfgBasicBlock>(list.size());
+    for (val elem : list)
+      if (elem instanceof CfgBasicBlock)
+        result.add((CfgBasicBlock) elem);
+    return result;
+  }
+
+  private CfgBasicBlock getSomeProcessedPredecessor(CfgBasicBlock block) {
     for (val pred : block.getPredecessors()) {
       if (pred instanceof CfgBasicBlock) {
-        val predDom = dominance.get(((CfgBasicBlock) pred));
+        val basicPred = (CfgBasicBlock) pred;
+        val predDom = dominance.get(basicPred);
         if (predDom != null)
-          return predDom;
+          return basicPred;
       }
     }
     return null;
@@ -137,5 +167,9 @@ public class DominanceAnalysis {
     } while (prev != curr);
 
     return false;
+  }
+
+  public Set<CfgBasicBlock> getDominanceFrontier(CfgBasicBlock block) {
+    return Collections.unmodifiableSet(dominanceFrontier.get(block));
   }
 }
