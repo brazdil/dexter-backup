@@ -75,11 +75,13 @@ public class DominanceAnalysis {
       dominanceFrontier.put(block, new HashSet<CfgBasicBlock>());
     for (val block : listAllBlocks) {
       val dominator = dominance.get(block);
+      if (dominator == null)
+        continue; // nop block for padding
       val predecessors = filterBasicBlocks(block.getPredecessors());
       if (predecessors.size() >= 2)
         for (val pred : predecessors) {
           CfgBasicBlock runner = pred;
-          while (runner != dominator) {
+          while (runner != null && runner != dominator) {
             dominanceFrontier.get(runner).add(block);
             runner = dominance.get(runner);
           }
