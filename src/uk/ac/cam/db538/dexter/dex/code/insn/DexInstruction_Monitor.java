@@ -81,8 +81,9 @@ public class DexInstruction_Monitor extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_Monitor(getMethodCode(), mapping.get(regMonitor), enter);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newMonitor = (toRefs) ? mapping.get(regMonitor) : regMonitor;
+    return new DexInstruction_Monitor(getMethodCode(), newMonitor, enter);
   }
 
   @Override

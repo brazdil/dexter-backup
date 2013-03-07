@@ -62,7 +62,7 @@ public class DexInstruction_FillArrayData extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
     return this;
   }
 

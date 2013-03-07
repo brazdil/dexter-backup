@@ -62,8 +62,9 @@ public class DexInstruction_FillArray extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_FillArray(getMethodCode(), mapping.get(regArray), arrayTable);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newArray = (toRefs) ? mapping.get(regArray) : regArray;
+    return new DexInstruction_FillArray(getMethodCode(), newArray, arrayTable);
   }
 
   public Pair<DexCodeElement, DexCodeElement> gcReplaceFillArrayDataReference(DexInstruction_FillArray replacementFillArray) {

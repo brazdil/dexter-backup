@@ -123,8 +123,10 @@ public class DexInstruction_IfTest extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_IfTest(getMethodCode(), mapping.get(regA), mapping.get(regB), target, insnOpcode);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newA = (toRefs) ? mapping.get(regA) : regA;
+    val newB = (toRefs) ? mapping.get(regB) : regB;
+    return new DexInstruction_IfTest(getMethodCode(), newA, newB, target, insnOpcode);
   }
 
   @Override

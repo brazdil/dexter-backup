@@ -119,7 +119,8 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_Const(getMethodCode(), mapping.get(regTo), value);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
+    return new DexInstruction_Const(getMethodCode(), newTo, value);
   }
 }

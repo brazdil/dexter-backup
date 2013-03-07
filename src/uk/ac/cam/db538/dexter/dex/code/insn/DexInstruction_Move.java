@@ -133,8 +133,10 @@ public class DexInstruction_Move extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_Move(getMethodCode(), mapping.get(regTo), mapping.get(regFrom), objectMoving);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
+    val newFrom = (toRefs) ? mapping.get(regFrom) : regFrom;
+    return new DexInstruction_Move(getMethodCode(), newTo, newFrom, objectMoving);
   }
 
   @Override

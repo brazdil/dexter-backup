@@ -153,7 +153,7 @@ public abstract class DexCodeElement {
       }
     }
 
-    val insnReplacement = gcReplaceWithTemporaries(tempMapping);
+    val insnReplacement = gcReplaceWithTemporaries(tempMapping, true, true);
     newElem.add(insnReplacement);
 
     for (int i = 0; i < regList.size(); ++i) {
@@ -195,7 +195,26 @@ public abstract class DexCodeElement {
     return replacementMapping;
   }
 
-  protected abstract DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping);
+  public final Map<DexCodeElement, DexCodeElement> getRegisterMappingChanges(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val replacementMapping = new HashMap<DexCodeElement, DexCodeElement>();
+
+    val insnReplacement = gcReplaceWithTemporaries(mapping, toRefs, toDefs);
+    replacementMapping.put(this, insnReplacement);
+
+    if (this instanceof DexInstruction_Switch) {
+      val thisSwitch = (DexInstruction_Switch) this;
+      val switchTableReplacement = thisSwitch.gcReplaceSwitchTableParentReference((DexInstruction_Switch) insnReplacement);
+      replacementMapping.put(switchTableReplacement.getValA(), switchTableReplacement.getValB());
+    } else if (this instanceof DexInstruction_FillArray) {
+      val thisFillArray = (DexInstruction_FillArray) this;
+      val arrayDataReplacement = thisFillArray.gcReplaceFillArrayDataReference((DexInstruction_FillArray) insnReplacement);
+      replacementMapping.put(arrayDataReplacement.getValA(), arrayDataReplacement.getValB());
+    }
+
+    return replacementMapping;
+  }
+
+  protected abstract DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs);
 
   protected enum gcRegType {
     Object,

@@ -107,8 +107,11 @@ public class DexInstruction_ArrayGet extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_ArrayGet(getMethodCode(), mapping.get(regTo), mapping.get(regArray), mapping.get(regIndex), opcode);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
+    val newArray = (toRefs) ? mapping.get(regArray) : regArray;
+    val newIndex = (toRefs) ? mapping.get(regIndex) : regIndex;
+    return new DexInstruction_ArrayGet(getMethodCode(), newTo, newArray, newIndex, opcode);
   }
 
   @Override

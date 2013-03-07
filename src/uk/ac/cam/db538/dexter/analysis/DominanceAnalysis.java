@@ -37,12 +37,7 @@ public class DominanceAnalysis {
     val listAllBlocks = Collections.unmodifiableList(cfg.getBasicBlocks());
 
     // initialize the first block
-    val startBlockSucc = cfg.getStartBlock().getSuccessors();
-    if (startBlockSucc.size() != 1)
-      throw new RuntimeException("ControlFlowGraph has multiple starting points");
-    if (!(startBlockSucc.iterator().next() instanceof CfgBasicBlock))
-      return;
-    val startBasicBlock = (CfgBasicBlock) startBlockSucc.iterator().next();
+    val startBasicBlock = cfg.getStartingBasicBlock();
     dominance.put(startBasicBlock, startBasicBlock);
 
     boolean somethingChanged;
@@ -167,6 +162,23 @@ public class DominanceAnalysis {
     } while (prev != curr);
 
     return false;
+  }
+
+  public CfgBasicBlock getDirectDominator(CfgBasicBlock block) {
+    return dominance.get(block);
+  }
+
+  public Set<CfgBasicBlock> getAllDirectlyDominatedBlocks(CfgBasicBlock block) {
+    val set = new HashSet<CfgBasicBlock>();
+
+    for (val dominanceEntry : dominance.entrySet()) {
+      val dominatee = dominanceEntry.getKey();
+      val dominator = dominanceEntry.getValue();
+      if (dominator == block && dominatee != block)
+        set.add(dominatee);
+    }
+
+    return set;
   }
 
   public Set<CfgBasicBlock> getDominanceFrontier(CfgBasicBlock block) {

@@ -66,8 +66,9 @@ public class DexInstruction_Switch extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_Switch(getMethodCode(), mapping.get(regTest), switchTable, packed);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTest = (toRefs) ? mapping.get(regTest) : regTest;
+    return new DexInstruction_Switch(getMethodCode(), newTest, switchTable, packed);
   }
 
   public Pair<DexCodeElement, DexCodeElement> gcReplaceSwitchTableParentReference(DexInstruction_Switch replacementSwitch) {

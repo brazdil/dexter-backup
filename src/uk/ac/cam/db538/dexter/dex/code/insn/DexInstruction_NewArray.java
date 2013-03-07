@@ -119,8 +119,10 @@ public class DexInstruction_NewArray extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_NewArray(getMethodCode(), mapping.get(regTo), mapping.get(regSize), value);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
+    val newSize = (toRefs) ? mapping.get(regSize) : regSize;
+    return new DexInstruction_NewArray(getMethodCode(), newTo, newSize, value);
   }
 
   @Override

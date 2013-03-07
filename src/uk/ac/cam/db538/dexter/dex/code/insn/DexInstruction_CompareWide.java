@@ -133,15 +133,13 @@ public class DexInstruction_CompareWide extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_CompareWide(
-             getMethodCode(),
-             mapping.get(regTo),
-             mapping.get(regSourceA1),
-             mapping.get(regSourceA2),
-             mapping.get(regSourceB1),
-             mapping.get(regSourceB2),
-             insnOpcode);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
+    val newSourceA1 = (toRefs) ? mapping.get(regSourceA1) : regSourceA1;
+    val newSourceA2 = (toRefs) ? mapping.get(regSourceA2) : regSourceA2;
+    val newSourceB1 = (toRefs) ? mapping.get(regSourceB1) : regSourceB1;
+    val newSourceB2 = (toRefs) ? mapping.get(regSourceB2) : regSourceB2;
+    return new DexInstruction_CompareWide(getMethodCode(), newTo, newSourceA1, newSourceA2, newSourceB1, newSourceB2, insnOpcode);
   }
 
   @Override

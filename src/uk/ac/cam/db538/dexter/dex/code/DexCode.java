@@ -28,6 +28,8 @@ import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
 import sun.management.counter.perf.InstrumentationException;
+import uk.ac.cam.db538.dexter.analysis.DominanceAnalysis;
+import uk.ac.cam.db538.dexter.analysis.cfg.CfgBasicBlock;
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
 import uk.ac.cam.db538.dexter.dex.Dex;
@@ -836,9 +838,206 @@ public class DexCode {
 
     return maxWords;
   }
-  
+
+  private static class Phi {
+    @Getter
+    public static class RegisterInfo {
+      private final DexRegister replacingRegister;
+      private final Set<CfgBasicBlock> originatingBlocks;
+      private final Map<CfgBasicBlock, DexRegister> inheritedMappings;
+
+      public RegisterInfo() {
+        replacingRegister = new DexRegister();
+        inheritedMappings = new HashMap<>();
+        originatingBlocks = new HashSet<>();
+      }
+
+      public void addOriginatingBlock(CfgBasicBlock block) {
+        originatingBlocks.add(block);
+      }
+
+      public void addInheritedMapping(CfgBasicBlock block, DexRegister mapping) {
+        inheritedMappings.put(block, mapping);
+      }
+
+      public boolean containsOriginatingBlock(CfgBasicBlock block) {
+        return originatingBlocks.contains(block);
+      }
+    }
+
+    @Getter private final Map<DexRegister, RegisterInfo> registers;
+
+    public Phi() {
+      registers = new HashMap<DexRegister, RegisterInfo>();
+    }
+
+    public Set<DexRegister> getAllRedefinedRegisters() {
+      return registers.keySet();
+    }
+
+    public Map<DexRegister, DexRegister> getAllDefinedMappings() {
+      val result = new HashMap<DexRegister, DexRegister>(registers.size());
+      for (val entry : registers.entrySet())
+        result.put(entry.getKey(), entry.getValue().getReplacingRegister());
+      return result;
+    }
+
+    public boolean addAllRegisterOrigins(CfgBasicBlock block, Set<DexRegister> defRegs) {
+      boolean change = false;
+      for (val reg : defRegs) {
+        RegisterInfo regInfo = registers.get(reg);
+
+        if (regInfo == null) {
+          regInfo = new RegisterInfo();
+          registers.put(reg, regInfo);
+          change = true;
+        }
+
+        if (!regInfo.containsOriginatingBlock(block)) {
+          regInfo.addOriginatingBlock(block);
+          change = true;
+        }
+      }
+
+      return change;
+    }
+
+    public void addAllRegisterMappings(CfgBasicBlock origin, RegisterMapping regMap) {
+      for (val reg : regMap.keySet()) {
+        // if this phi redefines the same register
+        val regInfo = registers.get(reg);
+        if (regInfo != null)
+          regInfo.addInheritedMapping(origin, regMap.get(reg));
+      }
+    }
+  }
+
+  private Map<CfgBasicBlock, Phi> ssaGeneratePhies(DominanceAnalysis dom) {
+    val basicBlocks = dom.getCfg().getBasicBlocks();
+    val phies = new HashMap<CfgBasicBlock, Phi>();
+
+    for (val block : basicBlocks)
+      phies.put(block, new Phi());
+
+    boolean change = true;
+    while (change) {
+      change = false;
+
+      for (val block : basicBlocks) {
+        val defRegs = block.getAllDefinedRegisters();
+        defRegs.addAll(phies.get(block).getAllRedefinedRegisters());
+
+        for (val domfBlock : dom.getDominanceFrontier(block))
+          change |= phies.get(domfBlock).addAllRegisterOrigins(block, defRegs);
+      }
+    }
+
+    return phies;
+  }
+
+  private static class RegisterMapping extends HashMap<DexRegister, DexRegister> {
+    private static final long serialVersionUID = -4237424266083204694L;
+  }
+
+  private void applyCodeChanges(Map<DexCodeElement, DexCodeElement> changes) {
+    for (val entry : changes.entrySet())
+      this.replace(entry.getKey(), Arrays.asList(entry.getValue()));
+  }
+
+  private void ssaRenameRegisters(DominanceAnalysis dom, Map<CfgBasicBlock, Phi> phies) {
+    val cfgStartingBlock = dom.getCfg().getStartingBasicBlock();
+    val mappingsPerBlock = new HashMap<CfgBasicBlock, RegisterMapping>();
+
+    // will traverse the dominance tree
+    val blockQueue = new LinkedList<CfgBasicBlock>();
+    blockQueue.add(cfgStartingBlock);
+
+    while (!blockQueue.isEmpty()) {
+      val block = blockQueue.poll();
+      val phi = phies.get(block);
+      val blockStart = block.getBlockStartIndex();
+      val blockEnd = block.getBlockEndIndex();
+      blockQueue.addAll(dom.getAllDirectlyDominatedBlocks(block));
+
+      // take mapping from dominator
+      RegisterMapping regMap = new RegisterMapping();
+      if (block != cfgStartingBlock)
+        regMap.putAll(mappingsPerBlock.get(dom.getDirectDominator(block)));
+
+      // add mappings from phi
+      regMap.putAll(phi.getAllDefinedMappings());
+
+      // walk through instructions
+      for (int i = blockStart; i <= blockEnd; ++i) {
+        DexCodeElement insn = instructionList.get(i);
+        val defRegs = insn.lvaDefinedRegisters();
+
+        // first apply mapping on referenced variables
+        applyCodeChanges(insn.getRegisterMappingChanges(regMap, true, false));
+
+        // update the current instruction
+        insn = instructionList.get(i);
+
+        // create new mappings for all defined variables
+        for (val defReg : defRegs)
+          regMap.put(defReg, new DexRegister());
+
+        // apply the new mapping to the same instruction, only on defined regs
+        applyCodeChanges(insn.getRegisterMappingChanges(regMap, false, true));
+      }
+
+      // look at all successors and pass them the final mapping
+      for (val succ : block.getSuccessors()) {
+        if (succ instanceof CfgBasicBlock) {
+          val succPhi = phies.get(succ);
+          succPhi.addAllRegisterMappings(block, regMap);
+        }
+      }
+
+      // store final register mapping
+      mappingsPerBlock.put(block, regMap);
+    }
+  }
+
+  private void ssaAddPhiMoving(DominanceAnalysis dom, Map<CfgBasicBlock, Phi> phies) {
+    val toAdd = new ArrayList<Pair<DexCodeElement, DexInstruction_Move>>();
+
+    // first acquire all the instructions to be added
+    for (val block : dom.getCfg().getBasicBlocks()) {
+      val phi = phies.get(block);
+
+      for (val phiEntry : phi.getRegisters().entrySet()) {
+        val phiEntry_Reg = phiEntry.getValue().getReplacingRegister();
+        val phiEntry_Mappings = phiEntry.getValue().getInheritedMappings();
+
+        for (val phiEntry_Mapping : phiEntry_Mappings.entrySet()) {
+          val origin = phiEntry_Mapping.getKey();
+          val origin_Reg = phiEntry_Mapping.getValue();
+
+          for (val b : block.getPredecessors())
+            if (b instanceof CfgBasicBlock) {
+              val pred = (CfgBasicBlock) b;
+              DexCodeElement predLastInsn = instructionList.get(pred.getBlockEndIndex());
+              if (! (predLastInsn.cfgGetSuccessors().size() == 1 && predLastInsn.cfgGetSuccessors().contains(instructionList.get(pred.getBlockEndIndex() + 1))))
+                predLastInsn = instructionList.get(pred.getBlockEndIndex() - 1);
+
+              if (dom.isDominant(origin, pred))
+                toAdd.add(new Pair<DexCodeElement, DexInstruction_Move>(predLastInsn, new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, false)));
+            }
+        }
+      }
+    }
+
+    // now actually add them
+    for (val addPair : toAdd)
+      this.insertAfter(addPair.getValB(), addPair.getValA());
+  }
+
   public void transformSSA() {
-	  
+    val dom = new DominanceAnalysis(this);
+    val phies = ssaGeneratePhies(dom);
+    ssaRenameRegisters(dom, phies);
+    ssaAddPhiMoving(dom, phies);
   }
 
   private DexInstruction parseInstruction(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {

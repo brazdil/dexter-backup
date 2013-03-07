@@ -20,7 +20,7 @@ public abstract class DexPseudoinstruction extends DexInstruction {
   }
 
   @Override
-  public DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+  public DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
     throw new UnsupportedOperationException();
   }
 

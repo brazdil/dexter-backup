@@ -105,10 +105,10 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
     val newRegArgs = new LinkedList<DexRegister>();
     for (val arg : argumentRegisters)
-      newRegArgs.add(mapping.get(arg));
+      newRegArgs.add(toRefs ? mapping.get(arg) : arg);
     return new DexInstruction_FilledNewArray(getMethodCode(), newRegArgs, arrayType);
   }
 

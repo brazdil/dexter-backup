@@ -74,8 +74,12 @@ public class DexInstruction_MoveWide extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_MoveWide(getMethodCode(), mapping.get(regTo1), mapping.get(regTo2), mapping.get(regFrom1), mapping.get(regFrom2));
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo1 = (toDefs) ? mapping.get(regTo1) : regTo1;
+    val newTo2 = (toDefs) ? mapping.get(regTo2) : regTo2;
+    val newFrom1 = (toRefs) ? mapping.get(regFrom1) : regFrom1;
+    val newFrom2 = (toRefs) ? mapping.get(regFrom2) : regFrom2;
+    return new DexInstruction_MoveWide(getMethodCode(), newTo1, newTo2, newFrom1, newFrom2);
   }
 
   @Override

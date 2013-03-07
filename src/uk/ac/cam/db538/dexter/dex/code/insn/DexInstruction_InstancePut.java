@@ -127,8 +127,10 @@ public class DexInstruction_InstancePut extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_InstancePut(getMethodCode(), mapping.get(regFrom), mapping.get(regObject), fieldClass, fieldType, fieldName, opcode);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newFrom = (toRefs) ? mapping.get(regFrom) : regFrom;
+    val newObject = (toRefs) ? mapping.get(regObject) : regObject;
+    return new DexInstruction_InstancePut(getMethodCode(), newFrom, newObject, fieldClass, fieldType, fieldName, opcode);
   }
 
   @Override

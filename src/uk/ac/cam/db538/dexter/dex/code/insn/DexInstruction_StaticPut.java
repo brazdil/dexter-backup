@@ -118,8 +118,9 @@ public class DexInstruction_StaticPut extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_StaticPut(getMethodCode(), mapping.get(regFrom), fieldClass, fieldType, fieldName, opcode);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newFrom = (toRefs) ? mapping.get(regFrom) : regFrom;
+    return new DexInstruction_StaticPut(getMethodCode(), newFrom, fieldClass, fieldType, fieldName, opcode);
   }
 
   @Override

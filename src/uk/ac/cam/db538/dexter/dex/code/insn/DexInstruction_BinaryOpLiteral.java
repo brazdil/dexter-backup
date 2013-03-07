@@ -137,13 +137,10 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_BinaryOpLiteral(
-             getMethodCode(),
-             mapping.get(regTarget),
-             mapping.get(regSource),
-             literal,
-             insnOpcode);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTarget = (toDefs) ? mapping.get(regTarget) : regTarget;
+    val newSource = (toRefs) ? mapping.get(regSource) : regSource;
+    return new DexInstruction_BinaryOpLiteral(getMethodCode(), newTarget, newSource, literal, insnOpcode);
   }
 
   @Override
