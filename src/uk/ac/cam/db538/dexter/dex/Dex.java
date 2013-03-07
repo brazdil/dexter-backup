@@ -290,4 +290,9 @@ public class Dex {
   private static final String CLASS_INTERNALCLASS = "Luk/ac/cam/db538/dexter/merge/InternalClassAnnotation;";
   private static final String CLASS_INTERNALMETHOD = "Luk/ac/cam/db538/dexter/merge/InternalMethodAnnotation;";
   private static final String CLASS_TAINTCONSTANTS = "Luk/ac/cam/db538/dexter/merge/TaintConstants;";
+
+  public void transformSSA() {
+    for (val clazz : classes)
+      clazz.transformSSA();
+  }
 }

@@ -56,6 +56,11 @@ public class MainWindow {
         menuFileInstrument.addActionListener(Listener_FileInstrument);
         menuFile.add(menuFileInstrument);
 
+        val menuFileSSATransform = new WebMenuItem("SSA Transform", KeyEvent.VK_S);
+        menuFileSSATransform.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        menuFileSSATransform.addActionListener(Listener_FileSSATransform);
+        menuFile.add(menuFileSSATransform);
+
         val menuFileSave = new WebMenuItem("Save", KeyEvent.VK_S);
         menuFileSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
         menuFileSave.addActionListener(Listener_FileSave);
@@ -158,6 +163,30 @@ public class MainWindow {
             tab.updateClassTree();
           } catch (Throwable e) {
             JMessage.showErrorMessage(frame, "A problem occurred while instrumenting file \"" + tab.getOpenedFile_Filename() + "\".", e);
+            return;
+          }
+        }
+      }));
+    }
+  };
+
+  private ActionListener Listener_FileSSATransform = new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent arg0) {
+      val selected = tabbedPane.getSelectedComponent();
+      if (selected == null)
+        return;
+
+      val tab = (FileTab) selected;
+      val dex = tab.getOpenedFile().getDexFile();
+      doModal("Transforming " + tab.getOpenedFile_Filename() + " into SSA", new Thread(new Runnable() {
+        public void run() {
+          try {
+            dex.transformSSA();
+            tab.getTreeListener().valueChanged(null);
+            tab.updateClassTree();
+          } catch (Throwable e) {
+            JMessage.showErrorMessage(frame, "A problem occurred while SSA transforming file \"" + tab.getOpenedFile_Filename() + "\".", e);
             return;
           }
         }

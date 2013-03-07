@@ -38,4 +38,8 @@ public class DexAbstractMethod extends DexMethod {
 
   @Override
   public void markMethodOriginal() { }
+
+  @Override
+  public void transformSSA() {
+  }
 }

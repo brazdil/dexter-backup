@@ -135,4 +135,6 @@ public abstract class DexMethod {
   }
 
   public abstract void markMethodOriginal();
+
+  public abstract void transformSSA();
 }
