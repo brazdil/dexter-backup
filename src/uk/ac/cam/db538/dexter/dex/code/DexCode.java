@@ -1003,8 +1003,15 @@ public class DexCode {
 
         // create new mappings for all defined variables
         for (val defReg : defRegs) {
-          val newReg = new DexRegister();
-          val newRegType = insn.gcDefinedRegisterType(defReg);
+          DexRegister newReg;
+          gcRegType newRegType;
+          if (insn instanceof DexInstruction_CheckCast) {
+            newReg = regMap.get(defReg);
+            newRegType = gcRegType.Object;
+          } else {
+            newReg = new DexRegister();
+            newRegType = insn.gcDefinedRegisterType(defReg);
+          }
           regMap.put(defReg, newReg);
           registerTypes.put(newReg, newRegType);
         }
@@ -1026,7 +1033,8 @@ public class DexCode {
         }
 
         // apply the new mapping to the same instruction, only on defined regs
-        applyCodeChanges(insn.getRegisterMappingChanges(regMap, false, true));
+        if (! (insn instanceof DexInstruction_CheckCast))
+          applyCodeChanges(insn.getRegisterMappingChanges(regMap, false, true));
       }
 
       // look at all successors and pass them the final mapping
@@ -1063,31 +1071,31 @@ public class DexCode {
             if (b instanceof CfgBasicBlock) {
               val pred = (CfgBasicBlock) b;
               DexCodeElement predLastInsn = instructionList.get(pred.getBlockEndIndex());
-              if (! (predLastInsn.cfgGetSuccessors().size() == 1 && pred.getBlockEndIndex() + 1 < instructionList.size() && predLastInsn.cfgGetSuccessors().contains(instructionList.get(pred.getBlockEndIndex() + 1))))
+              if (! (predLastInsn.lvaDefinedRegisters().contains(origin_Reg) || (predLastInsn.cfgGetSuccessors().size() == 1 && pred.getBlockEndIndex() + 1 < instructionList.size() && predLastInsn.cfgGetSuccessors().contains(instructionList.get(pred.getBlockEndIndex() + 1)))))
                 predLastInsn = instructionList.get(pred.getBlockEndIndex() - 1);
 
               if (dom.isDominant(origin, pred)) {
-                System.out.println("query on " + origin_Reg.getOriginalIndexString() + " with phireg = " + phiEntry_Reg.getOriginalIndexString());
-                switch (regTypes.get(origin_Reg)) {
-                case PrimitiveSingle:
-                  toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, false)));
-                  break;
-                case Object:
-                  toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, true)));
-                  break;
-                case PrimitiveWide_High:
-                  val originHigh = origin_Reg;
-                  val originLow = wideRegs.get(originHigh);
-                  val destHigh = phiEntry_Reg;
-                  val destLow = phi.findPhiRegister(pred, originLow);
-                  toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_MoveWide(this, destHigh, destLow, originHigh, originLow)));
-                  break;
-                case PrimitiveWide_Low:
-                  break;
-                default:
-                  throw new RuntimeException("Unknown register type");
+                if (regTypes.get(origin_Reg) != null) {
+                  switch (regTypes.get(origin_Reg)) {
+                  case PrimitiveSingle:
+                    toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, false)));
+                    break;
+                  case Object:
+                    toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, true)));
+                    break;
+                  case PrimitiveWide_High:
+                    val originHigh = origin_Reg;
+                    val originLow = wideRegs.get(originHigh);
+                    val destHigh = phiEntry_Reg;
+                    val destLow = phi.findPhiRegister(pred, originLow);
+                    toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_MoveWide(this, destHigh, destLow, originHigh, originLow)));
+                    break;
+                  case PrimitiveWide_Low:
+                    break;
+                  default:
+                    throw new RuntimeException("Unknown register type");
+                  }
                 }
-
               }
             }
         }

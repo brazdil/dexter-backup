@@ -56,8 +56,8 @@ public class MainWindow {
         menuFileInstrument.addActionListener(Listener_FileInstrument);
         menuFile.add(menuFileInstrument);
 
-        val menuFileSSATransform = new WebMenuItem("SSA Transform", KeyEvent.VK_S);
-        menuFileSSATransform.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        val menuFileSSATransform = new WebMenuItem("SSA Transform", KeyEvent.VK_T);
+        menuFileSSATransform.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK));
         menuFileSSATransform.addActionListener(Listener_FileSSATransform);
         menuFile.add(menuFileSSATransform);
 
