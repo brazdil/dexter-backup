@@ -111,7 +111,7 @@ public class DexInstruction_FillArray extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (reg.equals(regArray))
       return gcRegType.Object;
     else

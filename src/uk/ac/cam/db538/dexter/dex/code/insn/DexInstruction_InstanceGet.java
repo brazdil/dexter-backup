@@ -102,7 +102,7 @@ public class DexInstruction_InstanceGet extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (reg.equals(regObject))
       return gcRegType.Object;
     else
@@ -110,7 +110,7 @@ public class DexInstruction_InstanceGet extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+  public gcRegType gcDefinedRegisterType(DexRegister reg) {
     if (reg.equals(regTo))
       return (opcode == Opcode_GetPut.Object) ? gcRegType.Object : gcRegType.PrimitiveSingle;
     else

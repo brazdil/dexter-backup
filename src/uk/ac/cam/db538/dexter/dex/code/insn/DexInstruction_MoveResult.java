@@ -76,7 +76,7 @@ public class DexInstruction_MoveResult extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+  public gcRegType gcDefinedRegisterType(DexRegister reg) {
     if (reg.equals(regTo))
       return (objectMoving) ? gcRegType.Object : gcRegType.PrimitiveSingle;
     else

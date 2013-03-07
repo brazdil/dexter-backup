@@ -81,7 +81,7 @@ public class DexInstruction_ConstClass extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+  public gcRegType gcDefinedRegisterType(DexRegister reg) {
     if (reg.equals(regTo))
       return gcRegType.Object;
     else

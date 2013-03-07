@@ -39,6 +39,7 @@ import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement.GcFollowConstraint;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement.gcRegType;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeStart;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
@@ -882,6 +883,14 @@ public class DexCode {
       return result;
     }
 
+    public DexRegister findPhiRegister(CfgBasicBlock block, DexRegister blockReg) {
+      for (val regEntry : registers.entrySet())
+        for (val inhEntry : regEntry.getValue().getInheritedMappings().entrySet())
+          if (inhEntry.getKey() == block && inhEntry.getValue() == blockReg)
+            return regEntry.getValue().getReplacingRegister();
+      return null;
+    }
+
     public boolean addAllRegisterOrigins(CfgBasicBlock block, Set<DexRegister> defRegs) {
       boolean change = false;
       for (val reg : defRegs) {
@@ -939,14 +948,24 @@ public class DexCode {
     private static final long serialVersionUID = -4237424266083204694L;
   }
 
+  public static class RegisterTyping extends HashMap<DexRegister, gcRegType> {
+    private static final long serialVersionUID = -2635461405493323471L;
+  }
+
+  public static class WideRegisters extends HashMap<DexRegister, DexRegister> {
+    private static final long serialVersionUID = -2635461405493323421L;
+  }
+
   private void applyCodeChanges(Map<DexCodeElement, DexCodeElement> changes) {
     for (val entry : changes.entrySet())
       this.replace(entry.getKey(), Arrays.asList(entry.getValue()));
   }
 
-  private void ssaRenameRegisters(DominanceAnalysis dom, Map<CfgBasicBlock, Phi> phies) {
+  private Pair<RegisterTyping, WideRegisters> ssaRenameRegisters(DominanceAnalysis dom, Map<CfgBasicBlock, Phi> phies) {
     val cfgStartingBlock = dom.getCfg().getStartingBasicBlock();
     val mappingsPerBlock = new HashMap<CfgBasicBlock, RegisterMapping>();
+    val registerTypes = new RegisterTyping();
+    val wideRegisters = new WideRegisters();
 
     // will traverse the dominance tree
     val blockQueue = new LinkedList<CfgBasicBlock>();
@@ -979,8 +998,28 @@ public class DexCode {
         insn = instructionList.get(i);
 
         // create new mappings for all defined variables
-        for (val defReg : defRegs)
-          regMap.put(defReg, new DexRegister());
+        for (val defReg : defRegs) {
+          val newReg = new DexRegister();
+          val newRegType = insn.gcDefinedRegisterType(defReg);
+          regMap.put(defReg, newReg);
+          registerTypes.put(newReg, newRegType);
+        }
+
+        // handle wide registers
+        for (val defReg : defRegs) {
+          val highReg = regMap.get(defReg);
+          if (registerTypes.get(highReg) == gcRegType.PrimitiveWide_High) {
+            // find lowReg
+            for (val follow : insn.gcFollowConstraints()) {
+              if (follow.getValA() == defReg) {
+                val lowReg = regMap.get(follow.getValB());
+                if (registerTypes.get(lowReg) != gcRegType.PrimitiveWide_Low)
+                  throw new RuntimeException("Couldn't find low wide primitive register");
+                wideRegisters.put(highReg, lowReg);
+              }
+            }
+          }
+        }
 
         // apply the new mapping to the same instruction, only on defined regs
         applyCodeChanges(insn.getRegisterMappingChanges(regMap, false, true));
@@ -997,10 +1036,12 @@ public class DexCode {
       // store final register mapping
       mappingsPerBlock.put(block, regMap);
     }
+
+    return new Pair<>(registerTypes, wideRegisters);
   }
 
-  private void ssaAddPhiMoving(DominanceAnalysis dom, Map<CfgBasicBlock, Phi> phies) {
-    val toAdd = new ArrayList<Pair<DexCodeElement, DexInstruction_Move>>();
+  private void ssaAddPhiMoving(DominanceAnalysis dom, Map<CfgBasicBlock, Phi> phies, RegisterTyping regTypes, WideRegisters wideRegs) {
+    val toAdd = new ArrayList<Pair<DexCodeElement, DexCodeElement>>();
 
     // first acquire all the instructions to be added
     for (val block : dom.getCfg().getBasicBlocks()) {
@@ -1021,8 +1062,29 @@ public class DexCode {
               if (! (predLastInsn.cfgGetSuccessors().size() == 1 && predLastInsn.cfgGetSuccessors().contains(instructionList.get(pred.getBlockEndIndex() + 1))))
                 predLastInsn = instructionList.get(pred.getBlockEndIndex() - 1);
 
-              if (dom.isDominant(origin, pred))
-                toAdd.add(new Pair<DexCodeElement, DexInstruction_Move>(predLastInsn, new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, false)));
+              if (dom.isDominant(origin, pred)) {
+                System.out.println("query on " + origin_Reg.getOriginalIndexString());
+                switch (regTypes.get(origin_Reg)) {
+                case PrimitiveSingle:
+                  toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, false)));
+                  break;
+                case Object:
+                  toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, true)));
+                  break;
+                case PrimitiveWide_High:
+                  val originHigh = origin_Reg;
+                  val originLow = wideRegs.get(originHigh);
+                  val destHigh = phiEntry_Reg;
+                  val destLow = phi.findPhiRegister(pred, originLow);
+                  toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_MoveWide(this, destHigh, destLow, originHigh, originLow)));
+                  break;
+                case PrimitiveWide_Low:
+                  break;
+                default:
+                  throw new RuntimeException("Unknown register type");
+                }
+
+              }
             }
         }
       }
@@ -1036,8 +1098,8 @@ public class DexCode {
   public void transformSSA() {
     val dom = new DominanceAnalysis(this);
     val phies = ssaGeneratePhies(dom);
-    ssaRenameRegisters(dom, phies);
-    ssaAddPhiMoving(dom, phies);
+    val regInfo = ssaRenameRegisters(dom, phies);
+    ssaAddPhiMoving(dom, phies, regInfo.getValA(), regInfo.getValB());
   }
 
   private DexInstruction parseInstruction(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {

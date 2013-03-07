@@ -122,7 +122,7 @@ public class DexInstruction_Switch extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (reg.equals(regTest))
       return gcRegType.PrimitiveSingle;
     else

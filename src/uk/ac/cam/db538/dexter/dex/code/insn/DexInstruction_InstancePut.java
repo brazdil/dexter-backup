@@ -97,7 +97,7 @@ public class DexInstruction_InstancePut extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (reg.equals(regObject))
       return gcRegType.Object;
     else if (reg.equals(regFrom))
