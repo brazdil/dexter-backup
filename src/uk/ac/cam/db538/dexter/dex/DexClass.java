@@ -292,4 +292,11 @@ public class DexClass {
         return true;
     return false;
   }
+
+  public void transformSSA() {
+    System.out.println("SSA transforming class " + this.getType().getPrettyName());
+
+    for (val method : methods)
+      method.transformSSA();
+  }
 }

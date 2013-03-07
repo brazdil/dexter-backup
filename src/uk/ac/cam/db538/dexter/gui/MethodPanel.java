@@ -122,7 +122,13 @@ public class MethodPanel extends InfoPanel {
 //    	allInstructions.addAll(((DexMethodWithCode) method).getCode().getInstructionList());
 
       for (val insn : ((DexMethodWithCode) method).getCode().getInstructionList()) {
-        val label = new WebHotkeyLabel(insn.getOriginalAssembly());
+        String asm = "ERROR " + insn.getClass().getSimpleName();
+        try {
+          asm = insn.getOriginalAssembly();
+        } catch (Exception e) {
+
+        }
+        val label = new WebHotkeyLabel(asm);
 
         // set its colour based on being original element or not
         if (!insn.isOriginalElement())

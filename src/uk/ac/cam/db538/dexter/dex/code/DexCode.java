@@ -1059,11 +1059,11 @@ public class DexCode {
             if (b instanceof CfgBasicBlock) {
               val pred = (CfgBasicBlock) b;
               DexCodeElement predLastInsn = instructionList.get(pred.getBlockEndIndex());
-              if (! (predLastInsn.cfgGetSuccessors().size() == 1 && predLastInsn.cfgGetSuccessors().contains(instructionList.get(pred.getBlockEndIndex() + 1))))
+              if (! (predLastInsn.cfgGetSuccessors().size() == 1 && pred.getBlockEndIndex() + 1 < instructionList.size() && predLastInsn.cfgGetSuccessors().contains(instructionList.get(pred.getBlockEndIndex() + 1))))
                 predLastInsn = instructionList.get(pred.getBlockEndIndex() - 1);
 
               if (dom.isDominant(origin, pred)) {
-                System.out.println("query on " + origin_Reg.getOriginalIndexString());
+                System.out.println("query on " + origin_Reg.getOriginalIndexString() + " with phireg = " + phiEntry_Reg.getOriginalIndexString());
                 switch (regTypes.get(origin_Reg)) {
                 case PrimitiveSingle:
                   toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, false)));
