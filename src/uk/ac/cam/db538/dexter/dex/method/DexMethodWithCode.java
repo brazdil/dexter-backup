@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.method;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,6 +125,10 @@ public abstract class DexMethodWithCode extends DexMethod {
       parameterRegistersMappings.put(paramReg1, codeReg1);
       parameterRegistersMappings.put(paramReg2, codeReg2);
     }
+  }
+
+  public List<DexRegister> getParameterRegisters() {
+    return Collections.unmodifiableList(parameterRegisters);
   }
 
   public List<DexRegister> getParameterMappedRegisters() {
