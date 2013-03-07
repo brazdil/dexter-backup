@@ -162,10 +162,8 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   @Override
   public void transformSSA() {
-    if (code != null) {
-      System.out.println(" - method " + this.getName());
+    if (code != null)
       code.transformSSA();
-    }
   }
 
   @Override
