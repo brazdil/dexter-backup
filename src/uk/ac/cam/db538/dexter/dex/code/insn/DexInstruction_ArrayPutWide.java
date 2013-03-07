@@ -103,8 +103,12 @@ public class DexInstruction_ArrayPutWide extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_ArrayPutWide(getMethodCode(), mapping.get(regFrom1), mapping.get(regFrom2), mapping.get(regArray), mapping.get(regIndex));
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newFrom1 = (toRefs) ? mapping.get(regFrom1) : regFrom1;
+    val newFrom2 = (toRefs) ? mapping.get(regFrom2) : regFrom2;
+    val newArray = (toRefs) ? mapping.get(regArray) : regArray;
+    val newIndex = (toRefs) ? mapping.get(regIndex) : regIndex;
+    return new DexInstruction_ArrayPutWide(getMethodCode(), newFrom1, newFrom2, newArray, newIndex);
   }
 
   @Override

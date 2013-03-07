@@ -148,8 +148,11 @@ public class DexInstruction_InstanceGetWide extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_InstanceGetWide(getMethodCode(), mapping.get(regTo1), mapping.get(regTo2), mapping.get(regObject), fieldClass, fieldType, fieldName);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo1 = (toDefs) ? mapping.get(regTo1) : regTo1;
+    val newTo2 = (toDefs) ? mapping.get(regTo2) : regTo2;
+    val newObject = (toRefs) ? mapping.get(regObject) : regObject;
+    return new DexInstruction_InstanceGetWide(getMethodCode(), newTo1, newTo2, newObject, fieldClass, fieldType, fieldName);
   }
 
   @Override

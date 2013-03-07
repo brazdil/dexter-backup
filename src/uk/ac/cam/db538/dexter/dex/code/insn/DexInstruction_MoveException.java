@@ -77,8 +77,9 @@ public class DexInstruction_MoveException extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_MoveException(getMethodCode(), mapping.get(regTo));
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
+    return new DexInstruction_MoveException(getMethodCode(), newTo);
   }
 
   @Override

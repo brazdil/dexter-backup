@@ -90,8 +90,9 @@ public class DexInstruction_Throw extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_Throw(getMethodCode(), mapping.get(regFrom));
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newFrom = (toRefs) ? mapping.get(regFrom) : regFrom;
+    return new DexInstruction_Throw(getMethodCode(), newFrom);
   }
 
   @Override

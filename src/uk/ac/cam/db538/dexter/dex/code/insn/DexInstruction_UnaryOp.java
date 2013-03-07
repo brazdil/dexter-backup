@@ -49,8 +49,10 @@ public class DexInstruction_UnaryOp extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_UnaryOp(getMethodCode(), mapping.get(regTo), mapping.get(regFrom), insnOpcode);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
+    val newFrom = (toRefs) ? mapping.get(regFrom) : regFrom;
+    return new DexInstruction_UnaryOp(getMethodCode(), newTo, newFrom, insnOpcode);
   }
 
   @Override

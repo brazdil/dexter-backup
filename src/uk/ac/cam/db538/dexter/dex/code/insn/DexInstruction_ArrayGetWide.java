@@ -115,8 +115,12 @@ public class DexInstruction_ArrayGetWide extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_ArrayGetWide(getMethodCode(), mapping.get(regTo1), mapping.get(regTo2), mapping.get(regArray), mapping.get(regIndex));
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo1 = (toDefs) ? mapping.get(regTo1) : regTo1;
+    val newTo2 = (toDefs) ? mapping.get(regTo2) : regTo2;
+    val newArray = (toRefs) ? mapping.get(regArray) : regArray;
+    val newIndex = (toRefs) ? mapping.get(regIndex) : regIndex;
+    return new DexInstruction_ArrayGetWide(getMethodCode(), newTo1, newTo2, newArray, newIndex);
   }
 
   @Override

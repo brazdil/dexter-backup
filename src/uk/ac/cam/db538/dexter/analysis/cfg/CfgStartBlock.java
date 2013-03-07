@@ -7,5 +7,4 @@ public class CfgStartBlock extends CfgBlock {
   protected void addPredecessor(CfgBlock pred) {
     throw new UnsupportedOperationException("StartBlock cannot have a predecessor");
   }
-
 }

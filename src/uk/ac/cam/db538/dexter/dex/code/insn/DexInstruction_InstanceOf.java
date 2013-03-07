@@ -69,12 +69,10 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_InstanceOf(
-             getMethodCode(),
-             mapping.get(regTo),
-             mapping.get(regObject),
-             value);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
+    val newObject = (toRefs) ? mapping.get(regObject) : regObject;
+    return new DexInstruction_InstanceOf(getMethodCode(), newTo, newObject, value);
   }
 
   @Override

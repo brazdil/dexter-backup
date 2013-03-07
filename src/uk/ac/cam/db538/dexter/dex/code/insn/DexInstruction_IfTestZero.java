@@ -117,8 +117,9 @@ public class DexInstruction_IfTestZero extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_IfTestZero(getMethodCode(), mapping.get(reg), target, insnOpcode);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newReg = (toRefs) ? mapping.get(reg) : reg;
+    return new DexInstruction_IfTestZero(getMethodCode(), newReg, target, insnOpcode);
   }
 
   @Override

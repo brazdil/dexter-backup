@@ -106,13 +106,11 @@ public class DexInstruction_CompareFloat extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_CompareFloat(
-             getMethodCode(),
-             mapping.get(regTo),
-             mapping.get(regSourceA),
-             mapping.get(regSourceB),
-             ltBias);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
+    val newSourceA = (toRefs) ? mapping.get(regSourceA) : regSourceA;
+    val newSourceB = (toRefs) ? mapping.get(regSourceB) : regSourceB;
+    return new DexInstruction_CompareFloat(getMethodCode(), newTo, newSourceA, newSourceB, ltBias);
   }
 
   @Override

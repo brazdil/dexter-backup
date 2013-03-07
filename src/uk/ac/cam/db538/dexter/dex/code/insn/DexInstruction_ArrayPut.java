@@ -96,8 +96,11 @@ public class DexInstruction_ArrayPut extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_ArrayPut(getMethodCode(), mapping.get(regFrom), mapping.get(regArray), mapping.get(regIndex), opcode);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newFrom = (toRefs) ? mapping.get(regFrom) : regFrom;
+    val newArray = (toRefs) ? mapping.get(regArray) : regArray;
+    val newIndex = (toRefs) ? mapping.get(regIndex) : regIndex;
+    return new DexInstruction_ArrayPut(getMethodCode(), newFrom, newArray, newIndex, opcode);
   }
 
   @Override

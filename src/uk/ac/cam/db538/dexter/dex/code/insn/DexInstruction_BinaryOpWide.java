@@ -173,15 +173,21 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTarget1 = (toDefs) ? mapping.get(regTarget1) : regTarget1;
+    val newTarget2 = (toDefs) ? mapping.get(regTarget2) : regTarget2;
+    val newSourceA1 = (toRefs) ? mapping.get(regSourceA1) : regSourceA1;
+    val newSourceA2 = (toRefs) ? mapping.get(regSourceA2) : regSourceA2;
+    val newSourceB1 = (toRefs) ? mapping.get(regSourceB1) : regSourceB1;
+    val newSourceB2 = (toRefs) ? mapping.get(regSourceB2) : regSourceB2;
     return new DexInstruction_BinaryOpWide(
              getMethodCode(),
-             mapping.get(regTarget1),
-             mapping.get(regTarget2),
-             mapping.get(regSourceA1),
-             mapping.get(regSourceA2),
-             mapping.get(regSourceB1),
-             mapping.get(regSourceB2),
+             newTarget1,
+             newTarget2,
+             newSourceA1,
+             newSourceA2,
+             newSourceB1,
+             newSourceB2,
              insnOpcode);
   }
 }

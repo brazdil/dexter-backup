@@ -48,7 +48,7 @@ public class ControlFlowGraph {
     NoDuplicatesList<DexCodeElement> currentBlock = new NoDuplicatesList<DexCodeElement>();
     for (val insn : insns) {
       if (insn.cfgStartsBasicBlock() && !currentBlock.isEmpty()) {
-        val block = new CfgBasicBlock(currentBlock);
+        val block = new CfgBasicBlock(code, currentBlock);
         basicBlocks.add(block);
         insnBlockMap.put(block.getFirstInstruction(), block);
         currentBlock = new NoDuplicatesList<DexCodeElement>();
@@ -57,14 +57,14 @@ public class ControlFlowGraph {
       currentBlock.add(insn);
 
       if ((insn.cfgEndsBasicBlock() || insn.cfgExitsMethod() || insn.cfgGetSuccessors().size() > 1) && !currentBlock.isEmpty()) {
-        val block = new CfgBasicBlock(currentBlock);
+        val block = new CfgBasicBlock(code, currentBlock);
         basicBlocks.add(block);
         insnBlockMap.put(block.getFirstInstruction(), block);
         currentBlock = new NoDuplicatesList<DexCodeElement>();
       }
     }
     if (!currentBlock.isEmpty()) {
-      val block = new CfgBasicBlock(currentBlock);
+      val block = new CfgBasicBlock(code, currentBlock);
       basicBlocks.add(block);
       insnBlockMap.put(block.getFirstInstruction(), block);
     }
@@ -109,5 +109,17 @@ public class ControlFlowGraph {
 
   public List<CfgBasicBlock> getBasicBlocks() {
     return Collections.unmodifiableList(basicBlocks);
+  }
+
+  public CfgBasicBlock getStartingBasicBlock() {
+    val startBlockSucc = getStartBlock().getSuccessors();
+    if (startBlockSucc.size() != 1)
+      throw new RuntimeException("ControlFlowGraph has multiple starting points");
+
+    val startBlockCandidate = startBlockSucc.iterator().next();
+    if (startBlockCandidate instanceof CfgBasicBlock)
+      return (CfgBasicBlock) startBlockCandidate;
+    else
+      return null;
   }
 }

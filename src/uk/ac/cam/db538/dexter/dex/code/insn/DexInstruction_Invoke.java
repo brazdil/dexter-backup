@@ -304,11 +304,10 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
     val newArgRegs = new LinkedList<DexRegister>();
     for (val argReg : argumentRegisters) {
-      val mapReg = mapping.get(argReg);
-      newArgRegs.add(mapReg == null ? argReg : mapReg);
+      newArgRegs.add(toRefs ? mapping.get(argReg) : argReg);
     }
 
     return new DexInstruction_Invoke(getMethodCode(), classType, methodName, methodPrototype, newArgRegs, callType);

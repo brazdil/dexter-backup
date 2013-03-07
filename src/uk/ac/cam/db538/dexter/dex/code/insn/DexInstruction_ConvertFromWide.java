@@ -54,8 +54,11 @@ public class DexInstruction_ConvertFromWide extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_ConvertFromWide(getMethodCode(), mapping.get(regTo), mapping.get(regFrom1), mapping.get(regFrom2), insnOpcode);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
+    val newFrom1 = (toRefs) ? mapping.get(regFrom1) : regFrom1;
+    val newFrom2 = (toRefs) ? mapping.get(regFrom2) : regFrom2;
+    return new DexInstruction_ConvertFromWide(getMethodCode(), newTo, newFrom1, newFrom2, insnOpcode);
   }
 
   @Override

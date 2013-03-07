@@ -51,7 +51,7 @@ public class DexInstruction_Nop extends DexInstruction {
   public void instrument(DexCode_InstrumentationState mapping) { }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
     return this;
   }
 }

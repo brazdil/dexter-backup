@@ -118,8 +118,9 @@ public class DexInstruction_StaticGet extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping) {
-    return new DexInstruction_StaticGet(getMethodCode(), mapping.get(regTo), fieldClass, fieldType, fieldName, opcode);
+  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
+    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
+    return new DexInstruction_StaticGet(getMethodCode(), newTo, fieldClass, fieldType, fieldName, opcode);
   }
 
   @Override
