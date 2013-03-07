@@ -92,7 +92,7 @@ public class DexInstruction_StaticGet extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+  public gcRegType gcDefinedRegisterType(DexRegister reg) {
     if (reg.equals(regTo))
       return (opcode == Opcode_GetPut.Object) ? gcRegType.Object : gcRegType.PrimitiveSingle;
     else

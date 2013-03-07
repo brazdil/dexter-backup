@@ -137,7 +137,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (reg.equals(regSourceA1) || reg.equals(regSourceB1))
       return gcRegType.PrimitiveWide_High;
     else if (reg.equals(regSourceA2) || reg.equals(regSourceB2))
@@ -147,7 +147,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+  public gcRegType gcDefinedRegisterType(DexRegister reg) {
     if (reg.equals(regTarget1))
       return gcRegType.PrimitiveWide_High;
     else if (reg.equals(regTarget2))

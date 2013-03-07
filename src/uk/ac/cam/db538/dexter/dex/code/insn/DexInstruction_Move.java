@@ -88,7 +88,7 @@ public class DexInstruction_Move extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (reg.equals(regFrom))
       return (objectMoving) ? gcRegType.Object : gcRegType.PrimitiveSingle;
     else
@@ -96,7 +96,7 @@ public class DexInstruction_Move extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+  public gcRegType gcDefinedRegisterType(DexRegister reg) {
     if (reg.equals(regTo))
       return (objectMoving) ? gcRegType.Object : gcRegType.PrimitiveSingle;
     else

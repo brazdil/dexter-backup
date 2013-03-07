@@ -216,18 +216,18 @@ public abstract class DexCodeElement {
 
   protected abstract DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs);
 
-  protected enum gcRegType {
+  public enum gcRegType {
     Object,
     PrimitiveSingle,
     PrimitiveWide_High,
     PrimitiveWide_Low
   }
 
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have referenced register type information");
   }
 
-  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+  public gcRegType gcDefinedRegisterType(DexRegister reg) {
     throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have defined register type information");
   }
 

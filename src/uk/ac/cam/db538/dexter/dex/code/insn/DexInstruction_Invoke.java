@@ -235,7 +235,7 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (argumentRegisters.contains(reg)) {
       int regIndex = argumentRegisters.indexOf(reg); // can be present multiple times, but the type must match
       if (!isStaticCall()) {

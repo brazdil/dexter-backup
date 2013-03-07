@@ -73,7 +73,7 @@ public class DexInstruction_IfTest extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (insnOpcode == Opcode_IfTest.eq || insnOpcode == Opcode_IfTest.ne)
       throw new UnsupportedOperationException();
     else if (reg.equals(regA) || reg.equals(regB))

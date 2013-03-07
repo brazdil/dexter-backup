@@ -68,7 +68,7 @@ public class DexInstruction_Monitor extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (reg.equals(regMonitor))
       return gcRegType.Object;
     else

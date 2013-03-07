@@ -97,7 +97,7 @@ public class DexInstruction_Convert extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (reg.equals(regFrom))
       return gcRegType.PrimitiveSingle;
     else
@@ -105,7 +105,7 @@ public class DexInstruction_Convert extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+  public gcRegType gcDefinedRegisterType(DexRegister reg) {
     if (reg.equals(regTo))
       return gcRegType.PrimitiveSingle;
     else

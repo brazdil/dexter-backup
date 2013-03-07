@@ -161,7 +161,7 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (argumentRegisters.contains(reg))
       return (arrayType.getElementType() instanceof DexPrimitiveType) ?
              gcRegType.PrimitiveSingle :

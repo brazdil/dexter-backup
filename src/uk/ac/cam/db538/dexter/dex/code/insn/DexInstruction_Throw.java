@@ -67,7 +67,7 @@ public class DexInstruction_Throw extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcReferencedRegisterType(DexRegister reg) {
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
     if (reg.equals(regFrom))
       return gcRegType.Object;
     else

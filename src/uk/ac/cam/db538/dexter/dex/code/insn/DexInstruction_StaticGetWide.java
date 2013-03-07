@@ -96,7 +96,7 @@ public class DexInstruction_StaticGetWide extends DexInstruction {
   }
 
   @Override
-  protected gcRegType gcDefinedRegisterType(DexRegister reg) {
+  public gcRegType gcDefinedRegisterType(DexRegister reg) {
     if (reg.equals(regTo1))
       return gcRegType.PrimitiveWide_High;
     else if (reg.equals(regTo2))

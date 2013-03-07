@@ -22,7 +22,9 @@ import org.jf.dexlib.Code.Format.Instruction10x;
 import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
+import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
@@ -33,6 +35,9 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertFromWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Nop;
@@ -40,7 +45,9 @@ import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_ConvertFromWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 
 public class DexCode_Test {
 
@@ -665,7 +672,7 @@ public class DexCode_Test {
   }
 
   @Test
-  public void testTransformSSA_FlowMerge() {
+  public void testTransformSSA_FlowMerge_PrimitiveSingle() {
     val code = new DexCode();
 
     val regA = new DexRegister();
@@ -682,6 +689,35 @@ public class DexCode_Test {
     code.add(new DexInstruction_Const(code, regB, 3));
     code.add(labelEndIf);
     code.add(new DexInstruction_BinaryOpLiteral(code, regA, regB, 1234L, Opcode_BinaryOpLiteral.Add));
+
+    for (val insn : code.getInstructionList())
+      System.out.println(insn.getOriginalAssembly());
+
+    code.transformSSA();
+
+    for (val insn : code.getInstructionList())
+      System.out.println(insn.getOriginalAssembly());
+  }
+
+  @Test
+  public void testTransformSSA_FlowMerge_PrimitiveWide() {
+    val code = new DexCode();
+
+    val regA = new DexRegister();
+    val regB1 = new DexRegister();
+    val regB2 = new DexRegister();
+
+    val labelIf = new DexLabel(code);
+    val labelEndIf = new DexLabel(code);
+
+    code.add(new DexInstruction_Const(code, regA, 1));
+    code.add(new DexInstruction_IfTestZero(code, regA, labelIf, Opcode_IfTestZero.eqz));
+    code.add(new DexInstruction_ConstWide(code, regB1, regB2, 2));
+    code.add(new DexInstruction_Goto(code, labelEndIf));
+    code.add(labelIf);
+    code.add(new DexInstruction_ConstWide(code, regB1, regB2, 3));
+    code.add(labelEndIf);
+    code.add(new DexInstruction_ConvertFromWide(code, regA, regB1, regB2, Opcode_ConvertFromWide.LongToInt));
 
     for (val insn : code.getInstructionList())
       System.out.println(insn.getOriginalAssembly());
