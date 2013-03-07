@@ -980,7 +980,11 @@ public class DexCode {
 
       // take mapping from dominator
       RegisterMapping regMap = new RegisterMapping();
-      if (block != cfgStartingBlock)
+      if (block == cfgStartingBlock) {
+        // add parameter mappings
+        for (val paramReg : parentMethod.getParameterRegisters())
+          regMap.put(paramReg, paramReg);
+      } else
         regMap.putAll(mappingsPerBlock.get(dom.getDirectDominator(block)));
 
       // add mappings from phi
