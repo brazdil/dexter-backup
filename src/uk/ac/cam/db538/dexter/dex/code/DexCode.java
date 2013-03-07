@@ -29,6 +29,7 @@ import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
 import sun.management.counter.perf.InstrumentationException;
 import uk.ac.cam.db538.dexter.analysis.DominanceAnalysis;
+import uk.ac.cam.db538.dexter.analysis.LiveVarAnalysis;
 import uk.ac.cam.db538.dexter.analysis.cfg.CfgBasicBlock;
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
@@ -1107,11 +1108,39 @@ public class DexCode {
       this.insertAfter(addPair.getValB(), addPair.getValA());
   }
 
+  private void removeDeadMoves() {
+    if (parentMethod.getName().equals("<clinit>"))
+      System.out.println("ouch");
+    val toRemove = new ArrayList<DexCodeElement>();
+    do {
+      toRemove.clear();
+      val lva = new LiveVarAnalysis(this);
+
+      for (val insn : instructionList) {
+        if (insn instanceof DexInstruction_Move) {
+          val insnMove = (DexInstruction_Move) insn;
+          val liveAfter = lva.getLiveVarsIn(insnMove);
+          if (!liveAfter.contains(insnMove.getRegTo()))
+            toRemove.add(insnMove);
+        } else if (insn instanceof DexInstruction_MoveWide) {
+          val insnMove = (DexInstruction_MoveWide) insn;
+          val liveAfter = lva.getLiveVarsIn(insnMove);
+          if (!liveAfter.contains(insnMove.getRegTo1()))
+            toRemove.add(insnMove);
+        }
+      }
+
+      for (val insn : toRemove)
+        instructionList.remove(insn);
+    } while (!toRemove.isEmpty());
+  }
+
   public void transformSSA() {
     val dom = new DominanceAnalysis(this);
     val phies = ssaGeneratePhies(dom);
     val regInfo = ssaRenameRegisters(dom, phies);
     ssaAddPhiMoving(dom, phies, regInfo.getValA(), regInfo.getValB());
+    removeDeadMoves();
   }
 
   private DexInstruction parseInstruction(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
