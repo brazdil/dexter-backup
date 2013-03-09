@@ -122,6 +122,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
+import uk.ac.cam.db538.dexter.utils.Triple;
 
 public class DexCode {
 
@@ -884,10 +885,10 @@ public class DexCode {
       return result;
     }
 
-    public DexRegister findPhiRegister(CfgBasicBlock block, DexRegister blockReg) {
+    public DexRegister findPhiRegister(CfgBasicBlock origin, DexRegister originReg) {
       for (val regEntry : registers.entrySet())
         for (val inhEntry : regEntry.getValue().getInheritedMappings().entrySet())
-          if (inhEntry.getKey() == block && inhEntry.getValue() == blockReg)
+          if (inhEntry.getKey() == origin && inhEntry.getValue() == originReg)
             return regEntry.getValue().getReplacingRegister();
       return null;
     }
@@ -901,6 +902,7 @@ public class DexCode {
           regInfo = new RegisterInfo();
           registers.put(reg, regInfo);
           change = true;
+          System.out.println("Phi mapping block" + block.getBlockStartIndex() + "-" + block.getBlockEndIndex() + ": " + reg.getOriginalIndexString() + "->" + regInfo.getReplacingRegister().getOriginalIndexString());
         }
 
         if (!regInfo.containsOriginatingBlock(block)) {
@@ -1053,8 +1055,23 @@ public class DexCode {
     return new Pair<>(registerTypes, wideRegisters);
   }
 
+  private List<CfgBasicBlock> getDominatedPredecessors(CfgBasicBlock currBlock, CfgBasicBlock dominator, DominanceAnalysis dom) {
+    val predecessors = currBlock.getPredecessors();
+    val list = new ArrayList<CfgBasicBlock>(predecessors.size());
+    for (val b : predecessors) {
+      if (b instanceof CfgBasicBlock) {
+        val pred = (CfgBasicBlock) b;
+        if (dom.isDominant(dominator, pred))
+          list.add(pred);
+      }
+    }
+    return list;
+  }
+
   private void ssaAddPhiMoving(DominanceAnalysis dom, Map<CfgBasicBlock, Phi> phies, RegisterTyping regTypes, WideRegisters wideRegs) {
-    val toAdd = new ArrayList<Pair<DexCodeElement, DexCodeElement>>();
+    if (this.parentMethod.getName().equals("run"))
+      System.out.println("Ouch2");
+    val toAdd = new ArrayList<Triple<DexCodeElement, DexCodeElement, Boolean>>();
 
     // first acquire all the instructions to be added
     for (val block : dom.getCfg().getBasicBlocks()) {
@@ -1068,44 +1085,54 @@ public class DexCode {
           val origin = phiEntry_Mapping.getKey();
           val origin_Reg = phiEntry_Mapping.getValue();
 
-          for (val b : block.getPredecessors())
-            if (b instanceof CfgBasicBlock) {
-              val pred = (CfgBasicBlock) b;
-              DexCodeElement predLastInsn = instructionList.get(pred.getBlockEndIndex());
-              if (! (predLastInsn.lvaDefinedRegisters().contains(origin_Reg) || (predLastInsn.cfgGetSuccessors().size() == 1 && pred.getBlockEndIndex() + 1 < instructionList.size() && predLastInsn.cfgGetSuccessors().contains(instructionList.get(pred.getBlockEndIndex() + 1)))))
-                predLastInsn = instructionList.get(pred.getBlockEndIndex() - 1);
+          for (val pred : getDominatedPredecessors(block, origin, dom)) {
+            DexCodeElement predLastInsn = instructionList.get(pred.getBlockEndIndex());
+            boolean putAfter = !(predLastInsn.cfgEndsBasicBlock() || predLastInsn.cfgExitsMethod());
 
-              if (dom.isDominant(origin, pred)) {
-                if (regTypes.get(origin_Reg) != null) {
-                  switch (regTypes.get(origin_Reg)) {
-                  case PrimitiveSingle:
-                    toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, false)));
-                    break;
-                  case Object:
-                    toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, true)));
-                    break;
-                  case PrimitiveWide_High:
-                    val originHigh = origin_Reg;
-                    val originLow = wideRegs.get(originHigh);
-                    val destHigh = phiEntry_Reg;
-                    val destLow = phi.findPhiRegister(pred, originLow);
-                    toAdd.add(new Pair<DexCodeElement, DexCodeElement>(predLastInsn, new DexInstruction_MoveWide(this, destHigh, destLow, originHigh, originLow)));
-                    break;
-                  case PrimitiveWide_Low:
-                    break;
-                  default:
-                    throw new RuntimeException("Unknown register type");
-                  }
-                }
+            if (regTypes.get(origin_Reg) != null) {
+              DexCodeElement replacement = null;
+              switch (regTypes.get(origin_Reg)) {
+              case PrimitiveSingle:
+                replacement = new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, false);
+                System.out.println("PrimS move, block " + block.getBlockStartIndex() + "-" + block.getBlockEndIndex() + " in origin " + origin.getBlockStartIndex() + "-" + origin.getBlockEndIndex() + ": " + phiEntry_Reg.getOriginalIndexString() + "<-" + origin_Reg.getOriginalIndexString());
+                break;
+              case Object:
+                replacement = new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, true);
+                System.out.println("Obj move, block " + block.getBlockStartIndex() + "-" + block.getBlockEndIndex() + " in origin " + origin.getBlockStartIndex() + "-" + origin.getBlockEndIndex() + ": " + phiEntry_Reg.getOriginalIndexString() + "<-" + origin_Reg.getOriginalIndexString());
+                break;
+              case PrimitiveWide_High:
+                val originHigh = origin_Reg;
+                val originLow = wideRegs.get(originHigh);
+                val destHigh = phiEntry_Reg;
+                val destLow = phi.findPhiRegister(pred, originLow);
+                if (destLow == null)
+                  System.out.println("destLow is null");
+                replacement = new DexInstruction_MoveWide(this, destHigh, destLow, originHigh, originLow);
+                System.out.println("PrimW move, block " + block.getBlockStartIndex() + "-" + block.getBlockEndIndex() + " in origin " + origin.getBlockStartIndex() + "-" + origin.getBlockEndIndex() + ": " + phiEntry_Reg.getOriginalIndexString() + "<-" + origin_Reg.getOriginalIndexString());
+                break;
+              case PrimitiveWide_Low:
+                break;
+              default:
+                throw new RuntimeException("Unknown register type");
+              }
+
+              if (replacement != null) {
+                toAdd.add(new Triple<DexCodeElement, DexCodeElement, Boolean>(predLastInsn, replacement, putAfter));
+                System.out.println("PredLastInsn = " + predLastInsn.getClass().getSimpleName() + ", after = " + putAfter);
               }
             }
+          }
         }
       }
     }
 
     // now actually add them
-    for (val addPair : toAdd)
-      this.insertAfter(addPair.getValB(), addPair.getValA());
+    for (val addTriple : toAdd) {
+      if (addTriple.getValC())
+        this.insertAfter(addTriple.getValB(), addTriple.getValA());
+      else
+        this.insertBefore(addTriple.getValB(), addTriple.getValA());
+    }
   }
 
   private void removeDeadMoves() {
