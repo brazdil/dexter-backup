@@ -18,11 +18,15 @@ public class DexRegister {
 
     REG_COUNTER--;
     if (REG_COUNTER >= 0)
-      REG_COUNTER = -1;
+      resetCounter();
   }
 
   public DexRegister(Integer id) {
     this.originalIndex = id;
+  }
+
+  public static void resetCounter() {
+    REG_COUNTER = -1;
   }
 
   public static Cache<Integer, DexRegister> createCache() {
