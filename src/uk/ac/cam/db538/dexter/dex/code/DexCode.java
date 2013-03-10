@@ -12,6 +12,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
@@ -1068,10 +1069,20 @@ public class DexCode {
     return list;
   }
 
+  @AllArgsConstructor
+  @Data
+  private static class PhiMovingInstruction {
+    private final CfgBasicBlock origin;
+    private final DexCodeElement insertPoint;
+    private final boolean insertAfter;
+    private final DexCodeElement replacement;
+    private final DexRegister phiRegister;
+  }
+
   private void ssaAddPhiMoving(DominanceAnalysis dom, Map<CfgBasicBlock, Phi> phies, RegisterTyping regTypes, WideRegisters wideRegs) {
     if (this.parentMethod.getName().equals("run"))
       System.out.println("Ouch2");
-    val toAdd = new ArrayList<Triple<DexCodeElement, DexCodeElement, Boolean>>();
+    val toAdd = new ArrayList<PhiMovingInstruction>();
 
     // first acquire all the instructions to be added
     for (val block : dom.getCfg().getBasicBlocks()) {
@@ -1087,7 +1098,7 @@ public class DexCode {
 
           for (val pred : getDominatedPredecessors(block, origin, dom)) {
             DexCodeElement predLastInsn = instructionList.get(pred.getBlockEndIndex());
-            boolean putAfter = !(predLastInsn.cfgEndsBasicBlock() || predLastInsn.cfgExitsMethod());
+            boolean putAfter = !(predLastInsn.cfgEndsBasicBlock() || predLastInsn.cfgExitsMethod()) || predLastInsn.lvaDefinedRegisters().contains(origin_Reg);
 
             if (regTypes.get(origin_Reg) != null) {
               DexCodeElement replacement = null;
@@ -1117,7 +1128,16 @@ public class DexCode {
               }
 
               if (replacement != null) {
-                toAdd.add(new Triple<DexCodeElement, DexCodeElement, Boolean>(predLastInsn, replacement, putAfter));
+                PhiMovingInstruction alreadyAdded = null;
+                for (val added : toAdd)
+                  if (added.getPhiRegister() == phiEntry_Reg && added.getInsertPoint() == predLastInsn)
+                    alreadyAdded = added;
+                if (alreadyAdded == null || dom.isDominant(alreadyAdded.getOrigin(), origin)) {
+                  if (alreadyAdded != null)
+                    toAdd.remove(alreadyAdded);
+                  toAdd.add(new PhiMovingInstruction(origin, predLastInsn, putAfter, replacement, phiEntry_Reg));
+                }
+
                 System.out.println("PredLastInsn = " + predLastInsn.getClass().getSimpleName() + ", after = " + putAfter);
               }
             }
@@ -1128,10 +1148,10 @@ public class DexCode {
 
     // now actually add them
     for (val addTriple : toAdd) {
-      if (addTriple.getValC())
-        this.insertAfter(addTriple.getValB(), addTriple.getValA());
+      if (addTriple.isInsertAfter())
+        this.insertAfter(addTriple.getReplacement(), addTriple.getInsertPoint());
       else
-        this.insertBefore(addTriple.getValB(), addTriple.getValA());
+        this.insertBefore(addTriple.getReplacement(), addTriple.getInsertPoint());
     }
   }
 
@@ -1163,11 +1183,12 @@ public class DexCode {
   }
 
   public void transformSSA() {
+    DexRegister.resetCounter();
     val dom = new DominanceAnalysis(this);
     val phies = ssaGeneratePhies(dom);
     val regInfo = ssaRenameRegisters(dom, phies);
     ssaAddPhiMoving(dom, phies, regInfo.getValA(), regInfo.getValB());
-    removeDeadMoves();
+    // removeDeadMoves();
   }
 
   private DexInstruction parseInstruction(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
