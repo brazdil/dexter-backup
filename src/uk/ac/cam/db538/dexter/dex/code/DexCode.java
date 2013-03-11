@@ -870,9 +870,11 @@ public class DexCode {
     }
 
     @Getter private final Map<DexRegister, RegisterInfo> registers;
+    private final CfgBasicBlock thisBlock;
 
-    public Phi() {
+    public Phi(CfgBasicBlock thisBlock) {
       registers = new HashMap<DexRegister, RegisterInfo>();
+      this.thisBlock = thisBlock;
     }
 
     public Set<DexRegister> getAllRedefinedRegisters() {
@@ -894,7 +896,7 @@ public class DexCode {
       return null;
     }
 
-    public boolean addAllRegisterOrigins(CfgBasicBlock block, Set<DexRegister> defRegs) {
+    public boolean addAllRegisterOrigins(CfgBasicBlock origin, Set<DexRegister> defRegs) {
       boolean change = false;
       for (val reg : defRegs) {
         RegisterInfo regInfo = registers.get(reg);
@@ -903,12 +905,20 @@ public class DexCode {
           regInfo = new RegisterInfo();
           registers.put(reg, regInfo);
           change = true;
-          System.out.println("Phi mapping block" + block.getBlockStartIndex() + "-" + block.getBlockEndIndex() + ": " + reg.getOriginalIndexString() + "->" + regInfo.getReplacingRegister().getOriginalIndexString());
         }
 
-        if (!regInfo.containsOriginatingBlock(block)) {
-          regInfo.addOriginatingBlock(block);
+        if (!regInfo.containsOriginatingBlock(origin)) {
+          regInfo.addOriginatingBlock(origin);
           change = true;
+          System.out.println("creating phi mapping " + regInfo.replacingRegister.getOriginalIndexString() + " <- " + reg.getOriginalIndexString() + " in block " + thisBlock.getBlockStartIndex() + "-" + thisBlock.getBlockEndIndex());
+          System.out.print("thisBlock = ");
+          for (val insn : thisBlock.getInstructions())
+            System.out.print(insn.getOriginalAssembly() + "; ");
+          System.out.println();
+          System.out.print("originBlock = ");
+          for (val insn : origin.getInstructions())
+            System.out.print(insn.getOriginalAssembly() + "; ");
+          System.out.println();
         }
       }
 
@@ -919,8 +929,10 @@ public class DexCode {
       for (val reg : regMap.keySet()) {
         // if this phi redefines the same register
         val regInfo = registers.get(reg);
-        if (regInfo != null)
+        if (regInfo != null && regInfo.containsOriginatingBlock(origin)) {
           regInfo.addInheritedMapping(origin, regMap.get(reg));
+          System.out.println("mapping in " + thisBlock.getBlockStartIndex() + "-" + thisBlock.getBlockEndIndex() + " " + regInfo.getReplacingRegister().getOriginalIndexString() + " <- " + regMap.get(reg).getOriginalIndexString() + " (for " + reg.getOriginalIndexString() + ")");
+        }
       }
     }
   }
@@ -930,7 +942,7 @@ public class DexCode {
     val phies = new HashMap<CfgBasicBlock, Phi>();
 
     for (val block : basicBlocks)
-      phies.put(block, new Phi());
+      phies.put(block, new Phi(block));
 
     boolean change = true;
     while (change) {
@@ -1018,6 +1030,7 @@ public class DexCode {
           }
           regMap.put(defReg, newReg);
           registerTypes.put(newReg, newRegType);
+          System.out.println("new mapping in " + blockStart + "-" + blockEnd + " " + defReg.getOriginalIndexString() + " -> " + newReg.getOriginalIndexString() + " (" + newRegType.name() + ")");
         }
 
         // handle wide registers
@@ -1080,8 +1093,6 @@ public class DexCode {
   }
 
   private void ssaAddPhiMoving(DominanceAnalysis dom, Map<CfgBasicBlock, Phi> phies, RegisterTyping regTypes, WideRegisters wideRegs) {
-    if (this.parentMethod.getName().equals("run"))
-      System.out.println("Ouch2");
     val toAdd = new ArrayList<PhiMovingInstruction>();
 
     // first acquire all the instructions to be added
@@ -1105,21 +1116,20 @@ public class DexCode {
               switch (regTypes.get(origin_Reg)) {
               case PrimitiveSingle:
                 replacement = new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, false);
-                System.out.println("PrimS move, block " + block.getBlockStartIndex() + "-" + block.getBlockEndIndex() + " in origin " + origin.getBlockStartIndex() + "-" + origin.getBlockEndIndex() + ": " + phiEntry_Reg.getOriginalIndexString() + "<-" + origin_Reg.getOriginalIndexString());
                 break;
               case Object:
                 replacement = new DexInstruction_Move(this, phiEntry_Reg, origin_Reg, true);
-                System.out.println("Obj move, block " + block.getBlockStartIndex() + "-" + block.getBlockEndIndex() + " in origin " + origin.getBlockStartIndex() + "-" + origin.getBlockEndIndex() + ": " + phiEntry_Reg.getOriginalIndexString() + "<-" + origin_Reg.getOriginalIndexString());
                 break;
               case PrimitiveWide_High:
                 val originHigh = origin_Reg;
                 val originLow = wideRegs.get(originHigh);
                 val destHigh = phiEntry_Reg;
-                val destLow = phi.findPhiRegister(pred, originLow);
-                if (destLow == null)
-                  System.out.println("destLow is null");
+                val destLow = phi.findPhiRegister(origin, originLow);
+                if (destLow == null) {
+                  System.out.println("moving " + destHigh.getOriginalIndexString() + "|??? <- " + originHigh.getOriginalIndexString() + "|" + originLow.getOriginalIndexString());
+                  System.out.println("missing phi register for " + originLow.getOriginalIndexString() + " in block " + block.getBlockStartIndex() + "-" + block.getBlockEndIndex());
+                }
                 replacement = new DexInstruction_MoveWide(this, destHigh, destLow, originHigh, originLow);
-                System.out.println("PrimW move, block " + block.getBlockStartIndex() + "-" + block.getBlockEndIndex() + " in origin " + origin.getBlockStartIndex() + "-" + origin.getBlockEndIndex() + ": " + phiEntry_Reg.getOriginalIndexString() + "<-" + origin_Reg.getOriginalIndexString());
                 break;
               case PrimitiveWide_Low:
                 break;
@@ -1137,8 +1147,6 @@ public class DexCode {
                     toAdd.remove(alreadyAdded);
                   toAdd.add(new PhiMovingInstruction(origin, predLastInsn, putAfter, replacement, phiEntry_Reg));
                 }
-
-                System.out.println("PredLastInsn = " + predLastInsn.getClass().getSimpleName() + ", after = " + putAfter);
               }
             }
           }
@@ -1156,8 +1164,6 @@ public class DexCode {
   }
 
   private void removeDeadMoves() {
-    if (parentMethod.getName().equals("<clinit>"))
-      System.out.println("ouch");
     val toRemove = new ArrayList<DexCodeElement>();
     do {
       toRemove.clear();
