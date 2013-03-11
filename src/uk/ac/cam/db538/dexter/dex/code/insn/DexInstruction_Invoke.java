@@ -269,6 +269,11 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
 
   @Override
+  public boolean cfgEndsBasicBlock() {
+    return true;
+  }
+
+  @Override
   public Set<DexCodeElement> cfgGetSuccessors() {
     val set = new HashSet<DexCodeElement>();
     set.add(getNextCodeElement());
