@@ -929,7 +929,7 @@ public class DexCode {
       for (val reg : regMap.keySet()) {
         // if this phi redefines the same register
         val regInfo = registers.get(reg);
-        if (regInfo != null && regInfo.containsOriginatingBlock(origin)) {
+        if (regInfo != null) {
           regInfo.addInheritedMapping(origin, regMap.get(reg));
           System.out.println("mapping in " + thisBlock.getBlockStartIndex() + "-" + thisBlock.getBlockEndIndex() + " " + regInfo.getReplacingRegister().getOriginalIndexString() + " <- " + regMap.get(reg).getOriginalIndexString() + " (for " + reg.getOriginalIndexString() + ")");
         }
@@ -1128,8 +1128,8 @@ public class DexCode {
                 if (destLow == null) {
                   System.out.println("moving " + destHigh.getOriginalIndexString() + "|??? <- " + originHigh.getOriginalIndexString() + "|" + originLow.getOriginalIndexString());
                   System.out.println("missing phi register for " + originLow.getOriginalIndexString() + " in block " + block.getBlockStartIndex() + "-" + block.getBlockEndIndex());
-                }
-                replacement = new DexInstruction_MoveWide(this, destHigh, destLow, originHigh, originLow);
+                } else
+                  replacement = new DexInstruction_MoveWide(this, destHigh, destLow, originHigh, originLow);
                 break;
               case PrimitiveWide_Low:
                 break;
