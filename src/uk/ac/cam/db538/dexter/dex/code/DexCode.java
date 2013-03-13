@@ -439,6 +439,7 @@ public class DexCode {
   }
 
   public void instrument(DexInstrumentationCache cache) {
+    DexRegister.resetCounter();
     instrumentationState = new DexCode_InstrumentationState(this, cache);
 
     boolean shouldInstrument = !(getParentClass().getType().getDescriptor().startsWith("Lcom/quicinc/vellamo/benchmarks/html5/"));
