@@ -108,7 +108,7 @@ public class DexInstruction_Const extends DexInstruction {
   @Override
   public gcRegType gcDefinedRegisterType(DexRegister reg) {
     if (reg.equals(regTo))
-      return gcRegType.PrimitiveSingle;
+      return (value == 0) ? gcRegType.PrimitiveSingleOrNull : gcRegType.PrimitiveSingle;
     else
       return super.gcDefinedRegisterType(reg);
   }
