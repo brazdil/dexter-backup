@@ -139,6 +139,7 @@ public abstract class DexCodeElement {
           newElem.add(new DexInstruction_Move(methodCode, tempMapping.get(spilledReg), spilledReg, true));
           break;
         case PrimitiveSingle:
+        case PrimitiveSingleOrNull:
           newElem.add(new DexInstruction_Move(methodCode, tempMapping.get(spilledReg), spilledReg, false));
           break;
         case PrimitiveWide_High:
@@ -148,7 +149,7 @@ public abstract class DexCodeElement {
           newElem.add(new DexInstruction_MoveWide(methodCode, tempMapping.get(spilledReg), tempMapping.get(nextReg), spilledReg, nextReg));
           break;
         default:
-          break;
+          throw new Error();
         }
       }
     }
@@ -165,6 +166,7 @@ public abstract class DexCodeElement {
           newElem.add(new DexInstruction_Move(methodCode, spilledReg, tempMapping.get(spilledReg), true));
           break;
         case PrimitiveSingle:
+        case PrimitiveSingleOrNull:
           newElem.add(new DexInstruction_Move(methodCode, spilledReg, tempMapping.get(spilledReg), false));
           break;
         case PrimitiveWide_High:
@@ -174,7 +176,7 @@ public abstract class DexCodeElement {
           newElem.add(new DexInstruction_MoveWide(methodCode, spilledReg, nextReg, tempMapping.get(spilledReg), tempMapping.get(nextReg)));
           break;
         default:
-          break;
+          throw new Error();
         }
       }
     }
@@ -219,8 +221,10 @@ public abstract class DexCodeElement {
   public enum gcRegType {
     Object,
     PrimitiveSingle,
+    PrimitiveSingleOrNull,
     PrimitiveWide_High,
-    PrimitiveWide_Low
+    PrimitiveWide_Low,
+    Conflicted
   }
 
   public gcRegType gcReferencedRegisterType(DexRegister reg) {
