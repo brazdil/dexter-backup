@@ -884,8 +884,6 @@ public class DexCode {
             gcRegType argPred_Reg_Type = regTypes.get(phiFuncArg.register);
             if (argPred_Reg_Type == null) {
               argPred_Reg_Type = phies.findPhiRegisterType(phiFuncArg.register, regTypes);
-//    			  System.out.println("Missing register type for " + phiFuncArg.register.getOriginalIndexString() + " in " + printBlock(block));
-//    			  throw new RuntimeException();
             }
 
             DexCodeElement moveInsn = null;
@@ -980,37 +978,47 @@ public class DexCode {
   private static class BlockPhiMap extends HashMap<CfgBasicBlock, PhiList> {
 
     public gcRegType findPhiRegisterType(DexRegister definedReg, RegisterTyping regTypes) {
-      return findPhiRegisterType(definedReg, regTypes, new HashSet<PhiArg>());
+      return findPhiRegisterType(definedReg, regTypes, new HashSet<DexRegister>());
     }
 
-    public gcRegType findPhiRegisterType(DexRegister definedReg, RegisterTyping regTypes, Set<PhiArg> workingSet) {
+    public gcRegType findPhiRegisterType(DexRegister definedReg, RegisterTyping regTypes, Set<DexRegister> workingSet) {
       for (val entry : this.entrySet()) {
         for (val phi : entry.getValue()) {
           if (phi.definedRegister == definedReg) {
             gcRegType type = null;
+            boolean foundArg = false;
             for (val phiArg : phi.arguments) {
-              if (phiArg.register != null && !workingSet.contains(phiArg)) {
+              if (phiArg.register != null && !workingSet.contains(phiArg.register)) {
                 gcRegType phiArgType = regTypes.get(phiArg.register);
                 if (phiArgType == null) {
-                  workingSet.add(phiArg);
+                  workingSet.add(phiArg.register);
                   phiArgType = findPhiRegisterType(phiArg.register, regTypes, workingSet);
-                  workingSet.remove(phiArg);
+                  workingSet.remove(phiArg.register);
                 }
 
-                if (type == null)
-                  type = phiArgType;
-                else if (type != phiArgType) {
-                  if ((type == gcRegType.Object && phiArgType == gcRegType.PrimitiveSingleOrNull)
-                      || (type == gcRegType.PrimitiveSingleOrNull && phiArgType == gcRegType.Object))
-                    type = gcRegType.Object;
-                  else
-                    type = gcRegType.Conflicted;
+                if (phiArgType != null) {
+                  foundArg = true;
+
+                  if (type == null)
+                    type = phiArgType;
+                  else if (type != phiArgType) {
+                    if ((type == gcRegType.Object && phiArgType == gcRegType.PrimitiveSingleOrNull)
+                        || (type == gcRegType.PrimitiveSingleOrNull && phiArgType == gcRegType.Object))
+                      type = gcRegType.Object;
+                    else
+                      type = gcRegType.Conflicted;
+                  }
                 }
               }
             }
 
+            if (!foundArg)
+              return null;
+
             if (type == null)
               throw new RuntimeException("Couldn't find type of phi register");
+
+            regTypes.put(definedReg, type);
             return type;
           }
         }
