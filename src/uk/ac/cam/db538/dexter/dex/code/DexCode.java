@@ -883,7 +883,7 @@ public class DexCode {
             val argPred_LastInsn = instructionList.get(phiFuncArg.predecessor.getBlockEndIndex());
             boolean insertBefore = shouldInsertBefore(argPred_LastInsn, phiFuncArg.register);
 
-            System.out.println("inserting move " + phiFunc.definedRegister.getOriginalIndexString() + " <- " + phiFuncArg.register.getOriginalIndexString() + (insertBefore ? "(before)" : "(after)") + " into predecessor " + printBlock(phiFuncArg.predecessor));
+            // System.out.println("inserting move " + phiFunc.definedRegister.getOriginalIndexString() + " <- " + phiFuncArg.register.getOriginalIndexString() + (insertBefore ? "(before)" : "(after)") + " into predecessor " + printBlock(phiFuncArg.predecessor));
 
             gcRegType argPred_Reg_Type = regTypes.get(phiFuncArg.register);
             if (argPred_Reg_Type == null) {
@@ -1076,7 +1076,7 @@ public class DexCode {
             val newReg = new DexRegister();
             yPhi.add(new Phi(a, newReg, phiArgsA));
 
-            System.out.println(newReg.getOriginalIndexString() + " <- phi(" + a.getOriginalIndexString() + ") in " + printBlock(y));
+            // System.out.println(newReg.getOriginalIndexString() + " <- phi(" + a.getOriginalIndexString() + ") in " + printBlock(y));
 
             if (!y.getAllDefinedRegisters().contains(a))
               defsitesA.add(y);
@@ -1122,7 +1122,7 @@ public class DexCode {
       val blockEnd = block.getBlockEndIndex();
       blockQueue.addAll(dom.getAllDirectlyDominatedBlocks(block));
 
-      System.out.println("renaming " + printBlock(block));
+      // System.out.println("renaming " + printBlock(block));
 
       // take mapping from dominator
       RegisterMapping regMap = new RegisterMapping();
@@ -1157,7 +1157,7 @@ public class DexCode {
           } else {
             newReg = new DexRegister();
             newRegType = insn.gcDefinedRegisterType(defReg);
-            System.out.println(newReg.getOriginalIndexString() + " for " + defReg.getOriginalIndexString() + " (" + newRegType.name() + ")");
+            // System.out.println(newReg.getOriginalIndexString() + " for " + defReg.getOriginalIndexString() + " (" + newRegType.name() + ")");
           }
           regMap.put(defReg, newReg);
           registerTypes.put(newReg, newRegType);
@@ -1227,7 +1227,7 @@ public class DexCode {
   }
 
   public void transformSSA() {
-    System.out.println("METHOD " + parentMethod.getName());
+    // System.out.println("METHOD " + parentMethod.getName());
     DexRegister.resetCounter();
     val dom = new DominanceAnalysis(this);
     val phies = ssaGeneratePhies(dom);
