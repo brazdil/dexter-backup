@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -172,5 +173,10 @@ public class DexInstruction_ReturnWide extends DexInstruction {
   @Override
   public Set<GcFollowConstraint> gcFollowConstraints() {
     return createSet(new GcFollowConstraint(regFrom1, regFrom2));
+  }
+
+  @Override
+  public Set<DexCodeElement> cfgGetSuccessors() {
+    return Collections.emptySet();
   }
 }
