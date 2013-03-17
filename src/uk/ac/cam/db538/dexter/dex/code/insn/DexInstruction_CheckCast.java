@@ -87,6 +87,11 @@ public class DexInstruction_CheckCast extends DexInstruction {
   }
 
   @Override
+  public boolean cfgEndsBasicBlock() {
+    return true;
+  }
+
+  @Override
   public Set<DexCodeElement> cfgGetSuccessors() {
     val set = new HashSet<DexCodeElement>();
     set.add(getNextCodeElement());
