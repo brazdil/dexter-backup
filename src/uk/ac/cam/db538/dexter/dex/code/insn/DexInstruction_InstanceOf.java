@@ -86,6 +86,22 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   }
 
   @Override
+  public gcRegType gcReferencedRegisterType(DexRegister reg) {
+    if (reg.equals(regObject))
+      return gcRegType.Object;
+    else
+      return super.gcReferencedRegisterType(reg);
+  }
+
+  @Override
+  public gcRegType gcDefinedRegisterType(DexRegister reg) {
+    if (reg.equals(regTo))
+      return gcRegType.PrimitiveSingle; // boolean
+    else
+      return super.gcDefinedRegisterType(reg);
+  }
+
+  @Override
   public void instrument(DexCode_InstrumentationState state) {
     // copy the taint across
     val code = getMethodCode();
