@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -172,5 +173,10 @@ public class DexInstruction_Return extends DexInstruction {
         code.replace(this, new DexCodeElement[] {insnPrintDebug, this});
       }
     }
+  }
+
+  @Override
+  public Set<DexCodeElement> cfgGetSuccessors() {
+    return Collections.emptySet();
   }
 }
