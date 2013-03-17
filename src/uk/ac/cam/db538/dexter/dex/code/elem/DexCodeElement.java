@@ -224,7 +224,8 @@ public abstract class DexCodeElement {
     PrimitiveSingleOrNull,
     PrimitiveWide_High,
     PrimitiveWide_Low,
-    Conflicted
+    Conflicted,
+    Undefined
   }
 
   public gcRegType gcReferencedRegisterType(DexRegister reg) {

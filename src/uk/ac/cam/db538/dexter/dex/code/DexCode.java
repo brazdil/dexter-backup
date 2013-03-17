@@ -911,6 +911,9 @@ public class DexCode {
             case Conflicted:
               System.out.println("ignoring conflicted phi register " + phiFuncArg.register.getOriginalIndexString() + " in " + printBlock(block));
               break;
+            case Undefined:
+              System.out.println("ignoring undefined phi register " + phiFuncArg.register.getOriginalIndexString() + " in " + printBlock(block));
+              break;
             }
 
             if (moveInsn != null)
@@ -941,6 +944,8 @@ public class DexCode {
   }
 
   private static class PhiList extends ArrayList<Phi> {
+    private static final long serialVersionUID = -4282126416858685357L;
+
     public boolean redefinesRegister(DexRegister reg) {
       for (val phi : this)
         if (phi.originalRegister == reg)
@@ -981,6 +986,8 @@ public class DexCode {
 
   private static class BlockPhiMap extends HashMap<CfgBasicBlock, PhiList> {
 
+    private static final long serialVersionUID = 8258305089123529595L;
+
     public gcRegType findPhiRegisterType(DexRegister definedReg, RegisterTyping regTypes) {
       return findPhiRegisterType(definedReg, regTypes, new HashSet<DexRegister>());
     }
@@ -992,6 +999,9 @@ public class DexCode {
             gcRegType type = null;
             boolean foundArg = false;
             for (val phiArg : phi.arguments) {
+              if (phiArg.register == null)
+                return gcRegType.Undefined;
+
               if (phiArg.register != null && !workingSet.contains(phiArg.register)) {
                 gcRegType phiArgType = regTypes.get(phiArg.register);
                 if (phiArgType == null) {
