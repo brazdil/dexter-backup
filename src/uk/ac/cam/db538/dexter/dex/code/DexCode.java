@@ -854,7 +854,8 @@ public class DexCode {
 
   private boolean shouldInsertBefore(DexCodeElement insn, DexRegister defReg) {
     return (insn.cfgEndsBasicBlock() || insn.cfgExitsMethod()) &&
-           !insn.lvaDefinedRegisters().contains(defReg);
+           (insn instanceof DexInstruction_CheckCast ||
+            !insn.lvaDefinedRegisters().contains(defReg));
   }
 
   private String printBlock(CfgBasicBlock block) {
