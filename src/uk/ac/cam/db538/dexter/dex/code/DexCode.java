@@ -882,6 +882,8 @@ public class DexCode {
             val argPred_LastInsn = instructionList.get(phiFuncArg.predecessor.getBlockEndIndex());
             boolean insertBefore = shouldInsertBefore(argPred_LastInsn, phiFuncArg.register);
 
+            System.out.println("inserting move " + phiFunc.definedRegister.getOriginalIndexString() + " <- " + phiFuncArg.register.getOriginalIndexString() + (insertBefore ? "(before)" : "(after)") + " into predecessor " + printBlock(phiFuncArg.predecessor));
+
             gcRegType argPred_Reg_Type = regTypes.get(phiFuncArg.register);
             if (argPred_Reg_Type == null) {
               argPred_Reg_Type = phies.findPhiRegisterType(phiFuncArg.register, regTypes);
@@ -901,7 +903,8 @@ public class DexCode {
               val fromLow = wideRegs.get(fromHigh);
               val destHigh = phiFunc.definedRegister;
               val destLow = phiList.findDefinedRegister(phiFuncArg.predecessor, fromLow);
-              moveInsn = new DexInstruction_MoveWide(this, destHigh, destLow, fromHigh, fromLow);
+              if (destLow != null)
+                moveInsn = new DexInstruction_MoveWide(this, destHigh, destLow, fromHigh, fromLow);
               break;
             case PrimitiveWide_Low:
               break;
@@ -972,7 +975,7 @@ public class DexCode {
           if (arg.predecessor == predecessor && arg.register == originReg)
             return phi.definedRegister;
       }
-      throw new RuntimeException("Couldn't find defined phi register");
+      return null;
     }
   }
 
@@ -1195,12 +1198,14 @@ public class DexCode {
         if (insn instanceof DexInstruction_Move) {
           val insnMove = (DexInstruction_Move) insn;
           val liveAfter = lva.getLiveVarsIn(insnMove);
-          if (!liveAfter.contains(insnMove.getRegTo()))
+          if (!liveAfter.contains(insnMove.getRegTo()) ||
+              (insnMove.getRegFrom() == insnMove.getRegTo()))
             toRemove.add(insnMove);
         } else if (insn instanceof DexInstruction_MoveWide) {
           val insnMove = (DexInstruction_MoveWide) insn;
           val liveAfter = lva.getLiveVarsIn(insnMove);
-          if (!liveAfter.contains(insnMove.getRegTo1()))
+          if (!liveAfter.contains(insnMove.getRegTo1()) ||
+              (insnMove.getRegFrom1() == insnMove.getRegTo1()))
             toRemove.add(insnMove);
         }
       }
@@ -1211,12 +1216,13 @@ public class DexCode {
   }
 
   public void transformSSA() {
+    System.out.println("METHOD " + parentMethod.getName());
     DexRegister.resetCounter();
     val dom = new DominanceAnalysis(this);
     val phies = ssaGeneratePhies(dom);
     val renameResult = ssaRenameRegisters(dom, phies);
     ssaAddPhiMoving(dom, phies, renameResult.getValA(), renameResult.getValB());
-    // removeDeadMoves();
+    removeDeadMoves();
   }
 
   private DexInstruction parseInstruction(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {

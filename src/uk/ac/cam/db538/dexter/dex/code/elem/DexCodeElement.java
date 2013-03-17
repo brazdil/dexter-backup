@@ -149,7 +149,7 @@ public abstract class DexCodeElement {
           newElem.add(new DexInstruction_MoveWide(methodCode, tempMapping.get(spilledReg), tempMapping.get(nextReg), spilledReg, nextReg));
           break;
         default:
-          throw new Error();
+          throw new Error("Register of type " + spilledRegType.name());
         }
       }
     }
