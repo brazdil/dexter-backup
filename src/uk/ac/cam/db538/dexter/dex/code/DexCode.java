@@ -910,10 +910,10 @@ public class DexCode {
             case PrimitiveWide_Low:
               break;
             case Conflicted:
-              System.out.println("ignoring conflicted phi register " + phiFuncArg.register.getOriginalIndexString() + " in " + printBlock(block));
+              // System.out.println("ignoring conflicted phi register " + phiFuncArg.register.getOriginalIndexString() + " in " + printBlock(block));
               break;
             case Undefined:
-              System.out.println("ignoring undefined phi register " + phiFuncArg.register.getOriginalIndexString() + " in " + printBlock(block));
+              // System.out.println("ignoring undefined phi register " + phiFuncArg.register.getOriginalIndexString() + " in " + printBlock(block));
               break;
             }
 
