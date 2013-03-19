@@ -148,6 +148,8 @@ public abstract class DexCodeElement {
             throw new RuntimeException("Register type inconsistency");
           newElem.add(new DexInstruction_MoveWide(methodCode, tempMapping.get(spilledReg), tempMapping.get(nextReg), spilledReg, nextReg));
           break;
+        case PrimitiveWide_Low:
+          break;
         default:
           throw new Error("Register of type " + spilledRegType.name());
         }
@@ -174,6 +176,8 @@ public abstract class DexCodeElement {
           if (gcDefinedRegisterType(nextReg) != gcRegType.PrimitiveWide_Low)
             throw new RuntimeException("Register type inconsistency");
           newElem.add(new DexInstruction_MoveWide(methodCode, spilledReg, nextReg, tempMapping.get(spilledReg), tempMapping.get(nextReg)));
+          break;
+        case PrimitiveWide_Low:
           break;
         default:
           throw new Error();
