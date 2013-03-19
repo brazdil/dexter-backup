@@ -30,7 +30,7 @@ public class MainConsole {
     val warnings = APK.getDexFile().instrument();
     for (val warning : warnings)
       System.err.println("warning: " + warning.getMessage());
-    APK.getDexFile().transformSSA();
+    // APK.getDexFile().transformSSA();
     APK.writeToFile(apkFile_new);
   }
 }
