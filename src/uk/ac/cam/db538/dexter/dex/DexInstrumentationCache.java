@@ -28,7 +28,7 @@ public class DexInstrumentationCache {
 
   private final Dex parentFile;
 
-  @Getter @Setter private boolean insertDebugLogging = false;
+  @Getter private final boolean insertDebugLogging;
 
   private final Map<DexField, DexField> fieldInstrumentation;
   private final Cache<Triple<DexClassType, DexPrimitiveType, String>, DexField>
@@ -79,9 +79,14 @@ public class DexInstrumentationCache {
   @Getter private final List<InstrumentationWarning> warnings;
 
   public DexInstrumentationCache(Dex parentFile) {
+    this(parentFile, false);
+  }
+
+  public DexInstrumentationCache(Dex parentFile, boolean debug) {
     this.parentFile = parentFile;
     fieldInstrumentation = new HashMap<DexField, DexField>();
     warnings = new ArrayList<InstrumentationWarning>();
+    insertDebugLogging = debug;
   }
 
   public DexField getTaintField(DexField f) {

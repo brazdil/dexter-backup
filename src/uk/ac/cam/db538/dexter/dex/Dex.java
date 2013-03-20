@@ -242,9 +242,9 @@ public class Dex {
     return Collections.unmodifiableList(classes);
   }
 
-  public List<InstrumentationWarning> instrument() {
+  public List<InstrumentationWarning> instrument(boolean debug) {
     val classHierarchy = getClassHierarchy();
-    val cache = new DexInstrumentationCache(this);
+    val cache = new DexInstrumentationCache(this, debug);
 
     val extraClassesLinked = parseExtraClasses();
     val extraClassesGenerated = generateExtraClasses();

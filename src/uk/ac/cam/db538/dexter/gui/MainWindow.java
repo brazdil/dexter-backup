@@ -56,6 +56,11 @@ public class MainWindow {
         menuFileInstrument.addActionListener(Listener_FileInstrument);
         menuFile.add(menuFileInstrument);
 
+        val menuFileInstrumentDebug = new WebMenuItem("Instrument (debug)", KeyEvent.VK_D);
+        menuFileInstrumentDebug.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK));
+        menuFileInstrumentDebug.addActionListener(Listener_FileInstrumentDebug);
+        menuFile.add(menuFileInstrumentDebug);
+
         val menuFileSSATransform = new WebMenuItem("SSA Transform", KeyEvent.VK_T);
         menuFileSSATransform.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK));
         menuFileSSATransform.addActionListener(Listener_FileSSATransform);
@@ -137,36 +142,47 @@ public class MainWindow {
     }
   };
 
+  private void performInstrumentation(final boolean debug) {
+    val selected = tabbedPane.getSelectedComponent();
+    if (selected == null)
+      return;
+
+    val tab = (FileTab) selected;
+    val dex = tab.getOpenedFile().getDexFile();
+    doModal("Instrumenting " + tab.getOpenedFile_Filename(), new Thread(new Runnable() {
+      public void run() {
+        try {
+          val warnings = dex.instrument(debug);
+          if (!warnings.isEmpty()) {
+            val str = new StringBuilder();
+            str.append("Warnings were produced during instrumentation:");
+            for (val warning : warnings) {
+              str.append("\n - ");
+              str.append(warning.getMessage());
+            }
+            JMessage.showWarningMessage(frame, str.toString());
+          }
+          tab.getTreeListener().valueChanged(null);
+          tab.updateClassTree();
+        } catch (Throwable e) {
+          JMessage.showErrorMessage(frame, "A problem occurred while instrumenting file \"" + tab.getOpenedFile_Filename() + "\".", e);
+          return;
+        }
+      }
+    }));
+  }
+
   private ActionListener Listener_FileInstrument = new ActionListener() {
     @Override
     public void actionPerformed(ActionEvent arg0) {
-      val selected = tabbedPane.getSelectedComponent();
-      if (selected == null)
-        return;
+      performInstrumentation(false);
+    }
+  };
 
-      val tab = (FileTab) selected;
-      val dex = tab.getOpenedFile().getDexFile();
-      doModal("Instrumenting " + tab.getOpenedFile_Filename(), new Thread(new Runnable() {
-        public void run() {
-          try {
-            val warnings = dex.instrument();
-            if (!warnings.isEmpty()) {
-              val str = new StringBuilder();
-              str.append("Warnings were produced during instrumentation:");
-              for (val warning : warnings) {
-                str.append("\n - ");
-                str.append(warning.getMessage());
-              }
-              JMessage.showWarningMessage(frame, str.toString());
-            }
-            tab.getTreeListener().valueChanged(null);
-            tab.updateClassTree();
-          } catch (Throwable e) {
-            JMessage.showErrorMessage(frame, "A problem occurred while instrumenting file \"" + tab.getOpenedFile_Filename() + "\".", e);
-            return;
-          }
-        }
-      }));
+  private ActionListener Listener_FileInstrumentDebug = new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent arg0) {
+      performInstrumentation(true);
     }
   };
 
