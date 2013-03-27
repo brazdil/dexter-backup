@@ -23,7 +23,7 @@ import com.android.dx.util.IntList;
 /**
  * All of the parts that make up a method at the rop layer.
  */
-public final class RopMethod {
+public class RopMethod {
     /** {@code non-null;} basic block list of the method */
     private final BasicBlockList blocks;
 
