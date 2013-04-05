@@ -33,7 +33,7 @@ public class Sink_HttpClient extends FallbackInstrumentor {
                callType == Opcode_Invoke.Virtual &&
                classHierarchy.implementsInterface(invokedClass, typeHttpClient)
              ) || (
-            		 (callType == Opcode_Invoke.Virtual || callType == Opcode_Invoke.Super) &&
+               (callType == Opcode_Invoke.Virtual || callType == Opcode_Invoke.Super) &&
                invokedClass.equals(typeHttpClient)
              )
            );
