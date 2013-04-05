@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,7 +76,7 @@ public class DexClassHierarchy {
     else
       annotations = new HashSet<DexAnnotation>(annotations);
 
-    val classEntry = new ClassEntry(classType, superclassType, interfaces, annotations, new HashSet<MethodEntry>(), new HashSet<FieldEntry>(), flagInterface);
+    val classEntry = new ClassEntry(classType, superclassType, interfaces, annotations, new HashSet<MethodEntry>(), new HashSet<FieldEntry>(), flagInterface, new HashSet<DexClassType>());
     classes.put(classType, classEntry);
   }
 
@@ -186,6 +187,8 @@ public class DexClassHierarchy {
         System.err.println("warning: Class hierarchy not consistent (" +
                            clazz.getPrettyName() + " needs its parent " +
                            superclazz.getPrettyName() + ")");
+      else
+        classes.get(superclazz).children.add(clazz);
 
       if (isInterface) {
         if (superclazz != rootClass)
@@ -318,10 +321,14 @@ public class DexClassHierarchy {
 
   public Set<DexClassType> getAllChildren(DexClassType clazz) {
     val set = new HashSet<DexClassType>();
+    val queue = new LinkedList<DexClassType>();
+    queue.add(clazz);
 
-    for (val child : classes.keySet())
-      if (isAncestor(child, clazz))
-        set.add(child);
+    while(!queue.isEmpty()) {
+      val clz = queue.removeFirst();
+      set.add(clz);
+      queue.addAll(classes.get(clz).getChildren());
+    }
 
     return set;
   }
@@ -442,6 +449,7 @@ public class DexClassHierarchy {
     private final Set<MethodEntry> implementedMethods;
     private final Set<FieldEntry> declaredFields;
     private final boolean flaggedInterface;
+    private final Set<DexClassType> children;
   }
 
   @AllArgsConstructor
