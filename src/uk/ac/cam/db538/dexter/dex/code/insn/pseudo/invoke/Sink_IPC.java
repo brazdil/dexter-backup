@@ -32,16 +32,9 @@ public class Sink_IPC extends FallbackInstrumentor {
 
     val insnInvoke = insn.getInstructionInvoke();
 
-    if (insnInvoke.getCallType() != Opcode_Invoke.Virtual)
-      return false;
-
-    if (!classHierarchy.isAncestor(insnInvoke.getClassType(), DexClassType.parse("Landroid/content/Context;", parsingCache)))
-      return false;
-
-    if (!hasIntentParam(insnInvoke.getMethodPrototype()))
-      return false;
-
-    return true;
+    return (insnInvoke.getCallType() == Opcode_Invoke.Virtual) &&
+           classHierarchy.isAncestor(insnInvoke.getClassType(), DexClassType.parse("Landroid/content/Context;", parsingCache)) &&
+           hasIntentParam(insnInvoke.getMethodPrototype());
   }
 
   @Override
