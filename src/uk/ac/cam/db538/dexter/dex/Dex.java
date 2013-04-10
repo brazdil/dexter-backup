@@ -255,7 +255,7 @@ public class Dex {
     classes.addAll(extraClassesLinked);
     classes.addAll(extraClassesGenerated);
 
-    classHierarchy.checkConsistentency();
+    classHierarchy.checkConsistency();
 
     return cache.getWarnings();
   }
@@ -264,7 +264,7 @@ public class Dex {
     val classHierarchy = getClassHierarchy();
     val parsingCache = getParsingCache();
 
-    classHierarchy.checkConsistentency();
+    classHierarchy.checkConsistency();
 
     val outFile = new DexFile();
     val out = new ByteArrayAnnotatedOutput();
