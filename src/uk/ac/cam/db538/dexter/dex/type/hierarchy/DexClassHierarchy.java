@@ -174,7 +174,7 @@ public class DexClassHierarchy {
     return Collections.unmodifiableSet(classes.get(clazz).getAnnotations());
   }
 
-  public void checkConsistentency() {
+  public void checkConsistency() {
     for (val entry : classes.entrySet()) {
       val clazz = entry.getKey();
       val clazzEntry = entry.getValue();
