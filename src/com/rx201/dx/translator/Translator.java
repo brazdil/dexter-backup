@@ -52,7 +52,7 @@ public class Translator {
         	InsnList insns = new InsnList(basicBlock.size());
         	
         	for(AnalyzedInstruction inst : basicBlock)
-        		insns.set(inst.getInstructionIndex(), convert(inst));
+        		insns.set(inst.getInstructionIndex(), Converter.convert(inst));
         	
         	int label = basicBlock.get(0).getInstructionIndex();
         	AnalyzedInstruction last = basicBlock.get(basicBlock.size() - 1);
@@ -66,7 +66,7 @@ public class Translator {
         	ropBasicBlocks.set(label, ropBasicBlock);
         }
 
-        return new RopMethod(ropBasicBlocks, analyzer.getStartOfMethod().getInstructionIndex());
+        return new SimpleRopMethod(ropBasicBlocks, analyzer.getStartOfMethod().getInstructionIndex());
 	}
 	
 	private static ArrayList<ArrayList<AnalyzedInstruction>> buildBasicBlocks(MethodAnalyzer analyzer) {
@@ -107,9 +107,7 @@ public class Translator {
         return basicBlocks;
 	}
 
-	private static Insn convert(AnalyzedInstruction inst) {
-		return null;
-	}
+
 	
 	public static void translate(CodeItem method) {
 		int paramSize = method.getInWords();
