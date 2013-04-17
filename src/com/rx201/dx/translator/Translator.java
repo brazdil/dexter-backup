@@ -48,20 +48,29 @@ public class Translator {
         // Convert to ROP's BasicBlockList form
         BasicBlockList ropBasicBlocks = new BasicBlockList(basicBlocks.size());
         
+        Converter converter = new Converter(analyzer);
+        
         for(ArrayList<AnalyzedInstruction> basicBlock : basicBlocks) {
-        	InsnList insns = new InsnList(basicBlock.size());
         	
-        	for(AnalyzedInstruction inst : basicBlock)
-        		insns.set(inst.getInstructionIndex(), Converter.convert(inst));
+        	// Process instruction in the basic block as a whole, 
+        	ArrayList<Insn> insnBlock = new ArrayList<Insn>();
+        	ConvertedResult lastInsn = null;
+        	for(AnalyzedInstruction inst : basicBlock) {
+        		lastInsn = converter.convert(inst);
+        		insnBlock.addAll(lastInsn.insns);
+        	}
         	
-        	int label = basicBlock.get(0).getInstructionIndex();
-        	AnalyzedInstruction last = basicBlock.get(basicBlock.size() - 1);
+        	// then convert them to InsnList
+        	InsnList insns = new InsnList(insnBlock.size());
+        	for(int i=0 ;i<insnBlock.size(); i++)
+        		insns.set(i, insnBlock.get(0));
+        	
         	IntList successors = new IntList();
-        	for(AnalyzedInstruction s : last.getSuccesors()) 
+        	for(AnalyzedInstruction s : lastInsn.successors) 
         		successors.add(s.getInstructionIndex());
         	
-        	//TODO: Primary successor
-        	BasicBlock ropBasicBlock = new BasicBlock(label, insns, successors, successors.size() == 0 ? -1 : successors.get(0));
+        	int label = basicBlock.get(0).getInstructionIndex();
+        	BasicBlock ropBasicBlock = new BasicBlock(label, insns, successors, lastInsn.primarySuccessor != null ? lastInsn.primarySuccessor.getInstructionIndex() : -1);
         	
         	ropBasicBlocks.set(label, ropBasicBlock);
         }

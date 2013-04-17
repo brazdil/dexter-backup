@@ -1,5 +1,9 @@
 package com.rx201.dx.translator;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Item;
 import org.jf.dexlib.MethodIdItem;
@@ -15,38 +19,64 @@ import org.jf.dexlib.Code.SingleRegisterInstruction;
 import org.jf.dexlib.Code.ThreeRegisterInstruction;
 import org.jf.dexlib.Code.TwoRegisterInstruction;
 import org.jf.dexlib.Code.Analysis.AnalyzedInstruction;
+import org.jf.dexlib.Code.Analysis.MethodAnalyzer;
 import org.jf.dexlib.Code.Analysis.RegisterType;
+import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction;
+import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction.ArrayElement;
+import org.jf.dexlib.Code.Format.Instruction31t;
+import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
+import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction.PackedSwitchTarget;
+import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
+import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction.SparseSwitchTarget;
 import org.jf.dexlib.Code.Opcode;
+import org.jf.dexlib.Util.SparseArray;
 
+import com.android.dx.rop.code.FillArrayDataInsn;
 import com.android.dx.rop.code.Insn;
+import com.android.dx.rop.code.PlainCstInsn;
+import com.android.dx.rop.code.PlainInsn;
 import com.android.dx.rop.code.RegOps;
 import com.android.dx.rop.code.RegisterSpec;
 import com.android.dx.rop.code.RegisterSpecList;
 import com.android.dx.rop.code.Rop;
 import com.android.dx.rop.code.Rops;
+import com.android.dx.rop.code.SourcePosition;
+import com.android.dx.rop.code.SwitchInsn;
+import com.android.dx.rop.code.ThrowingCstInsn;
+import com.android.dx.rop.code.ThrowingInsn;
 import com.android.dx.rop.cst.Constant;
+import com.android.dx.rop.cst.CstBoolean;
+import com.android.dx.rop.cst.CstByte;
+import com.android.dx.rop.cst.CstChar;
+import com.android.dx.rop.cst.CstDouble;
 import com.android.dx.rop.cst.CstFieldRef;
+import com.android.dx.rop.cst.CstFloat;
 import com.android.dx.rop.cst.CstInteger;
 import com.android.dx.rop.cst.CstInterfaceMethodRef;
 import com.android.dx.rop.cst.CstLong;
 import com.android.dx.rop.cst.CstMethodRef;
 import com.android.dx.rop.cst.CstNat;
+import com.android.dx.rop.cst.CstShort;
 import com.android.dx.rop.cst.CstString;
 import com.android.dx.rop.cst.CstType;
 import com.android.dx.rop.type.StdTypeList;
 import com.android.dx.rop.type.Type;
 import com.android.dx.rop.type.TypeList;
+import com.android.dx.util.IntList;
 
 class RopInfo {
 	public Rop opcode;
 	public RegisterSpecList sources;
 	public RegisterSpec result;
 	public boolean needMoveResult;
+	public boolean needNegateResult; //in order to support rsub
 	
 	public RopInfo(Rop opcode, RegisterSpec result, RegisterSpecList sources) {
 		this.opcode = opcode;
 		this.sources = sources != null ? sources : RegisterSpecList.EMPTY;
 		this.result = result;
+		this.needMoveResult = false;
+		this.needNegateResult = false;
 	}
 
 	public static RopInfo makeResultFirstOp(Rop opcode, RegisterSpecList registers) {
@@ -70,10 +100,65 @@ class RopInfo {
 	public static RopInfo makeNullOp(Rop opcode) {
 		return new RopInfo(opcode, null, null);
 	}
+	
+	public RopInfo applyRSUBFix() {
+		this.needNegateResult = true;
+		return this;
+	}
+}
+
+class ConvertedResult {
+	public ArrayList<Insn> insns;
+	public AnalyzedInstruction primarySuccessor;
+	public ArrayList<AnalyzedInstruction> successors;
+	
+	public ConvertedResult() {
+		insns = new ArrayList<Insn>();
+		primarySuccessor = null;
+		successors = new ArrayList<AnalyzedInstruction>();
+	}
+
+	public ConvertedResult setPrimarySuccessor(AnalyzedInstruction successor){
+		primarySuccessor = successor;
+		return this;
+	}
+	
+	public ConvertedResult addSuccessor(AnalyzedInstruction s) {
+		successors.add(s);
+		return this;
+	}
+	
+	public ConvertedResult addInstruction(Insn insn) {
+		insns.add(insn);
+		return this;
+	}
 }
 
 public class Converter {
-	public static Insn convert(AnalyzedInstruction instruction) {
+	private MethodAnalyzer analyzer;
+	private SparseArray<AnalyzedInstruction> instAddrMap;
+	public Converter(MethodAnalyzer analyzer) {
+		this.analyzer = analyzer;
+		buildInstructionMap(); // Unfortunately have to repeat work because the appropriate field in MethodAnalyzer is private
+	}
+	
+
+	private void buildInstructionMap() {
+		List<AnalyzedInstruction> insns = analyzer.getInstructions();
+		instAddrMap = new SparseArray<AnalyzedInstruction>(insns.size());
+
+        int currentCodeAddress = 0;
+        for (int i=0; i<insns.size(); i++) {
+        	instAddrMap.append(currentCodeAddress, insns.get(i));
+            currentCodeAddress += insns.get(i).getInstruction().getSize(currentCodeAddress);
+        }
+	}
+
+	private AnalyzedInstruction instructionFromOffset(AnalyzedInstruction pc, int offset) {
+		return instAddrMap.get(analyzer.getInstructionAddress(pc) + offset);
+	}
+	
+	public ConvertedResult convert(AnalyzedInstruction instruction) {
 		Instruction inst = instruction.getInstruction();
 		
 		boolean throwing = inst.opcode.canThrow();
@@ -154,69 +239,132 @@ public class Converter {
 				throw new UnsupportedOperationException("ReferencedItem not handled.");
 		}
 		
-		RopInfo ropInfo = handleRopOpcode(inst.opcode, getRegisterListSpec(instruction, registers), constant);
 		
-
-		if (throwing) {
+		//TODO: Refactor into a separate function
+		if (inst.opcode == Opcode.PACKED_SWITCH || inst.opcode == Opcode.SPARSE_SWITCH) {
+			Instruction31t i31t = (Instruction31t) inst;
+			Instruction switchDataInst = instructionFromOffset(instruction, i31t.getTargetAddressOffset()).getInstruction();
+			
+			ArrayList<Integer> cases = new ArrayList<Integer>();
+			ArrayList<Integer> targets = new ArrayList<Integer>();
+			// Parse to get cases and targets
+			if (inst.opcode == Opcode.PACKED_SWITCH) {
+				PackedSwitchDataPseudoInstruction i = (PackedSwitchDataPseudoInstruction)switchDataInst;
+				Iterator<PackedSwitchTarget> targetIter = i.iterateKeysAndTargets();
+				while(targetIter.hasNext()) {
+					PackedSwitchTarget target = targetIter.next();
+					cases.add(target.value);
+					targets.add(target.targetAddressOffset);
+				}
+			} else {
+				SparseSwitchDataPseudoInstruction i = (SparseSwitchDataPseudoInstruction)switchDataInst;
+				Iterator<SparseSwitchTarget> targetIter = i.iterateKeysAndTargets();
+				while(targetIter.hasNext()) {
+					SparseSwitchTarget target = targetIter.next();
+					cases.add(target.key);
+					targets.add(target.targetAddressOffset);
+				}
+			}
+			// Generate SwitchInsn
+			ConvertedResult result = new ConvertedResult();
+			List<AnalyzedInstruction> successors = instruction.getSuccesors();
+			result.setPrimarySuccessor(successors.get(0));
+			result.addSuccessor(successors.get(0));
+			IntList caseList = new IntList();
+			for(int i=0 ;i<cases.size(); i++) {
+				caseList.add(cases.get(i));
+				AnalyzedInstruction successor = successors.get(i+1);
+				assert instructionFromOffset(instruction, targets.get(i)) == successor;
+				result.addSuccessor(successor);
+			}
+			result.addInstruction(new SwitchInsn(Rops.SWITCH, SourcePosition.NO_INFO, null, getRegisterListSpec(instruction, registers), caseList));
+			return result;
+			
+		} else if (inst.opcode == Opcode.FILLED_NEW_ARRAY || inst.opcode == Opcode.FILLED_NEW_ARRAY_RANGE) {
+			throw new UnsupportedOperationException("FILLED_NEW_ARRAY not be handled here.");
+			
+		} else if (inst.opcode == Opcode.FILL_ARRAY_DATA) {
+			ArrayDataPseudoInstruction arrayDataInst = (ArrayDataPseudoInstruction)instructionFromOffset(instruction, ((Instruction31t)inst).getTargetAddressOffset()).getInstruction();
+			
+			RegisterSpecList sources = getRegisterListSpec(instruction, registers);
+			Type arrayElementType = sources.getType(0);
+			ArrayList<Constant> values = new ArrayList<Constant>();
+			Iterator<ArrayElement> elements = arrayDataInst.getElements();
+			
+			while(elements.hasNext()) {
+				ArrayElement element = elements.next();
+				long v = 0;
+				for(int i=0; i<element.elementWidth; i++)
+					v |= (((long)element.buffer[element.bufferIndex + i]) << i);
+				// Checking the type repeatedly is a bit ugly here.
+		        if (arrayElementType == Type.BYTE_ARRAY) {
+		        	assert arrayDataInst.getElementWidth() == 1;
+		        	values.add(CstByte.make((int)v));
+		        } else if (arrayElementType == Type.BOOLEAN_ARRAY) {
+		        	assert arrayDataInst.getElementWidth() == 1;
+		        	values.add(CstBoolean.make((int)v));
+		        } else if (arrayElementType == Type.SHORT_ARRAY) {
+		        	assert arrayDataInst.getElementWidth() == 2;
+		        	values.add(CstShort.make((int)v));
+		        } else if (arrayElementType == Type.CHAR_ARRAY) {
+		        	assert arrayDataInst.getElementWidth() == 2;
+		        	values.add(CstChar.make((int)v));
+		        } else if (arrayElementType == Type.INT_ARRAY) {
+		        	assert arrayDataInst.getElementWidth() == 4;
+		        	values.add(CstInteger.make((int)v));
+		        } else if (arrayElementType == Type.FLOAT_ARRAY) {
+		        	assert arrayDataInst.getElementWidth() == 4;
+		        	values.add(CstFloat.make((int)v));
+		        } else if (arrayElementType == Type.LONG_ARRAY) {
+		        	assert arrayDataInst.getElementWidth() == 8;
+		        	values.add(CstLong.make(v));
+		        } else if (arrayElementType == Type.DOUBLE_ARRAY) {
+		        	assert arrayDataInst.getElementWidth() == 8;
+		        	values.add(CstDouble.make(v));
+		        } else {
+		            throw new IllegalArgumentException("Unexpected constant type");
+		        }
+			}			
+			assert instruction.getSuccessorCount() == 1;
+			AnalyzedInstruction successor = instruction.getSuccesors().get(0);
+			return new ConvertedResult().addInstruction(new FillArrayDataInsn(Rops.FILL_ARRAY_DATA, SourcePosition.NO_INFO, sources, values, CstType.intern(arrayElementType)))
+					.setPrimarySuccessor(successor).addSuccessor(successor);
 			
 		} else {
+			RopInfo ropInfo = handleRopOpcode(inst.opcode, getRegisterListSpec(instruction, registers), constant);
+			TypeList catches = null;
 			
+			Insn insn = null;
+			ConvertedResult result = new ConvertedResult();
+			if (throwing) {
+				assert ropInfo.result == null;
+				if (constant == null) {
+					insn = new ThrowingInsn(ropInfo.opcode, SourcePosition.NO_INFO, ropInfo.sources, catches);
+				} else {
+					insn = new ThrowingCstInsn(ropInfo.opcode, SourcePosition.NO_INFO, ropInfo.sources, catches, constant);
+				}
+			} else {
+				assert ropInfo.result != null;
+				if (constant == null) {
+					insn = new PlainInsn(ropInfo.opcode, SourcePosition.NO_INFO, ropInfo.result, ropInfo.sources);
+				} else {
+					insn = new PlainCstInsn(ropInfo.opcode, SourcePosition.NO_INFO, ropInfo.result, ropInfo.sources, constant);
+				}
+			}
+			result.addInstruction(insn);
+			if (ropInfo.needNegateResult) {
+				//TODO
+			}
+			if (ropInfo.needMoveResult) {
+				//TODO
+			}
+			List<AnalyzedInstruction> successors = instruction.getSuccesors();
+			result.setPrimarySuccessor(successors.get(0));
+			for(int i=0; i<successors.size(); i++)
+				result.addSuccessor(successors.get(i));
+			return result;
 		}
 		
-		/*
-		SingleRegisterInstruction,
-		TwoRegisterInstruction
-		ThreeRegisterInstruction
-		FiveRegisterInstruction
-		RegisterRangeInstruction
-		
-		LiteralInstruction
-		EncodedLiteralInstruction
-
-		class: InstructionWithReference
-		class: OffsetInstruction / goto
-		*/
-		switch(inst.opcode.format) {
-		case Format10t:
-		case Format10x:
-		case Format11n:
-		case Format11x:
-		case Format12x:
-		case Format20bc:
-		case Format20t:
-		case Format21c:
-		case Format21h:
-		case Format21s:
-		case Format21t:
-		case Format22b:
-		case Format22c:
-		case Format22cs:
-		case Format22s:
-		case Format22t:
-		case Format22x:
-		case Format23x:
-		case Format30t:
-		case Format31c:
-		case Format31i:
-		case Format31t:
-		case Format32x:
-		case Format35c:
-		case Format35mi:
-		case Format35ms:
-		case Format3rc:
-		case Format3rmi:
-		case Format3rms:
-		case Format41c:
-		case Format51l:
-		case Format52c:
-		case Format5rc:
-		case ArrayData:
-		case PackedSwitchData:
-		case SparseSwitchData:
-		case UnresolvedOdexInstruction:
-		}
-		
-		return null;
 	}
 	
 	private static RopInfo handleRopOpcode(Opcode dexlibOpcode, RegisterSpecList registers, Constant constant ) {
@@ -506,8 +654,7 @@ public class Converter {
 
 		case RSUB_INT:
 		case RSUB_INT_LIT8:
-		//	return RopInfo.makeResultFirstOp(Rops.sub(registers), registers);
-			throw new UnsupportedOperationException("RSB needs extra instruction");
+			return RopInfo.makeResultFirstOp(Rops.opSub(registers), registers).applyRSUBFix();
 
 			
 		case ADD_INT_2ADDR:
