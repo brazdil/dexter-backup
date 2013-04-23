@@ -1587,4 +1587,15 @@ public class DexCode {
       elem.setOriginalElement(true);
     }
   }
+
+  public void countInstructions(HashMap<Class, Integer> count) {
+	  for (val elem : instructionList)
+		  if (elem instanceof DexInstruction) {
+			  val clazz = elem.getClass();
+			  int clazzCount;
+			  if (count.containsKey(clazz)) clazzCount = count.get(clazz);
+			  else clazzCount = 0;
+			  count.put(clazz, clazzCount + 1);
+		  }
+  }
 }

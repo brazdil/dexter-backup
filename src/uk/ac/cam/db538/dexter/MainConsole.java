@@ -27,10 +27,11 @@ public class MainConsole {
     }
 
     val APK = new Apk(apkFile, frameworkDir);
-    val warnings = APK.getDexFile().instrument(false);
-    for (val warning : warnings)
-      System.err.println("warning: " + warning.getMessage());
-    // APK.getDexFile().transformSSA();
-    APK.writeToFile(apkFile_new);
+//    val warnings = APK.getDexFile().instrument(false);
+//    for (val warning : warnings)
+//      System.err.println("warning: " + warning.getMessage());
+//    // APK.getDexFile().transformSSA();
+//    APK.writeToFile(apkFile_new);
+    APK.getDexFile().countInstructions();
   }
 }
