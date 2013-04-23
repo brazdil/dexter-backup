@@ -2,6 +2,7 @@ package uk.ac.cam.db538.dexter.dex;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -299,4 +300,9 @@ public class DexClass {
     for (val method : methods)
       method.transformSSA();
   }
+
+	public void countInstructions(HashMap<Class, Integer> count) {
+		for (val method : methods)
+			method.countInstructions(count);
+	}
 }

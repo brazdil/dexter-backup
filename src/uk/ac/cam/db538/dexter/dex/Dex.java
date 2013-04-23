@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 
 import lombok.Getter;
@@ -255,7 +256,7 @@ public class Dex {
     classes.addAll(extraClassesLinked);
     classes.addAll(extraClassesGenerated);
 
-    classHierarchy.checkConsistentency();
+    classHierarchy.checkConsistency();
 
     return cache.getWarnings();
   }
@@ -264,7 +265,7 @@ public class Dex {
     val classHierarchy = getClassHierarchy();
     val parsingCache = getParsingCache();
 
-    classHierarchy.checkConsistentency();
+    classHierarchy.checkConsistency();
 
     val outFile = new DexFile();
     val out = new ByteArrayAnnotatedOutput();
@@ -294,5 +295,13 @@ public class Dex {
   public void transformSSA() {
     for (val clazz : classes)
       clazz.transformSSA();
+  }
+  
+  public void countInstructions() {
+	  val count = new HashMap<Class, Integer>();
+	  for (val clazz : classes)
+		  clazz.countInstructions(count);
+	  for (val entry : count.entrySet())
+		  System.out.println(entry.getKey().getSimpleName() + "," + entry.getValue().toString());
   }
 }

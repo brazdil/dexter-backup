@@ -2,6 +2,7 @@ package uk.ac.cam.db538.dexter.dex.method;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -137,4 +138,6 @@ public abstract class DexMethod {
   public abstract void markMethodOriginal();
 
   public abstract void transformSSA();
+
+  public abstract void countInstructions(HashMap<Class, Integer> count);
 }

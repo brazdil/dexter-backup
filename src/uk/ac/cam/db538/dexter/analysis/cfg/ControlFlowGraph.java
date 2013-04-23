@@ -91,18 +91,19 @@ public class ControlFlowGraph {
         if (lastInsn.cfgExitsMethod() || lastInsnSuccs.isEmpty())
           CfgBlock.createEdge(block, exitBlock);
 
-        // if one of the instructions (pick any) is inside a try block,
-        // connect the whole block to the catch blocks
-        // (depends on the fact that try block starts and ends a basic block)
-        for (val tryEnd : code.getTryBlocks()) {
-          val tryStart = tryEnd.getBlockStart();
-          if (code.isBetween(tryStart, tryEnd, lastInsn)) {
-            if (tryStart.getCatchAllHandler() != null)
-              CfgBlock.createEdge(block, getBlockByFirstInsn(tryStart.getCatchAllHandler(), insnBlockMap));
-            for (val catchBlock : tryStart.getCatchHandlers())
-              CfgBlock.createEdge(block, getBlockByFirstInsn(catchBlock, insnBlockMap));
-          }
-        }
+        // REMOVED: every instruction should provide its own list of successors
+//        // if one of the instructions (pick any) is inside a try block,
+//        // connect the whole block to the catch blocks
+//        // (depends on the fact that try block starts and ends a basic block)
+//        for (val tryEnd : code.getTryBlocks()) {
+//          val tryStart = tryEnd.getBlockStart();
+//          if (code.isBetween(tryStart, tryEnd, lastInsn)) {
+//            if (tryStart.getCatchAllHandler() != null)
+//              CfgBlock.createEdge(block, getBlockByFirstInsn(tryStart.getCatchAllHandler(), insnBlockMap));
+//            for (val catchBlock : tryStart.getCatchHandlers())
+//              CfgBlock.createEdge(block, getBlockByFirstInsn(catchBlock, insnBlockMap));
+//          }
+//        }
       }
     }
   }

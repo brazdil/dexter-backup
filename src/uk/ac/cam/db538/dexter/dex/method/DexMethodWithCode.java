@@ -151,13 +151,14 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   @Override
   public void instrument(DexInstrumentationCache cache) {
-    if (code != null)
+    if (code != null) {
       code.instrument(cache);
 
-    if (isVirtual())
-      this.addAnnotation(
-        new DexAnnotation(getParentFile().getInternalMethodAnnotation_Type(),
-                          AnnotationVisibility.RUNTIME));
+      if (isVirtual())
+        this.addAnnotation(
+          new DexAnnotation(getParentFile().getInternalMethodAnnotation_Type(),
+                            AnnotationVisibility.RUNTIME));
+    }
   }
 
   @Override
@@ -234,5 +235,11 @@ public abstract class DexMethodWithCode extends DexMethod {
   public void markMethodOriginal() {
     if (code != null)
       code.markAllInstructionsOriginal();
+  }
+  
+  @Override
+  public void countInstructions(HashMap<Class, Integer> count) { 
+	    if (code != null)
+	        code.countInstructions(count);
   }
 }
