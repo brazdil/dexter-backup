@@ -23,17 +23,20 @@ public class Sink_HttpClient extends FallbackInstrumentor {
     val parsingCache = insn.getParentFile().getParsingCache();
 
     val insnInvoke = insn.getInstructionInvoke();
+    val callType = insnInvoke.getCallType();
     val invokedClass = insnInvoke.getClassType();
     val typeHttpClient = DexClassType.parse("Lorg/apache/http/client/HttpClient;", parsingCache);
 
-    if (!insnInvoke.getMethodName().equals("execute"))
-      return false;
-
-    if (!(insnInvoke.getCallType() == Opcode_Invoke.Virtual && classHierarchy.implementsInterface(invokedClass, typeHttpClient)) &&
-        !(insnInvoke.getCallType() == Opcode_Invoke.Interface && invokedClass.equals(typeHttpClient)))
-      return false;
-
-    return true;
+    return insnInvoke.getMethodName().equals("execute") &&
+           (
+             (
+               callType == Opcode_Invoke.Virtual &&
+               classHierarchy.implementsInterface(invokedClass, typeHttpClient)
+             ) || (
+               (callType == Opcode_Invoke.Virtual || callType == Opcode_Invoke.Super) &&
+               invokedClass.equals(typeHttpClient)
+             )
+           );
   }
 
   @Override

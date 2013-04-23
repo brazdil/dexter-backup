@@ -48,7 +48,7 @@ public class DexClassHierarchy_Test {
     hierarchy.addClass(typeClassC, typeClassA);
     hierarchy.addInterface(typeInterface1);
 
-    hierarchy.checkConsistentency();
+    hierarchy.checkConsistency();
   }
 
   @Test(expected=ClassHierarchyException.class)
@@ -66,7 +66,7 @@ public class DexClassHierarchy_Test {
     hierarchy.addClass(typeClassB, typeClassA);
     hierarchy.addClass(typeClassC, typeClassA);
 
-    hierarchy.checkConsistentency();
+    hierarchy.checkConsistency();
   }
 
   @Test(expected=ClassHierarchyException.class)
@@ -80,7 +80,7 @@ public class DexClassHierarchy_Test {
     hierarchy.addInterface(typeObject1);
     hierarchy.addClass(typeObject2, typeObject1);
 
-    hierarchy.checkConsistentency();
+    hierarchy.checkConsistency();
   }
 
   @Test(expected=ClassHierarchyException.class)
@@ -96,7 +96,7 @@ public class DexClassHierarchy_Test {
     hierarchy.addClass(typeClassA, typeObject);
     hierarchy.addMember(typeInterface1, typeClassA, null, null, true);
 
-    hierarchy.checkConsistentency();
+    hierarchy.checkConsistency();
   }
 
   @Test(expected=ClassHierarchyException.class)
@@ -114,7 +114,7 @@ public class DexClassHierarchy_Test {
     hierarchy.addClass(typeObject, typeObject);
     hierarchy.addClass(typeClassA, typeObject, interfaces);
 
-    hierarchy.checkConsistentency();
+    hierarchy.checkConsistency();
   }
 
   @Test(expected=ClassHierarchyException.class)
@@ -133,7 +133,7 @@ public class DexClassHierarchy_Test {
     hierarchy.addClass(typeClassA, typeObject, interfaces);
     hierarchy.addClass(typeClassB, typeObject);
 
-    hierarchy.checkConsistentency();
+    hierarchy.checkConsistency();
   }
 
   @Test(expected=ClassHierarchyException.class)

@@ -404,6 +404,19 @@ public class DexCode {
 
       replaceInstructions(newInsns);
     } while (unwrappedSomething);
+
+//    // swap move-results and try-ends back
+//    // TODO: not perfect (doesn't work when Invoke is instrumented)
+//    for (int i = 0; i < instructionList.size() - 1; ++i) {
+//    	val insn1 = instructionList.get(i);
+//    	val insn2 = instructionList.get(i + 1);
+//
+//    	if ((insn1 instanceof DexInstruction_MoveResult || insn1 instanceof DexInstruction_MoveResultWide) &&
+//    			insn2 instanceof DexTryBlockEnd) {
+//    		instructionList.set(i, insn2);
+//    		instructionList.set(i + 1, insn1);
+//    	}
+//    }
   }
 
   private void fixOverlappingTryBlocks() {
@@ -1573,5 +1586,16 @@ public class DexCode {
     for (val elem : instructionList) {
       elem.setOriginalElement(true);
     }
+  }
+
+  public void countInstructions(HashMap<Class, Integer> count) {
+	  for (val elem : instructionList)
+		  if (elem instanceof DexInstruction) {
+			  val clazz = elem.getClass();
+			  int clazzCount;
+			  if (count.containsKey(clazz)) clazzCount = count.get(clazz);
+			  else clazzCount = 0;
+			  count.put(clazz, clazzCount + 1);
+		  }
   }
 }

@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.method;
 
+import java.util.HashMap;
 import java.util.Set;
 
 import org.jf.dexlib.AnnotationSetItem;
@@ -40,6 +41,8 @@ public class DexAbstractMethod extends DexMethod {
   public void markMethodOriginal() { }
 
   @Override
-  public void transformSSA() {
-  }
+  public void transformSSA() { }
+  
+  @Override
+  public void countInstructions(HashMap<Class, Integer> count) { }
 }

@@ -48,7 +48,7 @@ public class Apk {
         jar.close();
       }
     }
-    classHierarchy.checkConsistentency();
+    classHierarchy.checkConsistency();
 
     this.temporaryFilename = File.createTempFile("dexter-", ".apk");
     FileUtils.copyFile(filename, this.temporaryFilename);
