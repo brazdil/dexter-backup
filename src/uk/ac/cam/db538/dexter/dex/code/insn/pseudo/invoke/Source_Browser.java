@@ -43,7 +43,7 @@ public class Source_Browser extends FallbackInstrumentor {
     val postCode = new NoDuplicatesList<DexCodeElement>(fallback.getValB().size() + 20);
 
     val regBrowserTaint = new DexRegister();
-    postCode.add(new DexInstruction_BinaryOpLiteral(methodCode, regCombinedTaint, regCombinedTaint, TaintConstants.TAINT_SOURCE_BROWSER, Opcode_BinaryOpLiteral.OrInt));
+    postCode.add(new DexInstruction_BinaryOpLiteral(methodCode, regCombinedTaint, regCombinedTaint, TaintConstants.TAINT_SOURCE_BROWSER, Opcode_BinaryOpLiteral.Or));
     postCode.add(new DexPseudoinstruction_PrintStringConst(methodCode, "browser data => " + TaintConstants.TAINT_SOURCE_BROWSER, true));
     postCode.addAll(fallback.getValB());
 
