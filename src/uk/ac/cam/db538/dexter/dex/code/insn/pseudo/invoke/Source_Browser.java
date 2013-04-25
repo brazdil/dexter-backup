@@ -7,9 +7,12 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
 import uk.ac.cam.db538.dexter.merge.TaintConstants;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
@@ -40,8 +43,8 @@ public class Source_Browser extends FallbackInstrumentor {
     val postCode = new NoDuplicatesList<DexCodeElement>(fallback.getValB().size() + 20);
 
     val regBrowserTaint = new DexRegister();
-    postCode.add(new DexInstruction_Const(methodCode, regBrowserTaint, TaintConstants.TAINT_SOURCE_BROWSER));
-    postCode.add(new DexInstruction_BinaryOp(methodCode, regCombinedTaint, regCombinedTaint, regBrowserTaint, Opcode_BinaryOp.OrInt));
+    postCode.add(new DexInstruction_BinaryOpLiteral(methodCode, regCombinedTaint, regCombinedTaint, TaintConstants.TAINT_SOURCE_BROWSER, Opcode_BinaryOpLiteral.OrInt));
+    postCode.add(new DexPseudoinstruction_PrintStringConst(methodCode, "browser data => " + TaintConstants.TAINT_SOURCE_BROWSER, true));
     postCode.addAll(fallback.getValB());
 
     return new Pair<List<DexCodeElement>, List<DexCodeElement>>(fallback.getValA(), postCode);
