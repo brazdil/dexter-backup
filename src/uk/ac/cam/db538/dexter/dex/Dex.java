@@ -274,6 +274,9 @@ public class Dex {
     for (val cls : classes)
       cls.writeToFile(outFile, asmCache);
 
+    for (val cls : classes)
+        for(val mtd : cls.methods)
+    
     outFile.place();
     outFile.writeTo(out);
 
