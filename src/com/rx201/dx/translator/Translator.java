@@ -1,15 +1,21 @@
 package com.rx201.dx.translator;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;
 
+import org.jf.baksmali.Adaptors.Format.InstructionMethodItem;
+import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Analysis.AnalyzedInstruction;
 import org.jf.dexlib.Code.Analysis.MethodAnalyzer;
 import org.jf.dexlib.Util.AccessFlags;
+import org.jf.util.IndentingWriter;
 
 import com.android.dx.cf.code.ConcreteMethod;
 import com.android.dx.cf.code.Ropper;
@@ -48,22 +54,43 @@ public class Translator {
         // Convert to ROP's BasicBlockList form
         BasicBlockList ropBasicBlocks = new BasicBlockList(basicBlocks.size());
         
-        Converter converter = new Converter(analyzer);
+        Converter converter = new Converter(analyzer, method);
         
+		IndentingWriter writer = new IndentingWriter(new OutputStreamWriter(System.out));
         for(ArrayList<AnalyzedInstruction> basicBlock : basicBlocks) {
         	
         	// Process instruction in the basic block as a whole, 
         	ArrayList<Insn> insnBlock = new ArrayList<Insn>();
         	ConvertedResult lastInsn = null;
         	for(AnalyzedInstruction inst : basicBlock) {
+        		if (inst.getInstruction() != null) {
+        			InstructionMethodItem<Instruction> x = new InstructionMethodItem<Instruction>(method, 0, inst.getInstruction()) ;
+					try {
+						x.writeTo(writer);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+        		}
         		lastInsn = converter.convert(inst);
         		insnBlock.addAll(lastInsn.insns);
+        		
+				try {
+					writer.write("\n    --> ");
+					writer.write(lastInsn.insns.get(0).toHuman());
+					if (lastInsn.insns.size() > 1)
+						writer.write("...");
+					writer.write("\n");
+					writer.flush();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
         	}
         	
         	// then convert them to InsnList
         	InsnList insns = new InsnList(insnBlock.size());
         	for(int i=0 ;i<insnBlock.size(); i++)
-        		insns.set(i, insnBlock.get(0));
+        		insns.set(i, insnBlock.get(i));
+        	insns.setImmutable();
         	
         	IntList successors = new IntList();
         	for(AnalyzedInstruction s : lastInsn.successors) 
@@ -82,7 +109,8 @@ public class Translator {
         ArrayList<ArrayList<AnalyzedInstruction>> basicBlocks = new ArrayList<ArrayList<AnalyzedInstruction>>();
         
         Stack<AnalyzedInstruction> leads = new Stack<AnalyzedInstruction>();
-        leads.push(analyzer.getStartOfMethod());
+        assert analyzer.getStartOfMethod().getSuccesors().size() == 0;
+        leads.push(analyzer.getStartOfMethod().getSuccesors().get(0));
         HashSet<Integer> visited = new HashSet<Integer>();
         
         while(!leads.empty()) {
@@ -101,7 +129,7 @@ public class Translator {
         		AnalyzedInstruction next = current.getSuccesors().get(0);
         		if (next.getPredecessorCount() == 1) {
         			block.add(next);
-        			next = current;
+        			current = next;
         		} else
         			break;
         	}
@@ -116,20 +144,21 @@ public class Translator {
         return basicBlocks;
 	}
 
-
 	
-	public static void translate(CodeItem method) {
-		int paramSize = method.getInWords();
-		boolean isStatic = (method.getParent().accessFlags & AccessFlags.STATIC.getValue()) != 0;
+	public static void translate(EncodedMethod method) {
+		CodeItem code = method.codeItem;
+		int paramSize = code.getInWords();
+		boolean isStatic = (method.accessFlags & AccessFlags.STATIC.getValue()) != 0;
 		DexOptions dexOptions = new DexOptions();
         dexOptions.targetApiLevel = 10;
 
-		RopMethod rmeth = toRop(method);
+		RopMethod rmeth = toRop(code);
 
         rmeth = Optimizer.optimize(rmeth, paramSize, isStatic, false, DexTranslationAdvice.THE_ONE);
 		
-        DalvCode code = RopTranslator.translate(rmeth, PositionList.NONE, null, paramSize, dexOptions);
-        
+        DalvCode dcode = RopTranslator.translate(rmeth, PositionList.NONE, null, paramSize, dexOptions);
+        PrintWriter pw = new PrintWriter(System.out);
+        dcode.getInsns().debugPrint(pw, "    ", true);
 	}
 	
 }

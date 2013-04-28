@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jf.dexlib.CodeItem;
+import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
+import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Item;
 import org.jf.dexlib.MethodIdItem;
@@ -137,9 +140,13 @@ class ConvertedResult {
 public class Converter {
 	private MethodAnalyzer analyzer;
 	private SparseArray<AnalyzedInstruction> instAddrMap;
-	public Converter(MethodAnalyzer analyzer) {
+	private TryItem[] tries;
+	public Converter(MethodAnalyzer analyzer, CodeItem method) {
 		this.analyzer = analyzer;
 		buildInstructionMap(); // Unfortunately have to repeat work because the appropriate field in MethodAnalyzer is private
+		tries = method.getTries();
+		if (tries == null)
+			tries = new TryItem[0];
 	}
 	
 
@@ -152,6 +159,7 @@ public class Converter {
         	instAddrMap.append(currentCodeAddress, insns.get(i));
             currentCodeAddress += insns.get(i).getInstruction().getSize(currentCodeAddress);
         }
+        
 	}
 
 	private AnalyzedInstruction instructionFromOffset(AnalyzedInstruction pc, int offset) {
@@ -161,6 +169,12 @@ public class Converter {
 	public ConvertedResult convert(AnalyzedInstruction instruction) {
 		Instruction inst = instruction.getInstruction();
 		
+		if (inst == null) { // First sentinel instruction
+			assert instruction.getSuccessorCount() == 1;
+			AnalyzedInstruction successor = instruction.getSuccesors().get(0);
+			return new ConvertedResult().addSuccessor(successor);
+		}
+
 		boolean throwing = inst.opcode.canThrow();
 		int[] registers;
 		
@@ -227,7 +241,7 @@ public class Converter {
 				
 				CstType cls = new CstType(Type.intern(i.getContainingClass().getTypeDescriptor()));
 				String mtdName = i.getMethodName().getStringValue();
-				String mtdType = i.getShortMethodString();
+				String mtdType = i.getPrototype().getPrototypeString();
 				CstNat mtd = new CstNat(new CstString(mtdName), new CstString(mtdType));
 
 				if (inst.opcode == Opcode.INVOKE_INTERFACE || inst.opcode == Opcode.INVOKE_INTERFACE_RANGE)
@@ -332,7 +346,7 @@ public class Converter {
 			
 		} else {
 			RopInfo ropInfo = handleRopOpcode(inst.opcode, getRegisterListSpec(instruction, registers), constant);
-			TypeList catches = null;
+			TypeList catches = getCatchList(instruction);
 			
 			Insn insn = null;
 			ConvertedResult result = new ConvertedResult();
@@ -359,14 +373,34 @@ public class Converter {
 				//TODO
 			}
 			List<AnalyzedInstruction> successors = instruction.getSuccesors();
-			result.setPrimarySuccessor(successors.get(0));
-			for(int i=0; i<successors.size(); i++)
-				result.addSuccessor(successors.get(i));
+			if (successors.size() > 0) {
+				result.setPrimarySuccessor(successors.get(0));
+				for(int i=0; i<successors.size(); i++)
+					result.addSuccessor(successors.get(i));
+			}
 			return result;
 		}
 		
 	}
 	
+	private TypeList getCatchList(AnalyzedInstruction instruction) {
+		TypeList result = StdTypeList.EMPTY;
+		
+		for(int i=0; i<tries.length; i++) {
+			int start = tries[i].getStartCodeAddress();
+			int len = tries[i].getTryLength();
+			int addr = analyzer.getInstructionAddress(instruction);
+			if (addr >= start && addr < start + len) {
+				for(EncodedTypeAddrPair handler : tries[i].encodedCatchHandler.handlers) {
+					result = result.withAddedType(Type.intern(handler.exceptionType.getTypeDescriptor()));
+				}
+			}
+		}
+		
+		return result;
+	}
+
+
 	private static RopInfo handleRopOpcode(Opcode dexlibOpcode, RegisterSpecList registers, Constant constant ) {
 		switch(dexlibOpcode) {
 		case NOP:
@@ -846,8 +880,14 @@ public class Converter {
 	}
 	
 	private static RegisterSpec getRegisterSpec(AnalyzedInstruction instruction, int reg) {
-		return RegisterSpec.make(reg, getRopType(instruction.getPreInstructionRegisterType(reg)));
+		RegisterType preType = instruction.getPreInstructionRegisterType(reg);
+		RegisterType postType = instruction.getPostInstructionRegisterType(reg);
+		if (preType.category != postType.category) //This register is a destination
+			return RegisterSpec.make(reg, getRopType(postType));
+		else 
+			return RegisterSpec.make(reg, getRopType(preType));
 	}
+	
 	private static RegisterSpecList getRegisterListSpec(AnalyzedInstruction instruction, int[] registers) {
 		RegisterSpecList result = new RegisterSpecList(registers.length);
 		for(int i=0; i<registers.length; i++) {

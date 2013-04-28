@@ -18,6 +18,8 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
 import org.jf.dexlib.Util.AccessFlags;
 
+import com.rx201.dx.translator.Translator;
+
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
@@ -35,7 +37,8 @@ public abstract class DexMethod {
   private final Set<AccessFlags> accessFlagSet;
   @Getter private DexPrototype prototype;
   private final Set<DexAnnotation> annotations;
-
+  private EncodedMethod parentMethod;
+  
   public DexMethod(DexClass parent, String name, Set<AccessFlags> accessFlags, DexPrototype prototype, Set<DexAnnotation> annotations) {
     this.parentClass = parent;
     this.name = name;
@@ -46,6 +49,7 @@ public abstract class DexMethod {
     if (!isAbstract())
       this.parentClass.getParentFile().getClassHierarchy().addImplementedMethod(
         parentClass.getType(), this.name, this.prototype, this.isPrivate(), this.isNative(), this.isPublic());
+    parentMethod = null;
   }
 
   public DexMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations) {
@@ -54,6 +58,7 @@ public abstract class DexMethod {
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForMethod(methodInfo.accessFlags)),
          new DexPrototype(methodInfo.method.getPrototype(), parent.getParentFile().getParsingCache()),
          DexAnnotation.parseAll(encodedAnnotations, parent.getParentFile().getParsingCache()));
+    parentMethod = methodInfo;
   }
 
   public Set<AccessFlags> getAccessFlagSet() {
@@ -108,7 +113,12 @@ public abstract class DexMethod {
     val methodPrototype = cache.getPrototype(prototype);
 
     val methodItem = MethodIdItem.internMethodIdItem(outFile, classType, methodPrototype, methodName);
-    return new EncodedMethod(methodItem, DexUtils.assembleAccessFlags(accessFlagSet), generateCodeItem(outFile, cache));
+    CodeItem code = generateCodeItem(outFile, cache);
+
+    EncodedMethod newMethod = new EncodedMethod(parentMethod.method, parentMethod.accessFlags, code);
+    Translator.translate(newMethod);
+    
+    return new EncodedMethod(methodItem, DexUtils.assembleAccessFlags(accessFlagSet), code);
   }
 
   public static Cache<Triple<DexReferenceType, DexPrototype, String>, MethodIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {

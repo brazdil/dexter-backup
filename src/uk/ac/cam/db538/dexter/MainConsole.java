@@ -1,9 +1,15 @@
 package uk.ac.cam.db538.dexter;
 
 import uk.ac.cam.db538.dexter.apk.Apk;
+import uk.ac.cam.db538.dexter.dex.Dex;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.jar.JarFile;
+
+import org.jf.dexlib.Code.Analysis.ClassPath;
+
 import lombok.val;
 
 public class MainConsole {
@@ -25,13 +31,26 @@ public class MainConsole {
       System.err.println("<framework-dir> is not a directory");
       System.exit(1);
     }
-
+    
     val APK = new Apk(apkFile, frameworkDir);
-//    val warnings = APK.getDexFile().instrument(false);
-//    for (val warning : warnings)
-//      System.err.println("warning: " + warning.getMessage());
-//    // APK.getDexFile().transformSSA();
-//    APK.writeToFile(apkFile_new);
+
+    val fullFrameworkDir = new File("framework-2.3");
+    ClassPath.InitializeClassPath(new String[]{fullFrameworkDir.getAbsolutePath()}, 
+    		fullFrameworkDir.list(new FilenameFilter() {
+				public boolean accept(File dir, String name) {
+					return name.endsWith(".jar");
+				}
+    		}), 
+    		new String[]{}, 
+    		"dexfile", 
+    		null, 
+    		false);
+    
+    //val warnings = APK.getDexFile().instrument(false);
+    //for (val warning : warnings)
+    //  System.err.println("warning: " + warning.getMessage());
+    // APK.getDexFile().transformSSA();
+    APK.writeToFile(apkFile_new);
     APK.getDexFile().countInstructions();
   }
 }
