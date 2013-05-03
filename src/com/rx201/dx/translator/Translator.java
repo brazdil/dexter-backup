@@ -53,6 +53,7 @@ public class Translator {
         
         // Convert to ROP's BasicBlockList form
         BasicBlockList ropBasicBlocks = new BasicBlockList(basicBlocks.size());
+        int bbIndex = 0;
         
         Converter converter = new Converter(analyzer, method);
         
@@ -95,14 +96,14 @@ public class Translator {
         	IntList successors = new IntList();
         	for(AnalyzedInstruction s : lastInsn.successors) 
         		successors.add(s.getInstructionIndex());
+        	successors.setImmutable();
         	
         	int label = basicBlock.get(0).getInstructionIndex();
         	BasicBlock ropBasicBlock = new BasicBlock(label, insns, successors, lastInsn.primarySuccessor != null ? lastInsn.primarySuccessor.getInstructionIndex() : -1);
-        	
-        	ropBasicBlocks.set(label, ropBasicBlock);
+        	ropBasicBlocks.set(bbIndex++, ropBasicBlock);
         }
 
-        return new SimpleRopMethod(ropBasicBlocks, analyzer.getStartOfMethod().getInstructionIndex());
+        return new SimpleRopMethod(ropBasicBlocks, analyzer.getStartOfMethod().getSuccesors().get(0).getInstructionIndex());
 	}
 	
 	private static ArrayList<ArrayList<AnalyzedInstruction>> buildBasicBlocks(MethodAnalyzer analyzer) {
@@ -123,9 +124,10 @@ public class Translator {
         	// Extend this basic block as far as possible
         	AnalyzedInstruction current = first; // Always refer to latest-added instruction in the bb
         	block.add(current);
-        	while(current.getSuccessorCount() == 1) { 
+        	while(current.getSuccessorCount() == 1  && (!isBasicBlockBreaker(current))) { 
         		// Condition 1: current has only one successor
         		// Condition 2: next instruction has only one predecessor
+        		// Condition 3: current cannot throw
         		AnalyzedInstruction next = current.getSuccesors().get(0);
         		if (next.getPredecessorCount() == 1) {
         			block.add(next);
@@ -145,6 +147,10 @@ public class Translator {
 	}
 
 	
+	private static boolean isBasicBlockBreaker(AnalyzedInstruction next) {
+		return next.getInstruction().opcode.canThrow();
+	}
+
 	public static void translate(EncodedMethod method) {
 		CodeItem code = method.codeItem;
 		int paramSize = code.getInWords();
