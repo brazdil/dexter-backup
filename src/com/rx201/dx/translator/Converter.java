@@ -1,6 +1,7 @@
 package com.rx201.dx.translator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,6 +32,9 @@ import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction.PackedSwitchTarget;
 import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction.SparseSwitchTarget;
+import org.jf.dexlib.Code.Format.Instruction35c;
+import org.jf.dexlib.Code.Format.Instruction35mi;
+import org.jf.dexlib.Code.Format.Instruction35ms;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Util.SparseArray;
 
@@ -178,21 +182,30 @@ public class Converter {
 		boolean throwing = inst.opcode.canThrow();
 		int[] registers;
 		
-		if (inst instanceof SingleRegisterInstruction) {
-			SingleRegisterInstruction i = (SingleRegisterInstruction) inst;
-			registers = new int[] { i.getRegisterA() };
+		// Do it in order of Five-> Three -> Two -> Single, because of interface inheritance
+		if (inst instanceof FiveRegisterInstruction) {
+			FiveRegisterInstruction i = (FiveRegisterInstruction) inst;
+			registers = new int[] { i.getRegisterA(), i.getRegisterD(), i.getRegisterE(), i.getRegisterF(), i.getRegisterG() };
 			
-		} else if (inst instanceof TwoRegisterInstruction) {
-			TwoRegisterInstruction i = (TwoRegisterInstruction) inst;
-			registers = new int[] { i.getRegisterA(), i.getRegisterB() };
+			if (inst instanceof Instruction35c) {
+				registers = Arrays.copyOf(registers, ((Instruction35c)inst).getRegCount());
+			} else if (inst instanceof Instruction35mi) {
+				registers = Arrays.copyOf(registers, ((Instruction35mi)inst).getRegCount());
+			} else if (inst instanceof Instruction35ms) {
+				registers = Arrays.copyOf(registers, ((Instruction35ms)inst).getRegCount());
+			}
 			
 		} else if (inst instanceof ThreeRegisterInstruction) {
 			ThreeRegisterInstruction i = (ThreeRegisterInstruction) inst;
 			registers = new int[] { i.getRegisterA(), i.getRegisterB(), i.getRegisterC() };
 			
-		} else if (inst instanceof FiveRegisterInstruction) {
-			FiveRegisterInstruction i = (FiveRegisterInstruction) inst;
-			registers = new int[] { i.getRegisterA(), i.getRegisterD(), i.getRegisterE(), i.getRegisterF(), i.getRegisterG() };
+		} else if (inst instanceof TwoRegisterInstruction) {
+			TwoRegisterInstruction i = (TwoRegisterInstruction) inst;
+			registers = new int[] { i.getRegisterA(), i.getRegisterB() };
+			
+		}else if (inst instanceof SingleRegisterInstruction) {
+			SingleRegisterInstruction i = (SingleRegisterInstruction) inst;
+			registers = new int[] { i.getRegisterA() };
 			
 		} else if (inst instanceof RegisterRangeInstruction) {
 			RegisterRangeInstruction i = (RegisterRangeInstruction) inst;
