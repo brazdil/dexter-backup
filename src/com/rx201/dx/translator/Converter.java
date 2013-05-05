@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
 
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
@@ -75,14 +76,14 @@ class RopInfo {
 	public Rop opcode;
 	public RegisterSpecList sources;
 	public RegisterSpec result;
-	public boolean needMoveResult;
+	public Boolean needPseudoMoveResult;
 	public boolean needNegateResult; //in order to support rsub
 	
 	public RopInfo(Rop opcode, RegisterSpec result, RegisterSpecList sources) {
 		this.opcode = opcode;
 		this.sources = sources != null ? sources : RegisterSpecList.EMPTY;
 		this.result = result;
-		this.needMoveResult = false;
+		this.needPseudoMoveResult = false;
 		this.needNegateResult = false;
 	}
 
@@ -90,9 +91,9 @@ class RopInfo {
 		return new RopInfo(opcode, registers.get(0), registers.withoutFirst());
 	}
 	
-	public static RopInfo makeMoveResultFirstOp(Rop opcode, RegisterSpecList registers) {
+	public static RopInfo makePseudoMoveResultFirstOp(Rop opcode, RegisterSpecList registers) {
 		RopInfo r = new RopInfo(opcode, registers.get(0), registers.withoutFirst());
-		r.needMoveResult = true;
+		r.needPseudoMoveResult = true;
 		return r;
 	}
 	
@@ -116,11 +117,13 @@ class RopInfo {
 
 class ConvertedResult {
 	public ArrayList<Insn> insns;
+	public ArrayList<Insn> auxInsns; // Insns that needs to be propagated to successor basic blocks.
 	public AnalyzedInstruction primarySuccessor;
 	public ArrayList<AnalyzedInstruction> successors;
 	
 	public ConvertedResult() {
 		insns = new ArrayList<Insn>();
+		auxInsns = new ArrayList<Insn>();
 		primarySuccessor = null;
 		successors = new ArrayList<AnalyzedInstruction>();
 	}
@@ -139,6 +142,11 @@ class ConvertedResult {
 		insns.add(insn);
 		return this;
 	}
+	
+	public ConvertedResult addAuxInstruction(Insn insn) {
+		auxInsns.add(insn);
+		return this;
+	}	
 }
 
 public class Converter {
@@ -358,7 +366,7 @@ public class Converter {
 					.setPrimarySuccessor(successor).addSuccessor(successor);
 			
 		} else {
-			RopInfo ropInfo = handleRopOpcode(inst.opcode, getRegisterListSpec(instruction, registers), constant);
+			RopInfo ropInfo = handleRopOpcode(inst.opcode, getRegisterListSpec(instruction, registers), constant, instruction.getPredecessors());
 			TypeList catches = getCatchList(instruction);
 			
 			Insn insn = null;
@@ -380,11 +388,12 @@ public class Converter {
 			}
 			result.addInstruction(insn);
 			if (ropInfo.needNegateResult) {
-				//TODO
+				result.addInstruction(new PlainInsn(Rops.opNeg(ropInfo.result), SourcePosition.NO_INFO, ropInfo.result, ropInfo.result));
 			}
-			if (ropInfo.needMoveResult) {
-				//TODO
-			}
+			if (ropInfo.needPseudoMoveResult) {
+				result.addAuxInstruction(new PlainInsn(Rops.opMoveResultPseudo(ropInfo.result), SourcePosition.NO_INFO, ropInfo.result, RegisterSpecList.EMPTY));
+	        }
+			
 			List<AnalyzedInstruction> successors = instruction.getSuccesors();
 			if (successors.size() > 0) {
 				result.setPrimarySuccessor(successors.get(0));
@@ -414,7 +423,7 @@ public class Converter {
 	}
 
 
-	private static RopInfo handleRopOpcode(Opcode dexlibOpcode, RegisterSpecList registers, Constant constant ) {
+	private static RopInfo handleRopOpcode(Opcode dexlibOpcode, RegisterSpecList registers, Constant constant, SortedSet<AnalyzedInstruction> predecessors ) {
 		switch(dexlibOpcode) {
 		case NOP:
 			return new RopInfo(Rops.NOP, null, null);
@@ -433,8 +442,23 @@ public class Converter {
 		case MOVE_RESULT:
 		case MOVE_RESULT_WIDE:
 		case MOVE_RESULT_OBJECT:
-			return RopInfo.makeResultFirstOp(Rops.opMoveResult(registers.get(0)), registers);
-			
+			// opMoveResultPseudo if afterNonInvokeThrowingInsn
+			boolean hasInvoke = false;
+			for(AnalyzedInstruction i : predecessors) {
+				Opcode op = i.getInstruction().opcode;
+				if (op == Opcode.INVOKE_DIRECT || op == Opcode.INVOKE_DIRECT_RANGE ||
+					op == Opcode.INVOKE_INTERFACE || op == Opcode.INVOKE_INTERFACE_RANGE ||
+					op == Opcode.INVOKE_STATIC || op == Opcode.INVOKE_STATIC_RANGE ||
+					op == Opcode.INVOKE_SUPER || op == Opcode.INVOKE_SUPER_RANGE ||
+					op == Opcode.INVOKE_VIRTUAL || op == Opcode.INVOKE_VIRTUAL_RANGE) {
+					hasInvoke = true;
+					break;
+				}
+			}
+			if (hasInvoke)
+				return RopInfo.makeResultFirstOp(Rops.opMoveResult(registers.get(0)), registers);
+			else 
+				return RopInfo.makeResultFirstOp(Rops.opMoveResultPseudo(registers.get(0)), registers);
 		case MOVE_EXCEPTION:
 			return RopInfo.makeResultFirstOp(Rops.opMoveException(registers.get(0)), registers);
 			
@@ -444,7 +468,7 @@ public class Converter {
 		case RETURN:
 		case RETURN_WIDE:
 		case RETURN_OBJECT:
-			return RopInfo.makeResultFirstOp(Rops.opReturn(registers.get(0)), registers);
+			return RopInfo.makeNoResultOp(Rops.opReturn(registers.get(0)), registers);
 			
 		case CONST_4:
 		case CONST_16:
@@ -469,16 +493,16 @@ public class Converter {
 			return RopInfo.makeNoResultOp(Rops.CHECK_CAST, registers);
 			
 		case INSTANCE_OF:
-			return RopInfo.makeMoveResultFirstOp(Rops.INSTANCE_OF, registers);
+			return RopInfo.makePseudoMoveResultFirstOp(Rops.INSTANCE_OF, registers);
 			
 		case ARRAY_LENGTH:
-			return RopInfo.makeMoveResultFirstOp(Rops.ARRAY_LENGTH, registers);
+			return RopInfo.makePseudoMoveResultFirstOp(Rops.ARRAY_LENGTH, registers);
 			
 		case NEW_INSTANCE:
-			return RopInfo.makeMoveResultFirstOp(Rops.NEW_INSTANCE, registers);
+			return RopInfo.makePseudoMoveResultFirstOp(Rops.NEW_INSTANCE, registers);
 			
 		case NEW_ARRAY:
-			return RopInfo.makeMoveResultFirstOp(Rops.opNewArray(((CstType)(constant)).getType()), registers);
+			return RopInfo.makePseudoMoveResultFirstOp(Rops.opNewArray(((CstType)(constant)).getType()), registers);
 			
 		case THROW:
 			return RopInfo.makeNoResultOp(Rops.THROW, registers);
@@ -534,7 +558,7 @@ public class Converter {
 		case AGET_BYTE:
 		case AGET_CHAR:
 		case AGET_SHORT:
-			return RopInfo.makeMoveResultFirstOp(Rops.opAget(registers.get(0)), registers);
+			return RopInfo.makePseudoMoveResultFirstOp(Rops.opAget(registers.get(0)), registers);
 			
 		case APUT:
 		case APUT_WIDE:
@@ -552,7 +576,7 @@ public class Converter {
 		case IGET_BYTE:
 		case IGET_CHAR:
 		case IGET_SHORT:
-			return RopInfo.makeMoveResultFirstOp(Rops.opGetField(registers.get(0)), registers);
+			return RopInfo.makePseudoMoveResultFirstOp(Rops.opGetField(registers.get(0)), registers);
 					
 		case IPUT:
 		case IPUT_WIDE:
@@ -570,7 +594,7 @@ public class Converter {
 		case SGET_BYTE:
 		case SGET_CHAR:
 		case SGET_SHORT:
-			return RopInfo.makeMoveResultFirstOp(Rops.opGetStatic(registers.get(0)), registers);
+			return RopInfo.makePseudoMoveResultFirstOp(Rops.opGetStatic(registers.get(0)), registers);
 			
 		case SPUT:
 		case SPUT_WIDE:
