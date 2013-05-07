@@ -1,33 +1,50 @@
 package com.rx201.dx.translator;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Stack;
 
 import org.jf.baksmali.Adaptors.Format.InstructionMethodItem;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
+import org.jf.dexlib.DebugInfoItem;
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Analysis.AnalyzedInstruction;
 import org.jf.dexlib.Code.Analysis.MethodAnalyzer;
+import org.jf.dexlib.CodeItem.EncodedCatchHandler;
+import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.Util.AccessFlags;
 import org.jf.util.IndentingWriter;
+
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 
 import com.android.dx.cf.code.ConcreteMethod;
 import com.android.dx.cf.code.LocalVariableList;
 import com.android.dx.cf.code.Ropper;
+import com.android.dx.cf.direct.DirectClassFile;
+import com.android.dx.cf.direct.StdAttributeFactory;
 import com.android.dx.dex.DexOptions;
+import com.android.dx.dex.cf.AttributeTranslator;
 import com.android.dx.dex.cf.CodeStatistics;
 import com.android.dx.dex.cf.OptimizerOptions;
 import com.android.dx.dex.code.DalvCode;
 import com.android.dx.dex.code.PositionList;
 import com.android.dx.dex.code.RopTranslator;
+import com.android.dx.dex.file.ClassDefItem;
+import com.android.dx.dex.file.DexFile;
+import com.android.dx.rop.annotation.Annotations;
 import com.android.dx.rop.code.BasicBlock;
 import com.android.dx.rop.code.BasicBlockList;
 import com.android.dx.rop.code.DexTranslationAdvice;
@@ -44,6 +61,8 @@ import com.android.dx.rop.code.SourcePosition;
 import com.android.dx.rop.code.TranslationAdvice;
 import com.android.dx.rop.cst.CstInteger;
 import com.android.dx.rop.cst.CstMethodRef;
+import com.android.dx.rop.cst.CstString;
+import com.android.dx.rop.cst.CstType;
 import com.android.dx.rop.type.Type;
 import com.android.dx.ssa.Optimizer;
 import com.android.dx.util.Hex;
@@ -53,7 +72,80 @@ import com.rx201.dx.translator.util.MethodPrototype;
 
 public class Translator {
 
-	public static RopMethod toRop(CodeItem method) {
+	private DexFile dexFile;
+	private DexOptions dexOptions;
+
+	public Translator() {
+		dexOptions = new DexOptions();
+	    dexOptions.targetApiLevel = 10;
+		dexFile = new DexFile(dexOptions);
+	}
+	
+	public void addClass() {
+        DirectClassFile cf =
+                new DirectClassFile(bytes, filePath, cfOptions.strictNameCheck);
+
+            cf.setAttributeFactory(StdAttributeFactory.THE_ONE);
+            cf.getMagic();
+
+            OptimizerOptions.loadOptimizeLists(cfOptions.optimizeListFile,
+                    cfOptions.dontOptimizeListFile);
+
+            // Build up a class to output.
+
+            CstType thisClass = cf.getThisClass();
+            int classAccessFlags = cf.getAccessFlags() & ~AccessFlags.ACC_SUPER;
+            CstString sourceFile = (cfOptions.positionInfo == PositionList.NONE) ? null :
+                cf.getSourceFile();
+            ClassDefItem out =
+                new ClassDefItem(thisClass, classAccessFlags,
+                        cf.getSuperclass(), cf.getInterfaces(), sourceFile);
+
+            Annotations classAnnotations =
+                AttributeTranslator.getClassAnnotations(cf, cfOptions);
+            if (classAnnotations.size() != 0) {
+                out.setClassAnnotations(classAnnotations);
+            }
+
+            processFields(cf, out);
+            processMethods(cf, cfOptions, dexOptions, out);
+
+            dexFile.add(out);
+	}
+	
+	private void processMethod(EncodedMethod method) {
+		CodeItem code = method.codeItem;
+		if (code == null) 
+			return;
+		int paramSize = code.getInWords();
+		boolean isStatic = (method.accessFlags & AccessFlags.STATIC.getValue()) != 0;
+
+		RopMethod rmeth = toRop(code);
+		System.out.println("==== Before Optimization ====");
+		dump(rmeth);
+		
+        rmeth = Optimizer.optimize(rmeth, paramSize, isStatic, false, DexTranslationAdvice.THE_ONE);
+		System.out.println("==== After Optimization ====");
+		dump(rmeth);
+		
+        DalvCode dcode = RopTranslator.translate(rmeth, PositionList.NONE, null, paramSize, dexOptions);
+	}
+	
+	public void write() {
+		Writer humanOut = new OutputStreamWriter(System.out);
+        try {
+			byte[] outArray = dexFile.toDex(humanOut, true);
+	        humanOut.flush();
+	        
+	        FileOutputStream output = new FileOutputStream(new File("result.dex"));
+	        output.write(outArray);
+	        output.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private RopMethod toRop(CodeItem method) {
 		MethodAnalyzer analyzer = new MethodAnalyzer(method.getParent(), false, null);
 		analyzer.analyze();
         HashMap<Instruction, AnalyzedInstruction> analysisResult = new HashMap<Instruction, AnalyzedInstruction>();
@@ -68,7 +160,7 @@ public class Translator {
 
         IndentingWriter writer = new IndentingWriter(new OutputStreamWriter(System.out));
         try {
-			writer.write(String.format("%s total reg: %d param reg: %d\n", method.getParent().method.getMethodName(), 
+			writer.write(String.format("%s total reg: %d param reg: %d\n", method.getParent().method.getShortMethodString(), 
 					method.getRegisterCount(),
 					method.getParent().method.getPrototype().getParameterRegisterCount()));
 		} catch (IOException e1) {
@@ -168,7 +260,7 @@ public class Translator {
         return new SimpleRopMethod(ropBasicBlocks, analyzer.getStartOfMethod().getSuccesors().get(0).getInstructionIndex());
 	}
 	
-	private static ArrayList<ArrayList<AnalyzedInstruction>> buildBasicBlocks(MethodAnalyzer analyzer) {
+	private ArrayList<ArrayList<AnalyzedInstruction>> buildBasicBlocks(MethodAnalyzer analyzer) {
         ArrayList<ArrayList<AnalyzedInstruction>> basicBlocks = new ArrayList<ArrayList<AnalyzedInstruction>>();
         
         Stack<AnalyzedInstruction> leads = new Stack<AnalyzedInstruction>();
@@ -186,7 +278,7 @@ public class Translator {
         	// Extend this basic block as far as possible
         	AnalyzedInstruction current = first; // Always refer to latest-added instruction in the bb
         	block.add(current);
-        	while(current.getSuccessorCount() == 1  && (!isBasicBlockBreaker(current))) { 
+        	while(current.getSuccessorCount() == 1  && (!current.getInstruction().opcode.canThrow())) { 
         		// Condition 1: current has only one successor
         		// Condition 2: next instruction has only one predecessor
         		// Condition 3: current cannot throw
@@ -208,30 +300,6 @@ public class Translator {
         return basicBlocks;
 	}
 
-	
-	private static boolean isBasicBlockBreaker(AnalyzedInstruction next) {
-		return next.getInstruction().opcode.canThrow();
-	}
-
-	public static void translate(EncodedMethod method) {
-		CodeItem code = method.codeItem;
-		if (code == null) 
-			return;
-		int paramSize = code.getInWords();
-		boolean isStatic = (method.accessFlags & AccessFlags.STATIC.getValue()) != 0;
-		DexOptions dexOptions = new DexOptions();
-        dexOptions.targetApiLevel = 10;
-
-		RopMethod rmeth = toRop(code);
-		dump(rmeth);
-		
-        rmeth = Optimizer.optimize(rmeth, paramSize, isStatic, false, DexTranslationAdvice.THE_ONE);
-		dump(rmeth);
-		
-        DalvCode dcode = RopTranslator.translate(rmeth, PositionList.NONE, null, paramSize, dexOptions);
-        PrintWriter pw = new PrintWriter(System.out);
-        dcode.getInsns().debugPrint(pw, "    ", true);
-	}
 	
 	private static void dump(RopMethod rmeth) {
 		StringBuilder sb = new StringBuilder();
@@ -284,6 +352,25 @@ public class Translator {
             }
         }
         System.out.println(sb.toString());
+	}
+
+	public static void translate(EncodedMethod newMethod) {
+		Translator t = new Translator();
+		t.addMethod(newMethod);
+		t.write();
+	}
+	
+	public static CodeItem generateCodeItem(DexFile dexFile,
+                    int registerCount,
+                    int inWords,
+                    int outWords,
+                    DexCode code,
+                    List<TryItem> tries,
+                    List<EncodedCatchHandler> encodedCatchHandlers) {
+		
+		List<Instruction> instructions;
+		return CodeItem.internCodeItem(dexFile, registerCount, inWords, outWords, /* debugInfo */ null, instructions, newTries, newCatchHandlers);
+		
 	}
 	
 }
