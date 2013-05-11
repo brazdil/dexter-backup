@@ -108,15 +108,15 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_FilledNewArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalClassAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetMethodCaller;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.DexPseudoinstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_FilledNewArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalClassAnnotation;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetMethodCaller;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -361,7 +361,7 @@ public class DexCode {
 
         // replace FILLED_NEW_ARRAY & MOVE_RESULT pairs with a single FilledNewArray pseudoinstruction
         if (nextInsnPair != null && nextInsnPair.getValA() instanceof DexInstruction_MoveResult) {
-          newInsns.add(new DexPseudoinstruction_FilledNewArray(
+          newInsns.add(new DexMacro_FilledNewArray(
                          this,
                          (DexInstruction_FilledNewArray) thisInsn,
                          (DexInstruction_MoveResult) nextInsnPair.getValA()));
@@ -396,8 +396,8 @@ public class DexCode {
       val newInsns = new NoDuplicatesList<DexCodeElement>(codeLength);
 
       for (val insn : insns)
-        if (insn instanceof DexPseudoinstruction) {
-          newInsns.addAll(((DexPseudoinstruction) insn).unwrap());
+        if (insn instanceof DexMacro) {
+          newInsns.addAll(((DexMacro) insn).unwrap());
           unwrappedSomething = true;
         } else
           newInsns.add(insn);
@@ -506,7 +506,7 @@ public class DexCode {
       // get the 'this' object taint
       regThis = parentMethod.getParameterMappedRegisters().get(0);
       regThisTaint = instrumentationState.getTaintRegister(regThis);
-      addedCode.add(new DexPseudoinstruction_GetObjectTaint(this, regThisTaint, regThis));
+      addedCode.add(new DexMacro_GetObjectTaint(this, regThisTaint, regThis));
     }
 
     if (virtualMethod) {
@@ -517,9 +517,9 @@ public class DexCode {
       val regInternalAnnotation = instrumentationState.getInternalClassAnnotationRegister();
 
       addedCode.add(new DexInstruction_Const(this, regInternalAnnotation, 0));
-      addedCode.add(new DexPseudoinstruction_GetMethodCaller(this, regCallersName));
+      addedCode.add(new DexMacro_GetMethodCaller(this, regCallersName));
       addedCode.add(new DexInstruction_IfTestZero(this, regCallersName, labelExternalCallOrigin, Opcode_IfTestZero.eqz));
-      addedCode.add(new DexPseudoinstruction_GetInternalClassAnnotation(this, regInternalAnnotation, regCallersName));
+      addedCode.add(new DexMacro_GetInternalClassAnnotation(this, regInternalAnnotation, regCallersName));
       addedCode.add(new DexInstruction_IfTestZero(this, regInternalAnnotation, labelExternalCallOrigin, Opcode_IfTestZero.eqz));
     }
 
@@ -528,7 +528,7 @@ public class DexCode {
 
       if (printDebug) {
         addedCode.add(
-          new DexPseudoinstruction_PrintStringConst(
+          new DexMacro_PrintStringConst(
             this,
             "$# entering method " +
             getParentClass().getType().getPrettyName() +
@@ -563,11 +563,11 @@ public class DexCode {
             addedCode.add(new DexInstruction_BinaryOp(this, regTaintParamMapping, regArrayElement, regThisTaint, Opcode_BinaryOp.OrInt));
 
           if (printDebug) {
-            addedCode.add(new DexPseudoinstruction_PrintStringConst(this,
+            addedCode.add(new DexMacro_PrintStringConst(this,
                           "$ " + getParentClass().getType().getShortName() + "->" + parentMethod.getName() + ": " +
                           "ARG[" + paramTaintArrayIndex + "] = ",
                           false));
-            addedCode.add(new DexPseudoinstruction_PrintInteger(this, regArrayElement, true));
+            addedCode.add(new DexMacro_PrintInteger(this, regArrayElement, true));
           }
 
           paramTaintArrayIndex++;
@@ -575,7 +575,7 @@ public class DexCode {
           // for objects, assign the taint of the 'this' object
           if (!staticMethod && !constructorMethod) {
             val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
-            addedCode.add(new DexPseudoinstruction_SetObjectTaint(this, regParamMapping, regThisTaint));
+            addedCode.add(new DexMacro_SetObjectTaint(this, regParamMapping, regThisTaint));
           }
         }
         paramRegIndex += paramType.getRegisters();
@@ -606,7 +606,7 @@ public class DexCode {
 
       if (printDebug) {
         addedCode.add(
-          new DexPseudoinstruction_PrintStringConst(
+          new DexMacro_PrintStringConst(
             this,
             "$# entering method " +
             getParentClass().getType().getPrettyName() +
@@ -624,7 +624,7 @@ public class DexCode {
           addedCode.add(new DexInstruction_Move(this, regTaintParamMapping, regThisTaint, false));
         } else {
           val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
-          addedCode.add(new DexPseudoinstruction_SetObjectTaint(this, regParamMapping, regThisTaint));
+          addedCode.add(new DexMacro_SetObjectTaint(this, regParamMapping, regThisTaint));
         }
         paramRegIndex += paramType.getRegisters();
       }
@@ -1221,13 +1221,13 @@ public class DexCode {
       for (val insn : instructionList) {
         if (insn instanceof DexInstruction_Move) {
           val insnMove = (DexInstruction_Move) insn;
-          val liveAfter = lva.getLiveVarsIn(insnMove);
+          val liveAfter = lva.getLiveVarsAfter(insnMove);
           if (!liveAfter.contains(insnMove.getRegTo()) ||
               (insnMove.getRegFrom() == insnMove.getRegTo()))
             toRemove.add(insnMove);
         } else if (insn instanceof DexInstruction_MoveWide) {
           val insnMove = (DexInstruction_MoveWide) insn;
-          val liveAfter = lva.getLiveVarsIn(insnMove);
+          val liveAfter = lva.getLiveVarsAfter(insnMove);
           if (!liveAfter.contains(insnMove.getRegTo1()) ||
               (insnMove.getRegFrom1() == insnMove.getRegTo1()))
             toRemove.add(insnMove);
@@ -1589,13 +1589,13 @@ public class DexCode {
   }
 
   public void countInstructions(HashMap<Class, Integer> count) {
-	  for (val elem : instructionList)
-		  if (elem instanceof DexInstruction) {
-			  val clazz = elem.getClass();
-			  int clazzCount;
-			  if (count.containsKey(clazz)) clazzCount = count.get(clazz);
-			  else clazzCount = 0;
-			  count.put(clazz, clazzCount + 1);
-		  }
+    for (val elem : instructionList)
+      if (elem instanceof DexInstruction) {
+        val clazz = elem.getClass();
+        int clazzCount;
+        if (count.containsKey(clazz)) clazzCount = count.get(clazz);
+        else clazzCount = 0;
+        count.put(clazz, clazzCount + 1);
+      }
   }
 }
