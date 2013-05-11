@@ -301,8 +301,8 @@ public class DexClass {
       method.transformSSA();
   }
 
-	public void countInstructions(HashMap<Class, Integer> count) {
-		for (val method : methods)
-			method.countInstructions(count);
-	}
+  public void countInstructions(HashMap<Class, Integer> count) {
+    for (val method : methods)
+      method.countInstructions(count);
+  }
 }

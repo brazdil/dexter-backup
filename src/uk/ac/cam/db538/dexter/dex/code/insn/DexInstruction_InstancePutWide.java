@@ -21,7 +21,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -184,7 +184,7 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
       code.replace(this,
                    new DexCodeElement[] {
                      this,
-                     new DexPseudoinstruction_SetObjectTaint(code, regObject, state.getTaintRegister(regFrom1))
+                     new DexMacro_SetObjectTaint(code, regObject, state.getTaintRegister(regFrom1))
                    });
   }
 }

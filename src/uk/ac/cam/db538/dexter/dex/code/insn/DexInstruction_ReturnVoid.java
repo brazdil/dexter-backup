@@ -16,7 +16,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 
 public class DexInstruction_ReturnVoid extends DexInstruction {
 
@@ -43,7 +43,7 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
     if (printDebug) {
       val code = getMethodCode();
 
-      val insnPrintDebug = new DexPseudoinstruction_PrintStringConst(
+      val insnPrintDebug = new DexMacro_PrintStringConst(
         code,
         "$# exiting method " +
         getParentClass().getType().getPrettyName() +

@@ -18,7 +18,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_ArrayGetWide extends DexInstruction {
@@ -149,7 +149,7 @@ public class DexInstruction_ArrayGetWide extends DexInstruction {
     val regArrayTaint = (regTo1 == regArray) ? new DexRegister() : state.getTaintRegister(regArray);
     code.replace(this,
                  new DexCodeElement[] {
-                   new DexPseudoinstruction_GetObjectTaint(code, regArrayTaint, regArray),
+                   new DexMacro_GetObjectTaint(code, regArrayTaint, regArray),
                    this,
                    new DexInstruction_BinaryOp(code, state.getTaintRegister(regTo1), regArrayTaint, state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt)
                  });

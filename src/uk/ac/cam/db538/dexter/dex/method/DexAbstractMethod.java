@@ -42,7 +42,7 @@ public class DexAbstractMethod extends DexMethod {
 
   @Override
   public void transformSSA() { }
-  
+
   @Override
   public void countInstructions(HashMap<Class, Integer> count) { }
 }

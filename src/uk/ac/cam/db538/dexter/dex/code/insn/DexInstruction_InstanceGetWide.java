@@ -21,7 +21,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -185,7 +185,7 @@ public class DexInstruction_InstanceGetWide extends DexInstruction {
       val regObjectTaint = (regTo1 == regObject) ? new DexRegister() : state.getTaintRegister(regObject);
       code.replace(this,
                    new DexCodeElement[] {
-                     new DexPseudoinstruction_GetObjectTaint(code, regObjectTaint, regObject),
+                     new DexMacro_GetObjectTaint(code, regObjectTaint, regObject),
                      new DexInstruction_InstanceGet(code, regValueTaint, regObject, state.getCache().getTaintField(field)),
                      new DexInstruction_BinaryOp(code, regValueTaint, regValueTaint, regObjectTaint, Opcode_BinaryOp.OrInt),
                      this
@@ -196,7 +196,7 @@ public class DexInstruction_InstanceGetWide extends DexInstruction {
       // assign the same taint as the containing object has
       code.replace(this,
                    new DexCodeElement[] {
-                     new DexPseudoinstruction_GetObjectTaint(code, regValueTaint, regObject),
+                     new DexMacro_GetObjectTaint(code, regValueTaint, regObject),
                      this
                    });
   }

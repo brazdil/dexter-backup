@@ -39,19 +39,19 @@ public class LiveVarAnalysis_Test {
 
     val lva = new LiveVarAnalysis(code);
 
-    val expLva0 = lva.getLiveVarsOut(i0);
+    val expLva0 = lva.getLiveVarsBefore(i0);
     assertEquals(0, expLva0.size());
 
-    val expLva1 = lva.getLiveVarsOut(i1);
+    val expLva1 = lva.getLiveVarsBefore(i1);
     assertEquals(1, expLva1.size());
     assertTrue(expLva1.contains(r0));
 
-    val expLva2 = lva.getLiveVarsOut(i2);
+    val expLva2 = lva.getLiveVarsBefore(i2);
     assertEquals(2, expLva2.size());
     assertTrue(expLva2.contains(r0));
     assertTrue(expLva2.contains(r1));
 
-    val expLva3 = lva.getLiveVarsOut(i3);
+    val expLva3 = lva.getLiveVarsBefore(i3);
     assertEquals(1, expLva3.size());
     assertTrue(expLva3.contains(r2));
   }
@@ -85,37 +85,37 @@ public class LiveVarAnalysis_Test {
 
     val lva = new LiveVarAnalysis(code);
 
-    val expLva0 = lva.getLiveVarsOut(i0);
+    val expLva0 = lva.getLiveVarsBefore(i0);
     assertEquals(2, expLva0.size());
     assertTrue(expLva0.contains(r3));
     assertTrue(expLva0.contains(r4));
 
-    val expLva1 = lva.getLiveVarsOut(i1);
+    val expLva1 = lva.getLiveVarsBefore(i1);
     assertEquals(3, expLva1.size());
     assertTrue(expLva1.contains(r0));
     assertTrue(expLva1.contains(r3));
     assertTrue(expLva1.contains(r4));
 
-    val expLva2 = lva.getLiveVarsOut(i2);
+    val expLva2 = lva.getLiveVarsBefore(i2);
     assertEquals(4, expLva2.size());
     assertTrue(expLva2.contains(r0));
     assertTrue(expLva2.contains(r1));
     assertTrue(expLva2.contains(r3));
     assertTrue(expLva2.contains(r4));
 
-    val expLva3 = lva.getLiveVarsOut(i3);
+    val expLva3 = lva.getLiveVarsBefore(i3);
     assertEquals(2, expLva3.size());
     assertTrue(expLva3.contains(r0));
     assertTrue(expLva3.contains(r1));
 
-    val expLva4 = lva.getLiveVarsOut(i4);
+    val expLva4 = lva.getLiveVarsBefore(i4);
     assertEquals(0, expLva4.size());
 
-    val expLva5 = lva.getLiveVarsOut(i5);
+    val expLva5 = lva.getLiveVarsBefore(i5);
     assertEquals(1, expLva5.size());
     assertTrue(expLva5.contains(r0));
 
-    val expLva6 = lva.getLiveVarsOut(i6);
+    val expLva6 = lva.getLiveVarsBefore(i6);
     assertEquals(1, expLva6.size());
     assertTrue(expLva6.contains(r0));
   }
@@ -146,36 +146,36 @@ public class LiveVarAnalysis_Test {
 
     val lva = new LiveVarAnalysis(code);
 
-    val expLva0 = lva.getLiveVarsOut(i0);
+    val expLva0 = lva.getLiveVarsBefore(i0);
     assertEquals(0, expLva0.size());
 
-    val expLva1 = lva.getLiveVarsOut(i1);
+    val expLva1 = lva.getLiveVarsBefore(i1);
     assertEquals(1, expLva1.size());
     assertTrue(expLva1.contains(r0));
 
-    val expLva2 = lva.getLiveVarsOut(i2);
+    val expLva2 = lva.getLiveVarsBefore(i2);
     assertEquals(2, expLva2.size());
     assertTrue(expLva2.contains(r0));
     assertTrue(expLva2.contains(r1));
 
-    val expLva3 = lva.getLiveVarsOut(i3);
+    val expLva3 = lva.getLiveVarsBefore(i3);
     assertEquals(2, expLva3.size());
     assertTrue(expLva3.contains(r0));
     assertTrue(expLva3.contains(r1));
 
-    val expLva4 = lva.getLiveVarsOut(i4);
+    val expLva4 = lva.getLiveVarsBefore(i4);
     assertEquals(3, expLva4.size());
     assertTrue(expLva4.contains(r0));
     assertTrue(expLva4.contains(r1));
     assertTrue(expLva4.contains(r2));
 
-    val expLva5 = lva.getLiveVarsOut(i5);
+    val expLva5 = lva.getLiveVarsBefore(i5);
     assertEquals(3, expLva5.size());
     assertTrue(expLva5.contains(r0));
     assertTrue(expLva5.contains(r1));
     assertTrue(expLva5.contains(r2));
 
-    val expLva6 = lva.getLiveVarsOut(i6);
+    val expLva6 = lva.getLiveVarsBefore(i6);
     assertEquals(1, expLva6.size());
     assertTrue(expLva6.contains(r2));
   }

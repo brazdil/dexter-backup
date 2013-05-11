@@ -296,12 +296,12 @@ public class Dex {
     for (val clazz : classes)
       clazz.transformSSA();
   }
-  
+
   public void countInstructions() {
-	  val count = new HashMap<Class, Integer>();
-	  for (val clazz : classes)
-		  clazz.countInstructions(count);
-	  for (val entry : count.entrySet())
-		  System.out.println(entry.getKey().getSimpleName() + "," + entry.getValue().toString());
+    val count = new HashMap<Class, Integer>();
+    for (val clazz : classes)
+      clazz.countInstructions(count);
+    for (val entry : count.entrySet())
+      System.out.println(entry.getKey().getSimpleName() + "," + entry.getValue().toString());
   }
 }
