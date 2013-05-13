@@ -179,4 +179,9 @@ public class DexInstruction_Return extends DexInstruction {
   public Set<DexCodeElement> cfgGetSuccessors() {
     return Collections.emptySet();
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

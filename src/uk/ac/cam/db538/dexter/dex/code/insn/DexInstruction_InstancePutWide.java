@@ -187,4 +187,9 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
                      new DexPseudoinstruction_SetObjectTaint(code, regObject, state.getTaintRegister(regFrom1))
                    });
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

@@ -148,4 +148,10 @@ public class DexInstruction_BinaryOp extends DexInstruction {
     val newSourceB = (toRefs) ? mapping.get(regSourceB) : regSourceB;
     return new DexInstruction_BinaryOp(getMethodCode(), newTarget, newSourceA, newSourceB, insnOpcode);
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
+
 }

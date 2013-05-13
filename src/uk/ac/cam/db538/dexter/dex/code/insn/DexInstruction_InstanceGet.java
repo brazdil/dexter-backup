@@ -202,4 +202,9 @@ public class DexInstruction_InstanceGet extends DexInstruction {
                    });
     }
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

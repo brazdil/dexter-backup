@@ -140,4 +140,9 @@ public class DexInstruction_ArrayPutWide extends DexInstruction {
                    new DexPseudoinstruction_SetObjectTaint(code, regArray, regTotalTaint)
                  });
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

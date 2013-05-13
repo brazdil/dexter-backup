@@ -111,4 +111,9 @@ public class DexInstruction_Convert extends DexInstruction {
     else
       return super.gcDefinedRegisterType(reg);
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

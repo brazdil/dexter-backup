@@ -126,4 +126,9 @@ public class DexInstruction_ArrayLength extends DexInstruction {
     else
       return throwNoSuitableFormatFound();
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

@@ -145,4 +145,9 @@ public class DexInstruction_CheckCast extends DexInstruction {
                    new DexCodeElement[] { getObjTaint, setExTaint },
                    regException));
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

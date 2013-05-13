@@ -84,4 +84,9 @@ public class DexInstruction_MoveException extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) { }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

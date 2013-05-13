@@ -170,4 +170,9 @@ public class DexInstruction_StaticPut extends DexInstruction {
       // no need to do anything
     }
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

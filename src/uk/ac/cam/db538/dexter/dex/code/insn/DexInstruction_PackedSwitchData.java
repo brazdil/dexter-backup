@@ -96,4 +96,9 @@ public class DexInstruction_PackedSwitchData extends DexInstruction {
   public Set<DexCodeElement> cfgGetSuccessors() {
     return new HashSet<DexCodeElement>(targets);
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

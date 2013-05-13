@@ -96,4 +96,9 @@ public class DexInstruction_FillArrayData extends DexInstruction {
   public Set<DexCodeElement> cfgGetSuccessors() {
     return createSet(parentInstruction.getNextCodeElement());
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

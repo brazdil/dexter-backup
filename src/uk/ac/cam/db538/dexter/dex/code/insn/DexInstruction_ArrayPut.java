@@ -141,4 +141,9 @@ public class DexInstruction_ArrayPut extends DexInstruction {
                    });
     }
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

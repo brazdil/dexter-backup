@@ -152,4 +152,8 @@ public class DexInstruction_MoveWide extends DexInstruction {
                  });
   }
 
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }
