@@ -122,4 +122,9 @@ public class DexInstruction_FillArray extends DexInstruction {
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regArray, ColorRange.RANGE_8BIT));
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

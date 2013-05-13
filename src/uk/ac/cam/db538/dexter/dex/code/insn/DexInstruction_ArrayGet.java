@@ -152,4 +152,10 @@ public class DexInstruction_ArrayGet extends DexInstruction {
                    });
     }
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
+  
 }

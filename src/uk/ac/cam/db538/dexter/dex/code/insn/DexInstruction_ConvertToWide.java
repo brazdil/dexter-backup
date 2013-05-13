@@ -128,4 +128,9 @@ public class DexInstruction_ConvertToWide extends DexInstruction {
   public Set<GcFollowConstraint> gcFollowConstraints() {
     return createSet(new GcFollowConstraint(regTo1, regTo2));
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

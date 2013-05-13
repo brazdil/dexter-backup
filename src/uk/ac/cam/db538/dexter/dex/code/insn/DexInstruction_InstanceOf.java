@@ -136,4 +136,9 @@ public class DexInstruction_InstanceOf extends DexInstruction {
     else
       return throwNoSuitableFormatFound();
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

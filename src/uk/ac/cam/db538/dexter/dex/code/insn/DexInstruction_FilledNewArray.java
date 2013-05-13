@@ -196,4 +196,9 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
 
     return set;
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

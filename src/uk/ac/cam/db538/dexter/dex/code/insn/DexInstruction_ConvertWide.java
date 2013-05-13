@@ -133,4 +133,9 @@ public class DexInstruction_ConvertWide extends DexInstruction {
     return createSet(new GcFollowConstraint(regTo1, regTo2),
                      new GcFollowConstraint(regFrom1, regFrom2));
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

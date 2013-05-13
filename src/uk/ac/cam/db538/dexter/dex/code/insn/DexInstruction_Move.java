@@ -153,4 +153,9 @@ public class DexInstruction_Move extends DexInstruction {
                    });
     }
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

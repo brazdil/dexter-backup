@@ -190,5 +190,10 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
              newSourceB2,
              insnOpcode);
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }
 

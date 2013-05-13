@@ -200,4 +200,9 @@ public class DexInstruction_InstanceGetWide extends DexInstruction {
                      this
                    });
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

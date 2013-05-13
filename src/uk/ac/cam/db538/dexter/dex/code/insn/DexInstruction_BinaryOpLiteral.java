@@ -151,4 +151,9 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
                               new DexInstruction_Move(getMethodCode(), state.getTaintRegister(regTarget), state.getTaintRegister(regSource), false)
                             });
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

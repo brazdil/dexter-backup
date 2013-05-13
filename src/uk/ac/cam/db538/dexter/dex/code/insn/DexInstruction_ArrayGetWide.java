@@ -154,4 +154,10 @@ public class DexInstruction_ArrayGetWide extends DexInstruction {
                    new DexInstruction_BinaryOp(code, state.getTaintRegister(regTo1), regArrayTaint, state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt)
                  });
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
+  
 }

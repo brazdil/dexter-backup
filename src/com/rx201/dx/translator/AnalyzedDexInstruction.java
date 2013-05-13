@@ -1,7 +1,9 @@
 package com.rx201.dx.translator;
 
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,7 +21,7 @@ public class AnalyzedDexInstruction {
 	    /**
 	     * The actual instruction
 	     */
-	    protected DexInstruction instruction;
+	    protected final DexInstruction instruction;
 
 
 	    /**
@@ -49,28 +51,19 @@ public class AnalyzedDexInstruction {
 	     */
 	    protected boolean dead = false;
 
-	    private DexRegister dstRegister;
-	    private boolean dstRegisterWide;
-	    
-		private DexParsingCache cache;
+		private final DexParsingCache cache;
 
-	    private static RegisterType unknown = RegisterType.getRegisterType(RegisterType.Category.Unknown, null);
+	    private static final RegisterType unknown = RegisterType.getRegisterType(RegisterType.Category.Unknown, null);
 
-	    private int instructionIndex;
+	    public final int instructionIndex;
 	    
-	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexRegister dstRegister, boolean dstWide, DexParsingCache cache) {
+	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexParsingCache cache) {
 	        this.instruction = instruction;
 	        this.postRegisterMap = new HashMap<DexRegister, RegisterType>();
 	        this.preRegisterMap = new HashMap<DexRegister, RegisterType>();
 	        this.cache = cache;
-	        this.dstRegister = dstRegister;
-	        this.dstRegisterWide = dstWide;
 	        this.instructionIndex = index;
 	    }
-
-	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexParsingCache cache) {
-	    	this(index, instruction, null, false, cache);
-    	}
 
 	    public int getPredecessorCount() {
 	        return predecessors.size();
@@ -126,7 +119,7 @@ public class AnalyzedDexInstruction {
 	     * register is a destination register for this instruction, or if the pre-instruction register type didn't change
 	     * after merging in the given register type
 	     */
-	    protected boolean mergeRegister(DexRegister registerNumber, RegisterType registerType) {
+	    protected boolean mergeRegister(DexRegister registerNumber, RegisterType registerType, BitSet verifiedInstructions) {
 	        assert registerType != null;
 
 	        RegisterType oldRegisterType = getPreRegister(registerNumber);
@@ -137,7 +130,8 @@ public class AnalyzedDexInstruction {
 	        }
 
 	        preRegisterMap.put(registerNumber, mergedRegisterType);
-
+	        verifiedInstructions.clear(instructionIndex);
+	        
 	        if (!setsRegister(registerNumber)) {
 	            postRegisterMap.put(registerNumber, mergedRegisterType);
 	            return true;
@@ -198,7 +192,7 @@ public class AnalyzedDexInstruction {
 	    }
 
 	    public boolean setsWideRegister() {
-	        return this.dstRegisterWide;
+	        return instruction.lvaDefinedRegisters().size() > 1;
 	    }
 
 	    public boolean setsRegister(DexRegister registerNumber) {
@@ -247,7 +241,15 @@ public class AnalyzedDexInstruction {
 	            throw new RuntimeException("Cannot call getDestinationRegister() for an instruction that doesn't " +
 	                    "store a value");
 	        }
-	        return dstRegister;
+	        Iterator<DexRegister> iter = instruction.lvaDefinedRegisters().iterator();
+	        DexRegister r = iter.next();
+	        if (iter.hasNext()) {
+	        	DexRegister r1 = iter.next();
+	        	if (r1.getOriginalIndex() < r.getOriginalIndex())
+	        		r = r1;
+	        }
+	        assert !iter.hasNext();
+	        return null;
 	    }
 
 	    public int getRegisterCount() {
@@ -256,6 +258,10 @@ public class AnalyzedDexInstruction {
 
 	    public RegisterType getPostRegisterType(DexRegister registerNumber) {
 	    	return postRegisterMap.get(registerNumber);
+	    }
+	    
+	    public RegisterType getPreRegisterType(DexRegister registerNumber) {
+	    	return preRegisterMap.get(registerNumber);
 	    }
 	    
 	    public DexRegisterType getPostInstructionRegisterType(DexRegister registerNumber) {

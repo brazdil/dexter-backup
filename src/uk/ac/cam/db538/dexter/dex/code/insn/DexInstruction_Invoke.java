@@ -317,4 +317,9 @@ public class DexInstruction_Invoke extends DexInstruction {
 
     return new DexInstruction_Invoke(getMethodCode(), classType, methodName, methodPrototype, newArgRegs, callType);
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

@@ -193,4 +193,9 @@ public class DexInstruction_InstancePut extends DexInstruction {
       // no need to do anything
     }
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

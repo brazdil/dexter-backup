@@ -108,4 +108,9 @@ public class DexInstruction_UnaryOp extends DexInstruction {
     else
       return super.gcDefinedRegisterType(reg);
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

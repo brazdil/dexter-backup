@@ -123,4 +123,9 @@ public class DexInstruction_Const extends DexInstruction {
     val newTo = (toDefs) ? mapping.get(regTo) : regTo;
     return new DexInstruction_Const(getMethodCode(), newTo, value);
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

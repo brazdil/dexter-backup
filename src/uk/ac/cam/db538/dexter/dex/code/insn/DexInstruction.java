@@ -213,4 +213,6 @@ public abstract class DexInstruction extends DexCodeElement {
   protected final long computeRelativeOffset(DexCodeElement target, DexCode_AssemblingState state) {
     return computeRelativeOffset(this, target, state);
   }
+  
+  abstract public void accept(DexInstructionVisitor visitor);
 }

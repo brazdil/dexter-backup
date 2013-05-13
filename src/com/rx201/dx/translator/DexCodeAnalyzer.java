@@ -64,10 +64,68 @@ import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionVisitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPutWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CompareFloat;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CompareWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertFromWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertToWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGetWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePutWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveException;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Nop;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_PackedSwitchData;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_SparseSwitchData;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGetWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPutWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+
+interface InstructionAnalyzer extends DexInstructionVisitor {
+	public void setAnalyzedInstruction(AnalyzedDexInstruction i); 
+}
 
 public class DexCodeAnalyzer {
 	private DexCode code;
@@ -81,7 +139,7 @@ public class DexCodeAnalyzer {
     
     private int analyzerState = NOT_ANALYZED;
 
-//    private BitSet analyzedInstructions;
+    private BitSet analyzedInstructions;
 
 
     //This is a dummy instruction that occurs immediately before the first real instruction. We can initialize the
@@ -99,6 +157,7 @@ public class DexCodeAnalyzer {
 
         buildInstructionList();
 
+        analyzedInstructions = new BitSet(instructions.size());
     }
 
     public boolean isAnalyzed() {
@@ -123,7 +182,7 @@ public class DexCodeAnalyzer {
 			
 			switch (dexRegType.getTypeSize()) {
 	        case SINGLE:
-	        	pendingSetPostRegisterType(startOfMethod, DexRegisterHelper.normalize(paramId), regType);
+	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, DexRegisterHelper.normalize(paramId), regType);
 	        	break;
 	        case WIDE:
 	        	RegisterType regTypeHi = null;
@@ -135,8 +194,8 @@ public class DexCodeAnalyzer {
 	        	else
 	        		throw new ValidationException("Bad register type.");
 	        	
-	        	pendingSetPostRegisterType(startOfMethod, DexRegisterHelper.normalize(paramId), regType);
-	        	pendingSetPostRegisterType(startOfMethod, DexRegisterHelper.normalize(paramId + 1), regTypeHi);
+	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, DexRegisterHelper.normalize(paramId), regType);
+	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, DexRegisterHelper.normalize(paramId + 1), regTypeHi);
 	        	break;
 			}
 	        	
@@ -161,12 +220,54 @@ public class DexCodeAnalyzer {
         analyzeParameters();
         
         // Do type propagation.
+        /*
         for(PendingRegType pending : pendingRegisterTypes) {
         	setPostRegisterTypeAndPropagateChanges(pending.instruction, pending.regNum, pending.regType);
         }
-
+        */
+        
         BitSet instructionsToAnalyze = new BitSet(instructions.size());
 
+        //make sure all of the "first instructions" are marked for processing
+        for (AnalyzedDexInstruction successor: startOfMethod.successors) {
+            instructionsToAnalyze.set(successor.getInstructionIndex());
+        }
+
+        BitSet undeodexedInstructions = new BitSet(instructions.size());
+
+        do {
+            boolean didSomething = false;
+
+            while (!instructionsToAnalyze.isEmpty()) {
+                for(int i=instructionsToAnalyze.nextSetBit(0); i>=0; i=instructionsToAnalyze.nextSetBit(i+1)) {
+                    instructionsToAnalyze.clear(i);
+                    if (analyzedInstructions.get(i)) {
+                        continue;
+                    }
+                    AnalyzedDexInstruction instructionToAnalyze = instructions.get(i);
+
+                    analyzeInstruction(instructionToAnalyze);
+                    didSomething = true;
+
+                    analyzedInstructions.set(instructionToAnalyze.getInstructionIndex());
+
+                    for (AnalyzedDexInstruction successor: instructionToAnalyze.successors) {
+                        instructionsToAnalyze.set(successor.getInstructionIndex());
+                    }
+                }
+            }
+
+            if (!didSomething) {
+                break;
+            }
+
+            if (!undeodexedInstructions.isEmpty()) {
+                for (int i=undeodexedInstructions.nextSetBit(0); i>=0; i=undeodexedInstructions.nextSetBit(i+1)) {
+                    instructionsToAnalyze.set(i);
+                }
+            }
+        } while (true);
+        
         analyzerState = ANALYZED;
     }
 
@@ -201,6 +302,7 @@ public class DexCodeAnalyzer {
         return registerTypes;
     }
 
+    /*
     private class PendingRegType {
     	public AnalyzedDexInstruction instruction;
     	public DexRegister regNum;
@@ -211,12 +313,20 @@ public class DexCodeAnalyzer {
     		this.regType =regType;
     	}
     }
+
     private ArrayList<PendingRegType> pendingRegisterTypes = new ArrayList<PendingRegType>();
     // Enqueue for later processing
     private void pendingSetPostRegisterType(AnalyzedDexInstruction analyzedInstruction, DexRegister registerNum, RegisterType registerType) {
     	pendingRegisterTypes.add(new PendingRegType(analyzedInstruction, registerNum, registerType));
     }
+    */
     
+    private void setDestinationRegisterTypeAndPropagateChanges(AnalyzedDexInstruction analyzedInstruction,
+            RegisterType registerType) {
+    	setPostRegisterTypeAndPropagateChanges(analyzedInstruction, analyzedInstruction.getDestinationRegister(), registerType);
+	}
+	
+
     private void setPostRegisterTypeAndPropagateChanges(AnalyzedDexInstruction analyzedInstruction, DexRegister registerNumber,
                                                 RegisterType registerType) {
 
@@ -261,7 +371,7 @@ public class DexCodeAnalyzer {
                                                BitSet changedInstructions) {
         RegisterType postRegisterType = instruction.getPostRegisterType(registerNumber);
         for (AnalyzedDexInstruction successor: instruction.successors) {
-            if (successor.mergeRegister(registerNumber, postRegisterType)) {
+            if (successor.mergeRegister(registerNumber, postRegisterType, analyzedInstructions)) {
                 changedInstructions.set(successor.getInstructionIndex());
             }
         }
@@ -272,7 +382,7 @@ public class DexCodeAnalyzer {
     	instructions = new ArrayList<AnalyzedDexInstruction>();
     	instructionMap = new HashMap<DexCodeElement, AnalyzedDexInstruction>();
     	for(DexCodeElement inst : code.getInstructionList()) {
-    		AnalyzedDexInstruction analyzedInst = analyzeDexCodeElement(instructions.size(), inst);
+    		AnalyzedDexInstruction analyzedInst = buildFromDexCodeElement(instructions.size(), inst);
     		instructionMap.put(inst, analyzedInst);
     		instructions.add(analyzedInst);
     		
@@ -303,7 +413,7 @@ public class DexCodeAnalyzer {
     	}
     }
 
-    private AnalyzedDexInstruction analyzeDexCodeElement(int index, DexCodeElement inst) {
+    private AnalyzedDexInstruction buildFromDexCodeElement(int index, DexCodeElement inst) {
     	if (inst instanceof DexCodeStart) {
             //override AnalyzedInstruction and provide custom implementations of some of the methods, so that we don't
             //have to handle the case this special case of instruction being null, in the main class
@@ -330,572 +440,356 @@ public class DexCodeAnalyzer {
             };
             return startOfMethod;
     	} else if (inst instanceof DexInstruction) {
-    		return analyzeDexInstruction(index, (DexInstruction) inst);
+    		return new AnalyzedDexInstruction(index, (DexInstruction) inst, cache);
     	} else /* DexCatch, DexCatchAll, DexLabel, DexTryBlockStart, DexTryBlockEnd */ {
     		return new AnalyzedDexInstruction(index, new DexInstruction_Nop(code), cache);
     	}
 	}
 
-    private  AnalyzedDexInstruction analyzeSetsResultInst(int index, DexInstruction inst, DexRegister dstReg, RegisterType dstType) {
-    	AnalyzedDexInstruction result = new AnalyzedDexInstruction(index, inst, dstReg, false, cache);
-    	pendingSetPostRegisterType(result, dstReg, dstType);
-    	return result;
-    }
-    
-    private AnalyzedDexInstruction analyzeArrayGet(int index, DexInstruction_ArrayGet inst) {
+    private InstructionAnalyzer instructionAnalyzer = new InstructionAnalyzer() {
+    	private AnalyzedDexInstruction instruction;
     	
-    	if (inst.getOpcode() == Opcode_GetPut.Object) {
-
-            RegisterType arrayRegisterType = analyzedInstruction.getPreInstructionRegisterType(instruction.getRegisterB());
-            assert arrayRegisterType != null;
-
-            if (arrayRegisterType.category != RegisterType.Category.Null) {
-                assert arrayRegisterType.type != null;
-                if (arrayRegisterType.type.getClassType().charAt(0) != '[') {
-                    throw new ValidationException(String.format("Cannot use aget-object with non-array type %s",
-                            arrayRegisterType.type.getClassType()));
-                }
-
-                assert arrayRegisterType.type instanceof ClassPath.ArrayClassDef;
-                ClassPath.ArrayClassDef arrayClassDef = (ClassPath.ArrayClassDef)arrayRegisterType.type;
-
-                ClassPath.ClassDef elementClassDef = arrayClassDef.getImmediateElementClass();
-                char elementTypePrefix = elementClassDef.getClassType().charAt(0);
-                if (elementTypePrefix != 'L' && elementTypePrefix != '[') {
-                    throw new ValidationException(String.format("Cannot use aget-object with array type %s. Incorrect " +
-                            "array type for the instruction.", arrayRegisterType.type.getClassType()));
-                }
-
-                setDestinationRegisterTypeAndPropagateChanges(analyzedInstruction,
-                        RegisterType.getRegisterType(RegisterType.Category.Reference, elementClassDef));
-            } else {
-                setDestinationRegisterTypeAndPropagateChanges(analyzedInstruction,
-                        RegisterType.getRegisterType(RegisterType.Category.Null, null));
-            }
-    		
-    	} else {
-    		
-	    	RegisterType.Category category;
-	    	switch (inst.getOpcode()) {
-			case Boolean:
-				category = RegisterType.Category.Boolean;
-				break;
-			case Byte:
-				category = RegisterType.Category.Byte;
-				break;
-			case Char:
-				category = RegisterType.Category.Char;
-				break;
-			case IntFloat:
-				category = RegisterType.Category.Integer; // Ambiguity here does not matter, type merging will deal with it.
-				break;
-			case Short:
-				category = RegisterType.Category.Boolean;
-				break;
-			default:
-				throw new ValidationException("wrong type AGET");
-	    	}
-	    	return analyzeSetsResultInst(index, inst, inst.getRegTo(), RegisterType.getRegisterType(category, null));
+    	@Override
+    	public void setAnalyzedInstruction(AnalyzedDexInstruction i) {
+    		this.instruction = i;
     	}
-    }
-    
-    private AnalyzedDexInstruction analyzeDexInstruction(int index, DexInstruction inst) {
-        if (inst instanceof DexInstruction_ArrayGet) {
-        	DexInstruction_ArrayGet i = (DexInstruction_ArrayGet)inst;
-        	
-        }
-    }
-    
-	/**
-     * @return false if analyzedInstruction is an odex instruction that couldn't be deodexed, due to its
-     * object register being null
-     */
-    private boolean analyzeInstruction(AnalyzedInstruction analyzedInstruction) {
-        Instruction instruction = analyzedInstruction.instruction;
+    	
+		@Override
+		public void visit(DexInstruction_Nop dexInstruction_Nop) {}
+		
+		@Override
+		public void visit(DexInstruction_Move dexInstruction_Move) {
+			// TODO Auto-generated method stub
+            analyzeMove(analyzedInstruction);
 
-        switch (instruction.opcode) {
-            case NOP:
-                return true;
-            case MOVE:
-            case MOVE_FROM16:
-            case MOVE_16:
-            case MOVE_WIDE:
-            case MOVE_WIDE_FROM16:
-            case MOVE_WIDE_16:
-            case MOVE_OBJECT:
-            case MOVE_OBJECT_FROM16:
-            case MOVE_OBJECT_16:
-                analyzeMove(analyzedInstruction);
-                return true;
-            case MOVE_RESULT:
-            case MOVE_RESULT_WIDE:
-            case MOVE_RESULT_OBJECT:
-                analyzeMoveResult(analyzedInstruction);
-                return true;
-            case MOVE_EXCEPTION:
-                analyzeMoveException(analyzedInstruction);
-                return true;
-            case RETURN_VOID:
-            case RETURN:
-            case RETURN_WIDE:
-            case RETURN_OBJECT:
-                return true;
-            case RETURN_VOID_BARRIER:
-                analyzeReturnVoidBarrier(analyzedInstruction);
-                return true;
-            case CONST_4:
-            case CONST_16:
-            case CONST:
-                analyzeConst(analyzedInstruction);
-                return true;
-            case CONST_HIGH16:
-                analyzeConstHigh16(analyzedInstruction);
-                return true;
-            case CONST_WIDE_16:
-            case CONST_WIDE_32:
-            case CONST_WIDE:
-            case CONST_WIDE_HIGH16:
-                analyzeWideConst(analyzedInstruction);
-                return true;
-            case CONST_STRING:
-            case CONST_STRING_JUMBO:
-                analyzeConstString(analyzedInstruction);
-                return true;
-            case CONST_CLASS:
-            case CONST_CLASS_JUMBO:
-                analyzeConstClass(analyzedInstruction);
-                return true;
-            case MONITOR_ENTER:
-            case MONITOR_EXIT:
-                return true;
-            case CHECK_CAST:
-            case CHECK_CAST_JUMBO:
-                analyzeCheckCast(analyzedInstruction);
-                return true;
-            case INSTANCE_OF:
-            case INSTANCE_OF_JUMBO:
-                analyzeInstanceOf(analyzedInstruction);
-                return true;
-            case ARRAY_LENGTH:
-                analyzeArrayLength(analyzedInstruction);
-                return true;
-            case NEW_INSTANCE:
-            case NEW_INSTANCE_JUMBO:
-                analyzeNewInstance(analyzedInstruction);
-                return true;
-            case NEW_ARRAY:
-            case NEW_ARRAY_JUMBO:
-                analyzeNewArray(analyzedInstruction);
-                return true;
-            case FILLED_NEW_ARRAY:
-            case FILLED_NEW_ARRAY_RANGE:
-            case FILLED_NEW_ARRAY_JUMBO:
-                return true;
-            case FILL_ARRAY_DATA:
-                analyzeArrayDataOrSwitch(analyzedInstruction);
-            case THROW:
-            case GOTO:
-            case GOTO_16:
-            case GOTO_32:
-                return true;
-            case PACKED_SWITCH:
-            case SPARSE_SWITCH:
-                analyzeArrayDataOrSwitch(analyzedInstruction);
-                return true;
-            case CMPL_FLOAT:
-            case CMPG_FLOAT:
-            case CMPL_DOUBLE:
-            case CMPG_DOUBLE:
-            case CMP_LONG:
-                analyzeFloatWideCmp(analyzedInstruction);
-                return true;
-            case IF_EQ:
-            case IF_NE:
-            case IF_LT:
-            case IF_GE:
-            case IF_GT:
-            case IF_LE:
-            case IF_EQZ:
-            case IF_NEZ:
-            case IF_LTZ:
-            case IF_GEZ:
-            case IF_GTZ:
-            case IF_LEZ:
-                return true;
-            case AGET:
-                analyze32BitPrimitiveAget(analyzedInstruction, RegisterType.Category.Integer);
-                return true;
-            case AGET_BOOLEAN:
-                analyze32BitPrimitiveAget(analyzedInstruction, RegisterType.Category.Boolean);
-                return true;
-            case AGET_BYTE:
-                analyze32BitPrimitiveAget(analyzedInstruction, RegisterType.Category.Byte);
-                return true;
-            case AGET_CHAR:
-                analyze32BitPrimitiveAget(analyzedInstruction, RegisterType.Category.Char);
-                return true;
-            case AGET_SHORT:
-                analyze32BitPrimitiveAget(analyzedInstruction, RegisterType.Category.Short);
-                return true;
-            case AGET_WIDE:
-                analyzeAgetWide(analyzedInstruction);
-                return true;
-            case AGET_OBJECT:
-                analyzeAgetObject(analyzedInstruction);
-                return true;
-            case APUT:
-            case APUT_BOOLEAN:
-            case APUT_BYTE:
-            case APUT_CHAR:
-            case APUT_SHORT:
-            case APUT_WIDE:
-            case APUT_OBJECT:
-                return true;
-            case IGET:
-            case IGET_JUMBO:
-                analyze32BitPrimitiveIget(analyzedInstruction, RegisterType.Category.Integer);
-                return true;
-            case IGET_BOOLEAN:
-            case IGET_BOOLEAN_JUMBO:
-                analyze32BitPrimitiveIget(analyzedInstruction, RegisterType.Category.Boolean);
-                return true;
-            case IGET_BYTE:
-            case IGET_BYTE_JUMBO:
-                analyze32BitPrimitiveIget(analyzedInstruction, RegisterType.Category.Byte);
-                return true;
-            case IGET_CHAR:
-            case IGET_CHAR_JUMBO:
-                analyze32BitPrimitiveIget(analyzedInstruction, RegisterType.Category.Char);
-                return true;
-            case IGET_SHORT:
-            case IGET_SHORT_JUMBO:
-                analyze32BitPrimitiveIget(analyzedInstruction, RegisterType.Category.Short);
-                return true;
-            case IGET_WIDE:
-            case IGET_WIDE_JUMBO:
-            case IGET_OBJECT:
-            case IGET_OBJECT_JUMBO:
-                analyzeIgetWideObject(analyzedInstruction);
-                return true;
-            case IPUT:
-            case IPUT_JUMBO:
-            case IPUT_BOOLEAN:
-            case IPUT_BOOLEAN_JUMBO:
-            case IPUT_BYTE:
-            case IPUT_BYTE_JUMBO:
-            case IPUT_CHAR:
-            case IPUT_CHAR_JUMBO:
-            case IPUT_SHORT:
-            case IPUT_SHORT_JUMBO:
-            case IPUT_WIDE:
-            case IPUT_WIDE_JUMBO:
-            case IPUT_OBJECT:
-            case IPUT_OBJECT_JUMBO:
-                return true;
-            case SGET:
-            case SGET_JUMBO:
-                analyze32BitPrimitiveSget(analyzedInstruction, RegisterType.Category.Integer);
-                return true;
-            case SGET_BOOLEAN:
-            case SGET_BOOLEAN_JUMBO:
-                analyze32BitPrimitiveSget(analyzedInstruction, RegisterType.Category.Boolean);
-                return true;
-            case SGET_BYTE:
-            case SGET_BYTE_JUMBO:
-                analyze32BitPrimitiveSget(analyzedInstruction, RegisterType.Category.Byte);
-                return true;
-            case SGET_CHAR:
-            case SGET_CHAR_JUMBO:
-                analyze32BitPrimitiveSget(analyzedInstruction, RegisterType.Category.Char);
-                return true;
-            case SGET_SHORT:
-            case SGET_SHORT_JUMBO:
-                analyze32BitPrimitiveSget(analyzedInstruction, RegisterType.Category.Short);
-                return true;
-            case SGET_WIDE:
-            case SGET_WIDE_JUMBO:
-            case SGET_OBJECT:
-            case SGET_OBJECT_JUMBO:
-                analyzeSgetWideObject(analyzedInstruction);
-                return true;
-            case SPUT:
-            case SPUT_JUMBO:
-            case SPUT_BOOLEAN:
-            case SPUT_BOOLEAN_JUMBO:
-            case SPUT_BYTE:
-            case SPUT_BYTE_JUMBO:
-            case SPUT_CHAR:
-            case SPUT_CHAR_JUMBO:
-            case SPUT_SHORT:
-            case SPUT_SHORT_JUMBO:
-            case SPUT_WIDE:
-            case SPUT_WIDE_JUMBO:
-            case SPUT_OBJECT:
-            case SPUT_OBJECT_JUMBO:
-                return true;
-            case INVOKE_VIRTUAL:
-            case INVOKE_SUPER:
-                return true;
-            case INVOKE_DIRECT:
-                analyzeInvokeDirect(analyzedInstruction);
-                return true;
-            case INVOKE_STATIC:
-            case INVOKE_INTERFACE:
-            case INVOKE_VIRTUAL_RANGE:
-            case INVOKE_VIRTUAL_JUMBO:
-            case INVOKE_SUPER_RANGE:
-            case INVOKE_SUPER_JUMBO:
-                return true;
-            case INVOKE_DIRECT_RANGE:
-            case INVOKE_DIRECT_JUMBO:
-                analyzeInvokeDirectRange(analyzedInstruction);
-                return true;
-            case INVOKE_STATIC_RANGE:
-            case INVOKE_STATIC_JUMBO:
-            case INVOKE_INTERFACE_RANGE:
-            case INVOKE_INTERFACE_JUMBO:
-                return true;
-            case NEG_INT:
-            case NOT_INT:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.Integer);
-                return true;
-            case NEG_LONG:
-            case NOT_LONG:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.LongLo);
-                return true;
-            case NEG_FLOAT:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.Float);
-                return true;
-            case NEG_DOUBLE:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.DoubleLo);
-                return true;
-            case INT_TO_LONG:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.LongLo);
-                return true;
-            case INT_TO_FLOAT:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.Float);
-                return true;
-            case INT_TO_DOUBLE:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.DoubleLo);
-                return true;
-            case LONG_TO_INT:
-            case DOUBLE_TO_INT:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.Integer);
-                return true;
-            case LONG_TO_FLOAT:
-            case DOUBLE_TO_FLOAT:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.Float);
-                return true;
-            case LONG_TO_DOUBLE:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.DoubleLo);
-                return true;
-            case FLOAT_TO_INT:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.Integer);
-                return true;
-            case FLOAT_TO_LONG:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.LongLo);
-                return true;
-            case FLOAT_TO_DOUBLE:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.DoubleLo);
-                return true;
-            case DOUBLE_TO_LONG:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.LongLo);
-                return true;
-            case INT_TO_BYTE:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.Byte);
-                return true;
-            case INT_TO_CHAR:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.Char);
-                return true;
-            case INT_TO_SHORT:
-                analyzeUnaryOp(analyzedInstruction, RegisterType.Category.Short);
-                return true;
-            case ADD_INT:
-            case SUB_INT:
-            case MUL_INT:
-            case DIV_INT:
-            case REM_INT:
-            case SHL_INT:
-            case SHR_INT:
-            case USHR_INT:
-                analyzeBinaryOp(analyzedInstruction, RegisterType.Category.Integer, false);
-                return true;
-            case AND_INT:
-            case OR_INT:
-            case XOR_INT:
-                analyzeBinaryOp(analyzedInstruction, RegisterType.Category.Integer, true);
-                return true;
-            case ADD_LONG:
-            case SUB_LONG:
-            case MUL_LONG:
-            case DIV_LONG:
-            case REM_LONG:
-            case AND_LONG:
-            case OR_LONG:
-            case XOR_LONG:
-            case SHL_LONG:
-            case SHR_LONG:
-            case USHR_LONG:
-                analyzeBinaryOp(analyzedInstruction, RegisterType.Category.LongLo, false);
-                return true;
-            case ADD_FLOAT:
-            case SUB_FLOAT:
-            case MUL_FLOAT:
-            case DIV_FLOAT:
-            case REM_FLOAT:
-                analyzeBinaryOp(analyzedInstruction, RegisterType.Category.Float, false);
-                return true;
-            case ADD_DOUBLE:
-            case SUB_DOUBLE:
-            case MUL_DOUBLE:
-            case DIV_DOUBLE:
-            case REM_DOUBLE:
-                analyzeBinaryOp(analyzedInstruction, RegisterType.Category.DoubleLo, false);
-                return true;
-            case ADD_INT_2ADDR:
-            case SUB_INT_2ADDR:
-            case MUL_INT_2ADDR:
-            case DIV_INT_2ADDR:
-            case REM_INT_2ADDR:
-            case SHL_INT_2ADDR:
-            case SHR_INT_2ADDR:
-            case USHR_INT_2ADDR:
-                analyzeBinary2AddrOp(analyzedInstruction, RegisterType.Category.Integer, false);
-                return true;
-            case AND_INT_2ADDR:
-            case OR_INT_2ADDR:
-            case XOR_INT_2ADDR:
-                analyzeBinary2AddrOp(analyzedInstruction, RegisterType.Category.Integer, true);
-                return true;
-            case ADD_LONG_2ADDR:
-            case SUB_LONG_2ADDR:
-            case MUL_LONG_2ADDR:
-            case DIV_LONG_2ADDR:
-            case REM_LONG_2ADDR:
-            case AND_LONG_2ADDR:
-            case OR_LONG_2ADDR:
-            case XOR_LONG_2ADDR:
-            case SHL_LONG_2ADDR:
-            case SHR_LONG_2ADDR:
-            case USHR_LONG_2ADDR:
-                analyzeBinary2AddrOp(analyzedInstruction, RegisterType.Category.LongLo, false);
-                return true;
-            case ADD_FLOAT_2ADDR:
-            case SUB_FLOAT_2ADDR:
-            case MUL_FLOAT_2ADDR:
-            case DIV_FLOAT_2ADDR:
-            case REM_FLOAT_2ADDR:
-                analyzeBinary2AddrOp(analyzedInstruction, RegisterType.Category.Float, false);
-                return true;
-            case ADD_DOUBLE_2ADDR:
-            case SUB_DOUBLE_2ADDR:
-            case MUL_DOUBLE_2ADDR:
-            case DIV_DOUBLE_2ADDR:
-            case REM_DOUBLE_2ADDR:
-                analyzeBinary2AddrOp(analyzedInstruction, RegisterType.Category.DoubleLo, false);
-                return true;
-            case ADD_INT_LIT16:
-            case RSUB_INT:
-            case MUL_INT_LIT16:
-            case DIV_INT_LIT16:
-            case REM_INT_LIT16:
-                analyzeLiteralBinaryOp(analyzedInstruction, RegisterType.Category.Integer, false);
-                return true;
-            case AND_INT_LIT16:
-            case OR_INT_LIT16:
-            case XOR_INT_LIT16:
-                analyzeLiteralBinaryOp(analyzedInstruction, RegisterType.Category.Integer, true);
-                return true;
-            case ADD_INT_LIT8:
-            case RSUB_INT_LIT8:
-            case MUL_INT_LIT8:
-            case DIV_INT_LIT8:
-            case REM_INT_LIT8:
-            case SHL_INT_LIT8:
-                analyzeLiteralBinaryOp(analyzedInstruction, RegisterType.Category.Integer, false);
-                return true;
-            case AND_INT_LIT8:
-            case OR_INT_LIT8:
-            case XOR_INT_LIT8:
-                analyzeLiteralBinaryOp(analyzedInstruction, RegisterType.Category.Integer, true);
-                return true;
-            case SHR_INT_LIT8:
-                analyzeLiteralBinaryOp(analyzedInstruction, getDestTypeForLiteralShiftRight(analyzedInstruction, true),
-                        false);
-                return true;
-            case USHR_INT_LIT8:
-                analyzeLiteralBinaryOp(analyzedInstruction, getDestTypeForLiteralShiftRight(analyzedInstruction, false),
-                        false);
-                return true;
+		}
+		@Override
+		public void visit(DexInstruction_MoveWide dexInstruction_MoveWide) {
+			// TODO Auto-generated method stub
+            analyzeMove(analyzedInstruction);
 
-            /*odexed instructions*/
-            case IGET_VOLATILE:
-            case IPUT_VOLATILE:
-            case SGET_VOLATILE:
-            case SPUT_VOLATILE:
-            case IGET_OBJECT_VOLATILE:
-            case IGET_WIDE_VOLATILE:
-            case IPUT_WIDE_VOLATILE:
-            case SGET_WIDE_VOLATILE:
-            case SPUT_WIDE_VOLATILE:
-                analyzePutGetVolatile(analyzedInstruction);
-                return true;
-            case THROW_VERIFICATION_ERROR:
-                return true;
-            case EXECUTE_INLINE:
-                analyzeExecuteInline(analyzedInstruction);
-                return true;
-            case EXECUTE_INLINE_RANGE:
-                analyzeExecuteInlineRange(analyzedInstruction);
-                return true;
-            case INVOKE_DIRECT_EMPTY:
-                analyzeInvokeDirectEmpty(analyzedInstruction);
-                return true;
-            case INVOKE_OBJECT_INIT_RANGE:
-                analyzeInvokeObjectInitRange(analyzedInstruction);
-                return true;
-            case IGET_QUICK:
-            case IGET_WIDE_QUICK:
-            case IGET_OBJECT_QUICK:
-            case IPUT_QUICK:
-            case IPUT_WIDE_QUICK:
-            case IPUT_OBJECT_QUICK:
-                return analyzeIputIgetQuick(analyzedInstruction);
-            case INVOKE_VIRTUAL_QUICK:
-                return analyzeInvokeVirtualQuick(analyzedInstruction, false, false);
-            case INVOKE_SUPER_QUICK:
-                return analyzeInvokeVirtualQuick(analyzedInstruction, true, false);
-            case INVOKE_VIRTUAL_QUICK_RANGE:
-                return analyzeInvokeVirtualQuick(analyzedInstruction, false, true);
-            case INVOKE_SUPER_QUICK_RANGE:
-                return analyzeInvokeVirtualQuick(analyzedInstruction, true, true);
-            case IPUT_OBJECT_VOLATILE:
-            case SGET_OBJECT_VOLATILE:
-            case SPUT_OBJECT_VOLATILE:
-                analyzePutGetVolatile(analyzedInstruction);
-                return true;
-            case INVOKE_OBJECT_INIT_JUMBO:
-                analyzeInvokeObjectInitJumbo(analyzedInstruction);
-                return true;
-            case IGET_VOLATILE_JUMBO:
-            case IGET_WIDE_VOLATILE_JUMBO:
-            case IGET_OBJECT_VOLATILE_JUMBO:
-            case IPUT_VOLATILE_JUMBO:
-            case IPUT_WIDE_VOLATILE_JUMBO:
-            case IPUT_OBJECT_VOLATILE_JUMBO:
-            case SGET_VOLATILE_JUMBO:
-            case SGET_WIDE_VOLATILE_JUMBO:
-            case SGET_OBJECT_VOLATILE_JUMBO:
-            case SPUT_VOLATILE_JUMBO:
-            case SPUT_WIDE_VOLATILE_JUMBO:
-            case SPUT_OBJECT_VOLATILE_JUMBO:
-                analyzePutGetVolatile(analyzedInstruction);
-                return true;
-            default:
-                assert false;
-                return true;
-        }
+		}
+		@Override
+		public void visit(DexInstruction_MoveResult dexInstruction_MoveResult) {
+			// TODO Auto-generated method stub
+            analyzeMoveResult(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(
+				DexInstruction_MoveResultWide dexInstruction_MoveResultWide) {
+			// TODO Auto-generated method stub
+            analyzeMoveResult(analyzedInstruction);
+		}
+		@Override
+		public void visit(
+				DexInstruction_MoveException dexInstruction_MoveException) {
+			// TODO Auto-generated method stub
+            analyzeMoveException(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_ReturnVoid dexInstruction_ReturnVoid) {}
+		
+		@Override
+		public void visit(DexInstruction_Return dexInstruction_Return) {}
+		
+		@Override
+		public void visit(DexInstruction_ReturnWide dexInstruction_ReturnWide) {}
+		
+		@Override
+		public void visit(DexInstruction_Const dexInstruction_Const) {
+			// TODO Auto-generated method stub
+            analyzeConst(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_ConstWide dexInstruction_ConstWide) {
+			// TODO Auto-generated method stub
+            analyzeConst(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_ConstString dexInstruction_ConstString) {
+			// TODO Auto-generated method stub
+            analyzeConstString(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_ConstClass dexInstruction_ConstClass) {
+			// TODO Auto-generated method stub
+            analyzeConstClass(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_Monitor dexInstruction_Monitor) {}
+		
+		@Override
+		public void visit(DexInstruction_CheckCast dexInstruction_CheckCast) {
+			// TODO Auto-generated method stub
+            analyzeCheckCast(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_InstanceOf dexInstruction_InstanceOf) {
+			// TODO Auto-generated method stub
+            analyzeInstanceOf(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_ArrayLength dexInstruction_ArrayLength) {
+			// TODO Auto-generated method stub
+            analyzeArrayLength(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_NewInstance dexInstruction_NewInstance) {
+			// TODO Auto-generated method stub
+            analyzeNewInstance(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_NewArray dexInstruction_NewArray) {
+			// TODO Auto-generated method stub
+            analyzeNewArray(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_FilledNewArray dexInstruction_FilledNewArray) {}
+		
+		@Override
+		public void visit(DexInstruction_FillArray dexInstruction_FillArray) {
+			// TODO Auto-generated method stub
+            analyzeArrayDataOrSwitch(analyzedInstruction);
+			
+		}
+		
+		@Override
+		public void visit(DexInstruction_FillArrayData dexInstruction_FillArrayData) {}
+		
+		@Override
+		public void visit(DexInstruction_Throw dexInstruction_Throw) {}
+		
+		@Override
+		public void visit(DexInstruction_Goto dexInstruction_Goto) {}
+		
+		@Override
+		public void visit(DexInstruction_Switch dexInstruction_Switch) {
+			// TODO Auto-generated method stub
+            analyzeArrayDataOrSwitch(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_PackedSwitchData dexInstruction_PackedSwitchData) {}
+		
+		@Override
+		public void visit(DexInstruction_SparseSwitchData dexInstruction_SparseSwitchData) {}
+		
+		@Override
+		public void visit(
+				DexInstruction_CompareFloat dexInstruction_CompareFloat) {
+			// TODO Auto-generated method stub
+            analyzeFloatWideCmp(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_CompareWide dexInstruction_CompareWide) {
+			// TODO Auto-generated method stub
+            analyzeFloatWideCmp(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_IfTest dexInstruction_IfTest) {}
+		
+		@Override
+		public void visit(DexInstruction_IfTestZero dexInstruction_IfTestZero) {}
+		
+		@Override
+		public void visit(DexInstruction_ArrayGet inst) {
+	    	if (inst.getOpcode() == Opcode_GetPut.Object) {
+
+	            RegisterType arrayRegisterType = instruction.getPreRegisterType(inst.getRegArray());
+	            assert arrayRegisterType != null;
+
+	            if (arrayRegisterType.category != RegisterType.Category.Null) {
+	                assert arrayRegisterType.type != null;
+	                if (arrayRegisterType.type.getClassType().charAt(0) != '[') {
+	                    throw new ValidationException(String.format("Cannot use aget-object with non-array type %s",
+	                            arrayRegisterType.type.getClassType()));
+	                }
+
+	                assert arrayRegisterType.type instanceof ClassPath.ArrayClassDef;
+	                ClassPath.ArrayClassDef arrayClassDef = (ClassPath.ArrayClassDef)arrayRegisterType.type;
+
+	                ClassPath.ClassDef elementClassDef = arrayClassDef.getImmediateElementClass();
+	                char elementTypePrefix = elementClassDef.getClassType().charAt(0);
+	                if (elementTypePrefix != 'L' && elementTypePrefix != '[') {
+	                    throw new ValidationException(String.format("Cannot use aget-object with array type %s. Incorrect " +
+	                            "array type for the instruction.", arrayRegisterType.type.getClassType()));
+	                }
+
+	                setDestinationRegisterTypeAndPropagateChanges(instruction,
+	                        RegisterType.getRegisterType(RegisterType.Category.Reference, elementClassDef));
+	            } else {
+	                setDestinationRegisterTypeAndPropagateChanges(instruction,
+	                        RegisterType.getRegisterType(RegisterType.Category.Null, null));
+	            }
+	    		
+	    	} else {
+	    		
+		    	RegisterType.Category category;
+		    	switch (inst.getOpcode()) {
+				case Boolean:
+					category = RegisterType.Category.Boolean;
+					break;
+				case Byte:
+					category = RegisterType.Category.Byte;
+					break;
+				case Char:
+					category = RegisterType.Category.Char;
+					break;
+				case IntFloat:
+					category = RegisterType.Category.Integer; // Ambiguity here does not matter, type merging will deal with it.
+					break;
+				case Short:
+					category = RegisterType.Category.Short;
+					break;
+				default:
+					throw new ValidationException("wrong type AGET");
+		    	}
+		    	setDestinationRegisterTypeAndPropagateChanges(instruction, RegisterType.getRegisterType(category, null));
+	    	}
+		}		
+		@Override
+		public void visit(
+				DexInstruction_ArrayGetWide dexInstruction_ArrayGetWide) {
+			// TODO Auto-generated method stub
+            analyzeAgetWide(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_ArrayPut dexInstruction_ArrayPut) {}
+		
+		@Override
+		public void visit(DexInstruction_ArrayPutWide dexInstruction_ArrayPutWide) {}
+		
+		@Override
+		public void visit(DexInstruction_InstanceGet dexInstruction_InstanceGet) {
+			// TODO Auto-generated method stub
+            analyze32BitPrimitiveIget(analyzedInstruction, RegisterType.Category.Integer);
+            analyzeIgetWideObject(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(
+				DexInstruction_InstanceGetWide dexInstruction_InstanceGetWide) {
+			// TODO Auto-generated method stub
+            analyze32BitPrimitiveIget(analyzedInstruction, RegisterType.Category.Integer);
+            analyzeIgetWideObject(analyzedInstruction);
+			
+		}
+		@Override
+		public void visit(DexInstruction_InstancePut dexInstruction_InstancePut) {}
+		
+		@Override
+		public void visit(DexInstruction_InstancePutWide dexInstruction_InstancePutWide) {}
+		
+		@Override
+		public void visit(DexInstruction_StaticGet dexInstruction_StaticGet) {
+			// TODO Auto-generated method stub
+            analyze32BitPrimitiveSget(analyzedInstruction, RegisterType.Category.Integer);
+            analyzeSgetWideObject(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(
+				DexInstruction_StaticGetWide dexInstruction_StaticGetWide) {
+			// TODO Auto-generated method stub
+            analyze32BitPrimitiveSget(analyzedInstruction, RegisterType.Category.Integer);
+            analyzeSgetWideObject(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_StaticPut dexInstruction_StaticPut) {}
+		
+		@Override
+		public void visit(DexInstruction_StaticPutWide dexInstruction_StaticPutWide) {}
+		
+		@Override
+		public void visit(DexInstruction_Invoke dexInstruction_Invoke) {
+			// TODO Auto-generated method stub
+			//INVOKE_DIRECT:
+            analyzeInvokeDirect(analyzedInstruction);
+
+		}
+		@Override
+		public void visit(DexInstruction_UnaryOp dexInstruction_UnaryOp) {
+			// TODO Auto-generated method stub
+            analyzeUnaryOp(analyzedInstruction, RegisterType.Category.Integer);
+            analyzeUnaryOp(analyzedInstruction, RegisterType.Category.LongLo);
+
+		}
+		@Override
+		public void visit(DexInstruction_UnaryOpWide dexInstruction_UnaryOpWide) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void visit(DexInstruction_Convert dexInstruction_Convert) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void visit(DexInstruction_ConvertWide dexInstruction_ConvertWide) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void visit(
+				DexInstruction_ConvertFromWide dexInstruction_ConvertFromWide) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void visit(
+				DexInstruction_ConvertToWide dexInstruction_ConvertToWide) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void visit(DexInstruction_BinaryOp dexInstruction_BinaryOp) {
+			// TODO Auto-generated method stub
+            analyzeBinaryOp(analyzedInstruction, RegisterType.Category.Integer, false);
+            analyzeBinaryOp(analyzedInstruction, RegisterType.Category.Integer, true);
+
+		}
+		@Override
+		public void visit(
+				DexInstruction_BinaryOpLiteral dexInstruction_BinaryOpLiteral) {
+			// TODO Auto-generated method stub
+			
+		}
+		@Override
+		public void visit(
+				DexInstruction_BinaryOpWide dexInstruction_BinaryOpWide) {
+			// TODO Auto-generated method stub
+            analyzeBinaryOp(analyzedInstruction, RegisterType.Category.LongLo, false);
+
+		}
+		@Override
+		public void visit(DexInstruction_Unknown dexInstruction_Unknown) {
+			assert false;
+		}
+		
+    };
+    
+    private void analyzeInstruction(AnalyzedDexInstruction instruction) {
+    	DexInstruction inst = instruction.instruction;
+    	
+    	instructionAnalyzer.setAnalyzedInstruction(instruction);
+    	inst.accept(instructionAnalyzer);
     }
+
 
 
     private static final EnumSet<RegisterType.Category> Primitive32BitCategories = EnumSet.of(

@@ -108,4 +108,9 @@ public class DexInstruction_SparseSwitchData extends DexInstruction {
       succ.add(pair.getValB());
     return succ;
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

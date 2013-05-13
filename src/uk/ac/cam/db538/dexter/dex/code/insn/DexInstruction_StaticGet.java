@@ -175,4 +175,9 @@ public class DexInstruction_StaticGet extends DexInstruction {
       // the object itself has taint, no need to do anything
     }
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

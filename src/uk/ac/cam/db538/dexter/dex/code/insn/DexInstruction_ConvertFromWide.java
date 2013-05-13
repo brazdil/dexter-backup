@@ -127,4 +127,9 @@ public class DexInstruction_ConvertFromWide extends DexInstruction {
       return super.gcDefinedRegisterType(reg);
   }
 
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

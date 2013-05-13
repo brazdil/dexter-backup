@@ -181,4 +181,9 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
                        state.getCache().getTaintField_ExternalStatic(fieldClass, (DexPrimitiveType) fieldType, fieldName))
                    });
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }

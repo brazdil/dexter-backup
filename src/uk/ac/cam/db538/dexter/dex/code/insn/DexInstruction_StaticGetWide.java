@@ -181,4 +181,9 @@ public class DexInstruction_StaticGetWide extends DexInstruction {
                    });
     }
   }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
+  }
 }
