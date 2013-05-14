@@ -457,29 +457,57 @@ public class DexCodeAnalyzer {
 		@Override
 		public void visit(DexInstruction_Nop dexInstruction_Nop) {}
 		
+		private void analyzeMove(DexRegister srcReg) {
+			RegisterType valueType = instruction.getPreRegisterType(srcReg);
+			setDestinationRegisterTypeAndPropagateChanges(instruction, valueType);
+		}
 		@Override
 		public void visit(DexInstruction_Move dexInstruction_Move) {
-			// TODO Auto-generated method stub
-            analyzeMove(analyzedInstruction);
+			analyzeMove(dexInstruction_Move.getRegFrom());
+//            analyzeMove(analyzedInstruction);
 
 		}
 		@Override
 		public void visit(DexInstruction_MoveWide dexInstruction_MoveWide) {
-			// TODO Auto-generated method stub
-            analyzeMove(analyzedInstruction);
+			assert DexRegisterHelper.isPair(dexInstruction_MoveWide.getRegFrom1(),  dexInstruction_MoveWide.getRegFrom2());
+			assert DexRegisterHelper.isPair(dexInstruction_MoveWide.getRegTo1(),  dexInstruction_MoveWide.getRegTo2());
+			analyzeMove(dexInstruction_MoveWide.getRegFrom1());
+//            analyzeMove(analyzedInstruction);
 
+		}
+		
+		private void analyzeMoveResult(DexRegister srcReg) {
+			assert instruction.getPredecessorCount() == 1;
+			
+	        AnalyzedDexInstruction prevAnalyzedInst = instruction.getPredecessors().get(0);
+	        
+	        DexRegisterType resultRegisterType;
+	        if (prevAnalyzedInst.instruction instanceof DexInstruction_Invoke) {
+	        	DexInstruction_Invoke i = (DexInstruction_Invoke) prevAnalyzedInst.instruction;
+	        	resultRegisterType = (DexRegisterType)i.getMethodPrototype().getReturnType();
+	        } else if (prevAnalyzedInst.instruction instanceof DexInstruction_FilledNewArray) {
+	        	DexInstruction_FilledNewArray i = (DexInstruction_FilledNewArray)prevAnalyzedInst.instruction;
+	        	resultRegisterType = i.getArrayType();
+	        } else {
+	            throw new ValidationException(instruction.instruction.getOriginalAssembly() + " must occur after an " +
+	                    "invoke-*/fill-new-array instruction");
+	        }
+	        
+	        		
+	        setDestinationRegisterTypeAndPropagateChanges(instruction, 
+	        		DexRegisterTypeHelper.toRegisterType(resultRegisterType));			
 		}
 		@Override
 		public void visit(DexInstruction_MoveResult dexInstruction_MoveResult) {
-			// TODO Auto-generated method stub
-            analyzeMoveResult(analyzedInstruction);
+			analyzeMoveResult(dexInstruction_MoveResult.getRegTo());
+//			analyzeMoveResult(analyzedInstruction);
 
 		}
 		@Override
-		public void visit(
-				DexInstruction_MoveResultWide dexInstruction_MoveResultWide) {
-			// TODO Auto-generated method stub
-            analyzeMoveResult(analyzedInstruction);
+		public void visit(DexInstruction_MoveResultWide dexInstruction_MoveResultWide) {
+			assert DexRegisterHelper.isPair(dexInstruction_MoveResultWide.getRegTo1(),  dexInstruction_MoveResultWide.getRegTo2());
+			analyzeMoveResult(dexInstruction_MoveResultWide.getRegTo1());
+//            analyzeMoveResult(analyzedInstruction);
 		}
 		@Override
 		public void visit(
