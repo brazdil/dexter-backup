@@ -23,4 +23,9 @@ public class DexRegisterHelper {
 		else
 			return reg;
 	}
+
+	public static boolean isPair(DexRegister r0, DexRegister r1) {
+		return r0.getOriginalIndex() + 1 == r1.getOriginalIndex();
+	}
+	
 }
