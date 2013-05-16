@@ -1,5 +1,19 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_FilledNewArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalClassAnnotation;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalMethodAnnotation;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetMethodCaller;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetQueryTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetServiceTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintIntegerConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintString;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.DexPseudoinstruction_Invoke;
+
 public interface DexInstructionVisitor {
 
 	void visit(DexInstruction_Nop dexInstruction_Nop);
@@ -109,5 +123,31 @@ public interface DexInstructionVisitor {
 	void visit(DexInstruction_BinaryOpWide dexInstruction_BinaryOpWide);
 
 	void visit(DexInstruction_Unknown dexInstruction_Unknown);
+
+	void visit(DexPseudoinstruction_FilledNewArray dexPseudoinstruction_FilledNewArray);
+
+	void visit(DexPseudoinstruction_GetInternalClassAnnotation dexPseudoinstruction_GetInternalClassAnnotation);
+
+	void visit(DexPseudoinstruction_GetInternalMethodAnnotation dexPseudoinstruction_GetInternalMethodAnnotation);
+
+	void visit(DexPseudoinstruction_GetMethodCaller dexPseudoinstruction_GetMethodCaller);
+
+	void visit(DexPseudoinstruction_GetObjectTaint dexPseudoinstruction_GetObjectTaint);
+
+	void visit(DexPseudoinstruction_GetQueryTaint dexPseudoinstruction_GetQueryTaint);
+
+	void visit(DexPseudoinstruction_GetServiceTaint dexPseudoinstruction_GetServiceTaint);
+
+	void visit(DexPseudoinstruction_PrintInteger dexPseudoinstruction_PrintInteger);
+
+	void visit(DexPseudoinstruction_PrintIntegerConst dexPseudoinstruction_PrintIntegerConst);
+
+	void visit(DexPseudoinstruction_PrintString dexPseudoinstruction_PrintString);
+
+	void visit(DexPseudoinstruction_PrintStringConst dexPseudoinstruction_PrintStringConst);
+
+	void visit(DexPseudoinstruction_SetObjectTaint dexPseudoinstruction_SetObjectTaint);
+
+	void visit(DexPseudoinstruction_Invoke dexPseudoinstruction_Invoke);
 
 }

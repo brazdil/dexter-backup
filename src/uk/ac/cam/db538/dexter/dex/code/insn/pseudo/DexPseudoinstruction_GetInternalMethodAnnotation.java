@@ -12,6 +12,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionVisitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
@@ -169,5 +170,9 @@ public class DexPseudoinstruction_GetInternalMethodAnnotation extends DexPseudoi
     instrumentedCode.add(new DexInstruction_MoveResult(methodCode, regTo, true));
 
     return instrumentedCode;
+  }
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
   }
 }

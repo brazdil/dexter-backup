@@ -8,6 +8,7 @@ import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionVisitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 
@@ -39,5 +40,10 @@ public class DexPseudoinstruction_GetServiceTaint extends DexPseudoinstruction {
                            new DexPseudoinstruction_PrintStringConst(code, " => ", false),
                            new DexPseudoinstruction_PrintInteger(code, regTo, true)
                          });
+  }
+
+  @Override
+  public void accept(DexInstructionVisitor visitor) {
+	visitor.visit(this);
   }
 }
