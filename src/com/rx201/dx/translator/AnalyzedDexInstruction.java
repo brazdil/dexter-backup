@@ -6,11 +6,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.jf.dexlib.Code.Analysis.RegisterType;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
@@ -22,7 +24,7 @@ public class AnalyzedDexInstruction {
 	     * The actual instruction
 	     */
 	    protected final DexInstruction instruction;
-
+	    protected DexCodeElement auxillaryElement;
 
 	    /**
 	     * Instructions that can pass on execution to this one during normal execution
@@ -63,6 +65,12 @@ public class AnalyzedDexInstruction {
 	        this.preRegisterMap = new HashMap<DexRegister, RegisterType>();
 	        this.cache = cache;
 	        this.instructionIndex = index;
+	        this.auxillaryElement = null;
+	    }
+
+	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexCodeElement element, DexParsingCache cache) {
+	    	this(index, instruction, cache);
+	    	this.auxillaryElement = element;
 	    }
 
 	    public int getPredecessorCount() {
@@ -254,6 +262,10 @@ public class AnalyzedDexInstruction {
 
 	    public int getRegisterCount() {
 	        return postRegisterMap.size();
+	    }
+
+	    public Set<DexRegister> getPostRegisters() {
+	    	return postRegisterMap.keySet();
 	    }
 
 	    public RegisterType getPostRegisterType(DexRegister registerNumber) {
