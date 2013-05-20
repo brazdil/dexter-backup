@@ -18,6 +18,8 @@ import org.jf.dexlib.DebugInfoItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.AccessFlags;
 
+import com.rx201.dx.translator.DexCodeGeneration;
+
 import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
@@ -172,6 +174,10 @@ public abstract class DexMethodWithCode extends DexMethod {
     if (code == null)
       return null;
 
+    DexCodeGeneration cg = new DexCodeGeneration(this, this.getParentFile().getParsingCache());
+    if (outFile != null)
+    	return cg.generateCodeItem(outFile);
+    
     // do register allocation
     // note that this changes the code itself
     // (adds temporaries, inserts move instructions)

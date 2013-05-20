@@ -18,6 +18,7 @@ import org.jf.baksmali.Adaptors.Format.InstructionMethodItem;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DebugInfoItem;
+import org.jf.dexlib.DexFile;
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.Code.Instruction;
@@ -28,7 +29,11 @@ import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.Util.AccessFlags;
 import org.jf.util.IndentingWriter;
 
+import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
+import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 import com.android.dx.cf.code.ConcreteMethod;
 import com.android.dx.cf.code.LocalVariableList;
@@ -42,7 +47,6 @@ import com.android.dx.dex.code.DalvCode;
 import com.android.dx.dex.code.PositionList;
 import com.android.dx.dex.code.RopTranslator;
 import com.android.dx.dex.file.ClassDefItem;
-import com.android.dx.dex.file.DexFile;
 import com.android.dx.rop.annotation.Annotations;
 import com.android.dx.rop.code.BasicBlock;
 import com.android.dx.rop.code.BasicBlockList;
@@ -66,138 +70,111 @@ import com.android.dx.rop.type.Type;
 import com.android.dx.ssa.Optimizer;
 import com.android.dx.util.Hex;
 import com.android.dx.util.IntList;
+import com.rx201.dx.translator.util.DexRegisterHelper;
 import com.rx201.dx.translator.util.MethodParameter;
 import com.rx201.dx.translator.util.MethodPrototype;
 
-public class Translator {
+public class DexCodeGeneration {
 
-	private DexFile dexFile;
 	private DexOptions dexOptions;
-
-	public Translator() {
+	
+	private DexMethodWithCode method;
+	private int inWords;
+	private int outWords;
+	private boolean isStatic;
+	
+	private DexCodeAnalyzer analyzer;
+	
+	public DexCodeGeneration(DexMethodWithCode method, DexParsingCache cache) {
 		dexOptions = new DexOptions();
 	    dexOptions.targetApiLevel = 10;
-		dexFile = new DexFile(dexOptions);
+	    
+	    this.method = method;
+		inWords = method.getPrototype().getParameterCount(method.isStatic());
+		outWords = method.getCode().getOutWords();
+		isStatic = method.isStatic();
+		
+	    this.analyzer = new DexCodeAnalyzer(method.getCode(), cache);
+	    this.analyzer.analyze();
 	}
-	/*
-	public void addClass() {
-        DirectClassFile cf =
-                new DirectClassFile(bytes, filePath, cfOptions.strictNameCheck);
-
-            cf.setAttributeFactory(StdAttributeFactory.THE_ONE);
-            cf.getMagic();
-
-            OptimizerOptions.loadOptimizeLists(cfOptions.optimizeListFile,
-                    cfOptions.dontOptimizeListFile);
-
-            // Build up a class to output.
-
-            CstType thisClass = cf.getThisClass();
-            int classAccessFlags = cf.getAccessFlags() & ~AccessFlags.ACC_SUPER;
-            CstString sourceFile = (cfOptions.positionInfo == PositionList.NONE) ? null :
-                cf.getSourceFile();
-            ClassDefItem out =
-                new ClassDefItem(thisClass, classAccessFlags,
-                        cf.getSuperclass(), cf.getInterfaces(), sourceFile);
-
-            Annotations classAnnotations =
-                AttributeTranslator.getClassAnnotations(cf, cfOptions);
-            if (classAnnotations.size() != 0) {
-                out.setClassAnnotations(classAnnotations);
-            }
-
-            processFields(cf, out);
-            processMethods(cf, cfOptions, dexOptions, out);
-
-            dexFile.add(out);
+	
+	
+	public CodeItem generateCodeItem(DexFile dexFile) {
+		
+		DalvCode translatedCode = processMethod(method.getCode());
+		
+		List<Instruction> instructions = getInstructions(translatedCode);
+		List<TryItem> newTries = getTries(translatedCode);
+		List<EncodedCatchHandler> newCatchHandlers = getCatchHandlers(translatedCode);
+		int registerCount = getRegisterCount(translatedCode); 
+		
+		return CodeItem.internCodeItem(dexFile, registerCount, inWords, outWords, /* debugInfo */ null, instructions, newTries, newCatchHandlers);
+		
 	}
-	*/
-	private void processMethod(EncodedMethod method) {
-		CodeItem code = method.codeItem;
+
+	private DalvCode processMethod(DexCode code) {
 		if (code == null) 
-			return;
-		int paramSize = code.getInWords();
-		boolean isStatic = (method.accessFlags & AccessFlags.STATIC.getValue()) != 0;
+			return null;
 
 		RopMethod rmeth = toRop(code);
 		System.out.println("==== Before Optimization ====");
 		dump(rmeth);
 		
-        rmeth = Optimizer.optimize(rmeth, paramSize, isStatic, false, DexTranslationAdvice.THE_ONE);
+        rmeth = Optimizer.optimize(rmeth, inWords, isStatic, false, DexTranslationAdvice.THE_ONE);
 		System.out.println("==== After Optimization ====");
 		dump(rmeth);
 		
-        DalvCode dcode = RopTranslator.translate(rmeth, PositionList.NONE, null, paramSize, dexOptions);
+        DalvCode dcode = RopTranslator.translate(rmeth, PositionList.NONE, null, inWords, dexOptions);
+        
+        return dcode;
 	}
 	
-	public void write() {
-		Writer humanOut = new OutputStreamWriter(System.out);
-        try {
-			byte[] outArray = dexFile.toDex(humanOut, true);
-	        humanOut.flush();
-	        
-	        FileOutputStream output = new FileOutputStream(new File("result.dex"));
-	        output.write(outArray);
-	        output.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private RopMethod toRop(CodeItem method) {
-		MethodAnalyzer analyzer = new MethodAnalyzer(method.getParent(), false, null);
-		analyzer.analyze();
-        HashMap<Instruction, AnalyzedInstruction> analysisResult = new HashMap<Instruction, AnalyzedInstruction>();
-        for(AnalyzedInstruction analyzedInst : analyzer.getInstructions()) {
-                analysisResult.put(analyzedInst.getInstruction(), analyzedInst);
-        }
+	private RopMethod toRop(DexCode code) {
         
         // Build basic blocks
-        ArrayList<ArrayList<AnalyzedInstruction>> basicBlocks = buildBasicBlocks(analyzer);
+        ArrayList<ArrayList<AnalyzedDexInstruction>> basicBlocks = buildBasicBlocks();
         
-        Converter converter = new Converter(analyzer, method);
+        DexInstructionTranslator translator = new DexInstructionTranslator(analyzer);
 
         IndentingWriter writer = new IndentingWriter(new OutputStreamWriter(System.out));
         try {
-			writer.write(String.format("%s total reg: %d param reg: %d\n", method.getParent().method.getShortMethodString(), 
-					method.getRegisterCount(),
-					method.getParent().method.getPrototype().getParameterRegisterCount()));
+			writer.write(String.format("%s param reg: %d\n", method.getName()  + method.getPrototype().toString(), 
+					inWords));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
         
         // Convert basicBlocks, hold the result in the temporary map. It is indexed by the basic block's first AnalyzedInst.
-        HashMap<AnalyzedInstruction, ArrayList<Insn>> convertedBasicBlocks = new HashMap<AnalyzedInstruction, ArrayList<Insn>>();
-        HashMap<AnalyzedInstruction, ConvertedResult> convertedBasicBlocksInfo = new HashMap<AnalyzedInstruction, ConvertedResult>();
-        HashSet<AnalyzedInstruction> auxAdded = new HashSet<AnalyzedInstruction>();
+        HashMap<AnalyzedDexInstruction, ArrayList<Insn>> convertedBasicBlocks = new HashMap<AnalyzedDexInstruction, ArrayList<Insn>>();
+        HashMap<AnalyzedDexInstruction, DexConvertedResult> convertedBasicBlocksInfo = new HashMap<AnalyzedDexInstruction, DexConvertedResult>();
+        HashSet<AnalyzedDexInstruction> auxAdded = new HashSet<AnalyzedDexInstruction>();
         for(int bi=0; bi< basicBlocks.size(); bi++) 
     		convertedBasicBlocks.put(basicBlocks.get(bi).get(0), new ArrayList<Insn>());
         	
         for(int bi=0; bi< basicBlocks.size(); bi++) {
-        	ArrayList<AnalyzedInstruction> basicBlock = basicBlocks.get(bi);
-        	AnalyzedInstruction bbIndex = basicBlock.get(0);
+        	ArrayList<AnalyzedDexInstruction> basicBlock = basicBlocks.get(bi);
+        	AnalyzedDexInstruction bbIndex = basicBlock.get(0);
         	
         	// Process instruction in the basic block as a whole, 
         	ArrayList<Insn> insnBlock = convertedBasicBlocks.get(bbIndex);
-        	ConvertedResult lastInsn = null;
+        	DexConvertedResult lastInsn = null;
         	for(int i = 0; i < basicBlock.size(); i++) {
-        		AnalyzedInstruction inst = basicBlock.get(i);
+        		AnalyzedDexInstruction inst = basicBlock.get(i);
         		if (inst.getInstruction() != null) {
-        			InstructionMethodItem<Instruction> x = new InstructionMethodItem<Instruction>(method, 0, inst.getInstruction()) ;
 					try {
-						x.writeTo(writer);
+						writer.write(inst.getInstruction().getOriginalAssembly());
 						writer.flush();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
         		}
-        		lastInsn = converter.convert(inst);
+        		lastInsn = translator.translate(inst);
         		insnBlock.addAll(lastInsn.insns);
         		
         		if (i != basicBlock.size() - 1) {
         			assert lastInsn.auxInsns.size() == 0;
         		} else if (lastInsn.auxInsns.size() != 0) { // Propagate auxInsns to primary successors
-        			AnalyzedInstruction s = lastInsn.primarySuccessor;
+        			AnalyzedDexInstruction s = lastInsn.primarySuccessor;
     				assert !auxAdded.contains(s);
     				for(int ai = 0; ai < lastInsn.auxInsns.size(); ai++)
     					convertedBasicBlocks.get(s).add(ai, lastInsn.auxInsns.get(ai));
@@ -218,12 +195,15 @@ public class Translator {
         	
             // Add move-params to the beginning of the first block
         	if (bi == 0) {
-        		for(MethodParameter param : new MethodPrototype(method)) {
-	                Type one = Type.intern(param.getType().getTypeDescriptor());
-	                Insn insn = new PlainCstInsn(Rops.opMoveParam(one), SourcePosition.NO_INFO, RegisterSpec.make(param.getAbsoluteRegIndex(), one),
+        		DexPrototype prototype = method.getPrototype();
+        		for(int i = 0; i < prototype.getParameterCount(isStatic); i++) {
+        			DexRegisterType param = prototype.getParameterType(i, isStatic, method.getParentClass());
+        			int paramRegId = DexRegisterHelper.normalize(prototype.getFirstParameterRegisterIndex(i, isStatic)).getOriginalIndex();
+	                Type one = Type.intern(param.getDescriptor());
+	                Insn insn = new PlainCstInsn(Rops.opMoveParam(one), SourcePosition.NO_INFO, RegisterSpec.make(paramRegId, one),
 	                                             RegisterSpecList.EMPTY,
-	                                             CstInteger.make(param.getIndex()));
-	                insnBlock.add(param.getIndex(), insn);
+	                                             CstInteger.make(i));
+	                insnBlock.add(i, insn);
                 }
         	}
         	
@@ -235,9 +215,9 @@ public class Translator {
         BasicBlockList ropBasicBlocks = new BasicBlockList(convertedBasicBlocks.size());
         int bbIndex = 0;
        
-        for(AnalyzedInstruction head : convertedBasicBlocks.keySet()) {
+        for(AnalyzedDexInstruction head : convertedBasicBlocks.keySet()) {
         	ArrayList<Insn> insnBlock = convertedBasicBlocks.get(head); 
-        	ConvertedResult lastInsn = convertedBasicBlocksInfo.get(head);
+        	DexConvertedResult lastInsn = convertedBasicBlocksInfo.get(head);
         	
            	// then convert them to InsnList
         	InsnList insns = new InsnList(insnBlock.size());
@@ -246,7 +226,7 @@ public class Translator {
         	insns.setImmutable();
         	
         	IntList successors = new IntList();
-        	for(AnalyzedInstruction s : lastInsn.successors) 
+        	for(AnalyzedDexInstruction s : lastInsn.successors) 
         		successors.add(s.getInstructionIndex());
         	successors.setImmutable();
         	
@@ -259,29 +239,29 @@ public class Translator {
         return new SimpleRopMethod(ropBasicBlocks, analyzer.getStartOfMethod().getSuccesors().get(0).getInstructionIndex());
 	}
 	
-	private ArrayList<ArrayList<AnalyzedInstruction>> buildBasicBlocks(MethodAnalyzer analyzer) {
-        ArrayList<ArrayList<AnalyzedInstruction>> basicBlocks = new ArrayList<ArrayList<AnalyzedInstruction>>();
+	private ArrayList<ArrayList<AnalyzedDexInstruction>> buildBasicBlocks() {
+        ArrayList<ArrayList<AnalyzedDexInstruction>> basicBlocks = new ArrayList<ArrayList<AnalyzedDexInstruction>>();
         
-        Stack<AnalyzedInstruction> leads = new Stack<AnalyzedInstruction>();
-        assert analyzer.getStartOfMethod().getSuccesors().size() == 0;
+        Stack<AnalyzedDexInstruction> leads = new Stack<AnalyzedDexInstruction>();
+        assert analyzer.getStartOfMethod().getSuccesors().size() == 1;
         leads.push(analyzer.getStartOfMethod().getSuccesors().get(0));
         HashSet<Integer> visited = new HashSet<Integer>();
         
         while(!leads.empty()) {
-        	AnalyzedInstruction first = leads.pop();
+        	AnalyzedDexInstruction first = leads.pop();
         	int id = first.getInstructionIndex();
         	if (visited.contains(id)) continue; // Already visited this basic block before.
         	visited.add(id);
         	
-        	ArrayList<AnalyzedInstruction> block = new ArrayList<AnalyzedInstruction>(); 
+        	ArrayList<AnalyzedDexInstruction> block = new ArrayList<AnalyzedDexInstruction>(); 
         	// Extend this basic block as far as possible
-        	AnalyzedInstruction current = first; // Always refer to latest-added instruction in the bb
+        	AnalyzedDexInstruction current = first; // Always refer to latest-added instruction in the bb
         	block.add(current);
-        	while(current.getSuccessorCount() == 1  && (!current.getInstruction().opcode.canThrow())) { 
+        	while(current.getSuccessorCount() == 1  && (!current.getInstruction().cfgEndsBasicBlock())) { 
         		// Condition 1: current has only one successor
         		// Condition 2: next instruction has only one predecessor
         		// Condition 3: current cannot throw
-        		AnalyzedInstruction next = current.getSuccesors().get(0);
+        		AnalyzedDexInstruction next = current.getSuccesors().get(0);
         		if (next.getPredecessorCount() == 1) {
         			block.add(next);
         			current = next;
@@ -290,7 +270,7 @@ public class Translator {
         	}
         	
         	// Add successors of current to the to-be-visit stack
-        	for(AnalyzedInstruction i : current.getSuccesors())
+        	for(AnalyzedDexInstruction i : current.getSuccesors())
         		leads.push(i);
         	
         	basicBlocks.add(block);
@@ -299,8 +279,8 @@ public class Translator {
         return basicBlocks;
 	}
 
-	
-	private static void dump(RopMethod rmeth) {
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////	
+	private void dump(RopMethod rmeth) {
 		StringBuilder sb = new StringBuilder();
 		
         BasicBlockList blocks = rmeth.getBlocks();
@@ -353,5 +333,54 @@ public class Translator {
         System.out.println(sb.toString());
 	}
 
+	public void write(com.android.dx.dex.file.DexFile dexFile) {
+		Writer humanOut = new OutputStreamWriter(System.out);
+        try {
+			byte[] outArray = dexFile.toDex(humanOut, true);
+	        humanOut.flush();
+	        
+	        FileOutputStream output = new FileOutputStream(new File("result.dex"));
+	        output.write(outArray);
+	        output.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+	public void addClass() {
+		com.android.dx.dex.file.DexFile dexFile = new com.android.dx.dex.file.DexFile(dexOptions);
+		
+        DirectClassFile cf =
+                new DirectClassFile(bytes, filePath, cfOptions.strictNameCheck);
+
+            cf.setAttributeFactory(StdAttributeFactory.THE_ONE);
+            cf.getMagic();
+
+            OptimizerOptions.loadOptimizeLists(cfOptions.optimizeListFile,
+                    cfOptions.dontOptimizeListFile);
+
+            // Build up a class to output.
+
+            CstType thisClass = cf.getThisClass();
+            int classAccessFlags = cf.getAccessFlags() & ~AccessFlags.ACC_SUPER;
+            CstString sourceFile = (cfOptions.positionInfo == PositionList.NONE) ? null :
+                cf.getSourceFile();
+            ClassDefItem out =
+                new ClassDefItem(thisClass, classAccessFlags,
+                        cf.getSuperclass(), cf.getInterfaces(), sourceFile);
+
+            Annotations classAnnotations =
+                AttributeTranslator.getClassAnnotations(cf, cfOptions);
+            if (classAnnotations.size() != 0) {
+                out.setClassAnnotations(classAnnotations);
+            }
+
+            processFields(cf, out);
+            processMethods(cf, cfOptions, dexOptions, out);
+
+            dexFile.add(out);
+	}	
+*/
 }
 
