@@ -115,9 +115,6 @@ public abstract class DexMethod {
     val methodItem = MethodIdItem.internMethodIdItem(outFile, classType, methodPrototype, methodName);
     CodeItem code = generateCodeItem(outFile, cache);
 
-    EncodedMethod newMethod = new EncodedMethod(parentMethod.method, parentMethod.accessFlags, code);
-    Translator.translate(newMethod);
-    
     return new EncodedMethod(methodItem, DexUtils.assembleAccessFlags(accessFlagSet), code);
   }
 
