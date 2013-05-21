@@ -215,19 +215,19 @@ public class DexPrototype {
     return true;
   }
   
-  @Override
-  public String toString() {
+  public String getDescriptor() {
 	  StringBuilder sb = new StringBuilder();
 	  sb.append("(");
-	  boolean first = true;
 	  for(val parameter : parameterTypes) {
-		  if (!first)
-			  sb.append(", ");
 		  sb.append(parameter.getDescriptor());
-		  first = false;
 	  }
 	  sb.append(")");
 	  sb.append(returnType.getDescriptor());
 	  return sb.toString();
+  }
+  
+  @Override
+  public String toString() {
+	  return getDescriptor();
   }
 }

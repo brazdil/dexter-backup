@@ -1,11 +1,44 @@
 package com.rx201.dx.translator;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import lombok.Getter;
+
+import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Analysis.AnalyzedInstruction;
+import org.jf.dexlib.Code.Analysis.RegisterType;
 
 import com.android.dx.rop.code.Insn;
+import com.android.dx.rop.code.PlainCstInsn;
+import com.android.dx.rop.code.PlainInsn;
+import com.android.dx.rop.code.RegOps;
+import com.android.dx.rop.code.RegisterSpec;
+import com.android.dx.rop.code.RegisterSpecList;
+import com.android.dx.rop.code.Rop;
+import com.android.dx.rop.code.Rops;
+import com.android.dx.rop.code.SourcePosition;
+import com.android.dx.rop.code.ThrowingCstInsn;
+import com.android.dx.rop.code.ThrowingInsn;
+import com.android.dx.rop.cst.Constant;
+import com.android.dx.rop.cst.CstBaseMethodRef;
+import com.android.dx.rop.cst.CstInteger;
+import com.android.dx.rop.cst.CstInterfaceMethodRef;
+import com.android.dx.rop.cst.CstLiteralBits;
+import com.android.dx.rop.cst.CstLong;
+import com.android.dx.rop.cst.CstMethodRef;
+import com.android.dx.rop.cst.CstString;
+import com.android.dx.rop.cst.CstType;
+import com.android.dx.rop.cst.CstFieldRef;
+import com.android.dx.rop.cst.CstNat;
+import com.android.dx.rop.type.StdTypeList;
+import com.android.dx.rop.type.Type;
+import com.android.dx.rop.type.TypeList;
 
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionVisitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
@@ -61,6 +94,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpLiteral;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalClassAnnotation;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalMethodAnnotation;
@@ -74,6 +109,12 @@ import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStr
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.DexPseudoinstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
 
 
 class DexConvertedResult {
@@ -126,496 +167,855 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		result = new DexConvertedResult();
 		curInst = inst;
 		
+		List<AnalyzedDexInstruction> successors = inst.getSuccesors();
+		if (successors.size() > 0) {
+			result.setPrimarySuccessor(successors.get(0));
+			for(int i=0; i<successors.size(); i++)
+				result.addSuccessor(successors.get(i));
+		}
+		
 		inst.getInstruction().accept(this);
 		
 		return result;
 	}
 
+	private RegisterSpec toRegSpec(DexRegister reg, DexRegisterType type) {
+		return RegisterSpec.make(reg.getOriginalIndex(), Type.intern(type.getDescriptor()));
+	}
 
-	@Override
-	public void visit(DexInstruction_Nop dexInstruction_Nop) {
-		return;
+	private RegisterSpec getPreRegSpec(DexRegister reg) {
+		return toRegSpec(reg, curInst.getPreInstructionRegisterType(reg));
 	}
+	
+	private RegisterSpec getPostRegSpec(DexRegister reg) {
+		return toRegSpec(reg, curInst.getPostInstructionRegisterType(reg));
+	}
 
+	private TypeList getCatches() {
+		TypeList result = StdTypeList.EMPTY;
+		for (AnalyzedDexInstruction i : curInst.getSuccesors()) {
+			DexCodeElement aux = i.auxillaryElement;
+			if (aux == null) continue;
+			if (aux instanceof DexCatch) {
+				result = result.withAddedType(Type.intern(((DexCatch)aux).getExceptionType().getDescriptor()));
+			} else if (aux instanceof DexCatchAll) {
+				//result = result.withAddedType(Type.intern("Ljava/lang/Exception;"));
+				return StdTypeList.THROWABLE;
+			}
+		}
+		return result;
+	}
+	
+	private RegisterSpecList makeOperands(DexRegister ... operands) {
+		if (operands.length == 0)
+			return RegisterSpecList.EMPTY;
+		RegisterSpecList result = new RegisterSpecList(operands.length);
+		for(int i=0;i <operands.length; i++)
+			result.set(i, getPreRegSpec(operands[i]));
+		return result;
+	}
+	
 
-	@Override
-	public void visit(DexInstruction_Move dexInstruction_Move) {
-		// TODO Auto-generated method stub
-		
+	private CstLiteralBits makeCstLiteral(long value) {
+		if (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE)
+			return  CstInteger.make((int)value);
+		else
+			return CstLong.make(value);
+	}
+
+	private CstString makeCstString(String stringConstant) {
+		return new CstString(stringConstant);
 	}
 
+	private CstType makeCstType(DexReferenceType value) {
+		return new CstType(Type.intern(value.getDescriptor()));
+	}
 
+	private CstNat makeCstNat(String name, String type) {
+		return new CstNat(makeCstString(name), makeCstString(type));
+	}
+	
+	private CstFieldRef makeFieldRef(DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
+		return new CstFieldRef(
+				makeCstType(fieldClass),
+				makeCstNat(fieldName, fieldType.getDescriptor())
+				);
+	}
+	
+	private CstBaseMethodRef makeMethodRef(DexReferenceType classType, String methodName, DexPrototype methodPrototype, boolean isInterface) {
+		CstType clazz = makeCstType(classType);
+		CstNat method = makeCstNat(methodName, methodPrototype.getDescriptor());
+		if (isInterface)
+			return new CstInterfaceMethodRef(clazz, method);
+		else
+			return new CstMethodRef(clazz, method);
+	}
+	
+////////////////////////////////////////////////////////////////////////////////
+	private void doPlainInsn(Rop opcode, RegisterSpec dst, DexRegister ... srcs) {
+		result.addInstruction(new PlainInsn(opcode, SourcePosition.NO_INFO, dst, makeOperands(srcs)));
+	}
+	
+	private void doPlainCstInsn(Rop opcode, RegisterSpec dst, Constant constant, DexRegister ... srcs) {
+		result.addInstruction(new PlainCstInsn(opcode, SourcePosition.NO_INFO, dst, makeOperands(srcs), constant));
+	}
+	
+	private void doThrowingInsn(Rop opcode, DexRegister ... srcs) {
+		result.addInstruction(new ThrowingInsn(opcode, SourcePosition.NO_INFO, makeOperands(srcs), getCatches()));
+	}
+	
+	private void doThrowingCstInsn(Rop opcode, Constant constant, DexRegister ... srcs) {
+		result.addInstruction(new ThrowingCstInsn(opcode, SourcePosition.NO_INFO, makeOperands(srcs), getCatches(), constant));
+	}
+	
+	// instructions like INSTANCE_OF, ARRAY_LENGTH needs a pseudo move-result Insn, which (I guess) only
+	// helps with flow analysis and does not contribute to the actual assembled code.
+	private void doPseudoMoveResult(DexRegister to) {
+		RegisterSpec dst = getPostRegSpec(to);
+		result.addAuxInstruction(new PlainInsn(Rops.opMoveResultPseudo(dst), SourcePosition.NO_INFO, dst, RegisterSpecList.EMPTY));
+	}
+////////////////////////////////////////////////////////////////////////////////		
 	@Override
-	public void visit(DexInstruction_MoveWide dexInstruction_MoveWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_Nop instruction) {
+		doPlainInsn(Rops.NOP, null);
 	}
 
 
+	private void doMove(DexRegister to, DexRegister from) {
+		RegisterSpec dst = getPostRegSpec(to);
+		doPlainInsn(Rops.opMove(dst), dst, from);
+	}
+	
 	@Override
-	public void visit(DexInstruction_MoveResult dexInstruction_MoveResult) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_Move instruction) {
+		doMove(instruction.getRegTo(), instruction.getRegFrom());
 	}
 
 
 	@Override
-	public void visit(
-			DexInstruction_MoveResultWide dexInstruction_MoveResultWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_MoveWide instruction) {
+		doMove(instruction.getRegTo1(), instruction.getRegFrom1());
 	}
 
 
+	private void doMoveResult(DexRegister to) {
+		// opMoveResultPseudo if afterNonInvokeThrowingInsn
+		//TODO: Could it be a TryStart or other stuff?
+		boolean hasInvoke = curInst.getPredecessors().get(0).getInstruction() instanceof DexInstruction_Invoke;
+		for(AnalyzedDexInstruction i : curInst.getPredecessors()) {
+			assert hasInvoke == (i.getInstruction() instanceof DexInstruction_Invoke);
+		}
+
+		RegisterSpec dst = getPostRegSpec(to);
+		if (hasInvoke)
+			doPlainInsn(Rops.opMoveResult(dst), dst);
+		else 
+			doPlainInsn(Rops.opMoveResultPseudo(dst), dst);
+	}
+	
 	@Override
-	public void visit(DexInstruction_MoveException dexInstruction_MoveException) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_MoveResult instruction) {
+		doMoveResult(instruction.getRegTo());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_ReturnVoid dexInstruction_ReturnVoid) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_MoveResultWide instruction) {
+		doMoveResult(instruction.getRegTo1());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_Return dexInstruction_Return) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_MoveException instruction) {
+		RegisterSpec dst = getPostRegSpec(instruction.getRegTo());
+		doPlainInsn(Rops.opMoveException(dst), dst);
 	}
 
 
 	@Override
-	public void visit(DexInstruction_ReturnWide dexInstruction_ReturnWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_ReturnVoid instruction) {
+		doPlainInsn(Rops.RETURN_VOID, null);
 	}
 
 
+	private void doReturn(DexRegister from) {
+		doPlainInsn(Rops.opReturn(getPreRegSpec(from)), null, from);
+	}
+	
 	@Override
-	public void visit(DexInstruction_Const dexInstruction_Const) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_Return instruction) {
+		doReturn(instruction.getRegFrom());		
 	}
 
 
 	@Override
-	public void visit(DexInstruction_ConstWide dexInstruction_ConstWide) {
-		// TODO Auto-generated method stub
+	public void visit(DexInstruction_ReturnWide instruction) {
+		doReturn(instruction.getRegFrom1());		
+	}
+
+	
+	private void doConst(DexRegister to, Constant constant) {
+		RegisterSpec dst = getPostRegSpec(to);
+		doPlainCstInsn(Rops.opConst(dst), dst, constant);
 		
 	}
+	
+	@Override
+	public void visit(DexInstruction_Const instruction) {
+		doConst(instruction.getRegTo(), makeCstLiteral(instruction.getValue()));
+	}
 
 
 	@Override
-	public void visit(DexInstruction_ConstString dexInstruction_ConstString) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_ConstWide instruction) {
+		doConst(instruction.getRegTo1(), makeCstLiteral(instruction.getValue()));
 	}
 
 
 	@Override
-	public void visit(DexInstruction_ConstClass dexInstruction_ConstClass) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_ConstString instruction) {
+		doConst(instruction.getRegTo(), makeCstString(instruction.getStringConstant()));
 	}
 
 
 	@Override
-	public void visit(DexInstruction_Monitor dexInstruction_Monitor) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_ConstClass instruction) {
+		doConst(instruction.getRegTo(), makeCstType(instruction.getValue()));
 	}
 
 
 	@Override
-	public void visit(DexInstruction_CheckCast dexInstruction_CheckCast) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_Monitor instruction) {
+		doThrowingInsn(instruction.isEnter() ? Rops.MONITOR_ENTER : Rops.MONITOR_EXIT, instruction.getRegMonitor());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_InstanceOf dexInstruction_InstanceOf) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_CheckCast instruction) {
+		doThrowingCstInsn(Rops.CHECK_CAST, makeCstType(instruction.getValue()), instruction.getRegObject());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_ArrayLength dexInstruction_ArrayLength) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_InstanceOf instruction) {
+		doThrowingCstInsn(Rops.INSTANCE_OF, makeCstType(instruction.getValue()), instruction.getRegObject());
+		doPseudoMoveResult(instruction.getRegTo());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_NewInstance dexInstruction_NewInstance) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_ArrayLength instruction) {
+		doThrowingInsn(Rops.ARRAY_LENGTH, instruction.getRegArray());
+		doPseudoMoveResult(instruction.getRegTo());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_NewArray dexInstruction_NewArray) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_NewInstance instruction) {
+		doThrowingCstInsn(Rops.NEW_INSTANCE, makeCstType(instruction.getValue()));
+		doPseudoMoveResult(instruction.getRegTo());
 	}
 
 
 	@Override
-	public void visit(
-			DexInstruction_FilledNewArray dexInstruction_FilledNewArray) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_NewArray instruction) {
+		DexArrayType arrayType = instruction.getValue();
+		doThrowingCstInsn(Rops.opNewArray(Type.intern(arrayType.getElementType().getDescriptor())), 
+				makeCstType(arrayType), instruction.getRegSize());
+		doPseudoMoveResult(instruction.getRegTo());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_FillArray dexInstruction_FillArray) {
+	public void visit(DexInstruction_FilledNewArray instruction) {
 		// TODO Auto-generated method stub
 		
 	}
 
 
 	@Override
-	public void visit(DexInstruction_FillArrayData dexInstruction_FillArrayData) {
+	public void visit(DexInstruction_FillArray instruction) {
 		// TODO Auto-generated method stub
 		
 	}
 
 
 	@Override
-	public void visit(DexInstruction_Throw dexInstruction_Throw) {
+	public void visit(DexInstruction_FillArrayData instruction) {
 		// TODO Auto-generated method stub
 		
 	}
 
 
 	@Override
-	public void visit(DexInstruction_Goto dexInstruction_Goto) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_Throw instruction) {
+		doThrowingInsn(Rops.THROW, instruction.getRegFrom());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_Switch dexInstruction_Switch) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_Goto instruction) {
+		doPlainInsn(Rops.GOTO, null);
 	}
 
 
 	@Override
-	public void visit(
-			DexInstruction_PackedSwitchData dexInstruction_PackedSwitchData) {
+	public void visit(DexInstruction_Switch instruction) {
 		// TODO Auto-generated method stub
 		
 	}
 
 
 	@Override
-	public void visit(
-			DexInstruction_SparseSwitchData dexInstruction_SparseSwitchData) {
+	public void visit(DexInstruction_PackedSwitchData instruction) {
 		// TODO Auto-generated method stub
 		
 	}
 
 
 	@Override
-	public void visit(DexInstruction_CompareFloat dexInstruction_CompareFloat) {
+	public void visit(DexInstruction_SparseSwitchData instruction) {
 		// TODO Auto-generated method stub
 		
 	}
 
 
 	@Override
-	public void visit(DexInstruction_CompareWide dexInstruction_CompareWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_CompareFloat instruction) {
+		doPlainInsn(instruction.isLtBias() ? Rops.CMPL_FLOAT : Rops.CMPG_FLOAT, 
+				getPostRegSpec(instruction.getRegTo()), instruction.getRegSourceA(), instruction.getRegSourceB());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_IfTest dexInstruction_IfTest) {
-		// TODO Auto-generated method stub
+	public void visit(DexInstruction_CompareWide instruction) {
+		Rop opcode = null;;
+		switch (instruction.getInsnOpcode()) {
+		case CmpLong:
+			opcode = Rops.CMPL_LONG;
+			break;
+		case CmpgDouble:
+			opcode = Rops.CMPG_DOUBLE;
+			break;
+		case CmplDouble:
+			opcode = Rops.CMPL_DOUBLE;
+			break;
 		
+		}
+		doPlainInsn(opcode, getPostRegSpec(instruction.getRegTo()), instruction.getRegSourceA1(), instruction.getRegSourceB1());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_IfTestZero dexInstruction_IfTestZero) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_IfTest instruction) {
+		RegisterSpecList operands = makeOperands(instruction.getRegA(), instruction.getRegB());
+		Rop opcode = null;
+		switch(instruction.getInsnOpcode()) {
+		case eq:
+			opcode = Rops.opIfEq(operands);
+			break;
+		case ge:
+			opcode = Rops.opIfGe(operands);
+			break;
+		case gt:
+			opcode = Rops.opIfGt(operands);
+			break;
+		case le:
+			opcode = Rops.opIfLe(operands);
+			break;
+		case lt:
+			opcode = Rops.opIfLt(operands);
+			break;
+		case ne:
+			opcode = Rops.opIfNe(operands);
+			break;
+		}
+		doPlainInsn(opcode, null, instruction.getRegA(), instruction.getRegB());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_ArrayGet dexInstruction_ArrayGet) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_IfTestZero instruction) {
+		RegisterSpecList operands = makeOperands(instruction.getReg());
+		Rop opcode = null;
+		switch(instruction.getInsnOpcode()) {
+		case eqz:
+			opcode = Rops.opIfEq(operands);
+			break;
+		case gez:
+			opcode = Rops.opIfGe(operands);
+			break;
+		case gtz:
+			opcode = Rops.opIfGt(operands);
+			break;
+		case lez:
+			opcode = Rops.opIfLe(operands);
+			break;
+		case ltz:
+			opcode = Rops.opIfLt(operands);
+			break;
+		case nez:
+			opcode = Rops.opIfNe(operands);
+			break;
+		}
+		doPlainInsn(opcode, null, instruction.getReg());
 	}
 
 
+	private void doAget(DexRegister to, DexRegister array, DexRegister index) {
+		doThrowingInsn(Rops.opAget(getPostRegSpec(to)), array, index);
+		doPseudoMoveResult(to);
+	}
 	@Override
-	public void visit(DexInstruction_ArrayGetWide dexInstruction_ArrayGetWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_ArrayGet instruction) {
+		doAget(instruction.getRegTo(), instruction.getRegArray(), instruction.getRegIndex());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_ArrayPut dexInstruction_ArrayPut) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_ArrayGetWide instruction) {
+		doAget(instruction.getRegTo1(), instruction.getRegArray(), instruction.getRegIndex());
 	}
 
 
+	private void doAput(DexRegister src, DexRegister array, DexRegister index) {
+		doThrowingInsn(Rops.opAput(getPreRegSpec(src)), src, array, index);
+	}
 	@Override
-	public void visit(DexInstruction_ArrayPutWide dexInstruction_ArrayPutWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_ArrayPut instruction) {
+		doAput(instruction.getRegFrom(), instruction.getRegArray(), instruction.getRegIndex());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_InstanceGet dexInstruction_InstanceGet) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_ArrayPutWide instruction) {
+		doAput(instruction.getRegFrom1(), instruction.getRegArray(), instruction.getRegIndex());
 	}
 
-
+	private void doIget(DexRegister to, DexRegister object, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
+		RegisterSpec dst = getPostRegSpec(to);
+		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
+		doThrowingCstInsn(Rops.opGetField(dst), fieldRef, object);
+		doPseudoMoveResult(to);
+	}
+	
 	@Override
-	public void visit(
-			DexInstruction_InstanceGetWide dexInstruction_InstanceGetWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_InstanceGet instruction) {
+		doIget(instruction.getRegTo(), instruction.getRegObject(), 
+				instruction.getFieldClass(), instruction.getFieldType(), instruction.getFieldName());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_InstancePut dexInstruction_InstancePut) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_InstanceGetWide instruction) {
+		doIget(instruction.getRegTo1(), instruction.getRegObject(), 
+				instruction.getFieldClass(), instruction.getFieldType(), instruction.getFieldName());
 	}
 
 
+	private void doIput(DexRegister from, DexRegister object, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
+		RegisterSpec src = getPreRegSpec(from);
+		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
+		doThrowingCstInsn(Rops.opPutField(src), fieldRef, from, object);
+	}
 	@Override
-	public void visit(
-			DexInstruction_InstancePutWide dexInstruction_InstancePutWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_InstancePut instruction) {
+		doIput(instruction.getRegFrom(), instruction.getRegObject(), 
+				instruction.getFieldClass(), instruction.getFieldType(), instruction.getFieldName());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_StaticGet dexInstruction_StaticGet) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_InstancePutWide instruction) {
+		doIput(instruction.getRegFrom1(), instruction.getRegObject(), 
+				instruction.getFieldClass(), instruction.getFieldType(), instruction.getFieldName());
 	}
 
 
+	private void doSget(DexRegister to,  DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
+		RegisterSpec dst = getPostRegSpec(to);
+		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
+		doThrowingCstInsn(Rops.opGetStatic(dst), fieldRef);
+		doPseudoMoveResult(to);
+	}
 	@Override
-	public void visit(DexInstruction_StaticGetWide dexInstruction_StaticGetWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_StaticGet instruction) {
+		doSget(instruction.getRegTo(), 
+				instruction.getFieldClass(), instruction.getFieldType(), instruction.getFieldName());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_StaticPut dexInstruction_StaticPut) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_StaticGetWide instruction) {
+		doSget(instruction.getRegTo1(), 
+				instruction.getFieldClass(), instruction.getFieldType(), instruction.getFieldName());
 	}
 
+	
+	private void doSput(DexRegister from, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
+		RegisterSpec src = getPreRegSpec(from);
+		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
+		doThrowingCstInsn(Rops.opPutStatic(src), fieldRef, from);
+	}
+	@Override
+	public void visit(DexInstruction_StaticPut instruction) {
+		doSput(instruction.getRegFrom(), 
+				instruction.getFieldClass(), instruction.getFieldType(), instruction.getFieldName());
+	}
 
+
 	@Override
-	public void visit(DexInstruction_StaticPutWide dexInstruction_StaticPutWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_StaticPutWide instruction) {
+		doSput(instruction.getRegFrom1(), 
+				instruction.getFieldClass(), instruction.getFieldType(), instruction.getFieldName());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_Invoke dexInstruction_Invoke) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_Invoke instruction) {
+		Rop opcode = null;
+		DexRegister[] operands_array = (DexRegister[]) instruction.getArgumentRegisters().toArray();
+		RegisterSpecList operands = makeOperands(operands_array);
+		switch(instruction.getCallType()) {
+		case Direct:
+			opcode = new Rop(RegOps.INVOKE_DIRECT, operands, StdTypeList.THROWABLE);
+			break;
+		case Interface:
+			opcode = new Rop(RegOps.INVOKE_INTERFACE, operands, StdTypeList.THROWABLE);
+			break;
+		case Static:
+			opcode = new Rop(RegOps.INVOKE_STATIC, operands, StdTypeList.THROWABLE);
+			break;
+		case Super:
+			opcode = new Rop(RegOps.INVOKE_SUPER, operands, StdTypeList.THROWABLE);
+			break;
+		case Virtual:
+			opcode = new Rop(RegOps.INVOKE_VIRTUAL, operands, StdTypeList.THROWABLE);
+			break;
+		}
+		doThrowingCstInsn(opcode, 
+				makeMethodRef(instruction.getClassType(), instruction.getMethodName(), instruction.getMethodPrototype(), instruction.getCallType() == Opcode_Invoke.Interface), 
+				operands_array);
 	}
 
 
 	@Override
-	public void visit(DexInstruction_UnaryOp dexInstruction_UnaryOp) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_UnaryOp instruction) {
+		Rop opcode = null;
+		switch( instruction.getInsnOpcode()) {
+		case NegFloat:
+			opcode = Rops.NEG_FLOAT;
+			break;
+		case NegInt:
+			opcode = Rops.NEG_INT;
+			break;
+		case NotInt:
+			opcode = Rops.NOT_INT;
+			break;
+		}
+		doPlainInsn(opcode, getPostRegSpec(instruction.getRegTo()), instruction.getRegFrom());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_UnaryOpWide dexInstruction_UnaryOpWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_UnaryOpWide instruction) {
+		Rop opcode = null;
+		switch( instruction.getInsnOpcode()) {
+		case NegDouble:
+			opcode = Rops.NEG_DOUBLE;
+			break;
+		case NegLong:
+			opcode = Rops.NEG_LONG;
+			break;
+		case NotLong:
+			opcode = Rops.NOT_LONG;
+			break;
+		}
+		doPlainInsn(opcode, getPostRegSpec(instruction.getRegTo1()), instruction.getRegFrom1());
 	}
 
 
+	private void doConvert(DexRegister dst, DexRegister src) {
+		doPlainInsn(Rops.opConv(getPostRegSpec(dst), getPreRegSpec(src)), getPostRegSpec(dst), src);
+	}
+	
 	@Override
-	public void visit(DexInstruction_Convert dexInstruction_Convert) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_Convert instruction) {
+		doConvert(instruction.getRegTo(), instruction.getRegFrom());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_ConvertWide dexInstruction_ConvertWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_ConvertWide instruction) {
+		doConvert(instruction.getRegTo1(), instruction.getRegFrom1());
 	}
 
 
 	@Override
-	public void visit(
-			DexInstruction_ConvertFromWide dexInstruction_ConvertFromWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_ConvertFromWide instruction) {
+		doConvert(instruction.getRegTo(), instruction.getRegFrom1());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_ConvertToWide dexInstruction_ConvertToWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_ConvertToWide instruction) {
+		doConvert(instruction.getRegTo1(), instruction.getRegFrom());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_BinaryOp dexInstruction_BinaryOp) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_BinaryOp instruction) {
+		Rop opcode = null;
+		switch(instruction.getInsnOpcode()) {
+		case AddFloat:
+			opcode = Rops.ADD_FLOAT;
+			break;
+		case AddInt:
+			opcode = Rops.ADD_INT;
+			break;
+		case AndInt:
+			opcode = Rops.AND_INT;
+			break;
+		case DivFloat:
+			opcode = Rops.DIV_FLOAT;
+			break;
+		case DivInt:
+			opcode = Rops.DIV_INT;
+			break;
+		case MulFloat:
+			opcode = Rops.MUL_FLOAT;
+			break;
+		case MulInt:
+			opcode = Rops.MUL_INT;
+			break;
+		case OrInt:
+			opcode = Rops.OR_INT;
+			break;
+		case RemFloat:
+			opcode = Rops.REM_FLOAT;
+			break;
+		case RemInt:
+			opcode = Rops.REM_INT;
+			break;
+		case ShlInt:
+			opcode = Rops.SHL_INT;
+			break;
+		case ShrInt:
+			opcode = Rops.SHR_INT;
+			break;
+		case SubFloat:
+			opcode = Rops.SUB_FLOAT;
+			break;
+		case SubInt:
+			opcode = Rops.SUB_INT;
+			break;
+		case UshrInt:
+			opcode = Rops.USHR_INT;
+			break;
+		case XorInt:
+			opcode = Rops.XOR_INT;
+			break;
+		}
+		doPlainInsn(opcode, getPostRegSpec(instruction.getRegTarget()), instruction.getRegSourceA(), instruction.getRegSourceB());
 	}
 
 
 	@Override
-	public void visit(
-			DexInstruction_BinaryOpLiteral dexInstruction_BinaryOpLiteral) {
-		// TODO Auto-generated method stub
+	public void visit(DexInstruction_BinaryOpLiteral instruction) {
+		Rop opcode = null;
+		switch(instruction.getInsnOpcode()) {
+		case Add:
+			opcode = Rops.ADD_CONST_INT; // Rop allow CONST operation on long/double/float register, but DexInstruction does not.
+			break;
+		case And:
+			opcode = Rops.AND_CONST_INT;
+			break;
+		case Div:
+			opcode = Rops.DIV_CONST_INT;
+			break;
+		case Mul:
+			opcode = Rops.MUL_CONST_INT;
+			break;
+		case Or:
+			opcode = Rops.OR_CONST_INT;
+			break;
+		case Rem:
+			opcode = Rops.REM_CONST_INT;
+			break;
+		case Rsub:
+			opcode = Rops.SUB_CONST_INT; // Extra Insn to handle this
+			break;
+		case Shl:
+			opcode = Rops.SHL_CONST_INT;
+			break;
+		case Shr:
+			opcode = Rops.SHR_CONST_INT;
+			break;
+		case Ushr:
+			opcode = Rops.USHR_CONST_INT;
+			break;
+		case Xor:
+			opcode = Rops.XOR_CONST_INT;
+			break;
+		}
+		doPlainCstInsn(opcode, getPostRegSpec(instruction.getRegTarget()), makeCstLiteral(instruction.getLiteral()), instruction.getRegSource());
 		
+		if (instruction.getInsnOpcode() == Opcode_BinaryOpLiteral.Rsub) // Patch up rsub
+			doPlainInsn(Rops.NEG_INT, getPostRegSpec(instruction.getRegTarget()), instruction.getRegTarget());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_BinaryOpWide dexInstruction_BinaryOpWide) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_BinaryOpWide instruction) {
+		Rop opcode = null;
+		switch(instruction.getInsnOpcode()) {
+		case AddDouble:
+			opcode = Rops.ADD_DOUBLE;
+			break;
+		case AddLong:
+			opcode = Rops.ADD_LONG;
+			break;
+		case AndLong:
+			opcode = Rops.AND_LONG;
+			break;
+		case DivDouble:
+			opcode = Rops.DIV_DOUBLE;
+			break;
+		case DivLong:
+			opcode = Rops.DIV_LONG;
+			break;
+		case MulDouble:
+			opcode = Rops.MUL_DOUBLE;
+			break;
+		case MulLong:
+			opcode = Rops.MUL_LONG;
+			break;
+		case OrLong:
+			opcode = Rops.OR_LONG;
+			break;
+		case RemDouble:
+			opcode = Rops.REM_DOUBLE;
+			break;
+		case RemLong:
+			opcode = Rops.REM_LONG;
+			break;
+		case ShlLong:
+			opcode = Rops.SHL_LONG;
+			break;
+		case ShrLong:
+			opcode = Rops.SHR_LONG;
+			break;
+		case SubDouble:
+			opcode = Rops.SUB_DOUBLE;
+			break;
+		case SubLong:
+			opcode = Rops.SUB_LONG;
+			break;
+		case UshrLong:
+			opcode = Rops.USHR_LONG;
+			break;
+		case XorLong:
+			opcode = Rops.XOR_LONG;
+			break;
+		}
+		doPlainInsn(opcode, getPostRegSpec(instruction.getRegTarget1()), instruction.getRegSourceA1(), instruction.getRegSourceB1());
 	}
 
 
 	@Override
-	public void visit(DexInstruction_Unknown dexInstruction_Unknown) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexInstruction_Unknown instruction) {
+		// should not happen
+		assert false;
 	}
 
 
 	@Override
-	public void visit(
-			DexPseudoinstruction_FilledNewArray dexPseudoinstruction_FilledNewArray) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_FilledNewArray instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 
 
 	@Override
-	public void visit(
-			DexPseudoinstruction_GetInternalClassAnnotation dexPseudoinstruction_GetInternalClassAnnotation) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_GetInternalClassAnnotation instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 
 
 	@Override
-	public void visit(
-			DexPseudoinstruction_GetInternalMethodAnnotation dexPseudoinstruction_GetInternalMethodAnnotation) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_GetInternalMethodAnnotation instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 
 
 	@Override
-	public void visit(
-			DexPseudoinstruction_GetMethodCaller dexPseudoinstruction_GetMethodCaller) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_GetMethodCaller instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 
 
 	@Override
-	public void visit(
-			DexPseudoinstruction_GetObjectTaint dexPseudoinstruction_GetObjectTaint) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_GetObjectTaint instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 
 
 	@Override
-	public void visit(
-			DexPseudoinstruction_GetQueryTaint dexPseudoinstruction_GetQueryTaint) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_GetQueryTaint instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 
 
 	@Override
-	public void visit(
-			DexPseudoinstruction_GetServiceTaint dexPseudoinstruction_GetServiceTaint) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_GetServiceTaint instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 
 
 	@Override
-	public void visit(
-			DexPseudoinstruction_PrintInteger dexPseudoinstruction_PrintInteger) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_PrintInteger instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 
 
 	@Override
-	public void visit(
-			DexPseudoinstruction_PrintIntegerConst dexPseudoinstruction_PrintIntegerConst) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_PrintIntegerConst instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 
 
 	@Override
-	public void visit(
-			DexPseudoinstruction_PrintString dexPseudoinstruction_PrintString) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_PrintString instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 
 
 	@Override
-	public void visit(
-			DexPseudoinstruction_PrintStringConst dexPseudoinstruction_PrintStringConst) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_PrintStringConst instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 
 
 	@Override
-	public void visit(
-			DexPseudoinstruction_SetObjectTaint dexPseudoinstruction_SetObjectTaint) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_SetObjectTaint instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 
 
 	@Override
-	public void visit(DexPseudoinstruction_Invoke dexPseudoinstruction_Invoke) {
-		// TODO Auto-generated method stub
-		
+	public void visit(DexPseudoinstruction_Invoke instruction) {
+		// Pseudo instruction should have already been unwrapped.
+		assert false;
 	}
 }
