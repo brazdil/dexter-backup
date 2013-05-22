@@ -444,4 +444,7 @@ public class DexCodeAnalyzer {
     	inst.accept(analyzer);
     }
 
+    public AnalyzedDexInstruction reverseLookup(DexCodeElement element) {
+    	return instructionMap.get(element);
+    }
 }

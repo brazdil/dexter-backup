@@ -9,6 +9,7 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Analysis.AnalyzedInstruction;
 import org.jf.dexlib.Code.Analysis.RegisterType;
 
+import com.android.dx.rop.code.FillArrayDataInsn;
 import com.android.dx.rop.code.Insn;
 import com.android.dx.rop.code.PlainCstInsn;
 import com.android.dx.rop.code.PlainInsn;
@@ -18,15 +19,22 @@ import com.android.dx.rop.code.RegisterSpecList;
 import com.android.dx.rop.code.Rop;
 import com.android.dx.rop.code.Rops;
 import com.android.dx.rop.code.SourcePosition;
+import com.android.dx.rop.code.SwitchInsn;
 import com.android.dx.rop.code.ThrowingCstInsn;
 import com.android.dx.rop.code.ThrowingInsn;
 import com.android.dx.rop.cst.Constant;
 import com.android.dx.rop.cst.CstBaseMethodRef;
+import com.android.dx.rop.cst.CstBoolean;
+import com.android.dx.rop.cst.CstByte;
+import com.android.dx.rop.cst.CstChar;
+import com.android.dx.rop.cst.CstDouble;
+import com.android.dx.rop.cst.CstFloat;
 import com.android.dx.rop.cst.CstInteger;
 import com.android.dx.rop.cst.CstInterfaceMethodRef;
 import com.android.dx.rop.cst.CstLiteralBits;
 import com.android.dx.rop.cst.CstLong;
 import com.android.dx.rop.cst.CstMethodRef;
+import com.android.dx.rop.cst.CstShort;
 import com.android.dx.rop.cst.CstString;
 import com.android.dx.rop.cst.CstType;
 import com.android.dx.rop.cst.CstFieldRef;
@@ -34,11 +42,15 @@ import com.android.dx.rop.cst.CstNat;
 import com.android.dx.rop.type.StdTypeList;
 import com.android.dx.rop.type.Type;
 import com.android.dx.rop.type.TypeList;
+import com.android.dx.util.IntList;
+import com.rx201.dx.translator.util.DexRegisterHelper;
 
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionVisitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
@@ -115,6 +127,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 
 class DexConvertedResult {
@@ -428,22 +441,98 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	@Override
 	public void visit(DexInstruction_FilledNewArray instruction) {
-		// TODO Auto-generated method stub
+		DexArrayType arrayType = instruction.getArrayType();
+		Type elementType = Type.intern(arrayType.getElementType().getDescriptor());
+		int arrayLen = instruction.getArgumentRegisters().size();
 		
+		DexRegister tmp0 = DexRegisterHelper.getTempRegister(0);
+		RegisterSpec tmp0Spec = RegisterSpec.make(tmp0.getOriginalIndex(), Type.INT);
+		
+		// add Instruction manually because type information is not available in analyzer
+		result.addInstruction(new PlainCstInsn(Rops.CONST_INT,
+				SourcePosition.NO_INFO, 
+				tmp0Spec,
+				RegisterSpecList.EMPTY, 
+				makeCstLiteral(arrayLen)));
+		result.addInstruction(new ThrowingCstInsn(Rops.opNewArray(Type.intern(arrayType.getElementType().getDescriptor())),
+				SourcePosition.NO_INFO, 
+				RegisterSpecList.make(tmp0Spec), 
+				getCatches(), 
+				makeCstType(arrayType)));
+		
+		// add array assignments to primary successor basic blocks
+		AnalyzedDexInstruction primSuccessor = curInst.getSuccesors().get(0); 
+		DexRegister dstReg = primSuccessor.getDestinationRegister();
+		RegisterSpec dstRegSpec = RegisterSpec.make(dstReg.getOriginalIndex(), Type.intern(arrayType.getDescriptor()));
+		Rop opcode = Rops.opAput(Type.intern(elementType.getDescriptor()));
+		
+		for(int i=0; i<arrayLen; i++) {
+			result.addAuxInstruction(new PlainCstInsn(Rops.CONST_INT,
+					SourcePosition.NO_INFO, 
+					tmp0Spec,
+					RegisterSpecList.EMPTY, 
+					makeCstLiteral(i)));
+			result.addAuxInstruction(new ThrowingInsn(opcode, 
+					SourcePosition.NO_INFO, 
+					RegisterSpecList.make(
+							RegisterSpec.make(instruction.getArgumentRegisters().get(i).getOriginalIndex(), elementType), 
+							dstRegSpec, 
+							tmp0Spec),
+					getCatches()));
+		}
 	}
 
 
 	@Override
 	public void visit(DexInstruction_FillArray instruction) {
-		// TODO Auto-generated method stub
+		AnalyzedDexInstruction arrayDataPtr = analyzer.reverseLookup(instruction.getArrayTable());
+		assert arrayDataPtr.getSuccessorCount() == 1;
+		DexInstruction_FillArrayData arrayData = (DexInstruction_FillArrayData) arrayDataPtr.getSuccesors().get(0).getInstruction();
 		
+		Type arrayElementType = getPostRegSpec(instruction.getRegArray()).getType().getComponentType();
+		ArrayList<Constant> values = new ArrayList<Constant>();
+		for(byte[] element : arrayData.getElementData()) {
+			long v = 0;
+			for(int i=0; i<element.length; i++)
+				v |= (((long)element[i]) << i);
+
+			if (arrayElementType == Type.BYTE) {
+	        	assert element.length == 1;
+	        	values.add(CstByte.make((int)v));
+	        } else if (arrayElementType == Type.BOOLEAN) {
+	        	assert element.length == 1;
+	        	values.add(CstBoolean.make((int)v));
+	        } else if (arrayElementType == Type.SHORT) {
+	        	assert element.length == 2;
+	        	values.add(CstShort.make((int)v));
+	        } else if (arrayElementType == Type.CHAR) {
+	        	assert element.length == 2;
+	        	values.add(CstChar.make((int)v));
+	        } else if (arrayElementType == Type.INT) {
+	        	assert element.length == 4;
+	        	values.add(CstInteger.make((int)v));
+	        } else if (arrayElementType == Type.FLOAT) {
+	        	assert element.length == 4;
+	        	values.add(CstFloat.make((int)v));
+	        } else if (arrayElementType == Type.LONG) {
+	        	assert element.length == 8;
+	        	values.add(CstLong.make(v));
+	        } else if (arrayElementType == Type.DOUBLE) {
+	        	assert element.length == 8;
+	        	values.add(CstDouble.make(v));
+	        } else {
+	            throw new IllegalArgumentException("Unexpected constant type");
+	        }
+		}
+		
+		result.addInstruction(new FillArrayDataInsn(Rops.FILL_ARRAY_DATA, SourcePosition.NO_INFO,
+				RegisterSpecList.EMPTY, values, CstType.intern(arrayElementType)));
 	}
 
 
 	@Override
 	public void visit(DexInstruction_FillArrayData instruction) {
-		// TODO Auto-generated method stub
-		
+		assert false;
 	}
 
 
@@ -461,22 +550,45 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	@Override
 	public void visit(DexInstruction_Switch instruction) {
-		// TODO Auto-generated method stub
+		IntList caseList = new IntList();
+		List<DexLabel> targetList;
 		
+		AnalyzedDexInstruction switchDataPtr = analyzer.reverseLookup(instruction.getSwitchTable());
+		assert switchDataPtr.getSuccessorCount() == 1;
+		DexInstruction switchDataRaw = switchDataPtr.getSuccesors().get(0).getInstruction();
+		
+		if (instruction.isPacked()) {
+			DexInstruction_PackedSwitchData switchData = (DexInstruction_PackedSwitchData) switchDataRaw;
+			for(int i=0; i < switchData.getTargets().size(); i++)
+				caseList.add(switchData.getFirstKey() + i);
+			targetList = switchData.getTargets();
+		} else {
+			targetList = new ArrayList<DexLabel>();
+			DexInstruction_SparseSwitchData switchData = (DexInstruction_SparseSwitchData) switchDataRaw;
+			for(Pair<Integer, DexLabel> pair : switchData.getKeyTargetPairs()) {
+				caseList.add(pair.getValA());
+				targetList.add(pair.getValB());
+			}
+		}
+		
+		// Sanity check
+		assert targetList.size() + 1== curInst.getSuccessorCount();
+		for(int i=0; i < targetList.size(); i++)
+			assert targetList.get(i) == curInst.getSuccesors().get(i + 1).auxillaryElement;
+		
+		result.addInstruction(new SwitchInsn(Rops.SWITCH, SourcePosition.NO_INFO, null, makeOperands(instruction.getRegTest()), caseList));
 	}
 
 
 	@Override
 	public void visit(DexInstruction_PackedSwitchData instruction) {
-		// TODO Auto-generated method stub
-		
+		assert false;
 	}
 
 
 	@Override
 	public void visit(DexInstruction_SparseSwitchData instruction) {
-		// TODO Auto-generated method stub
-		
+		assert false;
 	}
 
 
