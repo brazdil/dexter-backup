@@ -28,4 +28,8 @@ public class DexRegisterHelper {
 		return r0.getOriginalIndex() + 1 == r1.getOriginalIndex();
 	}
 	
+	public static DexRegister getTempRegister(int index) {
+		return new DexRegister(PARAM_OFFSET - 1 - index);
+	}
+	
 }
