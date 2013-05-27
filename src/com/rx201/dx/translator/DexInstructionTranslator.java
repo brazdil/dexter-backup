@@ -193,7 +193,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	}
 
 	private RegisterSpec toRegSpec(DexRegister reg, DexRegisterType type) {
-		return RegisterSpec.make(reg.getOriginalIndex(), Type.intern(type.getDescriptor()));
+		return RegisterSpec.make(DexRegisterHelper.normalize(reg), Type.intern(type.getDescriptor()));
 	}
 
 	private RegisterSpec getPreRegSpec(DexRegister reg) {
@@ -446,7 +446,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		int arrayLen = instruction.getArgumentRegisters().size();
 		
 		DexRegister tmp0 = DexRegisterHelper.getTempRegister(0);
-		RegisterSpec tmp0Spec = RegisterSpec.make(tmp0.getOriginalIndex(), Type.INT);
+		RegisterSpec tmp0Spec = RegisterSpec.make(DexRegisterHelper.normalize(tmp0), Type.INT);
 		
 		// add Instruction manually because type information is not available in analyzer
 		result.addInstruction(new PlainCstInsn(Rops.CONST_INT,
@@ -463,7 +463,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		// add array assignments to primary successor basic blocks
 		AnalyzedDexInstruction primSuccessor = curInst.getSuccesors().get(0); 
 		DexRegister dstReg = primSuccessor.getDestinationRegister();
-		RegisterSpec dstRegSpec = RegisterSpec.make(dstReg.getOriginalIndex(), Type.intern(arrayType.getDescriptor()));
+		RegisterSpec dstRegSpec = RegisterSpec.make(DexRegisterHelper.normalize(dstReg), Type.intern(arrayType.getDescriptor()));
 		Rop opcode = Rops.opAput(Type.intern(elementType.getDescriptor()));
 		
 		for(int i=0; i<arrayLen; i++) {
@@ -475,7 +475,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			result.addAuxInstruction(new ThrowingInsn(opcode, 
 					SourcePosition.NO_INFO, 
 					RegisterSpecList.make(
-							RegisterSpec.make(instruction.getArgumentRegisters().get(i).getOriginalIndex(), elementType), 
+							RegisterSpec.make(DexRegisterHelper.normalize(instruction.getArgumentRegisters().get(i)), elementType), 
 							dstRegSpec, 
 							tmp0Spec),
 					getCatches()));
@@ -786,7 +786,8 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	@Override
 	public void visit(DexInstruction_Invoke instruction) {
 		Rop opcode = null;
-		DexRegister[] operands_array = (DexRegister[]) instruction.getArgumentRegisters().toArray();
+		List<DexRegister> operands_list = instruction.getArgumentRegisters();
+		DexRegister[] operands_array = operands_list.toArray(new DexRegister[operands_list.size()]);
 		RegisterSpecList operands = makeOperands(operands_array);
 		switch(instruction.getCallType()) {
 		case Direct:

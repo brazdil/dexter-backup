@@ -13,15 +13,15 @@ public class DexRegisterHelper {
 	}
 	
 	private static int PARAM_OFFSET = 100000; 
-	public static DexRegister normalize(int paramId) {
-		return new DexRegister(PARAM_OFFSET + paramId);
+	public static int normalize(int paramId) {
+		return PARAM_OFFSET + paramId;
 	}
 
-	public static DexRegister normalize(DexRegister reg) {
+	public static int normalize(DexRegister reg) {
 		if (reg instanceof DexParameterRegister) 
 			return normalize(((DexParameterRegister)reg).getParameterIndex());
 		else
-			return reg;
+			return reg.getOriginalIndex();
 	}
 
 	public static boolean isPair(DexRegister r0, DexRegister r1) {

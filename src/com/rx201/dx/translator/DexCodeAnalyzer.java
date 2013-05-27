@@ -125,12 +125,14 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_ConvertWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 
 public class DexCodeAnalyzer {
+	private DexMethodWithCode method;
 	private DexCode code;
 
     private HashMap<DexCodeElement, AnalyzedDexInstruction> instructionMap;
@@ -153,8 +155,9 @@ public class DexCodeAnalyzer {
 
 	private DexParsingCache cache;
 
-    public DexCodeAnalyzer(DexCode code, DexParsingCache cache) {
-        this.code = code;
+;    public DexCodeAnalyzer(DexMethodWithCode method, DexParsingCache cache) {
+    	this.method = method;
+        this.code = method.getCode();
         this.cache = cache;
 
 
@@ -174,18 +177,19 @@ public class DexCodeAnalyzer {
     private void analyzeParameters() {
     	boolean isStatic = code.getParentMethod().isStatic();
     	DexPrototype prototype = code.getParentMethod().getPrototype();
-    	boolean isConstructor = code.getParentMethod().getName().equals("<init>");
+    	boolean isConstructor = code.getParentMethod().isConstructor();
     	for(int i=0; i<prototype.getParameterCount(isStatic); i++) {
     		DexRegisterType dexRegType = prototype.getParameterType(i, isStatic, code.getParentClass());
     		RegisterType regType = DexRegisterTypeHelper.toRegisterType(dexRegType);
 			int paramId = prototype.getFirstParameterRegisterIndex(i, isStatic);
+			DexRegister paramReg = new DexRegister(DexRegisterHelper.normalize(paramId));
 			
 			if (!isStatic && isConstructor && i == 0) // Instance constructor has an uninit this ptr
 				regType = RegisterType.getRegisterType(RegisterType.Category.UninitThis, regType.type);
 			
 			switch (dexRegType.getTypeSize()) {
 	        case SINGLE:
-	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, DexRegisterHelper.normalize(paramId), regType);
+	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, paramReg, regType);
 	        	break;
 	        case WIDE:
 	        	RegisterType regTypeHi = null;
@@ -197,8 +201,8 @@ public class DexCodeAnalyzer {
 	        	else
 	        		throw new ValidationException("Bad register type.");
 	        	
-	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, DexRegisterHelper.normalize(paramId), regType);
-	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, DexRegisterHelper.normalize(paramId + 1), regTypeHi);
+	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, paramReg, regType);
+	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, DexRegisterHelper.next(paramReg), regTypeHi);
 	        	break;
 			}
 	        	
@@ -377,7 +381,7 @@ public class DexCodeAnalyzer {
     		instructions.add(analyzedInst);
     		
     	}
-    	
+
     	ControlFlowGraph cfg = new ControlFlowGraph(code);
     	
     	for(CfgBasicBlock bb : cfg.getBasicBlocks()) {
@@ -401,35 +405,40 @@ public class DexCodeAnalyzer {
     			}
     		}
     	}
+    	
+        //override AnalyzedInstruction and provide custom implementations of some of the methods, so that we don't
+        //have to handle the case this special case of instruction being null, in the main class
+        startOfMethod = new AnalyzedDexInstruction(-1, null, cache) {
+            public boolean setsRegister() {
+                return false;
+            }
+
+            @Override
+            public boolean setsWideRegister() {
+                return false;
+            }
+
+            @Override
+            public boolean setsRegister(DexRegister registerNumber) {
+                return false;
+            }
+
+            @Override
+            public DexRegister getDestinationRegister() {
+                assert false;
+                return null;
+            };
+        };
+        for (CfgBlock startBB: cfg.getStartBlock().getSuccessors()) {
+        	if (startBB instanceof CfgBasicBlock) {
+        		startOfMethod.addSuccessor(instructionMap.get(
+        				((CfgBasicBlock)startBB).getFirstInstruction()));
+        	}
+        }
     }
 
     private AnalyzedDexInstruction buildFromDexCodeElement(int index, DexCodeElement element) {
-    	if (element instanceof DexCodeStart) {
-            //override AnalyzedInstruction and provide custom implementations of some of the methods, so that we don't
-            //have to handle the case this special case of instruction being null, in the main class
-            startOfMethod = new AnalyzedDexInstruction(index, null, cache) {
-                public boolean setsRegister() {
-                    return false;
-                }
-
-                @Override
-                public boolean setsWideRegister() {
-                    return false;
-                }
-
-                @Override
-                public boolean setsRegister(DexRegister registerNumber) {
-                    return false;
-                }
-
-                @Override
-                public DexRegister getDestinationRegister() {
-                    assert false;
-                    return null;
-                };
-            };
-            return startOfMethod;
-    	} else if (element instanceof DexInstruction) {
+    	if (element instanceof DexInstruction) {
     		return new AnalyzedDexInstruction(index, (DexInstruction) element, cache);
     	} else /* DexCatch, DexCatchAll, DexLabel, DexTryBlockStart, DexTryBlockEnd */ {
     		return new AnalyzedDexInstruction(index, new DexInstruction_Nop(code), element, cache);

@@ -10,7 +10,10 @@ import java.util.Set;
 
 import org.jf.dexlib.Code.Analysis.RegisterType;
 
+import com.rx201.dx.translator.util.DexRegisterHelper;
+
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
@@ -39,12 +42,12 @@ public class AnalyzedDexInstruction {
 	    /**
 	     * This contains the register types *before* the instruction has executed
 	     */
-	    protected final HashMap<DexRegister, RegisterType> preRegisterMap;
+	    protected final HashMap<Integer, RegisterType> preRegisterMap;
 
 	    /**
 	     * This contains the register types *after* the instruction has executed
 	     */
-	    protected final HashMap<DexRegister, RegisterType> postRegisterMap;
+	    protected final HashMap<Integer, RegisterType> postRegisterMap;
 
 	    /**
 	     * An analyzed instruction's "deadness" is set during analysis (i.e. MethodAnalyzer.analyzer()). A dead instruction
@@ -61,8 +64,8 @@ public class AnalyzedDexInstruction {
 	    
 	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexParsingCache cache) {
 	        this.instruction = instruction;
-	        this.postRegisterMap = new HashMap<DexRegister, RegisterType>();
-	        this.preRegisterMap = new HashMap<DexRegister, RegisterType>();
+	        this.postRegisterMap = new HashMap<Integer, RegisterType>();
+	        this.preRegisterMap = new HashMap<Integer, RegisterType>();
 	        this.cache = cache;
 	        this.instructionIndex = index;
 	        this.auxillaryElement = null;
@@ -105,14 +108,14 @@ public class AnalyzedDexInstruction {
 	        return dead;
 	    }
 
-	    private RegisterType getPreRegister(DexRegister reg) {
+	    private RegisterType getPreRegister(int reg) {
 	    	if (!preRegisterMap.containsKey(reg))
 	    		preRegisterMap.put(reg, unknown);
 	    	
 	    	return preRegisterMap.get(reg);
 	    }
 
-	    private RegisterType getPostRegister(DexRegister reg) {
+	    private RegisterType getPostRegister(int reg) {
 	    	if (!postRegisterMap.containsKey(reg))
 	    		postRegisterMap.put(reg, unknown);
 	    	
@@ -127,7 +130,8 @@ public class AnalyzedDexInstruction {
 	     * register is a destination register for this instruction, or if the pre-instruction register type didn't change
 	     * after merging in the given register type
 	     */
-	    protected boolean mergeRegister(DexRegister registerNumber, RegisterType registerType, BitSet verifiedInstructions) {
+	    protected boolean mergeRegister(DexRegister dexRegister, RegisterType registerType, BitSet verifiedInstructions) {
+	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
 	        assert registerType != null;
 
 	        RegisterType oldRegisterType = getPreRegister(registerNumber);
@@ -140,7 +144,7 @@ public class AnalyzedDexInstruction {
 	        preRegisterMap.put(registerNumber, mergedRegisterType);
 	        verifiedInstructions.clear(instructionIndex);
 	        
-	        if (!setsRegister(registerNumber)) {
+	        if (!setsRegister(dexRegister)) {
 	            postRegisterMap.put(registerNumber, mergedRegisterType);
 	            return true;
 	        }
@@ -154,7 +158,8 @@ public class AnalyzedDexInstruction {
 	     * @param registerNumber the register number
 	     * @return The register type resulting from merging the post-instruction register types from all predecessors
 	     */
-	    protected RegisterType mergePreRegisterTypeFromPredecessors(DexRegister registerNumber) {
+	    protected RegisterType mergePreRegisterTypeFromPredecessors(DexRegister dexRegister) {
+	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
 	        RegisterType mergedRegisterType = null;
 	        for (AnalyzedDexInstruction predecessor: predecessors) {
 	            RegisterType predecessorRegisterType = predecessor.getPostRegister(registerNumber);
@@ -170,7 +175,8 @@ public class AnalyzedDexInstruction {
 	      * @param registerType The "post-instruction" register type
 	      * @returns true if the given register type is different than the existing post-instruction register type
 	      */
-	     protected boolean setPostRegisterType(DexRegister registerNumber, RegisterType registerType) {
+	     protected boolean setPostRegisterType(DexRegister dexRegister, RegisterType registerType) {
+	    	 int registerNumber = DexRegisterHelper.normalize(dexRegister);
 	         assert registerType != null;
 
 	         RegisterType oldRegisterType = getPostRegister(registerNumber);
@@ -203,7 +209,8 @@ public class AnalyzedDexInstruction {
 	        return instruction.lvaDefinedRegisters().size() > 1;
 	    }
 
-	    public boolean setsRegister(DexRegister registerNumber) {
+	    public boolean setsRegister(DexRegister dexRegister) {
+	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
 	        //When constructing a new object, the register type will be an uninitialized reference after the new-instance
 	        //instruction, but becomes an initialized reference once the <init> method is called. So even though invoke
 	        //instructions don't normally change any registers, calling an <init> method will change the type of its
@@ -214,7 +221,7 @@ public class AnalyzedDexInstruction {
 	            DexInstruction_Invoke inst = (DexInstruction_Invoke)instruction;
 	            destinationRegister = inst.getArgumentRegisters().get(0);
 
-	            if (registerNumber == destinationRegister) {
+	            if (registerNumber == DexRegisterHelper.normalize(destinationRegister)) {
 	                return true;
 	            }
 	            RegisterType preInstructionDestRegisterType = getPreRegister(registerNumber);
@@ -235,10 +242,10 @@ public class AnalyzedDexInstruction {
 	        }
 	        DexRegister destinationRegister = getDestinationRegister();
 
-	        if (registerNumber == destinationRegister) {
+	        if (registerNumber == DexRegisterHelper.normalize(destinationRegister)) {
 	            return true;
 	        }
-	        if (setsWideRegister() && registerNumber.getOriginalIndex() == (destinationRegister.getOriginalIndex() + 1)) {
+	        if (setsWideRegister() && registerNumber == DexRegisterHelper.normalize(destinationRegister) + 1) {
 	            return true;
 	        }
 	        return false;
@@ -253,38 +260,51 @@ public class AnalyzedDexInstruction {
 	        DexRegister r = iter.next();
 	        if (iter.hasNext()) {
 	        	DexRegister r1 = iter.next();
-	        	if (r1.getOriginalIndex() < r.getOriginalIndex())
+	        	if (DexRegisterHelper.normalize(r1) < DexRegisterHelper.normalize(r))
 	        		r = r1;
 	        }
 	        assert !iter.hasNext();
-	        return null;
+	        return r;
 	    }
 
 	    public int getRegisterCount() {
 	        return postRegisterMap.size();
 	    }
 
-	    public Set<DexRegister> getPostRegisters() {
+	    public Set<Integer> getPostRegisters() {
 	    	return postRegisterMap.keySet();
 	    }
 
-	    public RegisterType getPostRegisterType(DexRegister registerNumber) {
+	    public RegisterType getPostRegisterType(DexRegister dexRegister) {
+	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
+	    	return getPostRegisterType(registerNumber);
+	    }
+	    
+	    public RegisterType getPostRegisterType(int registerNumber) {
 	    	return postRegisterMap.get(registerNumber);
 	    }
 	    
-	    public RegisterType getPreRegisterType(DexRegister registerNumber) {
+	    public RegisterType getPreRegisterType(DexRegister dexRegister) {
+	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
 	    	return preRegisterMap.get(registerNumber);
 	    }
 	    
-	    public DexRegisterType getPostInstructionRegisterType(DexRegister registerNumber) {
+	    public RegisterType getPreRegisterType(int registerNumber) {
+	    	return getPreRegisterType(registerNumber);
+	    }
+	    
+	    public DexRegisterType getPostInstructionRegisterType(DexRegister dexRegister) {
+	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
 	        return DexRegisterTypeHelper.fromRegisterType(postRegisterMap.get(registerNumber), cache);
 	    }
 
-	    public DexRegisterType getPreInstructionRegisterType(DexRegister registerNumber) {
+	    public DexRegisterType getPreInstructionRegisterType(DexRegister dexRegister) {
+	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
 	        return DexRegisterTypeHelper.fromRegisterType(preRegisterMap.get(registerNumber), cache);
 	    }
 
 	    public int getInstructionIndex() {
 	    	return instructionIndex;
 	    }
+	    
 }

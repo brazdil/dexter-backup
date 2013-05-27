@@ -24,7 +24,7 @@ public class MainConsole {
       System.err.println("<apk-file> is not a file");
       System.exit(1);
     }
-    val apkFile_new = new File(args[1] + ".dexter");
+    val apkFile_new = new File(apkFile.getAbsolutePath() + "_new.apk");
 
     val frameworkDir = new File(args[0]);
     if (!frameworkDir.isDirectory()) {
