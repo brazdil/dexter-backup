@@ -94,19 +94,19 @@ public class DexCodeGeneration {
 		outWords = method.getCode().getOutWords();
 		isStatic = method.isStatic();
 		
-	    this.analyzer = new DexCodeAnalyzer(method.getCode(), cache);
+	    this.analyzer = new DexCodeAnalyzer(method, cache);
 	    this.analyzer.analyze();
 	}
 	
 	
 	public CodeItem generateCodeItem(DexFile dexFile) {
 		
-		DalvCode translatedCode = processMethod(method.getCode());
+		DalvCodeBridge translatedCode = new DalvCodeBridge(processMethod(method.getCode()), method);
 		
-		List<Instruction> instructions = getInstructions(translatedCode);
-		List<TryItem> newTries = getTries(translatedCode);
-		List<EncodedCatchHandler> newCatchHandlers = getCatchHandlers(translatedCode);
-		int registerCount = getRegisterCount(translatedCode); 
+		List<Instruction> instructions = translatedCode.getInstructions();
+		List<TryItem> newTries = translatedCode.getTries();
+		List<EncodedCatchHandler> newCatchHandlers = translatedCode.getCatchHandlers();
+		int registerCount = translatedCode.getRegisterCount(); 
 		
 		return CodeItem.internCodeItem(dexFile, registerCount, inWords, outWords, /* debugInfo */ null, instructions, newTries, newCatchHandlers);
 		
@@ -198,7 +198,7 @@ public class DexCodeGeneration {
         		DexPrototype prototype = method.getPrototype();
         		for(int i = 0; i < prototype.getParameterCount(isStatic); i++) {
         			DexRegisterType param = prototype.getParameterType(i, isStatic, method.getParentClass());
-        			int paramRegId = DexRegisterHelper.normalize(prototype.getFirstParameterRegisterIndex(i, isStatic)).getOriginalIndex();
+        			int paramRegId = DexRegisterHelper.normalize(prototype.getFirstParameterRegisterIndex(i, isStatic));
 	                Type one = Type.intern(param.getDescriptor());
 	                Insn insn = new PlainCstInsn(Rops.opMoveParam(one), SourcePosition.NO_INFO, RegisterSpec.make(paramRegId, one),
 	                                             RegisterSpecList.EMPTY,

@@ -61,4 +61,9 @@ public class DexRegister {
   public boolean equals(Object obj) {
     return (this == obj); // only take two equal references to be equal
   }
+  
+  @Override 
+  public String toString() {
+	  return getOriginalIndexString();
+  }
 }

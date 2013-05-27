@@ -470,7 +470,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
         setPostRegisterType(instruction, objectRegister,
                 RegisterType.getRegisterType(RegisterType.Category.Reference, objectRegisterType.type));
 
-        for(DexRegister i : instruction.getPostRegisters()) {
+        for(Integer i : instruction.getPostRegisters()) {
             RegisterType postInstructionRegisterType = instruction.getPostRegisterType(i);
             if (postInstructionRegisterType.category == RegisterType.Category.Unknown) {
                 RegisterType preInstructionRegisterType = instruction.getPreRegisterType(i);
@@ -485,7 +485,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
                         registerType = preInstructionRegisterType;
                     }
 
-                    setPostRegisterType(instruction, i, registerType);
+                    setPostRegisterType(instruction, new DexRegister(i), registerType);
                 }
             }
         }			
