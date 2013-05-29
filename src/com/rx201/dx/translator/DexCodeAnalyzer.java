@@ -441,16 +441,18 @@ public class DexCodeAnalyzer {
     	if (element instanceof DexInstruction) {
     		return new AnalyzedDexInstruction(index, (DexInstruction) element, cache);
     	} else /* DexCatch, DexCatchAll, DexLabel, DexTryBlockStart, DexTryBlockEnd */ {
-    		return new AnalyzedDexInstruction(index, new DexInstruction_Nop(code), element, cache);
+    		return new AnalyzedDexInstruction(index, null, element, cache);
     	}
 	}
 
     private void analyzeInstruction(AnalyzedDexInstruction instruction) {
     	DexInstruction inst = instruction.instruction;
     	
-    	DexInstructionAnalyzer analyzer = new DexInstructionAnalyzer(this);
-    	analyzer.setAnalyzedInstruction(instruction);
-    	inst.accept(analyzer);
+    	if (inst != null) {
+	    	DexInstructionAnalyzer analyzer = new DexInstructionAnalyzer(this);
+	    	analyzer.setAnalyzedInstruction(instruction);
+	    	inst.accept(analyzer);
+    	}
     }
 
     public AnalyzedDexInstruction reverseLookup(DexCodeElement element) {

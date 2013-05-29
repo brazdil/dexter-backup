@@ -202,11 +202,17 @@ public class AnalyzedDexInstruction {
 	    }
 
 	    public boolean setsRegister() {
-	        return instruction.lvaDefinedRegisters().size() > 0;
+	    	if (instruction == null)
+	    		return false;
+	    	else
+	    		return instruction.lvaDefinedRegisters().size() > 0;
 	    }
 
 	    public boolean setsWideRegister() {
-	        return instruction.lvaDefinedRegisters().size() > 1;
+	    	if (instruction == null)
+	    		return false;
+	    	else
+	    		return instruction.lvaDefinedRegisters().size() > 1;
 	    }
 
 	    public boolean setsRegister(DexRegister dexRegister) {

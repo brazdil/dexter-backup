@@ -14,17 +14,28 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Stack;
 
-import org.jf.baksmali.Adaptors.Format.InstructionMethodItem;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DebugInfoItem;
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.FieldIdItem;
+import org.jf.dexlib.Item;
+import org.jf.dexlib.MethodIdItem;
+import org.jf.dexlib.ProtoIdItem;
+import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.InstructionWithReference;
 import org.jf.dexlib.Code.Analysis.AnalyzedInstruction;
 import org.jf.dexlib.Code.Analysis.MethodAnalyzer;
+import org.jf.dexlib.Code.Format.Instruction20bc;
+import org.jf.dexlib.Code.Format.Instruction21c;
+import org.jf.dexlib.Code.Format.Instruction22c;
+import org.jf.dexlib.Code.Format.Instruction35c;
+import org.jf.dexlib.Code.Format.Instruction3rc;
 import org.jf.dexlib.CodeItem.EncodedCatchHandler;
+import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
 import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.Util.AccessFlags;
 import org.jf.util.IndentingWriter;
@@ -97,15 +108,82 @@ public class DexCodeGeneration {
 	    this.analyzer = new DexCodeAnalyzer(method, cache);
 	    this.analyzer.analyze();
 	}
-	
-	
+
+	private Item internReferencedItem(DexFile dexFile, Item referencedItem) {
+	    if (referencedItem instanceof FieldIdItem) {
+            return DexCodeIntern.intern(dexFile, (FieldIdItem)referencedItem);
+		} else if (referencedItem instanceof MethodIdItem) {
+			return DexCodeIntern.intern(dexFile, (MethodIdItem)referencedItem);
+		} else if (referencedItem instanceof TypeIdItem) {
+			return DexCodeIntern.intern(dexFile, (TypeIdItem)referencedItem);
+		} else if (referencedItem instanceof StringIdItem) {
+			return DexCodeIntern.intern(dexFile, (StringIdItem)referencedItem);
+		} else {
+			throw new RuntimeException("Unknown Item");
+		}
+		
+	}
 	public CodeItem generateCodeItem(DexFile dexFile) {
 		
 		DalvCodeBridge translatedCode = new DalvCodeBridge(processMethod(method.getCode()), method);
 		
-		List<Instruction> instructions = translatedCode.getInstructions();
-		List<TryItem> newTries = translatedCode.getTries();
-		List<EncodedCatchHandler> newCatchHandlers = translatedCode.getCatchHandlers();
+		// Need to intern instructions to the new dexFile, as they are from a different dex file
+		Instruction[] tmpInstructions = translatedCode.getInstructions();
+		List<Instruction> instructions = null;
+		if (tmpInstructions != null) {
+			instructions = new ArrayList<Instruction>();
+			for(Instruction inst : translatedCode.getInstructions()) {
+				if (inst instanceof Instruction20bc) {
+					Instruction20bc i = (Instruction20bc)inst;
+					inst = new Instruction20bc(i.opcode, i.getValidationErrorType(), internReferencedItem(dexFile, i.getReferencedItem()));
+					
+				} else if (inst instanceof Instruction21c) {
+					Instruction21c i = (Instruction21c)inst;
+					inst = new Instruction21c(i.opcode, (short)i.getRegisterA(), internReferencedItem(dexFile, i.getReferencedItem())); 
+					
+				} else if (inst instanceof Instruction22c) {
+					Instruction22c i = (Instruction22c)inst;
+					inst = new Instruction22c(i.opcode, (byte)i.getRegisterA(), (byte)i.getRegisterB(), internReferencedItem(dexFile, i.getReferencedItem())); 
+					
+				} else if (inst instanceof Instruction35c) {
+					Instruction35c i = (Instruction35c)inst;
+					inst = new Instruction35c(i.opcode,  i.getRegCount(),
+							(byte)i.getRegisterD(), (byte)i.getRegisterE(), (byte)i.getRegisterF(), (byte)i.getRegisterG(), (byte)i.getRegisterA(), 
+							internReferencedItem(dexFile, i.getReferencedItem())); 
+					
+				} else if (inst instanceof Instruction3rc) {
+					Instruction3rc i = (Instruction3rc)inst;
+					inst = new Instruction3rc(i.opcode, (short)i.getRegCount(), i.getStartRegister(), internReferencedItem(dexFile, i.getReferencedItem())); 
+					
+				} else if (inst instanceof InstructionWithReference) {
+					throw new RuntimeException("Unhandled InstructionWithReference");
+				} 
+				instructions.add(inst);
+			}
+		}		
+		
+		// Perform the same interning on tryItem and CatchHandler
+		TryItem[] tmpTries = translatedCode.getTries();
+		ArrayList<TryItem> newTries = null;
+		ArrayList<EncodedCatchHandler> newCatchHandlers = null;
+		if (tmpTries != null) {
+			newTries = new ArrayList<TryItem>();
+			newCatchHandlers = new ArrayList<EncodedCatchHandler>();
+			
+			for(TryItem curTryItem : tmpTries) {
+				EncodedTypeAddrPair[] oldTypeAddrPair = curTryItem.encodedCatchHandler.handlers;
+				EncodedTypeAddrPair[] typeAddrPair = new EncodedTypeAddrPair[oldTypeAddrPair.length];
+				for (int j=0; j<typeAddrPair.length; j++) {
+					typeAddrPair[j] = new EncodedTypeAddrPair(DexCodeIntern.intern(dexFile, oldTypeAddrPair[j].exceptionType),
+																oldTypeAddrPair[j].getHandlerAddress());
+				}
+				EncodedCatchHandler newCatchHandler = new EncodedCatchHandler(typeAddrPair, curTryItem.encodedCatchHandler.getCatchAllHandlerAddress());
+				newTries.add(new TryItem(curTryItem.getStartCodeAddress(), curTryItem.getTryLength(), newCatchHandler));
+				newCatchHandlers.add(newCatchHandler);
+			}		
+		}
+		
+		
 		int registerCount = translatedCode.getRegisterCount(); 
 		
 		return CodeItem.internCodeItem(dexFile, registerCount, inWords, outWords, /* debugInfo */ null, instructions, newTries, newCatchHandlers);
@@ -182,12 +260,14 @@ public class DexCodeGeneration {
         		}
         			
 				try {
-					writer.write("\n    --> ");
-					writer.write(lastInsn.insns.get(0).toHuman());
-					if (lastInsn.insns.size() > 1)
-						writer.write("...");
-					writer.write("\n");
-					writer.flush();
+					if (lastInsn.insns.size() > 0) {
+						writer.write("\n    --> ");
+						writer.write(lastInsn.insns.get(0).toHuman());
+						if (lastInsn.insns.size() > 1)
+							writer.write("...");
+						writer.write("\n");
+						writer.flush();
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -257,7 +337,7 @@ public class DexCodeGeneration {
         	// Extend this basic block as far as possible
         	AnalyzedDexInstruction current = first; // Always refer to latest-added instruction in the bb
         	block.add(current);
-        	while(current.getSuccessorCount() == 1  && (!current.getInstruction().cfgEndsBasicBlock())) { 
+        	while(current.getSuccessorCount() == 1  && (current.getInstruction() == null || (!current.getInstruction().cfgEndsBasicBlock()))) { 
         		// Condition 1: current has only one successor
         		// Condition 2: next instruction has only one predecessor
         		// Condition 3: current cannot throw

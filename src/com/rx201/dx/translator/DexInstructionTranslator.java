@@ -187,7 +187,8 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				result.addSuccessor(successors.get(i));
 		}
 		
-		inst.getInstruction().accept(this);
+		if (inst.getInstruction() != null)
+			inst.getInstruction().accept(this);
 		
 		return result;
 	}
