@@ -18,8 +18,6 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
 import org.jf.dexlib.Util.AccessFlags;
 
-import com.rx201.dx.translator.Translator;
-
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;

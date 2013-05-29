@@ -1,0 +1,5 @@
+JAVA_PATH := /cygdrive/c/Program\ Files/Java/jdk1.7.0_15/bin
+JAVAC := $(JAVA_PATH)/javac.exe
+JAVA := $(JAVA_PATH)/java.exe
+DX := /cygdrive/c/Android/android-sdk/build-tools/17.0.0/dx.bat
+APKTOOL := $(JAVA) -jar c:\\apktool\\apktool.jar

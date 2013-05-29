@@ -166,24 +166,16 @@ class DalvCodeBridge {
 		
 	}
 
-	public List<Instruction> getInstructions() {
-		return Arrays.asList(codeItem.getInstructions());
+	public Instruction[] getInstructions() {
+		return codeItem.getInstructions();
 	}
 
-	public List<TryItem> getTries() {
-		TryItem[] tries = codeItem.getTries();
-		if (tries == null)
-			return null;
-		else
-			return Arrays.asList(codeItem.getTries());
+	public TryItem[] getTries() {
+		return codeItem.getTries();
 	}
 
-	public List<EncodedCatchHandler> getCatchHandlers() {
-		EncodedCatchHandler[] catchers = codeItem.getHandlers();
-		if (catchers == null)
-			return null;
-		else
-			return Arrays.asList(catchers);
+	public EncodedCatchHandler[] getCatchHandlers() {
+		return codeItem.getHandlers();
 	}
 
 	public int getRegisterCount() {

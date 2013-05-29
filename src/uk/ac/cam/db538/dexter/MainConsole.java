@@ -34,9 +34,8 @@ public class MainConsole {
     
     val APK = new Apk(apkFile, frameworkDir);
 
-    val fullFrameworkDir = new File("framework-2.3");
-    ClassPath.InitializeClassPath(new String[]{fullFrameworkDir.getAbsolutePath()}, 
-    		fullFrameworkDir.list(new FilenameFilter() {
+    ClassPath.InitializeClassPath(new String[]{frameworkDir.getAbsolutePath()}, 
+    		frameworkDir.list(new FilenameFilter() {
 				public boolean accept(File dir, String name) {
 					return name.endsWith(".jar");
 				}
