@@ -3,11 +3,9 @@ package com.rx201.dx.translator;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Getter;
-
-import org.jf.dexlib.Code.Opcode;
-import org.jf.dexlib.Code.Analysis.AnalyzedInstruction;
 import org.jf.dexlib.Code.Analysis.RegisterType;
+
+import lombok.Getter;
 
 import com.android.dx.rop.code.FillArrayDataInsn;
 import com.android.dx.rop.code.Insn;
@@ -126,7 +124,6 @@ import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 
@@ -187,6 +184,8 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				result.addSuccessor(successors.get(i));
 		}
 		
+		// Instruction visitor is free to patch up successor/primarysuccessor
+		// this is currently done in Switch inst.
 		if (inst.getInstruction() != null)
 			inst.getInstruction().accept(this);
 		
@@ -394,7 +393,9 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	@Override
 	public void visit(DexInstruction_ConstClass instruction) {
-		doConst(instruction.getRegTo(), makeCstType(instruction.getValue()));
+		// ConstClass can throw.
+		doThrowingCstInsn(Rops.CONST_OBJECT, makeCstType(instruction.getValue()));
+		doPseudoMoveResult(instruction.getRegTo());
 	}
 
 
@@ -573,9 +574,16 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		}
 		
 		// Sanity check
-		assert targetList.size() + 1== curInst.getSuccessorCount();
+		assert targetList.size() + 1 == curInst.getSuccessorCount();
 		for(int i=0; i < targetList.size(); i++)
 			assert targetList.get(i) == curInst.getSuccesors().get(i + 1).auxillaryElement;
+
+		// Overwrite result.successor here, according to the requirement of Rops.SWITCH
+		result.successors.clear();
+		List<AnalyzedDexInstruction> successors = curInst.getSuccesors();
+		for(int i=0; i < targetList.size(); i++)
+			result.addSuccessor(successors.get(i));
+		result.addSuccessor(result.primarySuccessor);
 		
 		result.addInstruction(new SwitchInsn(Rops.SWITCH, SourcePosition.NO_INFO, null, makeOperands(instruction.getRegTest()), caseList));
 	}
@@ -787,7 +795,14 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	@Override
 	public void visit(DexInstruction_Invoke instruction) {
 		Rop opcode = null;
-		List<DexRegister> operands_list = instruction.getArgumentRegisters();
+		ArrayList<DexRegister> operands_list = new ArrayList<DexRegister>();
+		
+		// Filter out high reg for long/double type
+		for(DexRegister paramReg : instruction.getArgumentRegisters()) {
+			RegisterType paramType = curInst.getPreRegisterType(paramReg);
+			//if (paramType.category != RegisterType.Category.LongHi && paramType.category != RegisterType.Category.DoubleHi)
+				operands_list.add(paramReg);
+		}
 		DexRegister[] operands_array = operands_list.toArray(new DexRegister[operands_list.size()]);
 		RegisterSpecList operands = makeOperands(operands_array);
 		switch(instruction.getCallType()) {
@@ -930,7 +945,12 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			opcode = Rops.XOR_INT;
 			break;
 		}
-		doPlainInsn(opcode, getPostRegSpec(instruction.getRegTarget()), instruction.getRegSourceA(), instruction.getRegSourceB());
+		if (opcode.getBranchingness() == Rop.BRANCH_NONE) {
+			doPlainInsn(opcode, getPostRegSpec(instruction.getRegTarget()), instruction.getRegSourceA(), instruction.getRegSourceB());
+		} else { // Integer division/reminder will throw exception
+			doThrowingInsn(opcode, instruction.getRegSourceA(), instruction.getRegSourceB());
+			doPseudoMoveResult(instruction.getRegTarget());
+		}
 	}
 
 
@@ -972,10 +992,18 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			opcode = Rops.XOR_CONST_INT;
 			break;
 		}
-		doPlainCstInsn(opcode, getPostRegSpec(instruction.getRegTarget()), makeCstLiteral(instruction.getLiteral()), instruction.getRegSource());
 		
-		if (instruction.getInsnOpcode() == Opcode_BinaryOpLiteral.Rsub) // Patch up rsub
-			doPlainInsn(Rops.NEG_INT, getPostRegSpec(instruction.getRegTarget()), instruction.getRegTarget());
+		if (opcode.getBranchingness() == Rop.BRANCH_NONE) {
+			
+			doPlainCstInsn(opcode, getPostRegSpec(instruction.getRegTarget()), makeCstLiteral(instruction.getLiteral()), instruction.getRegSource());
+			
+			if (instruction.getInsnOpcode() == Opcode_BinaryOpLiteral.Rsub) // Patch up rsub
+				doPlainInsn(Rops.NEG_INT, getPostRegSpec(instruction.getRegTarget()), instruction.getRegTarget());
+		
+		} else { // Integer division/reminder will throw exception
+			doThrowingCstInsn(opcode, makeCstLiteral(instruction.getLiteral()), instruction.getRegSource());
+			doPseudoMoveResult(instruction.getRegTarget());
+		}
 	}
 
 
@@ -1032,7 +1060,13 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			opcode = Rops.XOR_LONG;
 			break;
 		}
-		doPlainInsn(opcode, getPostRegSpec(instruction.getRegTarget1()), instruction.getRegSourceA1(), instruction.getRegSourceB1());
+		
+		if (opcode.getBranchingness() == Rop.BRANCH_NONE) {
+			doPlainInsn(opcode, getPostRegSpec(instruction.getRegTarget1()), instruction.getRegSourceA1(), instruction.getRegSourceB1());
+		} else { // Long division/reminder will throw exception
+			doThrowingInsn(opcode, instruction.getRegSourceA1(), instruction.getRegSourceB1());
+			doPseudoMoveResult(instruction.getRegTarget1());
+		}		
 	}
 
 
