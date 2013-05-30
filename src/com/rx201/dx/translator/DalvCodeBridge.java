@@ -143,7 +143,7 @@ class DalvCodeBridge {
 		
 		outputDex.add(outClass);
 		
-		OutputStreamWriter humanOut = new OutputStreamWriter(System.out);
+		OutputStreamWriter humanOut = null; //new OutputStreamWriter(System.out);
 		try {
 			byte[] outArray = outputDex.toDex(humanOut, true);
 			File tmpFile = File.createTempFile("dalvcode", ".dex");
