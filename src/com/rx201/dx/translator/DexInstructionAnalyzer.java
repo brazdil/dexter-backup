@@ -206,6 +206,8 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	@Override
 	public void visit(DexInstruction_Const dexInstruction_Const) {
 		long value = dexInstruction_Const.getValue();
+		// TODO: Need more detailed type information, because translator needs it to 
+		// instantiate the appropriate constant object.
 		setDestinationRegisterType(instruction, RegisterType.getRegisterTypeForLiteral(value));
 //            analyzeConst(analyzedInstruction);
 	}
