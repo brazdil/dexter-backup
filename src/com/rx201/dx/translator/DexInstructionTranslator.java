@@ -29,6 +29,7 @@ import com.android.dx.rop.cst.CstDouble;
 import com.android.dx.rop.cst.CstFloat;
 import com.android.dx.rop.cst.CstInteger;
 import com.android.dx.rop.cst.CstInterfaceMethodRef;
+import com.android.dx.rop.cst.CstKnownNull;
 import com.android.dx.rop.cst.CstLiteralBits;
 import com.android.dx.rop.cst.CstLong;
 import com.android.dx.rop.cst.CstMethodRef;
@@ -229,11 +230,8 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	}
 	
 
-	private CstLiteralBits makeCstLiteral(long value) {
-		if (value >= Integer.MIN_VALUE && value <= Integer.MAX_VALUE)
-			return  CstInteger.make((int)value);
-		else
-			return CstLong.make(value);
+	private CstInteger makeCstInteger(int value) {
+			return  CstInteger.make(value);
 	}
 
 	private CstString makeCstString(String stringConstant) {
@@ -367,27 +365,86 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	}
 
 	
-	private void doConst(DexRegister to, Constant constant) {
+	private void doConst(DexRegister to, long value) {
+		Constant constant;
+		RegisterType type = curInst.getPostRegisterType(to);
+		switch (type.category) {
+		/*
+		case Boolean:
+		case One:
+			constant = CstBoolean.make((int)value);
+			break;
+		case Byte:
+		case PosByte:
+			constant = CstByte.make((int)value);
+			break;
+		case Char:
+			constant = CstChar.make((int)value);
+			break;
+		case Short:
+		case PosShort:
+			constant = CstShort.make((int)value);
+			break;
+		case Float:
+			constant = CstFloat.make((int)value);
+			break;
+		case Integer:
+			constant = CstInteger.make((int)value);
+			break;
+		case Null:
+			constant = CstKnownNull.THE_ONE;
+			break;
+		case LongLo:
+			constant = CstLong.make(value);
+			break;
+		case DoubleLo:
+			constant = CstDouble.make(value);
+			break;
+		*/
+		case Boolean:
+		case One:
+		case Byte:
+		case PosByte:
+		case Char:
+		case Short:
+		case PosShort:
+		case Integer:
+		case Null:
+			constant = CstInteger.make((int)value);
+			break;
+		case Float:
+			constant = CstFloat.make((int)value);
+			break;
+		case LongLo:
+			constant = CstLong.make(value);
+			break;
+		case DoubleLo:
+			constant = CstDouble.make(value);
+			break;
+		default:
+			throw new RuntimeException("Unknown constant type.");
+		}
+		
 		RegisterSpec dst = getPostRegSpec(to);
 		doPlainCstInsn(Rops.opConst(dst), dst, constant);
-		
 	}
 	
 	@Override
 	public void visit(DexInstruction_Const instruction) {
-		doConst(instruction.getRegTo(), makeCstLiteral(instruction.getValue()));
+		doConst(instruction.getRegTo(), instruction.getValue());
 	}
 
 
 	@Override
 	public void visit(DexInstruction_ConstWide instruction) {
-		doConst(instruction.getRegTo1(), makeCstLiteral(instruction.getValue()));
+		doConst(instruction.getRegTo1(), instruction.getValue());
 	}
 
 
 	@Override
 	public void visit(DexInstruction_ConstString instruction) {
-		doConst(instruction.getRegTo(), makeCstString(instruction.getStringConstant()));
+		RegisterSpec dst = getPostRegSpec(instruction.getRegTo());
+		doPlainCstInsn(Rops.opConst(dst), dst, makeCstString(instruction.getStringConstant()));
 	}
 
 
@@ -455,7 +512,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				SourcePosition.NO_INFO, 
 				tmp0Spec,
 				RegisterSpecList.EMPTY, 
-				makeCstLiteral(arrayLen)));
+				CstInteger.make(arrayLen)));
 		result.addInstruction(new ThrowingCstInsn(Rops.opNewArray(Type.intern(arrayType.getElementType().getDescriptor())),
 				SourcePosition.NO_INFO, 
 				RegisterSpecList.make(tmp0Spec), 
@@ -473,7 +530,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 					SourcePosition.NO_INFO, 
 					tmp0Spec,
 					RegisterSpecList.EMPTY, 
-					makeCstLiteral(i)));
+					CstInteger.make(i)));
 			result.addAuxInstruction(new ThrowingInsn(opcode, 
 					SourcePosition.NO_INFO, 
 					RegisterSpecList.make(
@@ -800,7 +857,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		// Filter out high reg for long/double type
 		for(DexRegister paramReg : instruction.getArgumentRegisters()) {
 			RegisterType paramType = curInst.getPreRegisterType(paramReg);
-			//if (paramType.category != RegisterType.Category.LongHi && paramType.category != RegisterType.Category.DoubleHi)
+			if (paramType.category != RegisterType.Category.LongHi && paramType.category != RegisterType.Category.DoubleHi)
 				operands_list.add(paramReg);
 		}
 		DexRegister[] operands_array = operands_list.toArray(new DexRegister[operands_list.size()]);
@@ -995,13 +1052,13 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		
 		if (opcode.getBranchingness() == Rop.BRANCH_NONE) {
 			
-			doPlainCstInsn(opcode, getPostRegSpec(instruction.getRegTarget()), makeCstLiteral(instruction.getLiteral()), instruction.getRegSource());
+			doPlainCstInsn(opcode, getPostRegSpec(instruction.getRegTarget()), CstInteger.make((int)instruction.getLiteral()), instruction.getRegSource());
 			
 			if (instruction.getInsnOpcode() == Opcode_BinaryOpLiteral.Rsub) // Patch up rsub
 				doPlainInsn(Rops.NEG_INT, getPostRegSpec(instruction.getRegTarget()), instruction.getRegTarget());
 		
 		} else { // Integer division/reminder will throw exception
-			doThrowingCstInsn(opcode, makeCstLiteral(instruction.getLiteral()), instruction.getRegSource());
+			doThrowingCstInsn(opcode, CstInteger.make((int)instruction.getLiteral()), instruction.getRegSource());
 			doPseudoMoveResult(instruction.getRegTarget());
 		}
 	}
