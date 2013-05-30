@@ -124,7 +124,7 @@ public class DexCodeGeneration {
 	    dexOptions.targetApiLevel = 10;
 	    
 	    this.method = method;
-		inWords = method.getPrototype().getParameterCount(method.isStatic());
+		inWords = method.getPrototype().countParamWords(method.isStatic());
 		outWords = method.getCode().getOutWords();
 		isStatic = method.isStatic();
 		
@@ -237,13 +237,9 @@ public class DexCodeGeneration {
         
         DexInstructionTranslator translator = new DexInstructionTranslator(analyzer);
 
-        IndentingWriter writer = new IndentingWriter(new OutputStreamWriter(System.out));
-        try {
-			writer.write(String.format("%s param reg: %d\n", method.getName()  + method.getPrototype().toString(), 
-					inWords));
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+    	System.out.println("==================================================================================");
+    	System.out.println(String.format("%s param reg: %d", method.getName()  + method.getPrototype().toString(), 
+				inWords));
         
         // Convert basicBlocks, hold the result in the temporary map. It is indexed by the basic block's first AnalyzedInst.
         HashMap<AnalyzedDexInstruction, ArrayList<Insn>> convertedBasicBlocks = new HashMap<AnalyzedDexInstruction, ArrayList<Insn>>();
@@ -299,14 +295,16 @@ public class DexCodeGeneration {
             // Add move-params to the beginning of the first block
         	if (bi == 0) {
         		DexPrototype prototype = method.getPrototype();
+        		int regOffset = 0;
         		for(int i = 0; i < prototype.getParameterCount(isStatic); i++) {
         			DexRegisterType param = prototype.getParameterType(i, isStatic, method.getParentClass());
         			int paramRegId = DexRegisterHelper.normalize(prototype.getFirstParameterRegisterIndex(i, isStatic));
 	                Type one = Type.intern(param.getDescriptor());
 	                Insn insn = new PlainCstInsn(Rops.opMoveParam(one), SourcePosition.NO_INFO, RegisterSpec.make(paramRegId, one),
 	                                             RegisterSpecList.EMPTY,
-	                                             CstInteger.make(i));
+	                                             CstInteger.make(regOffset));
 	                insnBlock.add(i, insn);
+	                regOffset += param.getRegisters();
                 }
         	}
         	
