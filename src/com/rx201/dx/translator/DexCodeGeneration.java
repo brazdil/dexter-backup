@@ -42,6 +42,27 @@ import org.jf.util.IndentingWriter;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPutWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGetWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePutWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGetWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPutWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpLiteral;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
@@ -67,8 +88,10 @@ import com.android.dx.rop.code.InsnList;
 import com.android.dx.rop.code.LocalVariableExtractor;
 import com.android.dx.rop.code.LocalVariableInfo;
 import com.android.dx.rop.code.PlainCstInsn;
+import com.android.dx.rop.code.PlainInsn;
 import com.android.dx.rop.code.RegisterSpec;
 import com.android.dx.rop.code.RegisterSpecList;
+import com.android.dx.rop.code.Rop;
 import com.android.dx.rop.code.RopMethod;
 import com.android.dx.rop.code.Rops;
 import com.android.dx.rop.code.SourcePosition;
@@ -299,8 +322,16 @@ public class DexCodeGeneration {
         	ArrayList<Insn> insnBlock = convertedBasicBlocks.get(head); 
         	DexConvertedResult lastInsn = convertedBasicBlocksInfo.get(head);
         	
+        	InsnList insns;
+        	int insnBlockSize = insnBlock.size();
+        	//Patch up empty bb or bb without goto
+        	if (insnBlockSize == 0 || insnBlock.get(insnBlockSize - 1).getOpcode().getBranchingness() == Rop.BRANCH_NONE) {
+        		insns = new InsnList(insnBlockSize + 1);
+        		insns.set(insnBlockSize, new PlainInsn(Rops.GOTO, SourcePosition.NO_INFO, null, RegisterSpecList.EMPTY));
+        	} else {
+            	insns = new InsnList(insnBlock.size());
+        	}
            	// then convert them to InsnList
-        	InsnList insns = new InsnList(insnBlock.size());
         	for(int i=0 ;i<insnBlock.size(); i++)
         		insns.set(i, insnBlock.get(i));
         	insns.setImmutable();
@@ -317,6 +348,63 @@ public class DexCodeGeneration {
 
 
         return new SimpleRopMethod(ropBasicBlocks, analyzer.getStartOfMethod().getSuccesors().get(0).getInstructionIndex());
+	}
+	
+	private boolean endsBasicBlock(AnalyzedDexInstruction current) {
+		if (current.getSuccessorCount() != 1)
+			return true; // More than one successor, guaranteed to end a BB
+		
+		if (current.getInstruction() == null)
+			return false; // Pseudo instructions like DexLabel, etc
+		
+		if (current.getInstruction().cfgEndsBasicBlock())
+			return true; // Sufficient condition
+		
+		// A few more special cases
+		DexInstruction i = current.getInstruction();
+		if (    i instanceof DexInstruction_StaticGet ||
+				i instanceof DexInstruction_StaticGetWide ||
+				
+				i instanceof DexInstruction_StaticPut ||
+				i instanceof DexInstruction_StaticPutWide ||
+				
+				i instanceof DexInstruction_InstanceGet ||
+				i instanceof DexInstruction_InstanceGetWide ||
+				
+				i instanceof DexInstruction_InstancePut ||
+				i instanceof DexInstruction_InstancePutWide ||
+				
+				i instanceof DexInstruction_ArrayGet ||
+				i instanceof DexInstruction_ArrayGetWide ||
+
+				i instanceof DexInstruction_ArrayPut ||
+				i instanceof DexInstruction_ArrayPutWide ||
+
+				i instanceof DexInstruction_ConstClass ||
+				
+				i instanceof DexInstruction_NewInstance 
+				)
+			return true;
+		
+		if ( i instanceof DexInstruction_BinaryOpLiteral) {
+			Opcode_BinaryOpLiteral opcode = ((DexInstruction_BinaryOpLiteral)i).getInsnOpcode();
+			if (opcode == Opcode_BinaryOpLiteral.Div || opcode == Opcode_BinaryOpLiteral.Rem)
+				return true; // Will throw Arithmetic Exception
+		}
+		
+		if ( i instanceof DexInstruction_BinaryOp) {
+			Opcode_BinaryOp opcode = ((DexInstruction_BinaryOp)i).getInsnOpcode();
+			if (opcode == Opcode_BinaryOp.DivInt || opcode == Opcode_BinaryOp.RemInt)
+				return true; // Will throw Arithmetic Exception
+		}		
+		
+		if ( i instanceof DexInstruction_BinaryOpWide) {
+			Opcode_BinaryOpWide opcode = ((DexInstruction_BinaryOpWide)i).getInsnOpcode();
+			if (opcode == Opcode_BinaryOpWide.DivLong || opcode == Opcode_BinaryOpWide.RemLong)
+				return true; // Will throw Arithmetic Exception
+		}		
+		
+		return false;
 	}
 	
 	private ArrayList<ArrayList<AnalyzedDexInstruction>> buildBasicBlocks() {
@@ -337,7 +425,7 @@ public class DexCodeGeneration {
         	// Extend this basic block as far as possible
         	AnalyzedDexInstruction current = first; // Always refer to latest-added instruction in the bb
         	block.add(current);
-        	while(current.getSuccessorCount() == 1  && (current.getInstruction() == null || (!current.getInstruction().cfgEndsBasicBlock()))) { 
+        	while(!endsBasicBlock(current)) { 
         		// Condition 1: current has only one successor
         		// Condition 2: next instruction has only one predecessor
         		// Condition 3: current cannot throw

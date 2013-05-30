@@ -287,12 +287,12 @@ public class AnalyzedDexInstruction {
 	    }
 	    
 	    public RegisterType getPostRegisterType(int registerNumber) {
-	    	return postRegisterMap.get(registerNumber);
+	    	return getPostRegister(registerNumber);
 	    }
 	    
 	    public RegisterType getPreRegisterType(DexRegister dexRegister) {
 	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
-	    	return preRegisterMap.get(registerNumber);
+	    	return getPreRegister(registerNumber);
 	    }
 	    
 	    public RegisterType getPreRegisterType(int registerNumber) {
@@ -301,12 +301,12 @@ public class AnalyzedDexInstruction {
 	    
 	    public DexRegisterType getPostInstructionRegisterType(DexRegister dexRegister) {
 	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
-	        return DexRegisterTypeHelper.fromRegisterType(postRegisterMap.get(registerNumber), cache);
+	        return DexRegisterTypeHelper.fromRegisterType(getPostRegister(registerNumber), cache);
 	    }
 
 	    public DexRegisterType getPreInstructionRegisterType(DexRegister dexRegister) {
 	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
-	        return DexRegisterTypeHelper.fromRegisterType(preRegisterMap.get(registerNumber), cache);
+	        return DexRegisterTypeHelper.fromRegisterType(getPreRegister(registerNumber), cache);
 	    }
 
 	    public int getInstructionIndex() {

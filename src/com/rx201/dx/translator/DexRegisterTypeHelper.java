@@ -12,6 +12,7 @@ public class DexRegisterTypeHelper {
 	public static DexRegisterType fromRegisterType(RegisterType t, DexParsingCache cache) {
 		switch(t.category) {
 		case Boolean:
+		case One: // happened in translation stage of switch test case 
 			return DexRegisterType.parse("Z", cache);
 		case Byte:
 		case PosByte:
@@ -22,6 +23,7 @@ public class DexRegisterTypeHelper {
 		case Char:
 			return DexRegisterType.parse("C", cache);
 		case Integer:
+		case Null: // <cinit> in assert test case 
 			return DexRegisterType.parse("I", cache);
 		case Float:
 			return DexRegisterType.parse("F", cache);
@@ -36,6 +38,7 @@ public class DexRegisterTypeHelper {
 		case UninitThis:
 		case Reference:
 			return DexRegisterType.parse(t.type.getClassType(), cache);
+		
 		default:
 			throw new UnsupportedOperationException("Unknown register type");
 		}
