@@ -1,0 +1,4 @@
+*.apk
+classes.dex
+*.class
+*.out
