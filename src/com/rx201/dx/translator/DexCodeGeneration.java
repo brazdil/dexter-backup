@@ -258,12 +258,7 @@ public class DexCodeGeneration {
         	for(int i = 0; i < basicBlock.size(); i++) {
         		AnalyzedDexInstruction inst = basicBlock.get(i);
         		if (inst.getInstruction() != null) {
-					try {
-						writer.write(inst.getInstruction().getOriginalAssembly());
-						writer.flush();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+					System.out.println(inst.getInstruction().getOriginalAssembly());
         		}
         		lastInsn = translator.translate(inst);
         		insnBlock.addAll(lastInsn.insns);
@@ -278,17 +273,12 @@ public class DexCodeGeneration {
     				auxAdded.add(s);
         		}
         			
-				try {
-					if (lastInsn.insns.size() > 0) {
-						writer.write("\n    --> ");
-						writer.write(lastInsn.insns.get(0).toHuman());
-						if (lastInsn.insns.size() > 1)
-							writer.write("...");
-						writer.write("\n");
-						writer.flush();
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
+				if (lastInsn.insns.size() > 0) {
+					System.out.print("    --> ");
+					System.out.print(lastInsn.insns.get(0).toHuman());
+					if (lastInsn.insns.size() > 1)
+						System.out.print("...");
+					System.out.println();
 				}
         	}
         	
