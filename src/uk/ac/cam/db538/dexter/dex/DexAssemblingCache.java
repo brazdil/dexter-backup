@@ -57,7 +57,12 @@ public class DexAssemblingCache {
   }
 
   public TypeListItem getTypeList(List<DexRegisterType> key) {
-    return typeLists.getCachedEntry(key);
+	// According to http://source.android.com/tech/dalvik/dex-format.html
+	// empty type_list should be null, not a 0-length list
+	if (key.size() == 0)
+		return null;
+	else
+        return typeLists.getCachedEntry(key);
   }
 
   public StringIdItem getStringConstant(String key) {
