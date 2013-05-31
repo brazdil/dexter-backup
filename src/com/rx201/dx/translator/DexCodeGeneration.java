@@ -42,6 +42,7 @@ import org.jf.util.IndentingWriter;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
@@ -60,6 +61,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGetWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPutWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpWide;
@@ -425,10 +427,25 @@ public class DexCodeGeneration {
         			break;
         	}
         	
-        	// Add successors of current to the to-be-visit stack
-        	for(AnalyzedDexInstruction i : current.getSuccesors())
-        		leads.push(i);
-        	
+        	// Tweak Switch instruction's successors, collapsing the SwitchData that follows it
+        	if (current.getInstruction() instanceof DexInstruction_Switch) {
+        		
+        		assert current.getSuccessorCount() == 2;
+        		for (AnalyzedDexInstruction successor : current.getSuccesors()) {
+        			if (successor.auxillaryElement == null) { // This is the default case successor
+        				leads.push(successor);
+        			} else { // This is a DexLabel, which is followed by SwitchData
+        				assert successor.getSuccessorCount() == 1;
+        				for (AnalyzedDexInstruction switchSuccessor : successor.getSuccesors().get(0).getSuccesors())
+        					leads.push(switchSuccessor);
+        			}
+        		}
+        	} else {
+	        	// Add successors of current to the to-be-visit stack
+	        	for(AnalyzedDexInstruction i : current.getSuccesors())
+	        		leads.push(i);
+	        	
+        	}
         	basicBlocks.add(block);
        }
         
