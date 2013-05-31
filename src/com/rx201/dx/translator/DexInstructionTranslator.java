@@ -1,6 +1,7 @@
 package com.rx201.dx.translator;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.jf.dexlib.Code.Analysis.RegisterType;
@@ -178,17 +179,23 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		result = new DexConvertedResult();
 		curInst = inst;
 		
-		List<AnalyzedDexInstruction> successors = inst.getSuccesors();
-		if (successors.size() > 0) {
-			result.setPrimarySuccessor(successors.get(0));
-			for(int i=0; i<successors.size(); i++)
-				result.addSuccessor(successors.get(i));
-		}
-		
 		// Instruction visitor is free to patch up successor/primarysuccessor
 		// this is currently done in Switch inst.
 		if (inst.getInstruction() != null)
 			inst.getInstruction().accept(this);
+		
+		List<AnalyzedDexInstruction> successors = inst.getSuccesors();
+		if (successors.size() > 1) {
+			// Because AnalyzedDexInstruction.Successors are not in any particular order, 
+			// individual instruction need to set their primary successor itself.
+			assert result.primarySuccessor != null;
+			assert result.successors.size() != 0; 
+		} else if (successors.size() == 1) {
+			result.setPrimarySuccessor(successors.get(0));
+			result.addSuccessor(result.primarySuccessor);
+		} else {
+			assert inst.getInstruction() == null || inst.getInstruction().cfgExitsMethod();
+		}
 		
 		return result;
 	}
@@ -614,7 +621,8 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		
 		AnalyzedDexInstruction switchDataPtr = analyzer.reverseLookup(instruction.getSwitchTable());
 		assert switchDataPtr.getSuccessorCount() == 1;
-		DexInstruction switchDataRaw = switchDataPtr.getSuccesors().get(0).getInstruction();
+		AnalyzedDexInstruction analyzedSwitchData = switchDataPtr.getSuccesors().get(0);
+		DexInstruction switchDataRaw = analyzedSwitchData.getInstruction();
 		
 		if (instruction.isPacked()) {
 			DexInstruction_PackedSwitchData switchData = (DexInstruction_PackedSwitchData) switchDataRaw;
@@ -631,16 +639,28 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		}
 		
 		// Sanity check
-		assert targetList.size() + 1 == curInst.getSuccessorCount();
-		for(int i=0; i < targetList.size(); i++)
-			assert targetList.get(i) == curInst.getSuccesors().get(i + 1).auxillaryElement;
+		assert curInst.getSuccessorCount() == 2;
+		List<AnalyzedDexInstruction> switchSuccessors = analyzedSwitchData.getSuccesors();
+		assert switchSuccessors.size() == targetList.size();
+		HashSet<DexCodeElement> set0 = new HashSet<DexCodeElement>(targetList);
+		HashSet<DexCodeElement> set1 = new HashSet<DexCodeElement>();
+		for(int i=0; i<switchSuccessors.size(); i++)
+			set1.add(switchSuccessors.get(i).auxillaryElement);
+		assert set0.equals(set1);
+
+		AnalyzedDexInstruction defaultSuccessor;
+		if (curInst.getSuccesors().get(0).auxillaryElement == instruction.getSwitchTable())
+			defaultSuccessor = curInst.getSuccesors().get(1);
+		else 
+			defaultSuccessor = curInst.getSuccesors().get(0);
+			
 
 		// Overwrite result.successor here, according to the requirement of Rops.SWITCH
 		result.successors.clear();
-		List<AnalyzedDexInstruction> successors = curInst.getSuccesors();
-		for(int i=0; i < targetList.size(); i++)
-			result.addSuccessor(successors.get(i));
-		result.addSuccessor(result.primarySuccessor);
+		for(int i=0; i < switchSuccessors.size(); i++)
+			result.addSuccessor(analyzer.reverseLookup(targetList.get(i)));
+		result.addSuccessor(defaultSuccessor);
+		result.setPrimarySuccessor(defaultSuccessor);
 		
 		result.addInstruction(new SwitchInsn(Rops.SWITCH, SourcePosition.NO_INFO, null, makeOperands(instruction.getRegTest()), caseList));
 	}
@@ -683,7 +703,19 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		doPlainInsn(opcode, getPostRegSpec(instruction.getRegTo()), instruction.getRegSourceA1(), instruction.getRegSourceB1());
 	}
 
-
+	private void doIfSuccessors(DexLabel target) {
+		assert curInst.getSuccessorCount() == 2;
+		AnalyzedDexInstruction primary = null, secondary = null;
+		for(AnalyzedDexInstruction successor : curInst.getSuccesors()) {
+			if (successor.auxillaryElement != target) // Primary successor for If is the fall over block
+				primary = successor;
+			else
+				secondary = successor;
+		}
+			result.setPrimarySuccessor(primary);
+			result.addSuccessor(primary).addSuccessor(secondary); // Order matters?? Yes they do.. try assertion unit test.
+	}
+	
 	@Override
 	public void visit(DexInstruction_IfTest instruction) {
 		RegisterSpecList operands = makeOperands(instruction.getRegA(), instruction.getRegB());
@@ -709,6 +741,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			break;
 		}
 		doPlainInsn(opcode, null, instruction.getRegA(), instruction.getRegB());
+		doIfSuccessors(instruction.getTarget());
 	}
 
 
@@ -737,6 +770,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			break;
 		}
 		doPlainInsn(opcode, null, instruction.getReg());
+		doIfSuccessors(instruction.getTarget());
 	}
 
 
