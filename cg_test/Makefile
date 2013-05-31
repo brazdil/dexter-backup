@@ -11,7 +11,7 @@ diff: test.out test.apk_new.out
 	-@diff --side-by-side -r $^
 
 test.apk_new.apk : test.apk
-	$(JAVA) -classpath "$(PROJECET_ROOT)/bin/;$(PROJECET_ROOT)/lib/*" uk.ac.cam.db538.dexter.MainConsole $(PROJECET_ROOT)/framework-2.3-lite $<
+	$(JAVA) -ea -classpath "$(PROJECET_ROOT)/bin/;$(PROJECET_ROOT)/lib/*" uk.ac.cam.db538.dexter.MainConsole $(PROJECET_ROOT)/framework-2.3-lite $<
 
 test.apk: classes.dex
 	zip $@ $<
@@ -44,3 +44,6 @@ run0: test.apk
 ## Prepare code for eclipse debugging
 debug: test.apk test.out
 	@cp $< $(TOP)
+	
+dump: classes.dex
+	$(DX) --dex --verbose-dump  $(CWD)/$<
