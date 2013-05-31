@@ -456,6 +456,7 @@ public class DexCodeAnalyzer {
     }
 
     public AnalyzedDexInstruction reverseLookup(DexCodeElement element) {
+    	assert element != null;
     	return instructionMap.get(element);
     }
 }

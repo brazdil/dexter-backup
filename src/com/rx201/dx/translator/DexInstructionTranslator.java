@@ -188,8 +188,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		if (successors.size() > 1) {
 			// Because AnalyzedDexInstruction.Successors are not in any particular order, 
 			// individual instruction need to set their primary successor itself.
-			assert result.primarySuccessor != null;
-			assert result.successors.size() != 0; 
+			assert result.primarySuccessor != null || result.successors.size() != 0; 
 		} else if (successors.size() == 1) {
 			result.setPrimarySuccessor(successors.get(0));
 			result.addSuccessor(result.primarySuccessor);
@@ -280,10 +279,12 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	
 	private void doThrowingInsn(Rop opcode, DexRegister ... srcs) {
 		result.addInstruction(new ThrowingInsn(opcode, SourcePosition.NO_INFO, makeOperands(srcs), getCatches()));
+		doThrowingSuccessors();
 	}
 	
 	private void doThrowingCstInsn(Rop opcode, Constant constant, DexRegister ... srcs) {
 		result.addInstruction(new ThrowingCstInsn(opcode, SourcePosition.NO_INFO, makeOperands(srcs), getCatches(), constant));
+		doThrowingSuccessors();
 	}
 	
 	// instructions like INSTANCE_OF, ARRAY_LENGTH needs a pseudo move-result Insn, which (I guess) only
@@ -292,7 +293,54 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		RegisterSpec dst = getPostRegSpec(to);
 		result.addAuxInstruction(new PlainInsn(Rops.opMoveResultPseudo(dst), SourcePosition.NO_INFO, dst, RegisterSpecList.EMPTY));
 	}
-////////////////////////////////////////////////////////////////////////////////		
+////////////////////////////////////////////////////////////////////////////////
+
+	private void doIfSuccessors(DexLabel target) {
+		assert curInst.getSuccessorCount() == 2;
+		AnalyzedDexInstruction primary = null, secondary = null;
+		for(AnalyzedDexInstruction successor : curInst.getSuccesors()) {
+			if (successor.auxillaryElement != target) // Primary successor for If is the fall over block
+				primary = successor;
+			else
+				secondary = successor;
+		}
+		result.setPrimarySuccessor(primary);
+		// Order matters?? Yes they do.. try assertion unit test.
+		// It is strange that in IFs primary successor comes first but for 
+		// throwing (below) it comes last
+		result.addSuccessor(primary).addSuccessor(secondary);
+	}
+	
+	
+	private void doThrowingSuccessors() {
+		/*
+		 *  Nothing to do here if :
+		 *  1. No successor: this is a throw instruction without catch
+		 *  2. One successor: the throw is not caught so no need to fiddle with successors.
+		 */
+		if (curInst.getSuccessorCount() <= 1)
+			return;
+		DexInstruction instruction = curInst.getInstruction();
+		AnalyzedDexInstruction primarySuccessor;
+		if (instruction instanceof DexInstruction_Throw) {
+			primarySuccessor = null;
+		} else {
+			primarySuccessor = analyzer.reverseLookup(instruction.getNextCodeElement());
+		}
+		result.setPrimarySuccessor(primarySuccessor);
+		for(AnalyzedDexInstruction successor : curInst.getSuccesors()) {
+			if (successor != primarySuccessor)
+				result.addSuccessor(successor);
+		}
+        /*** StdCatcherBuilder.java: ***
+         * Blocks that throw are supposed to list their primary
+         * successor -- if any -- last in the successors list, but
+         * that constraint appears to be violated here.
+         */
+		if (primarySuccessor != null)
+			result.addSuccessor(primarySuccessor);
+	}
+////////////////////////////////////////////////////////////////////////////////
 	@Override
 	public void visit(DexInstruction_Nop instruction) {
 		doPlainInsn(Rops.NOP, null);
@@ -703,19 +751,6 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		doPlainInsn(opcode, getPostRegSpec(instruction.getRegTo()), instruction.getRegSourceA1(), instruction.getRegSourceB1());
 	}
 
-	private void doIfSuccessors(DexLabel target) {
-		assert curInst.getSuccessorCount() == 2;
-		AnalyzedDexInstruction primary = null, secondary = null;
-		for(AnalyzedDexInstruction successor : curInst.getSuccesors()) {
-			if (successor.auxillaryElement != target) // Primary successor for If is the fall over block
-				primary = successor;
-			else
-				secondary = successor;
-		}
-			result.setPrimarySuccessor(primary);
-			result.addSuccessor(primary).addSuccessor(secondary); // Order matters?? Yes they do.. try assertion unit test.
-	}
-	
 	@Override
 	public void visit(DexInstruction_IfTest instruction) {
 		RegisterSpecList operands = makeOperands(instruction.getRegA(), instruction.getRegB());
