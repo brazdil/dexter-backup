@@ -100,6 +100,11 @@ public class AnalyzedDexInstruction {
 	        return Collections.unmodifiableList(successors);
 	    }
 
+	    public AnalyzedDexInstruction getOnlySuccesor() {
+	    	assert successors.size() == 1;
+	    	return successors.get(0);
+	    }
+
 	    public DexInstruction getInstruction() {
 	        return instruction;
 	    }
