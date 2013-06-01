@@ -190,8 +190,11 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			// individual instruction need to set their primary successor itself.
 			assert result.primarySuccessor != null || result.successors.size() != 0; 
 		} else if (successors.size() == 1) {
-			result.setPrimarySuccessor(successors.get(0));
-			result.addSuccessor(result.primarySuccessor);
+			// Fill in default value only if individual handler does not override it.
+			if (result.primarySuccessor == null && result.successors.size() == 0) {
+				result.setPrimarySuccessor(successors.get(0));
+				result.addSuccessor(result.primarySuccessor);
+			}
 		} else {
 			assert inst.getInstruction() == null || inst.getInstruction().cfgExitsMethod();
 		}
@@ -547,7 +550,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	@Override
 	public void visit(DexInstruction_NewArray instruction) {
 		DexArrayType arrayType = instruction.getValue();
-		doThrowingCstInsn(Rops.opNewArray(Type.intern(arrayType.getElementType().getDescriptor())), 
+		doThrowingCstInsn(Rops.opNewArray(Type.intern(arrayType.getDescriptor())), 
 				makeCstType(arrayType), instruction.getRegSize());
 		doPseudoMoveResult(instruction.getRegTo());
 	}
@@ -568,14 +571,14 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				tmp0Spec,
 				RegisterSpecList.EMPTY, 
 				CstInteger.make(arrayLen)));
-		result.addInstruction(new ThrowingCstInsn(Rops.opNewArray(Type.intern(arrayType.getElementType().getDescriptor())),
+		result.addInstruction(new ThrowingCstInsn(Rops.opNewArray(Type.intern(arrayType.getDescriptor())),
 				SourcePosition.NO_INFO, 
 				RegisterSpecList.make(tmp0Spec), 
 				getCatches(), 
 				makeCstType(arrayType)));
 		
 		// add array assignments to primary successor basic blocks
-		AnalyzedDexInstruction primSuccessor = curInst.getSuccesors().get(0); 
+		AnalyzedDexInstruction primSuccessor = curInst.getOnlySuccesor(); 
 		DexRegister dstReg = primSuccessor.getDestinationRegister();
 		RegisterSpec dstRegSpec = RegisterSpec.make(DexRegisterHelper.normalize(dstReg), Type.intern(arrayType.getDescriptor()));
 		Rop opcode = Rops.opAput(Type.intern(elementType.getDescriptor()));
@@ -600,10 +603,10 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	@Override
 	public void visit(DexInstruction_FillArray instruction) {
 		AnalyzedDexInstruction arrayDataPtr = analyzer.reverseLookup(instruction.getArrayTable());
-		assert arrayDataPtr.getSuccessorCount() == 1;
-		DexInstruction_FillArrayData arrayData = (DexInstruction_FillArrayData) arrayDataPtr.getSuccesors().get(0).getInstruction();
+		DexInstruction_FillArrayData arrayData = (DexInstruction_FillArrayData) arrayDataPtr.getOnlySuccesor().getInstruction();
 		
 		Type arrayElementType = getPostRegSpec(instruction.getRegArray()).getType().getComponentType();
+		Constant arrayType = null;
 		ArrayList<Constant> values = new ArrayList<Constant>();
 		for(byte[] element : arrayData.getElementData()) {
 			long v = 0;
@@ -613,34 +616,47 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			if (arrayElementType == Type.BYTE) {
 	        	assert element.length == 1;
 	        	values.add(CstByte.make((int)v));
+				arrayType = CstType.BYTE_ARRAY;
 	        } else if (arrayElementType == Type.BOOLEAN) {
 	        	assert element.length == 1;
 	        	values.add(CstBoolean.make((int)v));
+				arrayType = CstType.BYTE_ARRAY;
 	        } else if (arrayElementType == Type.SHORT) {
 	        	assert element.length == 2;
 	        	values.add(CstShort.make((int)v));
+				arrayType = CstType.SHORT_ARRAY;
 	        } else if (arrayElementType == Type.CHAR) {
 	        	assert element.length == 2;
 	        	values.add(CstChar.make((int)v));
+				arrayType = CstType.SHORT_ARRAY;
 	        } else if (arrayElementType == Type.INT) {
 	        	assert element.length == 4;
 	        	values.add(CstInteger.make((int)v));
+				arrayType = CstType.INT_ARRAY;
 	        } else if (arrayElementType == Type.FLOAT) {
 	        	assert element.length == 4;
 	        	values.add(CstFloat.make((int)v));
-	        } else if (arrayElementType == Type.LONG) {
+				arrayType = CstType.INT_ARRAY;
+			} else if (arrayElementType == Type.LONG) {
 	        	assert element.length == 8;
 	        	values.add(CstLong.make(v));
+				arrayType = CstType.LONG_ARRAY;
 	        } else if (arrayElementType == Type.DOUBLE) {
 	        	assert element.length == 8;
 	        	values.add(CstDouble.make(v));
+				arrayType = CstType.LONG_ARRAY;
 	        } else {
 	            throw new IllegalArgumentException("Unexpected constant type");
 	        }
 		}
 		
+			
 		result.addInstruction(new FillArrayDataInsn(Rops.FILL_ARRAY_DATA, SourcePosition.NO_INFO,
-				RegisterSpecList.EMPTY, values, CstType.intern(arrayElementType)));
+				makeOperands(instruction.getRegArray()), values, arrayType));
+		
+		// Skip DexLabel and DexInstruction_FillArrayData
+		AnalyzedDexInstruction successor = curInst.getOnlySuccesor().getOnlySuccesor().getOnlySuccesor();
+		result.setPrimarySuccessor(successor).addSuccessor(successor);
 	}
 
 
@@ -668,8 +684,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		List<DexLabel> targetList;
 		
 		AnalyzedDexInstruction switchDataPtr = analyzer.reverseLookup(instruction.getSwitchTable());
-		assert switchDataPtr.getSuccessorCount() == 1;
-		AnalyzedDexInstruction analyzedSwitchData = switchDataPtr.getSuccesors().get(0);
+		AnalyzedDexInstruction analyzedSwitchData = switchDataPtr.getOnlySuccesor();
 		DexInstruction switchDataRaw = analyzedSwitchData.getInstruction();
 		
 		if (instruction.isPacked()) {

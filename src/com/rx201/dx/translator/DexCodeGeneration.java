@@ -46,16 +46,21 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPutWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGetWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePutWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGetWide;
@@ -266,7 +271,10 @@ public class DexCodeGeneration {
         		insnBlock.addAll(lastInsn.insns);
         		
         		if (i != basicBlock.size() - 1) {
+        			// auxInsn can only appear at the tail of a bb (move-result-pseudo etc)
         			assert lastInsn.auxInsns.size() == 0;
+        			// Verify instructions in basic block is indeed chaining together
+        			assert lastInsn.primarySuccessor == basicBlock.get( i + 1);
         		} else if (lastInsn.auxInsns.size() != 0) { // Propagate auxInsns to primary successors
         			AnalyzedDexInstruction s = lastInsn.primarySuccessor;
     				assert !auxAdded.contains(s);
@@ -327,9 +335,15 @@ public class DexCodeGeneration {
         	insns.setImmutable();
         	
         	IntList successors = new IntList();
-        	for(AnalyzedDexInstruction s : lastInsn.successors) 
+        	for(AnalyzedDexInstruction s : lastInsn.successors) {
+        		// Make sure the successor is in the basic block list
+        		assert convertedBasicBlocks.get(s) != null; 
         		successors.add(s.getInstructionIndex());
+        	}
         	successors.setImmutable();
+        	
+        	// Make sure primary Successor is valid as well.
+        	assert lastInsn.primarySuccessor == null || convertedBasicBlocks.get(lastInsn.primarySuccessor) != null; 
         	
         	int label = head.getInstructionIndex();
         	BasicBlock ropBasicBlock = new BasicBlock(label, insns, successors, lastInsn.primarySuccessor != null ? lastInsn.primarySuccessor.getInstructionIndex() : -1);
@@ -337,7 +351,7 @@ public class DexCodeGeneration {
         }
 
 
-        return new SimpleRopMethod(ropBasicBlocks, analyzer.getStartOfMethod().getSuccesors().get(0).getInstructionIndex());
+        return new SimpleRopMethod(ropBasicBlocks, analyzer.getStartOfMethod().getOnlySuccesor().getInstructionIndex());
 	}
 	
 	private boolean endsBasicBlock(AnalyzedDexInstruction current) {
@@ -372,7 +386,10 @@ public class DexCodeGeneration {
 
 				i instanceof DexInstruction_ConstClass ||
 				
-				i instanceof DexInstruction_NewInstance 
+				i instanceof DexInstruction_InstanceOf ||
+				i instanceof DexInstruction_ArrayLength ||
+				i instanceof DexInstruction_NewInstance ||
+				i instanceof DexInstruction_NewArray
 				)
 			return true;
 		
@@ -401,8 +418,7 @@ public class DexCodeGeneration {
         ArrayList<ArrayList<AnalyzedDexInstruction>> basicBlocks = new ArrayList<ArrayList<AnalyzedDexInstruction>>();
         
         Stack<AnalyzedDexInstruction> leads = new Stack<AnalyzedDexInstruction>();
-        assert analyzer.getStartOfMethod().getSuccesors().size() == 1;
-        leads.push(analyzer.getStartOfMethod().getSuccesors().get(0));
+        leads.push(analyzer.getStartOfMethod().getOnlySuccesor());
         HashSet<Integer> visited = new HashSet<Integer>();
         
         while(!leads.empty()) {
@@ -419,7 +435,7 @@ public class DexCodeGeneration {
         		// Condition 1: current has only one successor
         		// Condition 2: next instruction has only one predecessor
         		// Condition 3: current cannot throw
-        		AnalyzedDexInstruction next = current.getSuccesors().get(0);
+        		AnalyzedDexInstruction next = current.getOnlySuccesor();
         		if (next.getPredecessorCount() == 1) {
         			block.add(next);
         			current = next;
@@ -435,11 +451,14 @@ public class DexCodeGeneration {
         			if (successor.auxillaryElement == null) { // This is the default case successor
         				leads.push(successor);
         			} else { // This is a DexLabel, which is followed by SwitchData
-        				assert successor.getSuccessorCount() == 1;
-        				for (AnalyzedDexInstruction switchSuccessor : successor.getSuccesors().get(0).getSuccesors())
+        				for (AnalyzedDexInstruction switchSuccessor : successor.getOnlySuccesor().getSuccesors())
         					leads.push(switchSuccessor);
         			}
         		}
+        	} else if (current.getInstruction() instanceof DexInstruction_FillArray) {
+        		// Collapse the following DexLabel and DexInstruction_FilledArrayData
+        		AnalyzedDexInstruction next = current.getOnlySuccesor(); // This a DexLabel
+        		leads.push(next.getOnlySuccesor().getOnlySuccesor()); // Whatever follows FilledArrayData
         	} else {
 	        	// Add successors of current to the to-be-visit stack
 	        	for(AnalyzedDexInstruction i : current.getSuccesors())
