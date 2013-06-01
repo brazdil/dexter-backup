@@ -21,6 +21,25 @@ public class TestClass {
 		}
 	}
 
+	private Object someField;
+	
+	private static doInternals() {
+		try {
+			int[] x = null;
+			x[1] = 0;
+		} catch (IndexOutOfBoundsException e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			TestClass x = null;
+			x.someField.toString();
+		} catch (NullPointerException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public static void main(String[] arg) {
 		try {
 			rethrowException(true);
@@ -33,6 +52,6 @@ public class TestClass {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+		doInternals();
 	}
 }
