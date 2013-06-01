@@ -374,7 +374,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	@Override
 	public void visit(DexInstruction_ArrayGetWide dexInstruction_ArrayGetWide) {
 
-        RegisterType arrayRegisterType = instruction.getPreRegisterType(instruction.getDestinationRegister());
+        RegisterType arrayRegisterType = instruction.getPreRegisterType(dexInstruction_ArrayGetWide.getRegArray());
         assert arrayRegisterType != null;
 
         if (arrayRegisterType.category != RegisterType.Category.Null) {
