@@ -25,7 +25,7 @@ public class DexRegisterHelper {
 	}
 
 	public static boolean isPair(DexRegister r0, DexRegister r1) {
-		return r0.getOriginalIndex() + 1 == r1.getOriginalIndex();
+		return normalize(r0) + 1 == normalize(r1);
 	}
 	
 	public static DexRegister getTempRegister(int index) {
