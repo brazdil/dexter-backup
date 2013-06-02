@@ -34,12 +34,12 @@ clean:
 run: test.apk_new.apk
 	@echo Running test
 	@adb push $< /sdcard/
-	@adb shell dalvikvm -ea -cp /sdcard/$< $(MAINCLASS_NAME)
+	@adb shell ANDROID_DATA=/sdcard dalvikvm -ea -cp /sdcard/$< $(MAINCLASS_NAME)
 	
 run0: test.apk
 	@echo Running test
 	@adb push $< /sdcard/ 2>/dev/null
-	@adb shell dalvikvm -ea -cp /sdcard/$< $(MAINCLASS_NAME)
+	@adb shell ANDROID_DATA=/sdcard dalvikvm -ea -cp /sdcard/$< $(MAINCLASS_NAME)
 	
 ## Prepare code for eclipse debugging
 debug: test.apk test.out
