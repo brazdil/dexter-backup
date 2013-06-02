@@ -174,10 +174,6 @@ class DalvCodeBridge {
 		return codeItem.getTries();
 	}
 
-	public EncodedCatchHandler[] getCatchHandlers() {
-		return codeItem.getHandlers();
-	}
-
 	public int getRegisterCount() {
 		return codeItem.getRegisterCount();
 	}

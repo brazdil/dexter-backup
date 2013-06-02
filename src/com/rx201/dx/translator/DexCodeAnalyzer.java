@@ -275,52 +275,7 @@ public class DexCodeAnalyzer {
         return startOfMethod;
     }
 
-    /**
-     * @return a read-only list containing the instructions for tihs method.
-     */
-    public List<AnalyzedDexInstruction> getInstructions() {
-        return Collections.unmodifiableList(instructions);
-    }
 
-
-    private static RegisterType[] getParameterTypes(TypeListItem typeListItem, int parameterRegisterCount) {
-        assert typeListItem != null;
-        assert parameterRegisterCount == typeListItem.getRegisterCount();
-
-        RegisterType[] registerTypes = new RegisterType[parameterRegisterCount];
-
-        int registerNum = 0;
-        for (TypeIdItem type: typeListItem.getTypes()) {
-            if (type.getRegisterCount() == 2) {
-                registerTypes[registerNum++] = RegisterType.getWideRegisterTypeForTypeIdItem(type, true);
-                registerTypes[registerNum++] = RegisterType.getWideRegisterTypeForTypeIdItem(type, false);
-            } else {
-                registerTypes[registerNum++] = RegisterType.getRegisterTypeForTypeIdItem(type);
-            }
-        }
-
-        return registerTypes;
-    }
-
-    /*
-    private class PendingRegType {
-    	public AnalyzedDexInstruction instruction;
-    	public DexRegister regNum;
-    	public RegisterType regType;
-    	public PendingRegType(AnalyzedDexInstruction instruction, DexRegister regNum, RegisterType regType) {
-    		this.instruction = instruction;
-    		this.regNum = regNum;
-    		this.regType =regType;
-    	}
-    }
-
-    private ArrayList<PendingRegType> pendingRegisterTypes = new ArrayList<PendingRegType>();
-    // Enqueue for later processing
-    private void pendingSetPostRegisterType(AnalyzedDexInstruction analyzedInstruction, DexRegister registerNum, RegisterType registerType) {
-    	pendingRegisterTypes.add(new PendingRegType(analyzedInstruction, registerNum, registerType));
-    }
-    */
-    
     protected void setPostRegisterTypeAndPropagateChanges(AnalyzedDexInstruction analyzedInstruction, DexRegister registerNumber,
                                                 RegisterType registerType) {
 

@@ -570,7 +570,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				SourcePosition.NO_INFO, 
 				tmp0Spec,
 				RegisterSpecList.EMPTY, 
-				CstInteger.make(arrayLen)));
+				makeCstInteger(arrayLen)));
 		result.addInstruction(new ThrowingCstInsn(Rops.opNewArray(Type.intern(arrayType.getDescriptor())),
 				SourcePosition.NO_INFO, 
 				RegisterSpecList.make(tmp0Spec), 
@@ -588,7 +588,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 					SourcePosition.NO_INFO, 
 					tmp0Spec,
 					RegisterSpecList.EMPTY, 
-					CstInteger.make(i)));
+					makeCstInteger(i)));
 			result.addAuxInstruction(new ThrowingInsn(opcode, 
 					SourcePosition.NO_INFO, 
 					RegisterSpecList.make(
@@ -1136,13 +1136,13 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		
 		if (opcode.getBranchingness() == Rop.BRANCH_NONE) {
 			
-			doPlainCstInsn(opcode, getPostRegSpec(instruction.getRegTarget()), CstInteger.make((int)instruction.getLiteral()), instruction.getRegSource());
+			doPlainCstInsn(opcode, getPostRegSpec(instruction.getRegTarget()), makeCstInteger((int)instruction.getLiteral()), instruction.getRegSource());
 			
 			if (instruction.getInsnOpcode() == Opcode_BinaryOpLiteral.Rsub) // Patch up rsub
 				doPlainInsn(Rops.NEG_INT, getPostRegSpec(instruction.getRegTarget()), instruction.getRegTarget());
 		
 		} else { // Integer division/reminder will throw exception
-			doThrowingCstInsn(opcode, CstInteger.make((int)instruction.getLiteral()), instruction.getRegSource());
+			doThrowingCstInsn(opcode, makeCstInteger((int)instruction.getLiteral()), instruction.getRegSource());
 			doPseudoMoveResult(instruction.getRegTarget());
 		}
 	}

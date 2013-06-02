@@ -525,54 +525,5 @@ public class DexCodeGeneration {
         System.out.println(sb.toString());
 	}
 
-	public void write(com.android.dx.dex.file.DexFile dexFile) {
-		Writer humanOut = new OutputStreamWriter(System.out);
-        try {
-			byte[] outArray = dexFile.toDex(humanOut, true);
-	        humanOut.flush();
-	        
-	        FileOutputStream output = new FileOutputStream(new File("result.dex"));
-	        output.write(outArray);
-	        output.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-	public void addClass() {
-		com.android.dx.dex.file.DexFile dexFile = new com.android.dx.dex.file.DexFile(dexOptions);
-		
-        DirectClassFile cf =
-                new DirectClassFile(bytes, filePath, cfOptions.strictNameCheck);
-
-            cf.setAttributeFactory(StdAttributeFactory.THE_ONE);
-            cf.getMagic();
-
-            OptimizerOptions.loadOptimizeLists(cfOptions.optimizeListFile,
-                    cfOptions.dontOptimizeListFile);
-
-            // Build up a class to output.
-
-            CstType thisClass = cf.getThisClass();
-            int classAccessFlags = cf.getAccessFlags() & ~AccessFlags.ACC_SUPER;
-            CstString sourceFile = (cfOptions.positionInfo == PositionList.NONE) ? null :
-                cf.getSourceFile();
-            ClassDefItem out =
-                new ClassDefItem(thisClass, classAccessFlags,
-                        cf.getSuperclass(), cf.getInterfaces(), sourceFile);
-
-            Annotations classAnnotations =
-                AttributeTranslator.getClassAnnotations(cf, cfOptions);
-            if (classAnnotations.size() != 0) {
-                out.setClassAnnotations(classAnnotations);
-            }
-
-            processFields(cf, out);
-            processMethods(cf, cfOptions, dexOptions, out);
-
-            dexFile.add(out);
-	}	
-*/
 }
 
