@@ -153,7 +153,7 @@ public class DexCodeAnalyzer {
     //instruction, etc.
     private AnalyzedDexInstruction startOfMethod;
 
-	private DexParsingCache cache;
+	DexParsingCache cache;
 
 ;    public DexCodeAnalyzer(DexMethodWithCode method, DexParsingCache cache) {
     	this.method = method;

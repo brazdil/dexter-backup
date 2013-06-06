@@ -3,10 +3,14 @@ package com.rx201.dx.translator;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.jf.dexlib.Code.Analysis.ClassPath;
+import org.jf.dexlib.Code.Analysis.ClassPath.ClassDef;
 import org.jf.dexlib.Code.Analysis.RegisterType;
 
 import lombok.Getter;
+import lombok.val;
 
 import com.android.dx.rop.code.FillArrayDataInsn;
 import com.android.dx.rop.code.Insn;
@@ -45,6 +49,7 @@ import com.android.dx.rop.type.TypeList;
 import com.android.dx.util.IntList;
 import com.rx201.dx.translator.util.DexRegisterHelper;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
@@ -214,16 +219,73 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		return toRegSpec(reg, curInst.getPostInstructionRegisterType(reg));
 	}
 
-	private TypeList getCatches() {
+	private List<AnalyzedDexInstruction> getCatchers(Rop opcode) {
+		ArrayList<AnalyzedDexInstruction> result = new ArrayList<AnalyzedDexInstruction>();
+		DexCode code = curInst.getInstruction().getMethodCode();
+//		val classHierarchy = code.getParentFile().getClassHierarchy();
+//		
+//		ArrayList<DexClassType> thrownExceptions = new ArrayList<DexClassType>();
+//		TypeList exceptions = opcode.getExceptions();
+//		for(int i=0; i<exceptions.size(); i++)
+//			thrownExceptions.add(DexClassType.parse(exceptions.getType(i).getDescriptor(), analyzer.cache));
+		
+		// Order of catch matters, so we need to preserve that, which means
+		// we cannot just iterate through the successors ( which is unordered)
+		// The following code is duplicated from DexInstruction, as we need the result to be ordered.
+	    for (val tryBlockEnd : code.getTryBlocks()) {
+	        val tryBlockStart = tryBlockEnd.getBlockStart();
+
+	        // check that the instruction is in this try block
+	        if (code.isBetween(tryBlockStart, tryBlockEnd, curInst.getInstruction())) {
+
+	            for (val catchBlock : tryBlockStart.getCatchHandlers()) {
+	            	/*****
+	            	 * If we want to be precise, then need to filter out those catch blocks
+	            	 * that do no catch opcode's throwing exceptions. But it turns out to be
+	            	 * difficult to know exactly what exceptions opcode throws (try invoke_xx)
+	            	 * so we just included all catchers here. It seems that this works for
+	            	 * dx's optimizer and code generations.
+	            	 * *****
+					DexClassType catchException = catchBlock.getExceptionType();
+					
+					boolean canCatch = false;
+					for(DexClassType thrown : thrownExceptions)
+						if (classHierarchy.isAncestor(thrown, catchException)) {
+							assert !canCatch;
+							canCatch = true;
+							// Continue searching, just as a sanity check
+							// break
+						}
+					// Dirty hack here: Invoke/throw will raise Throwable which is the base class of 
+					// all excpetion/errors. Without properly type analysis we cannot know if 
+					// the catch statement will catch it. To be safe, we assume it can catch,
+					// so that the successor analysis will not remove them.
+					if (canCatch || opcode.getExceptions() == StdTypeList.THROWABLE)
+						result.add(analyzer.reverseLookup(catchBlock));
+					*/
+					result.add(analyzer.reverseLookup(catchBlock));
+	            	
+	            }
+				// if the block has CatchAll handler, it can jump to it
+				val catchAllHandler = tryBlockStart.getCatchAllHandler();
+				if (catchAllHandler != null)
+					result.add(analyzer.reverseLookup(catchAllHandler));
+	        }
+		}
+		return result;
+	}
+	
+	private TypeList getCaughtExceptions(List<AnalyzedDexInstruction> catchers) {
 		TypeList result = StdTypeList.EMPTY;
-		for (AnalyzedDexInstruction i : curInst.getSuccesors()) {
+		for (AnalyzedDexInstruction i : catchers) {
 			DexCodeElement aux = i.auxillaryElement;
-			if (aux == null) continue;
+			assert aux != null;
+			
 			if (aux instanceof DexCatch) {
 				result = result.withAddedType(Type.intern(((DexCatch)aux).getExceptionType().getDescriptor()));
 			} else if (aux instanceof DexCatchAll) {
-				//result = result.withAddedType(Type.intern("Ljava/lang/Exception;"));
-				return StdTypeList.THROWABLE;
+				//result = result.withAddedType(Type.intern("Ljava/lang/Exception;"));Type.OBJECT
+				result = result.withAddedType(Type.OBJECT);
 			}
 		}
 		return result;
@@ -281,13 +343,15 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	}
 	
 	private void doThrowingInsn(Rop opcode, DexRegister ... srcs) {
-		result.addInstruction(new ThrowingInsn(opcode, SourcePosition.NO_INFO, makeOperands(srcs), getCatches()));
-		doThrowingSuccessors();
+		List<AnalyzedDexInstruction> catchers = getCatchers(opcode);
+		result.addInstruction(new ThrowingInsn(opcode, SourcePosition.NO_INFO, makeOperands(srcs), getCaughtExceptions(catchers)));
+		doThrowingSuccessors(catchers);
 	}
 	
 	private void doThrowingCstInsn(Rop opcode, Constant constant, DexRegister ... srcs) {
-		result.addInstruction(new ThrowingCstInsn(opcode, SourcePosition.NO_INFO, makeOperands(srcs), getCatches(), constant));
-		doThrowingSuccessors();
+		List<AnalyzedDexInstruction> catchers = getCatchers(opcode);
+		result.addInstruction(new ThrowingCstInsn(opcode, SourcePosition.NO_INFO, makeOperands(srcs), getCaughtExceptions(catchers), constant));
+		doThrowingSuccessors(catchers);
 	}
 	
 	// instructions like INSTANCE_OF, ARRAY_LENGTH needs a pseudo move-result Insn, which (I guess) only
@@ -315,14 +379,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	}
 	
 	
-	private void doThrowingSuccessors() {
-		/*
-		 *  Nothing to do here if :
-		 *  1. No successor: this is a throw instruction without catch
-		 *  2. One successor: the throw is not caught so no need to fiddle with successors.
-		 */
-		if (curInst.getSuccessorCount() <= 1)
-			return;
+	private void doThrowingSuccessors(List<AnalyzedDexInstruction> catchers) {
 		DexInstruction instruction = curInst.getInstruction();
 		AnalyzedDexInstruction primarySuccessor;
 		if (instruction instanceof DexInstruction_Throw) {
@@ -331,10 +388,17 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			primarySuccessor = analyzer.reverseLookup(instruction.getNextCodeElement());
 		}
 		result.setPrimarySuccessor(primarySuccessor);
+		
+		// Make sure that the successor list is consistent with catchers
 		for(AnalyzedDexInstruction successor : curInst.getSuccesors()) {
-			if (successor != primarySuccessor)
-				result.addSuccessor(successor);
+			if (successor == primarySuccessor)
+				continue;
+
+			assert catchers.contains(successor);
 		}
+		for(AnalyzedDexInstruction catcher: catchers)
+			result.addSuccessor(catcher);
+		
         /*** StdCatcherBuilder.java: ***
          * Blocks that throw are supposed to list their primary
          * successor -- if any -- last in the successors list, but
@@ -501,8 +565,9 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	@Override
 	public void visit(DexInstruction_ConstString instruction) {
-		RegisterSpec dst = getPostRegSpec(instruction.getRegTo());
-		doPlainCstInsn(Rops.opConst(dst), dst, makeCstString(instruction.getStringConstant()));
+		// ConstString can throw.
+		doThrowingCstInsn(Rops.CONST_OBJECT, makeCstString(instruction.getStringConstant()));
+		doPseudoMoveResult(instruction.getRegTo());
 	}
 
 
@@ -523,6 +588,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	@Override
 	public void visit(DexInstruction_CheckCast instruction) {
 		doThrowingCstInsn(Rops.CHECK_CAST, makeCstType(instruction.getValue()), instruction.getRegObject());
+		doPseudoMoveResult(instruction.getRegObject()); // Check-cast changes the source register's type
 	}
 
 
@@ -571,17 +637,20 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				tmp0Spec,
 				RegisterSpecList.EMPTY, 
 				makeCstInteger(arrayLen)));
-		result.addInstruction(new ThrowingCstInsn(Rops.opNewArray(Type.intern(arrayType.getDescriptor())),
+		Rop opcode = Rops.opNewArray(Type.intern(arrayType.getDescriptor()));
+		result.addInstruction(new ThrowingCstInsn(opcode,
 				SourcePosition.NO_INFO, 
 				RegisterSpecList.make(tmp0Spec), 
-				getCatches(), 
+				getCaughtExceptions(getCatchers(opcode)), 
 				makeCstType(arrayType)));
 		
 		// add array assignments to primary successor basic blocks
 		AnalyzedDexInstruction primSuccessor = curInst.getOnlySuccesor(); 
 		DexRegister dstReg = primSuccessor.getDestinationRegister();
 		RegisterSpec dstRegSpec = RegisterSpec.make(DexRegisterHelper.normalize(dstReg), Type.intern(arrayType.getDescriptor()));
-		Rop opcode = Rops.opAput(Type.intern(elementType.getDescriptor()));
+
+		opcode = Rops.opAput(Type.intern(elementType.getDescriptor()));
+		TypeList exceptionList = getCaughtExceptions(getCatchers(opcode));
 		
 		for(int i=0; i<arrayLen; i++) {
 			result.addAuxInstruction(new PlainCstInsn(Rops.CONST_INT,
@@ -595,7 +664,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 							RegisterSpec.make(DexRegisterHelper.normalize(instruction.getArgumentRegisters().get(i)), elementType), 
 							dstRegSpec, 
 							tmp0Spec),
-					getCatches()));
+							exceptionList));
 		}
 	}
 
