@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -74,7 +75,15 @@ public class DexInstruction_Monitor extends DexInstruction {
     else
       return super.gcReferencedRegisterType(reg);
   }
-
+  
+  @Override
+  public Set<DexCodeElement> cfgGetSuccessors() {
+    val set = new HashSet<DexCodeElement>();
+    set.add(getNextCodeElement());
+    set.addAll(throwingInsn_CatchHandlers());
+    return set;
+  }
+  
   @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(new GcRangeConstraint(regMonitor, ColorRange.RANGE_8BIT));
