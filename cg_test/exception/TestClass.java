@@ -6,12 +6,16 @@ public class TestClass {
 	static class SecondException extends Exception {
 	}
 
-	public static void rethrowException(boolean first) throws Exception {
+	public static void rethrowException(int type) throws Exception {
 		try {
-			if (first) {
+			switch(type) {
+			case 1:
 				throw new FirstException();
-			} else {
+			case 0:
 				throw new SecondException();
+			default:
+				assert false;
+				return;
 			}
 		} catch (FirstException e) {
 			System.out.println(1);
@@ -23,9 +27,9 @@ public class TestClass {
 
 	private Object someField;
 	
-	private static doInternals() {
+	private static void doInternals() {
 		try {
-			int[] x = null;
+			int[] x = new int[0];
 			x[1] = 0;
 		} catch (IndexOutOfBoundsException e) {
 			e.printStackTrace();
@@ -42,13 +46,13 @@ public class TestClass {
 	
 	public static void main(String[] arg) {
 		try {
-			rethrowException(true);
+			rethrowException(1);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		try {
-			rethrowException(false);
+			rethrowException(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
