@@ -4,19 +4,22 @@ include $(TOP)/path_config
 JAVAC_FLAGS = -source 1.6 -target 1.6
 CWD := $(shell cygpath -a -m .)
 PROJECET_ROOT := $(shell cygpath -a -m $(TOP)/../)
+DEXTER := $(JAVA) -ea -classpath '$(PROJECET_ROOT)/bin/;$(PROJECET_ROOT)/lib/*' uk.ac.cam.db538.dexter.MainConsole $(PROJECET_ROOT)/framework-2.3-lite
 
 MAINCLASS_NAME := TestClass
+JAVA_FILES := $(shell find . -name '*.java')
+CLASS_FILES := $(JAVA_FILES:.java=.class)
 
 diff: test.out test.apk_new.out
 	-@diff --side-by-side -r $^
 
 test.apk_new.apk : test.apk
-	$(JAVA) -ea -classpath "$(PROJECET_ROOT)/bin/;$(PROJECET_ROOT)/lib/*" uk.ac.cam.db538.dexter.MainConsole $(PROJECET_ROOT)/framework-2.3-lite $<
+	$(DEXTER) $<
 
 test.apk: classes.dex
 	zip $@ $<
 
-classes.dex: $(MAINCLASS_NAME).class
+classes.dex: $(CLASS_FILES)
 	@rm -f $@ *.apk
 	$(DX) --dex --verbose --output=$(CWD)\\$@ $(CWD)
 	
@@ -28,7 +31,8 @@ classes.dex: $(MAINCLASS_NAME).class
 	$(APKTOOL) d $< $@/
 	
 clean:
-	rm -rf *.apk classes.dex *.class *.out
+	rm -rf *.apk classes.dex *.out
+	find . -name '*.class' -exec rm {} \;
 
 ## Unit testing.
 run: test.apk_new.apk
