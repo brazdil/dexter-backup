@@ -43,6 +43,7 @@ import org.jf.util.IndentingWriter;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
@@ -53,6 +54,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
@@ -60,6 +62,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGetWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePutWide;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
@@ -385,7 +388,10 @@ public class DexCodeGeneration {
 				i instanceof DexInstruction_ArrayPutWide ||
 
 				i instanceof DexInstruction_ConstClass ||
+				i instanceof DexInstruction_ConstString ||
 				
+				i instanceof DexInstruction_Monitor ||
+
 				i instanceof DexInstruction_InstanceOf ||
 				i instanceof DexInstruction_ArrayLength ||
 				i instanceof DexInstruction_NewInstance ||
@@ -445,10 +451,10 @@ public class DexCodeGeneration {
         	
         	// Tweak Switch instruction's successors, collapsing the SwitchData that follows it
         	if (current.getInstruction() instanceof DexInstruction_Switch) {
-        		
+        		DexLabel switchLabel = ((DexInstruction_Switch)current.instruction).getSwitchTable();
         		assert current.getSuccessorCount() == 2;
         		for (AnalyzedDexInstruction successor : current.getSuccesors()) {
-        			if (successor.auxillaryElement == null) { // This is the default case successor
+        			if (successor.auxillaryElement != switchLabel) { // This is the default case successor
         				leads.push(successor);
         			} else { // This is a DexLabel, which is followed by SwitchData
         				for (AnalyzedDexInstruction switchSuccessor : successor.getOnlySuccesor().getSuccesors())
