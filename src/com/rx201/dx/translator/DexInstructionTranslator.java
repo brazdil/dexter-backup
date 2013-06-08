@@ -625,6 +625,16 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	@Override
 	public void visit(DexInstruction_FilledNewArray instruction) {
 		DexArrayType arrayType = instruction.getArrayType();
+		assert arrayType.getDescriptor().equals("[I");
+		
+		int arrayLen = instruction.getArgumentRegisters().size();
+		DexRegister[] parameters = instruction.getArgumentRegisters().toArray(new DexRegister[arrayLen]);
+		
+        Rop opcode = Rops.opFilledNewArray(Type.INT_ARRAY, arrayLen);
+        doThrowingCstInsn(opcode, CstType.INT_ARRAY, parameters);
+        
+		/*
+		DexArrayType arrayType = instruction.getArrayType();
 		Type elementType = Type.intern(arrayType.getElementType().getDescriptor());
 		int arrayLen = instruction.getArgumentRegisters().size();
 		
@@ -666,6 +676,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 							tmp0Spec),
 							exceptionList));
 		}
+		*/
 	}
 
 
@@ -696,7 +707,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				arrayType = CstType.SHORT_ARRAY;
 	        } else if (arrayElementType == Type.CHAR) {
 	        	assert element.length == 2;
-	        	values.add(CstChar.make((int)v));
+	        	values.add(CstChar.make((char)v));
 				arrayType = CstType.SHORT_ARRAY;
 	        } else if (arrayElementType == Type.INT) {
 	        	assert element.length == 4;
