@@ -324,13 +324,10 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				);
 	}
 	
-	private CstBaseMethodRef makeMethodRef(DexReferenceType classType, String methodName, DexPrototype methodPrototype, boolean isInterface) {
+	private CstBaseMethodRef makeMethodRef(DexReferenceType classType, String methodName, DexPrototype methodPrototype) {
 		CstType clazz = makeCstType(classType);
 		CstNat method = makeCstNat(methodName, methodPrototype.getDescriptor());
-		if (isInterface)
-			return new CstInterfaceMethodRef(clazz, method);
-		else
-			return new CstMethodRef(clazz, method);
+		return new CstMethodRef(clazz, method);
 	}
 	
 ////////////////////////////////////////////////////////////////////////////////
@@ -1044,7 +1041,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			break;
 		}
 		doThrowingCstInsn(opcode, 
-				makeMethodRef(instruction.getClassType(), instruction.getMethodName(), instruction.getMethodPrototype(), instruction.getCallType() == Opcode_Invoke.Interface), 
+				makeMethodRef(instruction.getClassType(), instruction.getMethodName(), instruction.getMethodPrototype()), 
 				operands_array);
 	}
 
