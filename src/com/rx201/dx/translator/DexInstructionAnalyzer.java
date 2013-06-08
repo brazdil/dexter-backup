@@ -149,9 +149,13 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	}
 	
 	private void analyzeMoveResult(DexRegister srcReg) {
-		assert instruction.getPredecessorCount() == 1;
 		
-        AnalyzedDexInstruction prevAnalyzedInst = instruction.getPredecessors().get(0);
+        AnalyzedDexInstruction prevAnalyzedInst = instruction;
+        //Skip auxillary blocks like TryBlockEnd etc.
+        do {
+    		assert prevAnalyzedInst.getPredecessorCount() == 1;
+    		prevAnalyzedInst = prevAnalyzedInst.getPredecessors().get(0);
+        } while (prevAnalyzedInst.instruction == null);
         
         DexRegisterType resultRegisterType;
         if (prevAnalyzedInst.instruction instanceof DexInstruction_Invoke) {
