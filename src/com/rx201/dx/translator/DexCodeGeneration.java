@@ -57,6 +57,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGetWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
@@ -367,7 +368,8 @@ public class DexCodeGeneration {
 		if (current.getInstruction().cfgEndsBasicBlock())
 			return true; // Sufficient condition
 		
-		// A few more special cases
+		// A few more special cases, to patch up incorrect information
+		// in their original definition (cfgEndsBasicBlock)
 		DexInstruction i = current.getInstruction();
 		if (    i instanceof DexInstruction_StaticGet ||
 				i instanceof DexInstruction_StaticGetWide ||
@@ -395,7 +397,8 @@ public class DexCodeGeneration {
 				i instanceof DexInstruction_InstanceOf ||
 				i instanceof DexInstruction_ArrayLength ||
 				i instanceof DexInstruction_NewInstance ||
-				i instanceof DexInstruction_NewArray
+				i instanceof DexInstruction_NewArray ||
+				i instanceof DexInstruction_FilledNewArray
 				)
 			return true;
 		
