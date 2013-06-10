@@ -42,6 +42,8 @@ import org.jf.util.IndentingWriter;
 
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
@@ -64,6 +66,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePutWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
@@ -139,8 +143,49 @@ public class DexCodeGeneration {
 		outWords = method.getCode().getOutWords();
 		isStatic = method.isStatic();
 		
+		stripMoveParameters();
 	    this.analyzer = new DexCodeAnalyzer(method, cache);
 	    this.analyzer.analyze();
+	}
+
+	private DexRegister getMappedParamReg(List<DexRegister> parameterMapping, DexParameterRegister reg) {
+		return parameterMapping.get(reg.getParameterIndex());
+	}
+	
+	private void stripMoveParameters() {
+		// Replace 'move v??, DexParameterRegister' with the real instructions
+		// effectively rendering them dummy. This is necessary because DexParameterRegister will mess up
+		// analysis and code translation.
+		DexCode code = method.getCode();
+		List<DexCodeElement> instructions = code.getInstructionList();
+		List<DexRegister> parameterMapping = method.getParameterMappedRegisters();
+		for(int index = 0; index < instructions.size(); index++) {
+			DexCodeElement instruction = instructions.get(index);
+			if (instruction instanceof DexInstruction_Move) {
+				
+				DexInstruction_Move i = (DexInstruction_Move)instruction;
+				if (i.getRegFrom() instanceof DexParameterRegister) {
+					DexInstruction_Move replacement = new DexInstruction_Move(code,
+							i.getRegTo(),
+							getMappedParamReg(parameterMapping, (DexParameterRegister)i.getRegFrom()),
+							i.isObjectMoving());
+					code.replace(i, new DexCodeElement[]{replacement});
+				}
+					
+			} else if  (instruction instanceof DexInstruction_MoveWide) {
+				
+				DexInstruction_MoveWide i = (DexInstruction_MoveWide)instruction;
+				if (i.getRegFrom1() instanceof DexParameterRegister) {
+					DexInstruction_MoveWide replacement = new DexInstruction_MoveWide(code, 
+							i.getRegTo1(),
+							i.getRegTo2(),
+							getMappedParamReg(parameterMapping, (DexParameterRegister)i.getRegFrom1()),
+							getMappedParamReg(parameterMapping, (DexParameterRegister)i.getRegFrom2()));
+					code.replace(i, new DexCodeElement[]{replacement});
+				}
+				
+			} 
+		}
 	}
 
 	private Item internReferencedItem(DexFile dexFile, Item referencedItem) {
@@ -299,10 +344,11 @@ public class DexCodeGeneration {
             // Add move-params to the beginning of the first block
         	if (bi == 0) {
         		DexPrototype prototype = method.getPrototype();
+        		List<DexRegister> parameterMapping = method.getParameterMappedRegisters();
         		int regOffset = 0;
         		for(int i = 0; i < prototype.getParameterCount(isStatic); i++) {
         			DexRegisterType param = prototype.getParameterType(i, isStatic, method.getParentClass());
-        			int paramRegId = DexRegisterHelper.normalize(prototype.getFirstParameterRegisterIndex(i, isStatic));
+        			int paramRegId = DexRegisterHelper.normalize(parameterMapping.get(regOffset));
 	                Type one = Type.intern(param.getDescriptor());
 	                Insn insn = new PlainCstInsn(Rops.opMoveParam(one), SourcePosition.NO_INFO, RegisterSpec.make(paramRegId, one),
 	                                             RegisterSpecList.EMPTY,
