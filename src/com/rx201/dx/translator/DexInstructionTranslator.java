@@ -361,13 +361,20 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 ////////////////////////////////////////////////////////////////////////////////
 
 	private void doIfSuccessors(DexLabel target) {
-		assert curInst.getSuccessorCount() == 2;
 		AnalyzedDexInstruction primary = null, secondary = null;
-		for(AnalyzedDexInstruction successor : curInst.getSuccesors()) {
-			if (successor.auxillaryElement != target) // Primary successor for If is the fall over block
-				primary = successor;
-			else
-				secondary = successor;
+
+		// assert curInst.getSuccessorCount() == 2;
+		// This assertion turns out to be INCORRECT... We can have dummy IF where 
+		// primary and secondary successors are the same: charSubTest()@aosp/003-omnibus-opcodes/IntMath.java
+		if (curInst.getSuccessorCount() == 1) {
+			primary = secondary = curInst.getOnlySuccesor();
+		} else {
+			for(AnalyzedDexInstruction successor : curInst.getSuccesors()) {
+				if (successor.auxillaryElement != target) // Primary successor for If is the fall over block
+					primary = successor;
+				else
+					secondary = successor;
+			}
 		}
 		result.setPrimarySuccessor(primary);
 		// Order matters?? Yes they do.. try assertion unit test.
