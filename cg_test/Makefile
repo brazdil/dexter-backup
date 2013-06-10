@@ -5,7 +5,7 @@ JAVAC_FLAGS = -source 1.6 -target 1.6
 CWD := $(shell cygpath -a -m .)
 PROJECET_ROOT := $(shell cygpath -a -m $(TOP)/../)
 DEXTER := $(JAVA) -ea -classpath '$(PROJECET_ROOT)/bin/;$(PROJECET_ROOT)/lib/*' uk.ac.cam.db538.dexter.MainConsole $(PROJECET_ROOT)/framework-2.3-lite
-
+DXFLAGS := --no-optimize
 
 ## This is for home-made tests
 TESTNAME := $(shell basename $(CWD))
@@ -30,7 +30,7 @@ test.apk: classes.dex
 
 classes.dex: $(CLASS_FILES)
 	@rm -f $@ *.apk
-	$(DX) --dex --verbose --output=$(CWD)\\$@ $(CWD)
+	$(DX) --dex $(DXFLAGS) --output=$(CWD)\\$@ $(CWD)
 	
 %.class: %.java
 	$(JAVAC) $(JAVAC_FLAGS) $<
