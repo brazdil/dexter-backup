@@ -141,15 +141,16 @@ public class AnalyzedDexInstruction {
 	        assert registerType != null;
 
 	        RegisterType oldRegisterType = getPreRegister(registerNumber);
-	        RegisterType mergedRegisterType = oldRegisterType.merge(registerType);
-	        
+	        RegisterType mergedRegisterType = DexRegisterTypeHelper.permissiveMerge(oldRegisterType, registerType);
 	        //TODO: UGLY HACK WARNING
-	        /*
+	        /* 
 	         * in aosp/027/arithmatic.
 	         * v6: object reference 
 	         * const/16 v5, 0x8
 	         * shl-long/2addr v3, v5
 	         * This is valid ?? It would create conflicted type information after merging.
+	         * Maybe an alternative is to disable setting types LongHi/DoubleHi to shl-long's
+	         * second operand?
 	         */
 	        // This instruction to be valid as well: or-long v0, v1, v3, so account for it.
 	        if(mergedRegisterType.category == Category.Conflicted && 
