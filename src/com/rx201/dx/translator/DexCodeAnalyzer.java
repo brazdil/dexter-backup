@@ -155,7 +155,7 @@ public class DexCodeAnalyzer {
 
 	DexParsingCache cache;
 
-;    public DexCodeAnalyzer(DexMethodWithCode method, DexParsingCache cache) {
+    public DexCodeAnalyzer(DexMethodWithCode method, DexParsingCache cache) {
     	this.method = method;
         this.code = method.getCode();
         this.cache = cache;
@@ -178,11 +178,13 @@ public class DexCodeAnalyzer {
     	boolean isStatic = code.getParentMethod().isStatic();
     	DexPrototype prototype = code.getParentMethod().getPrototype();
     	boolean isConstructor = code.getParentMethod().isConstructor();
+    	List<DexRegister> parameterMapping = code.getParentMethod().getParameterMappedRegisters();
+    	
     	for(int i=0; i<prototype.getParameterCount(isStatic); i++) {
     		DexRegisterType dexRegType = prototype.getParameterType(i, isStatic, code.getParentClass());
     		RegisterType regType = DexRegisterTypeHelper.toRegisterType(dexRegType);
-			int paramId = prototype.getFirstParameterRegisterIndex(i, isStatic);
-			DexRegister paramReg = new DexRegister(DexRegisterHelper.normalize(paramId));
+			int paramRegIndex = prototype.getFirstParameterRegisterIndex(i, isStatic);
+			DexRegister paramReg = parameterMapping.get(paramRegIndex);
 			
 			if (!isStatic && isConstructor && i == 0) // Instance constructor has an uninit this ptr
 				regType = RegisterType.getRegisterType(RegisterType.Category.UninitThis, regType.type);
