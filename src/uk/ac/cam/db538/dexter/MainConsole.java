@@ -8,6 +8,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.jar.JarFile;
 
+import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Code.Analysis.ClassPath;
 
 import lombok.val;
@@ -42,7 +43,7 @@ public class MainConsole {
     		}), 
     		new String[]{}, 
     		"dexfile", 
-    		null, 
+    		new DexFile(apkFile), 
     		false);
     
     //val warnings = APK.getDexFile().instrument(false);

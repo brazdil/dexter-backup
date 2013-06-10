@@ -168,31 +168,22 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 			visited.get(head).add(head_reg);
 			
 			boolean deadEnd = false;
+			this.reset();
 			if (head.instruction != null) {
-				this.reset();
 				head.instruction.accept(this);
 				
 				RegisterType typeInfo = useSet.get(head_reg);
 				if (typeInfo != null) {
-					if (type.merge(typeInfo).category == Category.Conflicted) {
-						
-						//TODO: UGLY HACK WARNING
-						/* This is valid, so deal with this special case here
-						 *     const/4 v8, 0x0
-						 *     const/16 v7, 0x20
-						 *     shl-long/2addr v5, v7
-						 *     
-						 * a.k.a merging Integer with LongLo/Hi should be allowed    
-						 */
-						if (type.category == Category.LongLo || type.category == Category.LongHi || 
-							type.category == Category.DoubleLo || type.category == Category.DoubleHi) {
-							//type = type;
-						} else {
-							type = typeInfo;
-						}
-					} else {
-						type = type.merge(typeInfo);
-					}
+					//TODO: UGLY HACK WARNING
+					/* This is valid, so deal with this special case here
+					 *     const/4 v8, 0x0
+					 *     const/16 v7, 0x20
+					 *     shl-long/2addr v5, v7
+					 *     
+					 * a.k.a merging Integer with LongLo/Hi should be allowed    
+					 */
+					type = DexRegisterTypeHelper.permissiveMerge(type, typeInfo);
+					assert type.category != Category.Conflicted;
 				}
 				// Do not search further is this instruction overwrites the target register.
 				if (defSet.containsKey(head_reg))
