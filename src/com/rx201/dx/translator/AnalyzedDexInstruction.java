@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jf.dexlib.Code.Analysis.RegisterType;
+import org.jf.dexlib.Code.Analysis.RegisterType.Category;
 
 import com.rx201.dx.translator.util.DexRegisterHelper;
 
@@ -141,7 +142,21 @@ public class AnalyzedDexInstruction {
 
 	        RegisterType oldRegisterType = getPreRegister(registerNumber);
 	        RegisterType mergedRegisterType = oldRegisterType.merge(registerType);
-
+	        
+	        //TODO: UGLY HACK WARNING
+	        /*
+	         * in aosp/027/arithmatic.
+	         * v6: object reference 
+	         * const/16 v5, 0x8
+	         * shl-long/2addr v3, v5
+	         * This is valid ?? It would create conflicted type information after merging.
+	         */
+	        // This instruction to be valid as well: or-long v0, v1, v3, so account for it.
+	        if(mergedRegisterType.category == Category.Conflicted && 
+	        		oldRegisterType.category == Category.LongLo && registerType.category == Category.LongHi) {
+	        	mergedRegisterType = registerType;
+	        }
+	        
 	        if (mergedRegisterType == oldRegisterType) {
 	            return false;
 	        }
@@ -242,7 +257,8 @@ public class AnalyzedDexInstruction {
 	                return false;
 	            }
 	            //check if the uninit ref has been copied to another register
-	            if (getPreRegister(registerNumber) == preInstructionDestRegisterType) {
+	            // i.e. if dexRegister and destinationRegister hold the same uninit object instance.
+	            if (getPreRegisterType(destinationRegister) == preInstructionDestRegisterType) {
 	                return true;
 	            }
 	            return false;

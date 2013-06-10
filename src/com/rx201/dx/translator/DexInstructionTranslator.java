@@ -43,6 +43,7 @@ import com.android.dx.rop.cst.CstString;
 import com.android.dx.rop.cst.CstType;
 import com.android.dx.rop.cst.CstFieldRef;
 import com.android.dx.rop.cst.CstNat;
+import com.android.dx.rop.cst.TypedConstant;
 import com.android.dx.rop.type.StdTypeList;
 import com.android.dx.rop.type.Type;
 import com.android.dx.rop.type.TypeList;
@@ -485,65 +486,55 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	
 	private void doConst(DexRegister to, long value) {
-		Constant constant;
+		TypedConstant constant;
 		RegisterType type = curInst.getPostRegisterType(to);
 		switch (type.category) {
-		/*
-		case Boolean:
-		case One:
-			constant = CstBoolean.make((int)value);
-			break;
-		case Byte:
-		case PosByte:
-			constant = CstByte.make((int)value);
-			break;
-		case Char:
-			constant = CstChar.make((int)value);
-			break;
-		case Short:
-		case PosShort:
-			constant = CstShort.make((int)value);
-			break;
-		case Float:
-			constant = CstFloat.make((int)value);
-			break;
-		case Integer:
-			constant = CstInteger.make((int)value);
-			break;
-		case Null:
-			constant = CstKnownNull.THE_ONE;
-			break;
-		case LongLo:
-			constant = CstLong.make(value);
-			break;
-		case DoubleLo:
-			constant = CstDouble.make(value);
-			break;
-		*/
-		case Boolean:
-		case One:
-		case Byte:
-		case PosByte:
-		case Char:
-		case Short:
-		case PosShort:
-		case Integer:
-		case Null:
-			constant = CstInteger.make((int)value);
-			break;
-		case Float:
-			constant = CstFloat.make((int)value);
-			break;
-		case LongLo:
-			constant = CstLong.make(value);
-			break;
-		case DoubleLo:
-			constant = CstDouble.make(value);
-			break;
-		default:
-			throw new RuntimeException("Unknown constant type.");
+			case Boolean:
+			case One:
+			case Byte:
+			case PosByte:
+			case Char:
+			case Short:
+			case PosShort:
+			case Integer:
+			case LongLo:
+			case LongHi:
+				constant = CstInteger.make((int)value);
+				break;
+			case Float:
+				constant = CstFloat.make((int)value);
+				break;
+			case Null:
+				constant = CstKnownNull.THE_ONE;
+				break;
+			case Reference:
+				if (value == 0) {
+					constant = CstKnownNull.THE_ONE;
+					break;
+				} else 
+					throw new RuntimeException("Bad reference type.");
+			default:
+				throw new RuntimeException("Unknown constant type.");
 		}
-		
+		RegisterSpec dst = getPostRegSpec(to).withType(constant.getType());
+		doPlainCstInsn(Rops.opConst(dst), dst, constant);
+	}
+	
+	private void doConstWide(DexRegister to, long value) {
+		TypedConstant constant;
+		RegisterType type = curInst.getPostRegisterType(to);
+		switch (type.category) {
+			case LongLo:
+			case LongHi:
+				constant = CstLong.make(value);
+				break;
+			case DoubleLo:
+			case DoubleHi:
+				constant = CstDouble.make(value);
+				break;
+			default:
+				throw new RuntimeException("Unknown constant type.");
+		}
 		RegisterSpec dst = getPostRegSpec(to);
 		doPlainCstInsn(Rops.opConst(dst), dst, constant);
 	}
@@ -556,7 +547,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	@Override
 	public void visit(DexInstruction_ConstWide instruction) {
-		doConst(instruction.getRegTo1(), instruction.getValue());
+		doConstWide(instruction.getRegTo1(), instruction.getValue());
 	}
 
 

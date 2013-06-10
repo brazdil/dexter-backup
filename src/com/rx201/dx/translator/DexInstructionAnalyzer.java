@@ -95,9 +95,11 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 
 	private AnalyzedDexInstruction instruction;
 	private DexCodeAnalyzer analyzer;
+	private UseDefTypeAnalyzer typeAnalyzer;
 	
 	public DexInstructionAnalyzer(DexCodeAnalyzer analyzer) {
 		this.analyzer = analyzer;
+		this.typeAnalyzer = new UseDefTypeAnalyzer();
 	}
 	
 	public void setAnalyzedInstruction(AnalyzedDexInstruction i) {
@@ -212,13 +214,28 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		long value = dexInstruction_Const.getValue();
 		// TODO: Need more detailed type information, because translator needs it to 
 		// instantiate the appropriate constant object.
-		setDestinationRegisterType(instruction, RegisterType.getRegisterTypeForLiteral(value));
+		RegisterType type;
+		type = typeAnalyzer.getPrecisePostRegisterType(dexInstruction_Const.getRegTo(), instruction);
+		if (type.category == Category.Unknown) {
+			// If this were a NULL type, then getPrecisePostRegisterType should have found out.
+			// Hence this must be an integer/boolean
+			if (value == 0)
+				type = RegisterType.getRegisterType(Category.Integer, null);
+			else
+				type = RegisterType.getRegisterTypeForLiteral(value);
+			
+		}
+		
+		setDestinationRegisterType(instruction, type);
 //            analyzeConst(analyzedInstruction);
 	}
 	@Override
 	public void visit(DexInstruction_ConstWide dexInstruction_ConstWide) {
-		setDestinationRegisterType(instruction, 
-				RegisterType.getRegisterType(RegisterType.Category.LongLo, null));
+		RegisterType type = typeAnalyzer.getPrecisePostRegisterType(dexInstruction_ConstWide.getRegTo1(), instruction);
+		if(type.category == Category.Unknown)
+			type = RegisterType.getRegisterType(Category.LongLo, null);
+		
+		setDestinationRegisterType(instruction, type);
 //            analyzeConstWide(analyzedInstruction);
 	}
 	
