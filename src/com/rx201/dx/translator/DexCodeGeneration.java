@@ -402,24 +402,6 @@ public class DexCodeGeneration {
 				)
 			return true;
 		
-		if ( i instanceof DexInstruction_BinaryOpLiteral) {
-			Opcode_BinaryOpLiteral opcode = ((DexInstruction_BinaryOpLiteral)i).getInsnOpcode();
-			if (opcode == Opcode_BinaryOpLiteral.Div || opcode == Opcode_BinaryOpLiteral.Rem)
-				return true; // Will throw Arithmetic Exception
-		}
-		
-		if ( i instanceof DexInstruction_BinaryOp) {
-			Opcode_BinaryOp opcode = ((DexInstruction_BinaryOp)i).getInsnOpcode();
-			if (opcode == Opcode_BinaryOp.DivInt || opcode == Opcode_BinaryOp.RemInt)
-				return true; // Will throw Arithmetic Exception
-		}		
-		
-		if ( i instanceof DexInstruction_BinaryOpWide) {
-			Opcode_BinaryOpWide opcode = ((DexInstruction_BinaryOpWide)i).getInsnOpcode();
-			if (opcode == Opcode_BinaryOpWide.DivLong || opcode == Opcode_BinaryOpWide.RemLong)
-				return true; // Will throw Arithmetic Exception
-		}		
-		
 		return false;
 	}
 	

@@ -5,7 +5,7 @@ import lombok.Getter;
 public enum Opcode_CompareWide {
   CmplDouble("cmpl-double"),
   CmpgDouble("cmpg-double"),
-  CmpLong("cmp-load");
+  CmpLong("cmp-long");
 
   @Getter private final String AssemblyName;
 
