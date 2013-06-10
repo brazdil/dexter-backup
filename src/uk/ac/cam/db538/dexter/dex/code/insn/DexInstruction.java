@@ -215,4 +215,31 @@ public abstract class DexInstruction extends DexCodeElement {
   }
   
   abstract public void accept(DexInstructionVisitor visitor);
+  
+  // Subclasses should overrides this if the instruction may throw exceptions during execution.
+  protected DexClassType[] throwsExceptions() {
+	return null;  
+  }
+
+  @Override
+  public boolean cfgEndsBasicBlock() {
+	DexClassType[] exceptions = throwsExceptions();
+	return exceptions != null && exceptions.length > 0;
+  }
+
+  @Override
+  public Set<DexCodeElement> cfgGetSuccessors() {
+	  DexClassType[] exceptions = throwsExceptions();
+	  if (exceptions != null && exceptions.length > 0) {
+
+		  val set = new HashSet<DexCodeElement>();
+		  set.add(getNextCodeElement());
+		  for(DexClassType exception : exceptions)
+			  set.addAll(throwingInsn_CatchHandlers(exception));
+		  return set;
+	  } else {
+		  return super.cfgGetSuccessors();
+	  }
+  }
+  
 }

@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,6 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexInstruction_BinaryOpWide extends DexInstruction {
 
@@ -32,6 +34,8 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   @Getter private final DexRegister regSourceB1;
   @Getter private final DexRegister regSourceB2;
   @Getter private final Opcode_BinaryOpWide insnOpcode;
+  
+  private DexClassType arithmeticException;
 
   public DexInstruction_BinaryOpWide(DexCode methodCode,
                                      DexRegister target1, DexRegister target2,
@@ -195,5 +199,16 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }
+  
+  @Override
+  protected DexClassType[] throwsExceptions() {
+	if (insnOpcode == Opcode_BinaryOpWide.DivLong || insnOpcode == Opcode_BinaryOpWide.RemLong) {
+		if (arithmeticException == null)
+	          arithmeticException = DexClassType.parse("Ljava/lang/ArithmeticException;", getParentFile().getParsingCache());
+		return new DexClassType[] {arithmeticException};
+	} else
+		return null;
+  }
+  
 }
 
