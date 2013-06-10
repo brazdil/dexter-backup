@@ -6,7 +6,16 @@ CWD := $(shell cygpath -a -m .)
 PROJECET_ROOT := $(shell cygpath -a -m $(TOP)/../)
 DEXTER := $(JAVA) -ea -classpath '$(PROJECET_ROOT)/bin/;$(PROJECET_ROOT)/lib/*' uk.ac.cam.db538.dexter.MainConsole $(PROJECET_ROOT)/framework-2.3-lite
 
+
+## This is for home-made tests
+TESTNAME := $(shell basename $(CWD))
 MAINCLASS_NAME := TestClass
+ifeq ($(TESTNAME),src)
+  ## This is for AOSP tests.
+  TESTNAME := $(shell basename $(abspath $(CWD)/../))
+  MAINCLASS_NAME := Main
+endif 
+
 JAVA_FILES := $(shell find . -name '*.java')
 CLASS_FILES := $(JAVA_FILES:.java=.class)
 
@@ -31,8 +40,8 @@ classes.dex: $(CLASS_FILES)
 	$(APKTOOL) d $< $@/
 	
 clean:
-	rm -rf *.apk classes.dex *.out
-	find . -name '*.class' -exec rm {} \;
+	@rm -rf *.apk classes.dex *.out
+	@find . -name '*.class' -exec rm {} \;
 
 ## Unit testing.
 run: test.apk_new.apk
@@ -49,5 +58,8 @@ run0: test.apk
 debug: test.apk test.out
 	@cp $< $(TOP)
 	
+collect: test.apk
+	@cp $< $(TOP)/tests/$(TESTNAME).apk
+
 dump: classes.dex
 	$(DX) --dex --verbose-dump  $(CWD)/$<
