@@ -132,7 +132,7 @@ public class MainWindow_Test {
     val instanceField1 = new DexField(null, "d", typeInt, null, null);
     val instanceField2 = new DexField(null, "b", typeInt, null, null);
 
-    val method1 = new DexDirectMethod(cls, "a", null, new DexPrototype(typeInt, Arrays.asList(new DexRegisterType[] { typeInt, typeInt })), new DexCode(), null);
+    val method1 = new DexDirectMethod(cls, "a", null, new DexPrototype(typeInt, Arrays.asList(new DexRegisterType[] { typeInt, typeInt })), new DexCode(), null, null);
 
     cls.addField(staticField1);
     cls.addField(staticField2);

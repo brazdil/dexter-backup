@@ -13,6 +13,7 @@ import lombok.val;
 import org.jf.dexlib.AnnotationSetItem;
 import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
+import org.jf.dexlib.AnnotationSetRefList;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DebugInfoItem;
 import org.jf.dexlib.DexFile;
@@ -43,8 +44,9 @@ public abstract class DexMethodWithCode extends DexMethod {
   public DexMethodWithCode(DexClass parent, String name, Set<AccessFlags> accessFlags,
                            DexPrototype prototype, DexCode code,
                            Set<DexAnnotation> annotations,
+                           List<Set<DexAnnotation>> paramAnnotations,
                            boolean direct) {
-    super(parent, name, accessFlags, prototype, annotations);
+    super(parent, name, accessFlags, prototype, annotations, paramAnnotations);
     this.code = code;
     this.direct = direct;
     this.parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
@@ -54,8 +56,8 @@ public abstract class DexMethodWithCode extends DexMethod {
       this.code.setParentMethod(this);
   }
 
-  public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, boolean parseInstructions) {
-    super(parent, methodInfo, encodedAnnotations);
+  public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, AnnotationSetRefList paramAnnotations, boolean parseInstructions) {
+    super(parent, methodInfo, encodedAnnotations, paramAnnotations);
     this.direct = methodInfo.isDirect();
     this.parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
     this.parameterRegistersMappings = new HashMap<DexRegister, DexRegister>();

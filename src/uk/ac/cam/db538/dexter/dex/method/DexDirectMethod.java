@@ -1,8 +1,10 @@
 package uk.ac.cam.db538.dexter.dex.method;
 
+import java.util.List;
 import java.util.Set;
 
 import org.jf.dexlib.AnnotationSetItem;
+import org.jf.dexlib.AnnotationSetRefList;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.Util.AccessFlags;
 
@@ -13,14 +15,14 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 
 public class DexDirectMethod extends DexMethodWithCode {
 
-  public DexDirectMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, boolean parseInstructions) {
-    super(parent, methodInfo, encodedAnnotations, parseInstructions);
+  public DexDirectMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, AnnotationSetRefList annotationSetRefList, boolean parseInstructions) {
+    super(parent, methodInfo, encodedAnnotations, annotationSetRefList, parseInstructions);
   }
 
   public DexDirectMethod(DexClass parent, String name,
                          Set<AccessFlags> accessFlags, DexPrototype prototype, DexCode code,
-                         Set<DexAnnotation> annotations) {
-    super(parent, name, accessFlags, prototype, code, annotations, true);
+                         Set<DexAnnotation> annotations, List<Set<DexAnnotation>> paramAnotations) {
+    super(parent, name, accessFlags, prototype, code, annotations, paramAnotations, true);
   }
 
   public Opcode_Invoke getCallType() {
