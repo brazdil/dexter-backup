@@ -153,13 +153,9 @@ public class DexCodeAnalyzer {
     //instruction, etc.
     private AnalyzedDexInstruction startOfMethod;
 
-	DexParsingCache cache;
-
-    public DexCodeAnalyzer(DexMethodWithCode method, DexParsingCache cache) {
+    public DexCodeAnalyzer(DexMethodWithCode method) {
     	this.method = method;
         this.code = method.getCode();
-        this.cache = cache;
-
 
         buildInstructionList();
 
@@ -365,7 +361,7 @@ public class DexCodeAnalyzer {
     	
         //override AnalyzedInstruction and provide custom implementations of some of the methods, so that we don't
         //have to handle the case this special case of instruction being null, in the main class
-        startOfMethod = new AnalyzedDexInstruction(-1, null, cache) {
+        startOfMethod = new AnalyzedDexInstruction(-1, null, method.getParentFile()) {
             public boolean setsRegister() {
                 return false;
             }
@@ -396,9 +392,9 @@ public class DexCodeAnalyzer {
 
     private AnalyzedDexInstruction buildFromDexCodeElement(int index, DexCodeElement element) {
     	if (element instanceof DexInstruction) {
-    		return new AnalyzedDexInstruction(index, (DexInstruction) element, cache);
+    		return new AnalyzedDexInstruction(index, (DexInstruction) element, method.getParentFile());
     	} else /* DexCatch, DexCatchAll, DexLabel, DexTryBlockStart, DexTryBlockEnd */ {
-    		return new AnalyzedDexInstruction(index, null, element, cache);
+    		return new AnalyzedDexInstruction(index, null, element, method.getParentFile());
     	}
 	}
 

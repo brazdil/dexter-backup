@@ -134,7 +134,7 @@ public class DexCodeGeneration {
 	
 	private DexCodeAnalyzer analyzer;
 	
-	public DexCodeGeneration(DexMethodWithCode method, DexParsingCache cache) {
+	public DexCodeGeneration(DexMethodWithCode method) {
 		dexOptions = new DexOptions();
 	    dexOptions.targetApiLevel = 10;
 	    
@@ -144,7 +144,7 @@ public class DexCodeGeneration {
 		isStatic = method.isStatic();
 		
 		stripMoveParameters();
-	    this.analyzer = new DexCodeAnalyzer(method, cache);
+	    this.analyzer = new DexCodeAnalyzer(method);
 	    this.analyzer.analyze();
 	}
 

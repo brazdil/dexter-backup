@@ -182,7 +182,8 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 					 *     
 					 * a.k.a merging Integer with LongLo/Hi should be allowed    
 					 */
-					type = DexRegisterTypeHelper.permissiveMerge(type, typeInfo);
+					
+					type = TypeUnification.permissiveMerge(head.instruction.getParentFile(), type, typeInfo);
 					assert type.category != Category.Conflicted;
 				}
 				// Do not search further is this instruction overwrites the target register.
