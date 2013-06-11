@@ -438,11 +438,14 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	private void doMoveResult(DexRegister to) {
 		// opMoveResultPseudo if afterNonInvokeThrowingInsn
-		//TODO: Could it be a TryStart or other stuff?
-		boolean hasInvoke = curInst.getPredecessors().get(0).getInstruction() instanceof DexInstruction_Invoke;
-		for(AnalyzedDexInstruction i : curInst.getPredecessors()) {
-			assert hasInvoke == (i.getInstruction() instanceof DexInstruction_Invoke);
-		}
+		// Skip TryBlockEnd and other auxiliary instructions in between.
+		AnalyzedDexInstruction prev = curInst;
+		do {
+			assert prev.getPredecessorCount() == 1;
+			prev = prev.getPredecessors().get(0);
+		} while(prev.getInstruction() == null);
+		
+		boolean hasInvoke = prev.getInstruction() instanceof DexInstruction_Invoke;
 
 		RegisterSpec dst = getPostRegSpec(to);
 		if (hasInvoke)
