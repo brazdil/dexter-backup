@@ -233,7 +233,7 @@ public class Dex {
       EnumSet.of(AccessFlags.STATIC, AccessFlags.CONSTRUCTOR),
       new DexPrototype(DexVoid.parse("V", parsingCache), null),
       clinitCode,
-      null);
+      null, null);
     externalStaticFieldTaint_Class.addMethod(externalStaticFieldTaint_Clinit);
 
     return Arrays.asList(new DexClass[] { externalStaticFieldTaint_Class });

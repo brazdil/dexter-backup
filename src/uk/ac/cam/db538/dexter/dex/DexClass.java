@@ -17,6 +17,7 @@ import org.jf.dexlib.AnnotationDirectoryItem.MethodAnnotation;
 import org.jf.dexlib.AnnotationDirectoryItem.ParameterAnnotation;
 import org.jf.dexlib.AnnotationItem;
 import org.jf.dexlib.AnnotationSetItem;
+import org.jf.dexlib.AnnotationSetRefList;
 import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.ClassDataItem;
 import org.jf.dexlib.ClassDataItem.EncodedField;
@@ -99,6 +100,10 @@ public class DexClass {
     if (clsInfo.getAnnotations() != null)
       fieldAnnotations = clsInfo.getAnnotations().getFieldAnnotations();
 
+    List<ParameterAnnotation> paramAnnotations = null;
+    if (clsInfo.getAnnotations() != null)
+    	paramAnnotations = clsInfo.getAnnotations().getParameterAnnotations();
+
     val clsData = clsInfo.getClassData();
     if (clsData != null) {
       for (val staticFieldInfo : clsData.getStaticFields())
@@ -107,12 +112,15 @@ public class DexClass {
         fields.add(new DexField(this, instanceFieldInfo, findFieldAnnotation(instanceFieldInfo, fieldAnnotations)));
 
       for (val directMethodInfo : clsData.getDirectMethods())
-        methods.add(new DexDirectMethod(this, directMethodInfo, findMethodAnnotation(directMethodInfo, methodAnnotations), isInternal));
+        methods.add(new DexDirectMethod(this, directMethodInfo, findMethodAnnotation(directMethodInfo, methodAnnotations), 
+        		findParameterAnnotation(directMethodInfo, paramAnnotations), isInternal));
       for (val virtualMethodInfo : clsData.getVirtualMethods()) {
         if (isMethodAbstract(virtualMethodInfo.accessFlags))
-          methods.add(new DexAbstractMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations)));
+          methods.add(new DexAbstractMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations),
+        		  findParameterAnnotation(virtualMethodInfo, paramAnnotations)));
         else
-          methods.add(new DexVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations), isInternal));
+          methods.add(new DexVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations),
+        		  findParameterAnnotation(virtualMethodInfo, paramAnnotations), isInternal));
       }
     }
   }
@@ -126,12 +134,20 @@ public class DexClass {
   }
 
   private static AnnotationSetItem findFieldAnnotation(EncodedField encField, List<FieldAnnotation> fieldAnnotations) {
-    if (fieldAnnotations != null)
-      for (val annoItem : fieldAnnotations)
-        if (annoItem.field.equals(encField.field))
-          return annoItem.annotationSet;
-    return null;
-  }
+	    if (fieldAnnotations != null)
+	      for (val annoItem : fieldAnnotations)
+	        if (annoItem.field.equals(encField.field))
+	          return annoItem.annotationSet;
+	    return null;
+	  }
+
+  private static AnnotationSetRefList findParameterAnnotation(EncodedMethod encMethod, List<ParameterAnnotation> paramAnnotations) {
+	    if (paramAnnotations != null)
+	      for (val annoItem : paramAnnotations)
+	        if (annoItem.method.equals(encMethod.method))
+	          return annoItem.annotationSet;
+	    return null;
+	  }
 
   private static Set<DexClassType> parseTypeList(TypeListItem list, DexParsingCache cache) {
     val set = new HashSet<DexClassType>();
@@ -240,6 +256,10 @@ public class DexClass {
     for (val field : fields)
       asmFieldAnnotations.add(field.assembleAnnotations(outFile, cache));
 
+    val asmParamAnnotations = new ArrayList<ParameterAnnotation>(methods.size());
+    for (val method : methods)
+    	asmParamAnnotations.add(method.assembleParameterAnnotations(outFile, cache));
+
     val asmAnnotations = AnnotationDirectoryItem.internAnnotationDirectoryItem(
                            outFile,
                            AnnotationSetItem.internAnnotationSetItem(
@@ -247,7 +267,7 @@ public class DexClass {
                              asmClassAnnotations),
                            asmFieldAnnotations,
                            asmMethodAnnotations,
-                           new LinkedList<ParameterAnnotation>());
+                           asmParamAnnotations);
 
     val asmStaticFields = new LinkedList<EncodedField>();
     val asmInstanceFields = new LinkedList<EncodedField>();

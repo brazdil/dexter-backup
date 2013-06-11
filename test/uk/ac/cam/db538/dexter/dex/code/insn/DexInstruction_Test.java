@@ -80,7 +80,7 @@ public class DexInstruction_Test {
     // method will automatically assign itself to DexCode
     new DexDirectMethod(clazz, "m", null,
                         new DexPrototype(DexVoid.parse("V", null), null),
-                        code, null);
+                        code, null, null);
 
     return code;
   }
