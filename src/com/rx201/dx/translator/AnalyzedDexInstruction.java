@@ -13,6 +13,7 @@ import org.jf.dexlib.Code.Analysis.RegisterType.Category;
 
 import com.rx201.dx.translator.util.DexRegisterHelper;
 
+import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -57,23 +58,26 @@ public class AnalyzedDexInstruction {
 	     */
 	    protected boolean dead = false;
 
+		private Dex parentFile;
+
 		private final DexParsingCache cache;
 
 	    private static final RegisterType unknown = RegisterType.getRegisterType(RegisterType.Category.Unknown, null);
 
 	    public final int instructionIndex;
 	    
-	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexParsingCache cache) {
+	    public AnalyzedDexInstruction(int index, DexInstruction instruction, Dex parentFile) {
 	        this.instruction = instruction;
 	        this.postRegisterMap = new HashMap<Integer, RegisterType>();
 	        this.preRegisterMap = new HashMap<Integer, RegisterType>();
-	        this.cache = cache;
+	        this.parentFile = parentFile;
+	        this.cache = parentFile.getParsingCache();
 	        this.instructionIndex = index;
 	        this.auxillaryElement = null;
 	    }
 
-	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexCodeElement element, DexParsingCache cache) {
-	    	this(index, instruction, cache);
+	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexCodeElement element, Dex parentFile) {
+	    	this(index, instruction, parentFile);
 	    	this.auxillaryElement = element;
 	    }
 
@@ -141,7 +145,7 @@ public class AnalyzedDexInstruction {
 	        assert registerType != null;
 
 	        RegisterType oldRegisterType = getPreRegister(registerNumber);
-	        RegisterType mergedRegisterType = DexRegisterTypeHelper.permissiveMerge(oldRegisterType, registerType);
+	        RegisterType mergedRegisterType = TypeUnification.permissiveMerge(parentFile, oldRegisterType, registerType);
 	        //TODO: UGLY HACK WARNING
 	        /* 
 	         * in aosp/027/arithmatic.

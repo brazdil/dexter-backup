@@ -174,7 +174,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     if (code == null)
       return null;
 
-    DexCodeGeneration cg = new DexCodeGeneration(this, this.getParentFile().getParsingCache());
+    DexCodeGeneration cg = new DexCodeGeneration(this);
     if (outFile != null)
     	return cg.generateCodeItem(outFile);
     
