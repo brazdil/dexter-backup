@@ -1,5 +1,10 @@
 package com.rx201.dx.translator;
 
+import static com.android.dx.rop.type.Type.BT_BYTE;
+import static com.android.dx.rop.type.Type.BT_CHAR;
+import static com.android.dx.rop.type.Type.BT_INT;
+import static com.android.dx.rop.type.Type.BT_SHORT;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +51,7 @@ import com.android.dx.rop.cst.CstNat;
 import com.android.dx.rop.cst.TypedConstant;
 import com.android.dx.rop.type.StdTypeList;
 import com.android.dx.rop.type.Type;
+import com.android.dx.rop.type.TypeBearer;
 import com.android.dx.rop.type.TypeList;
 import com.android.dx.util.IntList;
 import com.rx201.dx.translator.util.DexRegisterHelper;
@@ -1082,7 +1088,26 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 
 	private void doConvert(DexRegister dst, DexRegister src) {
-		doPlainInsn(Rops.opConv(getPostRegSpec(dst), getPreRegSpec(src)), getPostRegSpec(dst), src);
+		TypeBearer sourceType = getPreRegSpec(src);
+		TypeBearer targetType = getPostRegSpec(dst);
+		Rop opcode = null;
+        if (sourceType.getBasicType() == BT_INT) {
+            switch (targetType.getBasicType()) {
+            case BT_SHORT:
+            	opcode = Rops.TO_SHORT;
+            	break;
+            case BT_CHAR:
+            	opcode = Rops.TO_CHAR;
+            	break;
+            case BT_BYTE:
+            	opcode = Rops.TO_BYTE;
+            	break;
+            }
+        }
+        if (opcode == null)
+        	opcode = Rops.opConv(targetType, sourceType);
+		
+		doPlainInsn(opcode, getPostRegSpec(dst), src);
 	}
 	
 	@Override
