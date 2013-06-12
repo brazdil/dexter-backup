@@ -22,7 +22,7 @@ JAVA_FILES := $(shell find . -name '*.java')
 CLASS_FILES := $(JAVA_FILES:.java=.class)
 
 diff: test.out test.apk_new.out
-	-@diff --side-by-side -r $^
+	-@diff --side-by-side -r $^ | grep -v '^ *\.line'
 
 test.apk_new.apk : test.apk
 	$(DEXTER) $<
