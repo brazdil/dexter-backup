@@ -146,7 +146,8 @@ public class DexCodeAnalyzer {
 
     private BitSet analyzedInstructions;
 
-
+    private int maxInstructionIndex;
+    
     //This is a dummy instruction that occurs immediately before the first real instruction. We can initialize the
     //register types for this instruction to the parameter types, in order to have them propagate to all of its
     //successors, e.g. the first real instruction, the first instructions in any exception handlers covering the first
@@ -156,7 +157,7 @@ public class DexCodeAnalyzer {
     public DexCodeAnalyzer(DexMethodWithCode method) {
     	this.method = method;
         this.code = method.getCode();
-
+        maxInstructionIndex = 0;
         buildInstructionList();
 
         analyzedInstructions = new BitSet(instructions.size());
@@ -391,6 +392,8 @@ public class DexCodeAnalyzer {
     }
 
     private AnalyzedDexInstruction buildFromDexCodeElement(int index, DexCodeElement element) {
+    	if (index > maxInstructionIndex)
+    		maxInstructionIndex = index;
     	if (element instanceof DexInstruction) {
     		return new AnalyzedDexInstruction(index, (DexInstruction) element, method.getParentFile());
     	} else /* DexCatch, DexCatchAll, DexLabel, DexTryBlockStart, DexTryBlockEnd */ {
@@ -411,5 +414,9 @@ public class DexCodeAnalyzer {
     public AnalyzedDexInstruction reverseLookup(DexCodeElement element) {
     	assert element != null;
     	return instructionMap.get(element);
+    }
+    
+    public int getMaxInstructionIndex() {
+    	return maxInstructionIndex;
     }
 }

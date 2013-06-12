@@ -291,25 +291,40 @@ public class DexCodeGeneration {
         // Build basic blocks
         ArrayList<ArrayList<AnalyzedDexInstruction>> basicBlocks = buildBasicBlocks();
         
-        DexInstructionTranslator translator = new DexInstructionTranslator(analyzer);
-
     	System.out.println("==================================================================================");
     	System.out.println(String.format("%s param reg: %d", method.getName()  + method.getPrototype().toString(), 
 				inWords));
         
         // Convert basicBlocks, hold the result in the temporary map. It is indexed by the basic block's first AnalyzedInst.
-        HashMap<AnalyzedDexInstruction, ArrayList<Insn>> convertedBasicBlocks = new HashMap<AnalyzedDexInstruction, ArrayList<Insn>>();
-        HashMap<AnalyzedDexInstruction, DexConvertedResult> convertedBasicBlocksInfo = new HashMap<AnalyzedDexInstruction, DexConvertedResult>();
-        HashSet<AnalyzedDexInstruction> auxAdded = new HashSet<AnalyzedDexInstruction>();
+        HashMap<AnalyzedDexInstruction, ArrayList<Insn>> translatedBasicBlocks = new HashMap<AnalyzedDexInstruction, ArrayList<Insn>>();
+        HashMap<AnalyzedDexInstruction, DexConvertedResult> translatedBasicBlocksInfo = new HashMap<AnalyzedDexInstruction, DexConvertedResult>();
+        
+        translateBasicBlocks(basicBlocks, translatedBasicBlocks, translatedBasicBlocksInfo);
+        
+        // Finally convert to ROP's BasicBlockList form from convertedBasicBlocks
+        return createRopMethod(translatedBasicBlocks, translatedBasicBlocksInfo);
+	}
+	
+	private void translateBasicBlocks(
+			ArrayList<ArrayList<AnalyzedDexInstruction>> basicBlocks,
+			HashMap<AnalyzedDexInstruction, ArrayList<Insn>> translatedBasicBlocks,
+			HashMap<AnalyzedDexInstruction, DexConvertedResult> translatedBasicBlocksInfo) {
+		
+        DexInstructionTranslator translator = new DexInstructionTranslator(analyzer);
+
         for(int bi=0; bi< basicBlocks.size(); bi++) 
-    		convertedBasicBlocks.put(basicBlocks.get(bi).get(0), new ArrayList<Insn>());
-        	
+    		translatedBasicBlocks.put(basicBlocks.get(bi).get(0), new ArrayList<Insn>());
+        
+        // In case we need more basic blocks hence more dummy AnalyzedDexInstruction instance,
+        // we use this index incrementally.
+        int dummyInstructionIndex = analyzer.getMaxInstructionIndex() + 1;
+        
         for(int bi=0; bi< basicBlocks.size(); bi++) {
         	ArrayList<AnalyzedDexInstruction> basicBlock = basicBlocks.get(bi);
         	AnalyzedDexInstruction bbIndex = basicBlock.get(0);
         	
         	// Process instruction in the basic block as a whole, 
-        	ArrayList<Insn> insnBlock = convertedBasicBlocks.get(bbIndex);
+        	ArrayList<Insn> insnBlock = translatedBasicBlocks.get(bbIndex);
         	DexConvertedResult lastInsn = null;
         	for(int i = 0; i < basicBlock.size(); i++) {
         		AnalyzedDexInstruction inst = basicBlock.get(i);
@@ -324,12 +339,24 @@ public class DexCodeGeneration {
         			assert lastInsn.auxInsns.size() == 0;
         			// Verify instructions in basic block is indeed chaining together
         			assert lastInsn.primarySuccessor == basicBlock.get( i + 1);
-        		} else if (lastInsn.auxInsns.size() != 0) { // Propagate auxInsns to primary successors
-        			AnalyzedDexInstruction s = lastInsn.primarySuccessor;
-    				assert !auxAdded.contains(s);
-    				for(int ai = 0; ai < lastInsn.auxInsns.size(); ai++)
-    					convertedBasicBlocks.get(s).add(ai, lastInsn.auxInsns.get(ai));
-    				auxAdded.add(s);
+        		} else if (lastInsn.auxInsns.size() != 0) { 
+        			// Need to create an extra basic block to accommodate auxInsns 
+        			AnalyzedDexInstruction extraBB_head = new AnalyzedDexInstruction(dummyInstructionIndex++,
+        					null, null, method.getParentFile());
+        			DexConvertedResult extraBB_Info = new DexConvertedResult();
+        			
+        			// Chain this extra BB to original BB's primary successor.
+        			extraBB_Info.primarySuccessor = lastInsn.primarySuccessor;
+        			extraBB_Info.addSuccessor(lastInsn.primarySuccessor);
+        			
+        			// Let the original BB point to us
+        			for(int j = 0; j<lastInsn.successors.size(); j++)
+        				if (lastInsn.successors.get(j) == lastInsn.primarySuccessor)
+        					lastInsn.successors.set(j, extraBB_head);
+        			lastInsn.primarySuccessor = extraBB_head;
+        			
+        			translatedBasicBlocks.put(extraBB_head, lastInsn.auxInsns);
+        			translatedBasicBlocksInfo.put(extraBB_head, extraBB_Info);
         		}
         			
 				if (lastInsn.insns.size() > 0) {
@@ -358,17 +385,20 @@ public class DexCodeGeneration {
                 }
         	}
         	
-        	convertedBasicBlocksInfo.put(bbIndex, lastInsn);
+        	translatedBasicBlocksInfo.put(bbIndex, lastInsn);
         }
-        
-        
-        // Finally convert to ROP's BasicBlockList form from convertedBasicBlocks
-        BasicBlockList ropBasicBlocks = new BasicBlockList(convertedBasicBlocks.size());
+	}
+
+	private SimpleRopMethod createRopMethod(
+			HashMap<AnalyzedDexInstruction, ArrayList<Insn>> translatedBasicBlocks,
+			HashMap<AnalyzedDexInstruction, DexConvertedResult> translatedBasicBlocksInfo) {
+		
+        BasicBlockList ropBasicBlocks = new BasicBlockList(translatedBasicBlocks.size());
         int bbIndex = 0;
        
-        for(AnalyzedDexInstruction head : convertedBasicBlocks.keySet()) {
-        	ArrayList<Insn> insnBlock = convertedBasicBlocks.get(head); 
-        	DexConvertedResult lastInsn = convertedBasicBlocksInfo.get(head);
+        for(AnalyzedDexInstruction head : translatedBasicBlocks.keySet()) {
+        	ArrayList<Insn> insnBlock = translatedBasicBlocks.get(head); 
+        	DexConvertedResult lastInsn = translatedBasicBlocksInfo.get(head);
         	
         	InsnList insns;
         	int insnBlockSize = insnBlock.size();
@@ -387,13 +417,13 @@ public class DexCodeGeneration {
         	IntList successors = new IntList();
         	for(AnalyzedDexInstruction s : lastInsn.successors) {
         		// Make sure the successor is in the basic block list
-        		assert convertedBasicBlocks.get(s) != null; 
+        		assert translatedBasicBlocks.get(s) != null; 
         		successors.add(s.getInstructionIndex());
         	}
         	successors.setImmutable();
         	
         	// Make sure primary Successor is valid as well.
-        	assert lastInsn.primarySuccessor == null || convertedBasicBlocks.get(lastInsn.primarySuccessor) != null; 
+        	assert lastInsn.primarySuccessor == null || translatedBasicBlocks.get(lastInsn.primarySuccessor) != null; 
         	
         	int label = head.getInstructionIndex();
         	BasicBlock ropBasicBlock = new BasicBlock(label, insns, successors, lastInsn.primarySuccessor != null ? lastInsn.primarySuccessor.getInstructionIndex() : -1);
@@ -403,7 +433,7 @@ public class DexCodeGeneration {
 
         return new SimpleRopMethod(ropBasicBlocks, analyzer.getStartOfMethod().getOnlySuccesor().getInstructionIndex());
 	}
-	
+
 	private boolean endsBasicBlock(AnalyzedDexInstruction current) {
 		if (current.getSuccessorCount() != 1)
 			return true; // More than one successor, guaranteed to end a BB
