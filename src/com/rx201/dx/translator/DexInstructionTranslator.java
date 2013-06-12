@@ -1091,7 +1091,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		TypeBearer sourceType = getPreRegSpec(src);
 		TypeBearer targetType = getPostRegSpec(dst);
 		Rop opcode = null;
-        if (sourceType.getBasicType() == BT_INT) {
+        if (sourceType.getBasicFrameType() == BT_INT) {
             switch (targetType.getBasicType()) {
             case BT_SHORT:
             	opcode = Rops.TO_SHORT;
