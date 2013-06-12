@@ -1219,7 +1219,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			opcode = Rops.REM_CONST_INT;
 			break;
 		case Rsub:
-			opcode = Rops.SUB_CONST_INT; // Extra Insn to handle this
+			opcode = Rops.SUB_CONST_INT; // SUB_CONST_INT already has the semantic of reverse sub. so no further patch up necessary.
 			break;
 		case Shl:
 			opcode = Rops.SHL_CONST_INT;
@@ -1239,9 +1239,6 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			
 			doPlainCstInsn(opcode, getPostRegSpec(instruction.getRegTarget()), makeCstInteger((int)instruction.getLiteral()), instruction.getRegSource());
 			
-			if (instruction.getInsnOpcode() == Opcode_BinaryOpLiteral.Rsub) // Patch up rsub
-				doPlainInsn(Rops.NEG_INT, getPostRegSpec(instruction.getRegTarget()), instruction.getRegTarget());
-		
 		} else { // Integer division/reminder will throw exception
 			doThrowingCstInsn(opcode, makeCstInteger((int)instruction.getLiteral()), instruction.getRegSource());
 			doPseudoMoveResult(instruction.getRegTarget());
