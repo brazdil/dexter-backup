@@ -32,6 +32,8 @@ test.apk: classes.dex
 
 classes.dex: $(CLASS_FILES)
 	@rm -f $@ *.apk
+	## This is for AOSP tests, where source in src2/ need to be substituted in after javac
+	-cd ../src2/ && $(JAVAC) $(JAVAC_FLAGS) -d ../src/ `find . -name "*.java"`
 	$(DX) --dex $(DXFLAGS) --output=$(CWD)\\$@ $(CWD)
 	
 %.class: %.java
