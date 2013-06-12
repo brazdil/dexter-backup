@@ -689,7 +689,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		for(byte[] element : arrayData.getElementData()) {
 			long v = 0;
 			for(int i=0; i<element.length; i++)
-				v |= (((long)element[i]) << i);
+				v |= ((long)(element[i]&0xFF)) << (i*8);
 
 			if (arrayElementType == Type.BYTE) {
 	        	assert element.length == 1;
