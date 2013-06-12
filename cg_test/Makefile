@@ -10,10 +10,12 @@ DXFLAGS := --no-optimize
 ## This is for home-made tests
 TESTNAME := $(shell basename $(CWD))
 MAINCLASS_NAME := TestClass
+TESTRESULT := expected.txt
 ifeq ($(TESTNAME),src)
   ## This is for AOSP tests.
   TESTNAME := $(shell basename $(abspath $(CWD)/../))
   MAINCLASS_NAME := Main
+  TESTRESULT := ../expected.txt
 endif 
 
 JAVA_FILES := $(shell find . -name '*.java')
@@ -46,8 +48,9 @@ clean:
 ## Unit testing.
 run: test.apk_new.apk
 	@echo Running test
-	@adb push $< /sdcard/
-	@adb shell ANDROID_DATA=/sdcard dalvikvm -ea -cp /sdcard/$< $(MAINCLASS_NAME)
+	@adb push $< /sdcard/ 2>/dev/null
+	@adb shell ANDROID_DATA=/sdcard dalvikvm -ea -cp /sdcard/$< $(MAINCLASS_NAME) > output.txt
+	@diff -b output.txt $(TESTRESULT) >/dev/null || (echo '***FAILURE***' && diff -y -b output.txt $(TESTRESULT))
 	
 run0: test.apk
 	@echo Running test
