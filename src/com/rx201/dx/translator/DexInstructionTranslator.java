@@ -437,7 +437,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 
 	private void doMoveResult(DexRegister to) {
-		// opMoveResultPseudo if afterNonInvokeThrowingInsn
+		// opMoveResultPseudo if afterNonInvokeThrowingInsn, or FilledNewArray
 		// Skip TryBlockEnd and other auxiliary instructions in between.
 		AnalyzedDexInstruction prev = curInst;
 		do {
@@ -445,13 +445,11 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			prev = prev.getPredecessors().get(0);
 		} while(prev.getInstruction() == null);
 		
-		boolean hasInvoke = prev.getInstruction() instanceof DexInstruction_Invoke;
-
+		boolean legitimate = prev.getInstruction() instanceof DexInstruction_Invoke || prev.getInstruction() instanceof DexInstruction_FilledNewArray ;
+		assert legitimate;
+		
 		RegisterSpec dst = getPostRegSpec(to);
-		if (hasInvoke)
-			doPlainInsn(Rops.opMoveResult(dst), dst);
-		else 
-			doPlainInsn(Rops.opMoveResultPseudo(dst), dst);
+		doPlainInsn(Rops.opMoveResult(dst), dst);
 	}
 	
 	@Override
@@ -693,7 +691,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 			if (arrayElementType == Type.BYTE) {
 	        	assert element.length == 1;
-	        	values.add(CstByte.make((int)v));
+	        	values.add(CstByte.make((byte)v));
 				arrayType = CstType.BYTE_ARRAY;
 	        } else if (arrayElementType == Type.BOOLEAN) {
 	        	assert element.length == 1;
@@ -701,7 +699,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				arrayType = CstType.BYTE_ARRAY;
 	        } else if (arrayElementType == Type.SHORT) {
 	        	assert element.length == 2;
-	        	values.add(CstShort.make((int)v));
+	        	values.add(CstShort.make((short)v));
 				arrayType = CstType.SHORT_ARRAY;
 	        } else if (arrayElementType == Type.CHAR) {
 	        	assert element.length == 2;
