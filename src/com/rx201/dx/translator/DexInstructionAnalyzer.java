@@ -381,7 +381,10 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 				category = RegisterType.Category.Char;
 				break;
 			case IntFloat:
-				category = RegisterType.Category.Integer; // Ambiguity here does not matter, type merging will deal with it.
+				if (typeAnalyzer.getPrecisePostRegisterType(inst.getRegTo(), instruction).category == Category.Float)
+					category = Category.Float;
+				else
+					category = Category.Integer; // Assume it is integer if we cannot infer its type.
 				break;
 			case Short:
 				category = RegisterType.Category.Short;
