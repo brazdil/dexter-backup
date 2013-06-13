@@ -99,7 +99,7 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 	private final static RegisterType Primitive = null;
 	private final static RegisterType PrimitiveWide = null;
 	private final static RegisterType PrimitiveOrReference = null;
-	private final static RegisterType Reference = null;
+	private final static RegisterType Reference = ObjectType("Ljava/lang/Object;");
 	private final static RegisterType Array = null;
 	private final static RegisterType Boolean = RegisterType.getRegisterType(Category.Boolean, null);
 	private final static RegisterType Byte = RegisterType.getRegisterType(Category.Byte, null);
