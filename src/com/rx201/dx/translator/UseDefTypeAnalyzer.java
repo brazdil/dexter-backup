@@ -418,7 +418,7 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 			defineRegister(instruction.getRegTo(), Char);
 			break;
 		case IntFloat:
-			defineRegister(instruction.getRegTo(), Primitive);
+			defineRegister(instruction.getRegTo(), Integer);
 			break;
 		case Object:
 			defineRegister(instruction.getRegTo(), Reference);
@@ -455,7 +455,7 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 			useRegister(instruction.getRegFrom(), Char);
 			break;
 		case IntFloat:
-			useRegister(instruction.getRegFrom(), Primitive);
+			useRegister(instruction.getRegFrom(), Integer);
 			break;
 		case Object:
 			useRegister(instruction.getRegFrom(), Reference);
