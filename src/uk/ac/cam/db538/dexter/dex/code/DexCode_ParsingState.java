@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -171,7 +172,7 @@ public class DexCode_ParsingState {
           catchAllHandler = getCatchAll(catchAllOffset);
       }
 
-      val catchHandlers = new HashSet<DexCatch>();
+      val catchHandlers = new ArrayList<DexCatch>();
       if (tryBlock.encodedCatchHandler != null && tryBlock.encodedCatchHandler.handlers != null)
         for (val catchBlock : tryBlock.encodedCatchHandler.handlers)
           catchHandlers.add(

@@ -1,7 +1,9 @@
 package uk.ac.cam.db538.dexter.dex.code.elem;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,18 +19,18 @@ public class DexTryBlockStart extends DexCodeElement {
   @Getter private final long originalAbsoluteOffset;
 
   @Getter @Setter private DexCatchAll catchAllHandler;
-  private final Set<DexCatch> catchHandlers;
+  private final List<DexCatch> catchHandlers;
 
-  public DexTryBlockStart(DexCode methodCode, long originalAbsoluteOffset, DexCatchAll catchAllHandler, Set<DexCatch> catchHandlers) {
+  public DexTryBlockStart(DexCode methodCode, long originalAbsoluteOffset, DexCatchAll catchAllHandler, List<DexCatch> catchHandlers) {
     super(methodCode);
 
     this.originalAbsoluteOffset = originalAbsoluteOffset;
     this.catchAllHandler = catchAllHandler;
-    this.catchHandlers = catchHandlers == null ? new HashSet<DexCatch>() : new HashSet<DexCatch>(catchHandlers);
+    this.catchHandlers = catchHandlers == null ? new ArrayList<DexCatch>() : new ArrayList<DexCatch>(catchHandlers);
   }
 
   public DexTryBlockStart(DexCode methodCode) {
-    this(methodCode, TRYBLOCK_COUNTER, null, new HashSet<DexCatch>());
+    this(methodCode, TRYBLOCK_COUNTER, null, new ArrayList<DexCatch>());
 
     TRYBLOCK_COUNTER--;
     if (TRYBLOCK_COUNTER >= 0L)
@@ -39,7 +41,7 @@ public class DexTryBlockStart extends DexCodeElement {
     this(toClone.getMethodCode(),
          toClone.originalAbsoluteOffset,
          toClone.catchAllHandler,
-         new HashSet<DexCatch>(toClone.catchHandlers));
+         toClone.catchHandlers);
   }
 
   public void addCatchHandler(DexCatch catchHandler) {
@@ -55,8 +57,8 @@ public class DexTryBlockStart extends DexCodeElement {
     return Long.toString(originalAbsoluteOffset);
   }
 
-  public Set<DexCatch> getCatchHandlers() {
-    return Collections.unmodifiableSet(catchHandlers);
+  public List<DexCatch> getCatchHandlers() {
+    return Collections.unmodifiableList(catchHandlers);
   }
 
   @Override
