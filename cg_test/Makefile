@@ -22,7 +22,7 @@ JAVA_FILES := $(shell find . -name '*.java')
 CLASS_FILES := $(JAVA_FILES:.java=.class)
 
 diff: test.out test.apk_new.out
-	-@diff --side-by-side -r $^ | grep -v '^ *\.line'
+	-@diff --side-by-side -r $^ | grep -v '^ *\.line' | grep -v '^ *\.prologue'
 
 test.apk_new.apk : test.apk
 	$(DEXTER) $<
@@ -51,13 +51,13 @@ clean:
 run: test.apk_new.apk
 	@echo Running test
 	@adb push $< /sdcard/ 2>/dev/null
-	@adb shell ANDROID_DATA=/sdcard dalvikvm -ea -cp /sdcard/$< $(MAINCLASS_NAME) > output.txt
-	@diff -b output.txt $(TESTRESULT) >/dev/null || (echo '***FAILURE***' && diff -y -b output.txt $(TESTRESULT))
+	@adb shell cd /sdcard\; ANDROID_DATA=/sdcard dalvikvm -ea -cp $< $(MAINCLASS_NAME) > output.txt
+	@diff -b output.txt $(TESTRESULT) >/dev/null || (echo '***FAILURE***' && diff -b output.txt $(TESTRESULT))
 	
 run0: test.apk
 	@echo Running test
 	@adb push $< /sdcard/ 2>/dev/null
-	@adb shell ANDROID_DATA=/sdcard dalvikvm -ea -cp /sdcard/$< $(MAINCLASS_NAME)
+	@adb shell cd /sdcard\; ANDROID_DATA=/sdcard dalvikvm -ea -cp $< $(MAINCLASS_NAME)
 	
 ## Prepare code for eclipse debugging
 debug: test.apk test.out
