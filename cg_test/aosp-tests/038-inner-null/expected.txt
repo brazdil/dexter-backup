@@ -1,5 +1,2 @@
 new Special()
-java.lang.NullPointerException
-	at Main$Special.callInner(Main.java)
-	at Main.main(Main.java)
-	at dalvik.system.NativeStart.main(Native Method)
+done

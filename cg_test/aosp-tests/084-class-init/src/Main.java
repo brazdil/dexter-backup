@@ -48,6 +48,13 @@ public class Main {
         } catch (NoClassDefFoundError ncdfe) {
             System.out.println("Got expected NCDFE for FIELD1");
         }
+
+        try {
+            System.out.println(Exploder.FIELD);
+            System.err.println("Load of FIELD succeeded unexpectedly");
+        } catch (AssertionError expected) {
+            System.out.println("Got expected '" + expected.getMessage() + "' from Exploder");
+        }
     }
 
     static void checkTiming() {
@@ -76,8 +83,8 @@ public class Main {
 
     static class FieldThread extends Thread {
         public void run() {
-            /* allow class init to start */
-            Main.sleep(200);
+            /* allow SlowInit's <clinit> to start */
+            Main.sleep(1000);
 
             /* collect fields; should delay until class init completes */
             int field0, field1, field2, field3;
@@ -87,7 +94,7 @@ public class Main {
             field3 = SlowInit.FIELD3.getValue();
 
             /* let MethodThread print first */
-            Main.sleep(400);
+            Main.sleep(5000);
             System.out.println("Fields (child thread): " +
                 field0 + field1 + field2 + field3);
         }
@@ -95,8 +102,8 @@ public class Main {
 
     static class MethodThread extends Thread {
         public void run() {
-            /* allow class init to start */
-            Main.sleep(200);
+            /* allow SlowInit's <clinit> to start */
+            Main.sleep(1000);
 
             /* use a method that shouldn't be accessible yet */
             SlowInit.printMsg("MethodThread message");
