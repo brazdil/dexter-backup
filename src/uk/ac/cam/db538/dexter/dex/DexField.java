@@ -96,6 +96,8 @@ public class DexField {
   }
 
   public FieldAnnotation assembleAnnotations(DexFile outFile, DexAssemblingCache cache) {
+	if (annotations.size() == 0)
+		return null;
     val annoList = new ArrayList<AnnotationItem>(annotations.size());
     for (val anno : annotations)
       annoList.add(anno.writeToFile(outFile, cache));
