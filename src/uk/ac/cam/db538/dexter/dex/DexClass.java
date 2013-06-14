@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -25,8 +26,10 @@ import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.ClassDefItem.StaticFieldInitializer;
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.EncodedArrayItem;
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.TypeListItem;
+import org.jf.dexlib.EncodedValue.EncodedValue;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
@@ -44,7 +47,8 @@ public class DexClass {
   protected final Set<DexField> fields;
   protected final Set<DexMethod> methods;
   @Getter private final String sourceFile;
-
+  private final Map<DexField, EncodedValue> staticInitializer;
+  
   public DexClass(Dex parent, DexClassType type, DexClassType superType,
                   Set<AccessFlags> accessFlags, Set<DexField> fields,
                   Set<DexClassType> interfaces,
@@ -56,7 +60,8 @@ public class DexClass {
     this.fields = (fields == null) ? new HashSet<DexField>() : fields;
     this.methods = new HashSet<DexMethod>();
     this.sourceFile = sourceFile;
-
+    this.staticInitializer = new HashMap<DexField, EncodedValue>();
+    
     this.type.setDefinedInternally(isInternal);
     this.parentFile.getClassHierarchy().addMember(
       this.type,
@@ -106,8 +111,20 @@ public class DexClass {
 
     val clsData = clsInfo.getClassData();
     if (clsData != null) {
-      for (val staticFieldInfo : clsData.getStaticFields())
-        fields.add(new DexField(this, staticFieldInfo, findFieldAnnotation(staticFieldInfo, fieldAnnotations)));
+      EncodedArrayItem initializers = clsInfo.getStaticFieldInitializers();
+      EncodedValue[] initValues;
+      if (initializers != null) {
+      	  initValues = initializers.getEncodedArray().values;
+      } else {
+  		  initValues = new EncodedValue[0];
+      }
+      
+      for (val staticFieldInfo : clsData.getStaticFields()) {
+    	DexField staticField = new DexField(this, staticFieldInfo, findFieldAnnotation(staticFieldInfo, fieldAnnotations));
+        fields.add(staticField);
+        if (staticInitializer.size() < initValues.length)
+          staticInitializer.put(staticField, initValues[staticInitializer.size()]);
+      }
       for (val instanceFieldInfo : clsData.getInstanceFields())
         fields.add(new DexField(this, instanceFieldInfo, findFieldAnnotation(instanceFieldInfo, fieldAnnotations)));
 
@@ -122,6 +139,7 @@ public class DexClass {
           methods.add(new DexVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations),
         		  findParameterAnnotation(virtualMethodInfo, paramAnnotations), isInternal));
       }
+      
     }
   }
 
@@ -273,11 +291,18 @@ public class DexClass {
     val asmInstanceFields = new LinkedList<EncodedField>();
     val asmDirectMethods = new LinkedList<EncodedMethod>();
     val asmVirtualMethods = new LinkedList<EncodedMethod>();
+    val staticFieldInitializers = new LinkedList<StaticFieldInitializer>();
 
     for (val field : fields)
-      if (field.isStatic())
-        asmStaticFields.add(field.writeToFile(outFile, cache));
-      else
+      if (field.isStatic()) {
+    	EncodedField outField = field.writeToFile(outFile, cache);  
+        asmStaticFields.add(outField);
+        
+    	EncodedValue value = null;
+    	if (staticInitializer.containsKey(field))
+    		value = DexEncodedValue.cloneEncodedValue(staticInitializer.get(field), cache);
+		staticFieldInitializers.add(new StaticFieldInitializer(value, outField));
+      } else
         asmInstanceFields.add(field.writeToFile(outFile, cache));
 
     for (val method : methods) {
@@ -294,8 +319,7 @@ public class DexClass {
                       asmDirectMethods,
                       asmVirtualMethods);
 
-    val staticFieldInitializers = new LinkedList<StaticFieldInitializer>();
-
+    
     ClassDefItem.internClassDefItem(
       outFile, asmClassType, asmAccessFlags, asmSuperType,
       asmInterfaces, asmSourceFile, asmAnnotations,
