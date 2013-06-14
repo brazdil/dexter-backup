@@ -267,25 +267,42 @@ public class DexClass {
       asmClassAnnotations.add(anno.writeToFile(outFile, cache));
 
     val asmMethodAnnotations = new ArrayList<MethodAnnotation>(methods.size());
-    for (val method : methods)
-      asmMethodAnnotations.add(method.assembleAnnotations(outFile, cache));
+    for (val method : methods) {
+      val methodAnno = method.assembleAnnotations(outFile, cache);
+      if (methodAnno != null)
+          asmMethodAnnotations.add(methodAnno);
+    }
 
     val asmFieldAnnotations = new ArrayList<FieldAnnotation>(fields.size());
-    for (val field : fields)
-      asmFieldAnnotations.add(field.assembleAnnotations(outFile, cache));
+    for (val field : fields) {
+        val fieldAnno = field.assembleAnnotations(outFile, cache);
+        if (fieldAnno != null)
+            asmFieldAnnotations.add(fieldAnno);
+    }
 
     val asmParamAnnotations = new ArrayList<ParameterAnnotation>(methods.size());
-    for (val method : methods)
-    	asmParamAnnotations.add(method.assembleParameterAnnotations(outFile, cache));
+    for (val method : methods) {
+        val paramAnno = method.assembleParameterAnnotations(outFile, cache);
+        if (paramAnno != null)
+            asmParamAnnotations.add(paramAnno);
+    }
 
-    val asmAnnotations = AnnotationDirectoryItem.internAnnotationDirectoryItem(
-                           outFile,
-                           AnnotationSetItem.internAnnotationSetItem(
-                             outFile,
-                             asmClassAnnotations),
-                           asmFieldAnnotations,
-                           asmMethodAnnotations,
-                           asmParamAnnotations);
+    AnnotationSetItem asmClassAnnotationSet = null;
+    if (asmClassAnnotations.size() > 0)
+        asmClassAnnotationSet = AnnotationSetItem.internAnnotationSetItem(
+                                    outFile,
+                                    asmClassAnnotations);
+    
+    AnnotationDirectoryItem asmAnnotations = null;
+    if (asmClassAnnotationSet!= null || asmFieldAnnotations.size() != 0 || 
+            asmMethodAnnotations.size() != 0 || asmParamAnnotations.size() != 0) {
+        asmAnnotations = AnnotationDirectoryItem.internAnnotationDirectoryItem(
+                                                   outFile,
+                                                   asmClassAnnotationSet,
+                                                   asmFieldAnnotations,
+                                                   asmMethodAnnotations,
+                                                   asmParamAnnotations);
+    }
 
     val asmStaticFields = new LinkedList<EncodedField>();
     val asmInstanceFields = new LinkedList<EncodedField>();

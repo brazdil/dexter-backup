@@ -145,6 +145,8 @@ public abstract class DexMethod {
 	  
   }
   public MethodAnnotation assembleAnnotations(DexFile outFile, DexAssemblingCache cache) {
+	    if (annotations.size() == 0)
+		    return null;
 	    val annoSet = assembleAnnotationSetItem(outFile, cache, annotations);
 	    val methodAnno = new MethodAnnotation(cache.getMethod(parentClass.getType(), prototype, name), annoSet);
 
@@ -152,6 +154,8 @@ public abstract class DexMethod {
 	  }
 
   public ParameterAnnotation assembleParameterAnnotations(DexFile outFile, DexAssemblingCache cache) {
+	    if (paramAnnotations.size() == 0)
+	    	return null;
 	    List<AnnotationSetItem> annoList = new ArrayList<AnnotationSetItem>();
 		for (val anno : paramAnnotations) {
 	      annoList.add(assembleAnnotationSetItem(outFile, cache, anno));
