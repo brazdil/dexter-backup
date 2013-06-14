@@ -22,7 +22,7 @@ JAVA_FILES := $(shell find . -name '*.java')
 CLASS_FILES := $(JAVA_FILES:.java=.class)
 
 diff: test.out test.apk_new.out
-	-@diff --side-by-side -r $^ | grep -v '^ *\.line' | grep -v '^ *\.prologue'
+	-@diff --side-by-side -r $^ | grep -v '^ *\.line' | grep -v '^ *\.prologue'| grep -v '^ *\.parameter'
 
 test.apk_new.apk : test.apk
 	$(DEXTER) $<
@@ -43,9 +43,12 @@ classes.dex: $(CLASS_FILES)
 	rm -rf $@
 	$(APKTOOL) d $< $@/
 	
-clean:
-	@rm -rf *.apk classes.dex *.out
+distclean: clean
 	@find . -name '*.class' -exec rm {} \;
+	@rm -rf *.apk classes.dex *.out
+
+clean:
+	@rm -rf test.apk_new.apk
 
 ## Unit testing.
 run: test.apk_new.apk
