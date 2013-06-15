@@ -1,7 +1,7 @@
 TOP := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(TOP)/path_config
 
-JAVAC_FLAGS := -source 1.6 -target 1.6
+JAVAC_FLAGS := -source 1.5 -target 1.5
 CWD := $(shell cygpath -a -m .)
 PROJECET_ROOT := $(shell cygpath -a -m $(TOP)/../)
 DEXTER := $(JAVA) -ea -classpath '$(PROJECET_ROOT)/bin/;$(PROJECET_ROOT)/lib/*' uk.ac.cam.db538.dexter.MainConsole $(PROJECET_ROOT)/framework-2.3-lite
@@ -43,7 +43,7 @@ classes.dex: $(CLASS_FILES)
 	if [ -e post_build.sh ] ; then ./post_build.sh ; fi
 	## This is for AOSP tests, where source in src2/ need to be substituted in after javac
 	cd ../src2/ && $(JAVAC) $(JAVAC_FLAGS) -d ../src/ `find . -name "*.java"` || true
-	$(DX) --dex $(DXFLAGS) --output=$(CWD)\\$@ $(CWD)
+	$(DX) --dex $(DXFLAGS) --output=$(CWD)/$@ $(CWD)
 	
 %.class: %.java
 	$(JAVAC) $(JAVAC_FLAGS) $<
