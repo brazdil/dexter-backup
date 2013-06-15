@@ -78,5 +78,9 @@ debug: test.apk test.out
 collect: test.apk
 	@cp $< $(TOP)/tests/$(TESTNAME).apk
 
+build: test.apk_new.apk
+
 dump: classes.dex
 	$(DX) --dex --verbose-dump  $(CWD)/$<
+	
+	
