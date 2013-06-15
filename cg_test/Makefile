@@ -1,11 +1,11 @@
 TOP := $(dir $(lastword $(MAKEFILE_LIST)))
 include $(TOP)/path_config
 
-JAVAC_FLAGS = -source 1.4 -target 1.4
+JAVAC_FLAGS := -source 1.6 -target 1.6
 CWD := $(shell cygpath -a -m .)
 PROJECET_ROOT := $(shell cygpath -a -m $(TOP)/../)
 DEXTER := $(JAVA) -ea -classpath '$(PROJECET_ROOT)/bin/;$(PROJECET_ROOT)/lib/*' uk.ac.cam.db538.dexter.MainConsole $(PROJECET_ROOT)/framework-2.3-lite
-DXFLAGS := --no-optimize
+#DXFLAGS := --no-optimize
 
 ## This is for home-made tests
 TESTNAME := $(shell basename $(CWD))
@@ -17,6 +17,14 @@ ifeq ($(TESTNAME),src)
   MAINCLASS_NAME := Main
   TESTRESULT := ../expected.txt
 endif 
+
+ifneq ($(wildcard override_javac_flags),) 
+  JAVAC_FLAGS := $(shell cat override_javac_flags)
+endif
+
+ifneq ($(wildcard override_dx_flags),) 
+  DXFLAGS := $(shell cat override_dx_flags)
+endif
 
 JAVA_FILES := $(shell find . -name '*.java')
 CLASS_FILES := $(JAVA_FILES:.java=.class)
