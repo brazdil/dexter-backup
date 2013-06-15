@@ -14,7 +14,12 @@ import java.util.List;
 import lombok.Getter;
 import lombok.val;
 
+import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Opcode;
+import org.jf.dexlib.Code.Format.Instruction21c;
+import org.jf.dexlib.Code.Format.Instruction31c;
 import org.jf.dexlib.Util.AccessFlags;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
@@ -277,6 +282,14 @@ public class Dex {
     for (val cls : classes)
         for(val mtd : cls.methods)
     
+    // Apply jumbo-instruction fix requires ReferencedItem being 
+    // placed first, after which the code needs to be placed again
+    // because jumbo instruction is wider.
+    // The second pass shoudn't change ReferencedItem's placement 
+    // (because they are ordered deterministically by its content)
+    // otherwise we'll be in trouble.
+    outFile.place();
+    fixInstructions(outFile);
     outFile.place();
     outFile.writeTo(out);
 
@@ -307,4 +320,11 @@ public class Dex {
 	  for (val entry : count.entrySet())
 		  System.out.println(entry.getKey().getSimpleName() + "," + entry.getValue().toString());
   }
+  
+  private void fixInstructions(DexFile outFile) {
+	  for (CodeItem codeItem : outFile.CodeItemsSection.getItems()) {
+		  codeItem.fixInstructions(true, true);
+	  }
+  }
+
 }

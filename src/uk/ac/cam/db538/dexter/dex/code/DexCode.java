@@ -1308,7 +1308,7 @@ public class DexCode {
       return new DexInstruction_ConstWide(this, insn, parsingState);
 
     case CONST_STRING:
-//    case CONST_STRING_JUMBO:
+    case CONST_STRING_JUMBO:
       return new DexInstruction_ConstString(this, insn, parsingState);
 
     case CONST_CLASS:

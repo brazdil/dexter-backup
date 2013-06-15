@@ -12,6 +12,7 @@ import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
+import org.jf.dexlib.Code.Format.Instruction31c;
 
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -45,11 +46,11 @@ public class DexInstruction_ConstString extends DexInstruction {
       regTo = parsingState.getRegister(insnConstString.getRegisterA());
       stringConstant = ((StringIdItem) insnConstString.getReferencedItem()).getStringValue();
 
-//    } else if (insn instanceof Instruction31c && insn.opcode == Opcode.CONST_STRING_JUMBO) {
-//
-//      val insnConstStringJumbo = (Instruction31c) insn;
-//      regTo = parsingState.getRegister(insnConstStringJumbo.getRegisterA());
-//      stringConstant = ((StringIdItem) insnConstStringJumbo.getReferencedItem()).getStringValue();
+    } else if (insn instanceof Instruction31c && insn.opcode == Opcode.CONST_STRING_JUMBO) {
+
+      val insnConstStringJumbo = (Instruction31c) insn;
+      regTo = parsingState.getRegister(insnConstStringJumbo.getRegisterA());
+      stringConstant = ((StringIdItem) insnConstStringJumbo.getReferencedItem()).getStringValue();
 
     } else
       throw FORMAT_EXCEPTION;
