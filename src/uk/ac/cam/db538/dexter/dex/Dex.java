@@ -279,9 +279,6 @@ public class Dex {
     for (val cls : classes)
       cls.writeToFile(outFile, asmCache);
 
-    for (val cls : classes)
-        for(val mtd : cls.methods)
-    
     // Apply jumbo-instruction fix requires ReferencedItem being 
     // placed first, after which the code needs to be placed again
     // because jumbo instruction is wider.
