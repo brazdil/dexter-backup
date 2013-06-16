@@ -211,7 +211,7 @@ public class DexCodeGeneration {
 		List<Instruction> instructions = null;
 		if (tmpInstructions != null) {
 			instructions = new ArrayList<Instruction>();
-			for(Instruction inst : translatedCode.getInstructions()) {
+			for(Instruction inst : tmpInstructions) {
 				if (inst instanceof Instruction20bc) {
 					Instruction20bc i = (Instruction20bc)inst;
 					inst = new Instruction20bc(i.opcode, i.getValidationErrorType(), internReferencedItem(dexFile, i.getReferencedItem()));
