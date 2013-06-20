@@ -60,6 +60,7 @@ public class TranslationTest {
 	@Test
 	public void test() throws IOException{
 	    val APK = new Apk(file, frameworkDir);
+	    APK.getDexFile().instrument(false);
 	    APK.getDexFile().writeToFile();
 	}
 	
