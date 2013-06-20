@@ -5,6 +5,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 
 import lombok.val;
 
@@ -48,6 +50,15 @@ public class TranslationTest {
 		})) {
 			tests.add(new Object[] {new File(testsDir.getAbsolutePath(), file ), file});
 		}
+		Collections.sort(tests, new Comparator<Object[]>() {
+
+			@Override
+			public int compare(Object[] arg0, Object[] arg1) {
+				File f0 = (File)arg0[0];
+				File f1 = (File)arg1[0];
+				return f0.getName().compareTo(f1.getName());
+			}
+		});
 		return tests;
 	}
 	
