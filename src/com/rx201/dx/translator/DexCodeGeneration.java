@@ -143,6 +143,8 @@ public class DexCodeGeneration {
 		outWords = method.getCode().getOutWords();
 		isStatic = method.isStatic();
 		
+        DexRegisterHelper.reset(method.getRegisterCount());
+        
 		stripMoveParameters();
 	    this.analyzer = new DexCodeAnalyzer(method);
 	    this.analyzer.analyze();
@@ -311,7 +313,7 @@ public class DexCodeGeneration {
 			HashMap<AnalyzedDexInstruction, DexConvertedResult> translatedBasicBlocksInfo) {
 		
         DexInstructionTranslator translator = new DexInstructionTranslator(analyzer);
-
+        
         for(int bi=0; bi< basicBlocks.size(); bi++) 
     		translatedBasicBlocks.put(basicBlocks.get(bi).get(0), new ArrayList<Insn>());
         

@@ -37,7 +37,8 @@ public abstract class DexMethodWithCode extends DexMethod {
 
   @Getter protected DexCode code;
   @Getter private final boolean direct;
-
+  @Getter private int registerCount;
+  
   private final NoDuplicatesList<DexRegister> parameterRegisters;
   private final Map<DexRegister, DexRegister> parameterRegistersMappings;
 
@@ -64,7 +65,8 @@ public abstract class DexMethodWithCode extends DexMethod {
 
     if (parseInstructions && methodInfo.codeItem != null) {
       this.code = new DexCode(methodInfo.codeItem, this, parent.getParentFile().getParsingCache());
-
+      this.registerCount = methodInfo.codeItem.getRegisterCount();
+      
       val prototype = this.getPrototype();
       val isStatic = this.isStatic();
       val clazz = this.getParentClass();
