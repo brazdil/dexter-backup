@@ -70,19 +70,19 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_FilledNewArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalClassAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalMethodAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetMethodCaller;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetQueryTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetServiceTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintIntegerConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintString;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.DexPseudoinstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_FilledNewArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalClassAnnotation;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalMethodAnnotation;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetMethodCaller;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetQueryTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetServiceTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintIntegerConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintString;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
@@ -876,67 +876,67 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_FilledNewArray dexPseudoinstruction_FilledNewArray) {
+	public void visit(DexMacro_FilledNewArray DexMacro_FilledNewArray) {
 		assert false;
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_GetInternalClassAnnotation dexPseudoinstruction_GetInternalClassAnnotation) {
+	public void visit(DexMacro_GetInternalClassAnnotation DexMacro_GetInternalClassAnnotation) {
 		assert false;
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_GetInternalMethodAnnotation dexPseudoinstruction_GetInternalMethodAnnotation) {
+	public void visit(DexMacro_GetInternalMethodAnnotation DexMacro_GetInternalMethodAnnotation) {
 		assert false;
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_GetMethodCaller dexPseudoinstruction_GetMethodCaller) {
+	public void visit(DexMacro_GetMethodCaller DexMacro_GetMethodCaller) {
 		assert false;
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_GetObjectTaint dexPseudoinstruction_GetObjectTaint) {
+	public void visit(DexMacro_GetObjectTaint DexMacro_GetObjectTaint) {
 		assert false;
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_GetQueryTaint dexPseudoinstruction_GetQueryTaint) {
+	public void visit(DexMacro_GetQueryTaint DexMacro_GetQueryTaint) {
 		assert false;
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_GetServiceTaint dexPseudoinstruction_GetServiceTaint) {
+	public void visit(DexMacro_GetServiceTaint DexMacro_GetServiceTaint) {
 		assert false;
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_PrintInteger dexPseudoinstruction_PrintInteger) {
+	public void visit(DexMacro_PrintInteger DexMacro_PrintInteger) {
 		assert false;
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_PrintIntegerConst dexPseudoinstruction_PrintIntegerConst) {
+	public void visit(DexMacro_PrintIntegerConst DexMacro_PrintIntegerConst) {
 		assert false;
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_PrintString dexPseudoinstruction_PrintString) {
+	public void visit(DexMacro_PrintString DexMacro_PrintString) {
 		assert false;
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_PrintStringConst dexPseudoinstruction_PrintStringConst) {
+	public void visit(DexMacro_PrintStringConst DexMacro_PrintStringConst) {
 		assert false;
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_SetObjectTaint dexPseudoinstruction_SetObjectTaint) {
+	public void visit(DexMacro_SetObjectTaint DexMacro_SetObjectTaint) {
 		assert false;
 	}
 
 	@Override
-	public void visit(DexPseudoinstruction_Invoke dexPseudoinstruction_Invoke) {
+	public void visit(DexPseudoinstruction_Invoke DexMacro_Invoke) {
 		assert false;
 	}
 

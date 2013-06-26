@@ -120,19 +120,19 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_FilledNewArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalClassAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalMethodAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetMethodCaller;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetQueryTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetServiceTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintIntegerConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintString;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.DexPseudoinstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_FilledNewArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalClassAnnotation;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalMethodAnnotation;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetMethodCaller;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetQueryTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetServiceTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintIntegerConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintString;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -393,9 +393,9 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		doThrowingSuccessors(catchers);
 	}
 	
-	// instructions like INSTANCE_OF, ARRAY_LENGTH needs a pseudo move-result Insn, which (I guess) only
+	// instructions like INSTANCE_OF, ARRAY_LENGTH needs a macro move-result Insn, which (I guess) only
 	// helps with flow analysis and does not contribute to the actual assembled code.
-	private void doPseudoMoveResult(DexRegister to) {
+	private void domacroMoveResult(DexRegister to) {
 		RegisterSpec dst = getPostRegSpec(to);
 		result.addAuxInstruction(new PlainInsn(Rops.opMoveResultPseudo(dst), SourcePosition.NO_INFO, dst, RegisterSpecList.EMPTY));
 	}
@@ -478,7 +478,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 
 	private void doMoveResult(DexRegister to) {
-		// opMoveResultPseudo if afterNonInvokeThrowingInsn, or FilledNewArray
+		// opMoveResultmacro if afterNonInvokeThrowingInsn, or FilledNewArray
 		// Skip TryBlockEnd and other auxiliary instructions in between.
 		AnalyzedDexInstruction prev = curInst;
 		do {
@@ -604,7 +604,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	public void visit(DexInstruction_ConstString instruction) {
 		// ConstString can throw.
 		doThrowingCstInsn(Rops.CONST_OBJECT, makeCstString(instruction.getStringConstant()));
-		doPseudoMoveResult(instruction.getRegTo());
+		domacroMoveResult(instruction.getRegTo());
 	}
 
 
@@ -612,7 +612,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	public void visit(DexInstruction_ConstClass instruction) {
 		// ConstClass can throw.
 		doThrowingCstInsn(Rops.CONST_OBJECT, makeCstType(instruction.getValue()));
-		doPseudoMoveResult(instruction.getRegTo());
+		domacroMoveResult(instruction.getRegTo());
 	}
 
 
@@ -625,28 +625,28 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	@Override
 	public void visit(DexInstruction_CheckCast instruction) {
 		doThrowingCstInsn(Rops.CHECK_CAST, makeCstType(instruction.getValue()), instruction.getRegObject());
-		doPseudoMoveResult(instruction.getRegObject()); // Check-cast changes the source register's type
+		domacroMoveResult(instruction.getRegObject()); // Check-cast changes the source register's type
 	}
 
 
 	@Override
 	public void visit(DexInstruction_InstanceOf instruction) {
 		doThrowingCstInsn(Rops.INSTANCE_OF, makeCstType(instruction.getValue()), instruction.getRegObject());
-		doPseudoMoveResult(instruction.getRegTo());
+		domacroMoveResult(instruction.getRegTo());
 	}
 
 
 	@Override
 	public void visit(DexInstruction_ArrayLength instruction) {
 		doThrowingInsn(Rops.ARRAY_LENGTH, instruction.getRegArray());
-		doPseudoMoveResult(instruction.getRegTo());
+		domacroMoveResult(instruction.getRegTo());
 	}
 
 
 	@Override
 	public void visit(DexInstruction_NewInstance instruction) {
 		doThrowingCstInsn(Rops.NEW_INSTANCE, makeCstType(instruction.getValue()));
-		doPseudoMoveResult(instruction.getRegTo());
+		domacroMoveResult(instruction.getRegTo());
 	}
 
 
@@ -655,7 +655,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		DexArrayType arrayType = instruction.getValue();
 		doThrowingCstInsn(Rops.opNewArray(Type.intern(arrayType.getDescriptor())), 
 				makeCstType(arrayType), instruction.getRegSize());
-		doPseudoMoveResult(instruction.getRegTo());
+		domacroMoveResult(instruction.getRegTo());
 	}
 
 
@@ -943,7 +943,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	private void doAget(DexRegister to, DexRegister array, DexRegister index) {
 		doThrowingInsn(Rops.opAget(getPostRegSpec(to)), array, index);
-		doPseudoMoveResult(to);
+		domacroMoveResult(to);
 	}
 	@Override
 	public void visit(DexInstruction_ArrayGet instruction) {
@@ -975,7 +975,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		RegisterSpec dst = getPostRegSpec(to);
 		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
 		doThrowingCstInsn(Rops.opGetField(dst), fieldRef, object);
-		doPseudoMoveResult(to);
+		domacroMoveResult(to);
 	}
 	
 	@Override
@@ -1015,7 +1015,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		RegisterSpec dst = getPostRegSpec(to);
 		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
 		doThrowingCstInsn(Rops.opGetStatic(dst), fieldRef);
-		doPseudoMoveResult(to);
+		domacroMoveResult(to);
 	}
 	@Override
 	public void visit(DexInstruction_StaticGet instruction) {
@@ -1226,7 +1226,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			doPlainInsn(opcode, getPostRegSpec(instruction.getRegTarget()), instruction.getRegSourceA(), instruction.getRegSourceB());
 		} else { // Integer division/reminder will throw exception
 			doThrowingInsn(opcode, instruction.getRegSourceA(), instruction.getRegSourceB());
-			doPseudoMoveResult(instruction.getRegTarget());
+			domacroMoveResult(instruction.getRegTarget());
 		}
 	}
 
@@ -1276,7 +1276,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			
 		} else { // Integer division/reminder will throw exception
 			doThrowingCstInsn(opcode, makeCstInteger((int)instruction.getLiteral()), instruction.getRegSource());
-			doPseudoMoveResult(instruction.getRegTarget());
+			domacroMoveResult(instruction.getRegTarget());
 		}
 	}
 
@@ -1339,7 +1339,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			doPlainInsn(opcode, getPostRegSpec(instruction.getRegTarget1()), instruction.getRegSourceA1(), instruction.getRegSourceB1());
 		} else { // Long division/reminder will throw exception
 			doThrowingInsn(opcode, instruction.getRegSourceA1(), instruction.getRegSourceB1());
-			doPseudoMoveResult(instruction.getRegTarget1());
+			domacroMoveResult(instruction.getRegTarget1());
 		}		
 	}
 
@@ -1352,92 +1352,92 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 
 	@Override
-	public void visit(DexPseudoinstruction_FilledNewArray instruction) {
-		// Pseudo instruction should have already been unwrapped.
+	public void visit(DexMacro_FilledNewArray instruction) {
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 
 
 	@Override
-	public void visit(DexPseudoinstruction_GetInternalClassAnnotation instruction) {
-		// Pseudo instruction should have already been unwrapped.
+	public void visit(DexMacro_GetInternalClassAnnotation instruction) {
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 
 
 	@Override
-	public void visit(DexPseudoinstruction_GetInternalMethodAnnotation instruction) {
-		// Pseudo instruction should have already been unwrapped.
+	public void visit(DexMacro_GetInternalMethodAnnotation instruction) {
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 
 
 	@Override
-	public void visit(DexPseudoinstruction_GetMethodCaller instruction) {
-		// Pseudo instruction should have already been unwrapped.
+	public void visit(DexMacro_GetMethodCaller instruction) {
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 
 
 	@Override
-	public void visit(DexPseudoinstruction_GetObjectTaint instruction) {
-		// Pseudo instruction should have already been unwrapped.
+	public void visit(DexMacro_GetObjectTaint instruction) {
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 
 
 	@Override
-	public void visit(DexPseudoinstruction_GetQueryTaint instruction) {
-		// Pseudo instruction should have already been unwrapped.
+	public void visit(DexMacro_GetQueryTaint instruction) {
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 
 
 	@Override
-	public void visit(DexPseudoinstruction_GetServiceTaint instruction) {
-		// Pseudo instruction should have already been unwrapped.
+	public void visit(DexMacro_GetServiceTaint instruction) {
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 
 
 	@Override
-	public void visit(DexPseudoinstruction_PrintInteger instruction) {
-		// Pseudo instruction should have already been unwrapped.
+	public void visit(DexMacro_PrintInteger instruction) {
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 
 
 	@Override
-	public void visit(DexPseudoinstruction_PrintIntegerConst instruction) {
-		// Pseudo instruction should have already been unwrapped.
+	public void visit(DexMacro_PrintIntegerConst instruction) {
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 
 
 	@Override
-	public void visit(DexPseudoinstruction_PrintString instruction) {
-		// Pseudo instruction should have already been unwrapped.
+	public void visit(DexMacro_PrintString instruction) {
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 
 
 	@Override
-	public void visit(DexPseudoinstruction_PrintStringConst instruction) {
-		// Pseudo instruction should have already been unwrapped.
+	public void visit(DexMacro_PrintStringConst instruction) {
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 
 
 	@Override
-	public void visit(DexPseudoinstruction_SetObjectTaint instruction) {
-		// Pseudo instruction should have already been unwrapped.
+	public void visit(DexMacro_SetObjectTaint instruction) {
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 
 
 	@Override
 	public void visit(DexPseudoinstruction_Invoke instruction) {
-		// Pseudo instruction should have already been unwrapped.
+		// macro instruction should have already been unwrapped.
 		assert false;
 	}
 }
