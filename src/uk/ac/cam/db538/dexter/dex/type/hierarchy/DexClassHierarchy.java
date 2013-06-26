@@ -327,7 +327,10 @@ public class DexClassHierarchy {
     while(!queue.isEmpty()) {
       val clz = queue.removeFirst();
       set.add(clz);
-      queue.addAll(classes.get(clz).getChildren());
+      for (val child : classes.get(clz).getChildren()) {
+          if ( child != rootClass)
+              queue.add(child);
+      }
     }
 
     return set;
