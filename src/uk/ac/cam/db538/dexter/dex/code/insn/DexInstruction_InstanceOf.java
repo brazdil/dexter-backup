@@ -19,7 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -107,7 +107,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
     val code = getMethodCode();
     code.replace(this,
                  new DexCodeElement[] {
-                   new DexPseudoinstruction_GetObjectTaint(code, state.getTaintRegister(regTo), regObject),
+                   new DexMacro_GetObjectTaint(code, state.getTaintRegister(regTo), regObject),
                    this
                  });
   }

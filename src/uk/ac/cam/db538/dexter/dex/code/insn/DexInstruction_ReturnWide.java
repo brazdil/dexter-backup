@@ -20,7 +20,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
@@ -71,7 +71,7 @@ public class DexInstruction_ReturnWide extends DexInstruction {
 
     val regResSemaphore = new DexRegister();
 
-    val insnPrintDebug = new DexPseudoinstruction_PrintStringConst(
+    val insnPrintDebug = new DexMacro_PrintStringConst(
       code,
       "$# exiting method " +
       getParentClass().getType().getPrettyName() +
