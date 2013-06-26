@@ -48,7 +48,12 @@ public class TypeUnification {
 		if ( (t1.category == Category.Integer && t2.category == Category.Float) ||
 		        (t2.category == Category.Integer && t1.category == Category.Float))
 		    return RegisterType.getRegisterType(Category.Float, null);
-		
+		/*
+        if ( (t1.category == Category.Integer && t2.category == Category.Reference))
+            return t2;
+        if ( (t2.category == Category.Integer && t1.category == Category.Reference))
+            return t1;
+        */
 		if (t1.category == Category.UninitRef && t2.category == Category.UninitRef)
 			return RegisterType.getRegisterType(Category.UninitRef, 
 					getCommonSuperclass(parentFile, t1.type, t2.type));
@@ -57,7 +62,8 @@ public class TypeUnification {
 			return RegisterType.getRegisterType(Category.Reference, 
 					getCommonSuperclass(parentFile, t1.type, t2.type));
 		
-		return t1.merge(t2);
+		RegisterType result = t1.merge(t2);
+		return result;
 	}
 
 	

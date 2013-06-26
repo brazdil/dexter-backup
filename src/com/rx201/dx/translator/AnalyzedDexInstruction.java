@@ -62,7 +62,7 @@ public class AnalyzedDexInstruction {
 
 		private final DexParsingCache cache;
 
-	    private static final RegisterType unknown = RegisterType.getRegisterType(RegisterType.Category.Unknown, null);
+	    static final RegisterType unknown = RegisterType.getRegisterType(RegisterType.Category.Unknown, null);
 
 	    public final int instructionIndex;
 	    
@@ -123,6 +123,10 @@ public class AnalyzedDexInstruction {
 	    		preRegisterMap.put(reg, unknown);
 	    	
 	    	return preRegisterMap.get(reg);
+	    }
+	    
+	    RegisterType peekPreRegister(int reg) {
+	        return preRegisterMap.get(reg);
 	    }
 
 	    private RegisterType getPostRegister(int reg) {

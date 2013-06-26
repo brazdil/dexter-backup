@@ -14,6 +14,7 @@ import org.jf.dexlib.Code.Analysis.RegisterType.Category;
 
 import com.rx201.dx.translator.util.DexRegisterHelper;
 
+import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionVisitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
@@ -150,6 +151,8 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 		LinkedList<AnalyzedDexInstruction> queue = new LinkedList<AnalyzedDexInstruction>();
 		LinkedList<Integer> targetReg_queue = new LinkedList<Integer>();
 		
+		Dex parentFile = instruction.instruction.getParentFile();
+		
 		int regNum = DexRegisterHelper.normalize(reg);
 		for(AnalyzedDexInstruction successor : instruction.getSuccesors()) {
 			queue.add(successor);
@@ -173,27 +176,36 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 			
 			boolean deadEnd = false;
 			this.reset();
+            RegisterType typeInfo = null;
 			if (head.instruction != null) {
-				head.instruction.accept(this);
-				
-				RegisterType typeInfo = useSet.get(head_reg);
-				if (typeInfo != null) {
-					//TODO: UGLY HACK WARNING
-					/* This is valid, so deal with this special case here
-					 *     const/4 v8, 0x0
-					 *     const/16 v7, 0x20
-					 *     shl-long/2addr v5, v7
-					 *     
-					 * a.k.a merging Integer with LongLo/Hi should be allowed    
-					 */
-				    RegisterType newType = TypeUnification.permissiveMerge(head.instruction.getParentFile(), type, typeInfo);
-				    assert newType.category != Category.Conflicted;
-				    type = newType;
-				}
+
+			    head.instruction.accept(this);
+	            typeInfo = useSet.get(head_reg);
+
 				// Do not search further is this instruction overwrites the target register.
 				if (defSet.containsKey(head_reg))
 					deadEnd = true;
 			}
+			//A different control flow may provide additional type information.
+            if (typeInfo == null && head.getPredecessorCount() > 1) {
+                typeInfo = head.peekPreRegister(head_reg);
+                if (typeInfo != null && typeInfo.category == Category.Conflicted)
+                    typeInfo = null;
+            }
+            
+            if (typeInfo != null) {
+                //TODO: UGLY HACK WARNING
+                /* This is valid, so deal with this special case here
+                 *     const/4 v8, 0x0
+                 *     const/16 v7, 0x20
+                 *     shl-long/2addr v5, v7
+                 *     
+                 * a.k.a merging Integer with LongLo/Hi should be allowed    
+                 */
+                RegisterType newType = TypeUnification.permissiveMerge(parentFile, type, typeInfo);
+                if(newType.category != Category.Conflicted)
+                    type = newType;
+            }
 			
 			if (!deadEnd) {
 				for(AnalyzedDexInstruction successor : head.getSuccesors()) {

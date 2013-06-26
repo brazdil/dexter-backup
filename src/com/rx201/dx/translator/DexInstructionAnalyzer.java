@@ -222,25 +222,11 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		
 		type = typeAnalyzer.getPrecisePostRegisterType(dexInstruction_Const.getRegTo(), instruction, type);
 		
+        assert type.category != Category.Conflicted;
 		if (value == 0) {
-		    // Null type is only applicable to references
-		    // which is witnessed by the conflicted result
-	        if (type.category == Category.Conflicted )  
-	            type = RegisterType.getRegisterType(Category.Null, null);
-	        else if ( type.category == Category.Unknown )
+	        if ( type.category == Category.Unknown )
                 type = RegisterType.getRegisterType(Category.Null, null);
-		} else {
-		    assert type.category != Category.Conflicted;
 		}
-		    //typeAnalyzer.getPrecisePostRegisterType(dexInstruction_Const.getRegTo(), instruction, RegisterType.getRegisterTypeForLiteral(value));
-		//if (type.category == Category.Unknown) {
-			// If this were a NULL type, then getPrecisePostRegisterType should have found out.
-			// Hence this must be an integer/boolean
-			//if (value == 0)
-			//	type = RegisterType.getRegisterType(Category.Integer, null);
-			//else
-			//	type = RegisterType.getRegisterTypeForLiteral(value);
-		//}
 		
 		setDestinationRegisterType(instruction, type);
 //            analyzeConst(analyzedInstruction);
