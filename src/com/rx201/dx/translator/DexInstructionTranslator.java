@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.jf.dexlib.Code.Analysis.ClassPath;
 import org.jf.dexlib.Code.Analysis.ClassPath.ClassDef;
+import org.jf.dexlib.Code.Analysis.RegisterType.Category;
 import org.jf.dexlib.Code.Analysis.RegisterType;
 
 import lombok.Getter;
@@ -227,8 +228,9 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
             return Type.intern("S");
         case Char:
             return Type.intern("C");
+        case Null:
+            System.err.println("Warning: Ambiguous null value.");
         case Integer:
-        case Null: // <cinit> in assert test case 
             return Type.intern("I");
         case Float:
             return Type.intern("F");
@@ -537,6 +539,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	private void doConst(DexRegister to, long value) {
 		TypedConstant constant;
 		RegisterType type = curInst.getPostRegisterType(to);
+		
 		switch (type.category) {
 			case Boolean:
 			case One:
@@ -546,15 +549,15 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			case Short:
 			case PosShort:
 			case Integer:
-			case LongLo:
-			case LongHi:
+            case DoubleLo:
+            case DoubleHi:
+            case LongLo:
+            case LongHi:
+			case Null:
 				constant = CstInteger.make((int)value);
 				break;
 			case Float:
 				constant = CstFloat.make((int)value);
-				break;
-			case Null:
-				constant = CstInteger.make((int)value); //CstKnownNull.THE_ONE;
 				break;
 			case Reference:
 				if (value == 0) {
@@ -565,7 +568,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			default:
 				throw new RuntimeException("Unknown constant type.");
 		}
-		RegisterSpec dst = getPostRegSpec(to).withType(constant.getType());
+		RegisterSpec dst = RegisterSpec.make(DexRegisterHelper.normalize(to), constant.getType());
 		doPlainCstInsn(Rops.opConst(dst), dst, constant);
 	}
 	

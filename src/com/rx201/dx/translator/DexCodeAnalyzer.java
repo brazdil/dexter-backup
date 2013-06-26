@@ -267,6 +267,15 @@ public class DexCodeAnalyzer {
 
         } while (true);
         
+        for(AnalyzedDexInstruction instructionToAnalyze : instructions) {
+            if (instructionToAnalyze.instruction == null || (!(instructionToAnalyze.instruction instanceof DexInstruction_Const)))
+                continue;
+            DexInstruction_Const inst = (DexInstruction_Const)instructionToAnalyze.instruction;
+            if (instructionToAnalyze.getPostRegisterType(inst.getRegTo()).category == Category.Null) {
+                analyzeInstruction(instructionToAnalyze);
+            }
+        }
+        
         analyzerState = ANALYZED;
     }
 
