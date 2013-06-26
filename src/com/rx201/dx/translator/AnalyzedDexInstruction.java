@@ -161,7 +161,6 @@ public class AnalyzedDexInstruction {
 	        		oldRegisterType.category == Category.LongLo && registerType.category == Category.LongHi) {
 	        	mergedRegisterType = registerType;
 	        }
-	        
 	        if (mergedRegisterType == oldRegisterType) {
 	            return false;
 	        }
@@ -325,16 +324,6 @@ public class AnalyzedDexInstruction {
 	    	return getPreRegisterType(registerNumber);
 	    }
 	    
-	    public DexRegisterType getPostInstructionRegisterType(DexRegister dexRegister) {
-	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
-	        return DexRegisterTypeHelper.fromRegisterType(getPostRegister(registerNumber), cache);
-	    }
-
-	    public DexRegisterType getPreInstructionRegisterType(DexRegister dexRegister) {
-	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
-	        return DexRegisterTypeHelper.fromRegisterType(getPreRegister(registerNumber), cache);
-	    }
-
 	    public int getInstructionIndex() {
 	    	return instructionIndex;
 	    }
