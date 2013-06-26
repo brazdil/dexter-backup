@@ -246,10 +246,10 @@ public abstract class DexMethodWithCode extends DexMethod {
     if (code != null)
       code.markAllInstructionsOriginal();
   }
-  
+
   @Override
-  public void countInstructions(HashMap<Class, Integer> count) { 
-	    if (code != null)
-	        code.countInstructions(count);
+  public void countInstructions(HashMap<Class, Integer> count) {
+    if (code != null)
+      code.countInstructions(count);
   }
 }

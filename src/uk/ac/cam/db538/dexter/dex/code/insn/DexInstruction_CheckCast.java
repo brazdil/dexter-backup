@@ -19,8 +19,8 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -137,8 +137,8 @@ public class DexInstruction_CheckCast extends DexInstruction {
 
     val regException = new DexRegister();
     val regTaint = new DexRegister();
-    val getObjTaint = new DexPseudoinstruction_GetObjectTaint(code, regTaint, this.regObject);
-    val setExTaint = new DexPseudoinstruction_SetObjectTaint(code, regException, regTaint);
+    val getObjTaint = new DexMacro_GetObjectTaint(code, regTaint, this.regObject);
+    val setExTaint = new DexMacro_SetObjectTaint(code, regException, regTaint);
 
     code.replace(this, throwingInsn_GenerateSurroundingCatchBlock(
                    new DexCodeElement[] { this },

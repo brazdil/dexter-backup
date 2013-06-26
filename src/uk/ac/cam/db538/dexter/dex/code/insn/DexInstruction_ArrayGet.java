@@ -17,8 +17,8 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_ArrayGet extends DexInstruction {
@@ -137,7 +137,7 @@ public class DexInstruction_ArrayGet extends DexInstruction {
     if (opcode != Opcode_GetPut.Object) {
       code.replace(this,
                    new DexCodeElement[] {
-                     new DexPseudoinstruction_GetObjectTaint(code, regArrayTaint, regArray),
+                     new DexMacro_GetObjectTaint(code, regArrayTaint, regArray),
                      this,
                      new DexInstruction_BinaryOp(code, state.getTaintRegister(regTo), regArrayTaint, state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt)
                    });
@@ -145,10 +145,10 @@ public class DexInstruction_ArrayGet extends DexInstruction {
       val regTotalTaint = new DexRegister();
       code.replace(this,
                    new DexCodeElement[] {
-                     new DexPseudoinstruction_GetObjectTaint(code, regArrayTaint, regArray),
+                     new DexMacro_GetObjectTaint(code, regArrayTaint, regArray),
                      new DexInstruction_BinaryOp(code, regTotalTaint, regArrayTaint, state.getTaintRegister(regIndex), Opcode_BinaryOp.OrInt),
                      this,
-                     new DexPseudoinstruction_SetObjectTaint(code, regTo, regTotalTaint)
+                     new DexMacro_SetObjectTaint(code, regTo, regTotalTaint)
                    });
     }
   }

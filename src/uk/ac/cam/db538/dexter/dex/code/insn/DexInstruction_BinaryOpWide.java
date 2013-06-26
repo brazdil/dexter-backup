@@ -18,8 +18,8 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 
 public class DexInstruction_BinaryOpWide extends DexInstruction {
 
@@ -99,7 +99,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
       val regException = new DexRegister();
       val regExceptionTaint = new DexRegister();
       val insnCombineTaintForException = new DexInstruction_BinaryOp(code, regExceptionTaint, state.getTaintRegister(regSourceA1), state.getTaintRegister(regSourceB1), Opcode_BinaryOp.OrInt);
-      val insnAssignTaintToException = new DexPseudoinstruction_SetObjectTaint(code, regException, regExceptionTaint);
+      val insnAssignTaintToException = new DexMacro_SetObjectTaint(code, regException, regExceptionTaint);
 
       code.replace(this, throwingInsn_GenerateSurroundingCatchBlock(
                      new DexCodeElement[] { this, insnCombineTaintForResult },

@@ -96,11 +96,15 @@ public class MainConsole {
     
     writeToJar(APK, apkFile_new);
     
-    //val warnings = APK.getDexFile().instrument(false);
-    //for (val warning : warnings)
-    //  System.err.println("warning: " + warning.getMessage());
+/*
+    APK.getDexFile().countInstructions();
+    val warnings = APK.getDexFile().instrument(false);
+    for (val warning : warnings)
+      System.err.println("warning: " + warning.getMessage());
     // APK.getDexFile().transformSSA();
-    // APK.writeToFile(apkFile_new);
-    //APK.getDexFile().countInstructions();
+    APK.getDexFile().countInstructions();
+    APK.writeToFile(apkFile_new);
+    APK.getDexFile().countInstructions();
+*/
   }
 }
