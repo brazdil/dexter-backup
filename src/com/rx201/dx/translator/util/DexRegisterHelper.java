@@ -23,11 +23,11 @@ public class DexRegisterHelper {
 			return reg.getOriginalIndex();
 	}
 	
-	private static HashMap<Integer, Integer> temporartRegMap = new HashMap<Integer, Integer>();
+	private static HashMap<Integer, Integer> temporaryRegMap = new HashMap<Integer, Integer>();
 	private static int temporaryRegStart;
 	public static void reset(int temporaryRegStart) {
-	    temporartRegMap.clear();
-	    DexRegisterHelper.temporaryRegStart = temporaryRegStart;
+	    temporaryRegMap.clear();
+	    DexRegisterHelper.temporaryRegStart = temporaryRegStart * 2;
 	}
 	public static int normalize(DexRegister reg) {
 		// We were worried that DexParameterRegister may appear in the middle of the
@@ -43,10 +43,10 @@ public class DexRegisterHelper {
 		// code item, the reset(int) method needs to be called to let us know
 		// where the temporary register begins.
 		if (regId < 0) {
-		    if (!temporartRegMap.containsKey(regId)) {
-		        temporartRegMap.put(regId, temporaryRegStart++);
+		    if (!temporaryRegMap.containsKey(regId)) {
+		        temporaryRegMap.put(regId, temporaryRegStart++);
 		    }
-		    return temporartRegMap.get(regId);
+		    return temporaryRegMap.get(regId);
 		} else {
 		    return regId;
 		}
