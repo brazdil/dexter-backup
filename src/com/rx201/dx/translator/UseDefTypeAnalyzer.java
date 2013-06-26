@@ -143,7 +143,7 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 		moveSet.put(DexRegisterHelper.normalize(regFrom), DexRegisterHelper.normalize(regTo));
 	}
 	
-	public RegisterType getPrecisePostRegisterType(DexRegister reg, AnalyzedDexInstruction instruction) {
+	public RegisterType getPrecisePostRegisterType(DexRegister reg, AnalyzedDexInstruction instruction, RegisterType priorTypeInfo) {
 		// bfs for register type propagation
 		HashMap<AnalyzedDexInstruction, HashSet<Integer>> visited = new HashMap<AnalyzedDexInstruction, HashSet<Integer>>(); 
 		// These two linkedList are always paired together, maybe a better way is to have a separate class for them?
@@ -156,7 +156,11 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 			targetReg_queue.add(regNum);
 		}
 		
-		RegisterType type = RegisterType.getRegisterType(RegisterType.Category.Unknown, null);
+		RegisterType type;
+		if (priorTypeInfo != null)
+		    type = priorTypeInfo;
+		else
+		    type = RegisterType.getRegisterType(RegisterType.Category.Unknown, null);
 		
 		while(queue.size() > 0) {
 			AnalyzedDexInstruction head = queue.remove();
@@ -182,9 +186,9 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 					 *     
 					 * a.k.a merging Integer with LongLo/Hi should be allowed    
 					 */
-					
-					type = TypeUnification.permissiveMerge(head.instruction.getParentFile(), type, typeInfo);
-					assert type.category != Category.Conflicted;
+				    RegisterType newType = TypeUnification.permissiveMerge(head.instruction.getParentFile(), type, typeInfo);
+				    assert newType.category != Category.Conflicted;
+				    type = newType;
 				}
 				// Do not search further is this instruction overwrites the target register.
 				if (defSet.containsKey(head_reg))

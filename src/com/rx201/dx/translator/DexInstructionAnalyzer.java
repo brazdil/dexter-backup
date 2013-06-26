@@ -212,26 +212,42 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	@Override
 	public void visit(DexInstruction_Const dexInstruction_Const) {
 		long value = dexInstruction_Const.getValue();
-		// TODO: Need more detailed type information, because translator needs it to 
-		// instantiate the appropriate constant object.
 		RegisterType type;
-		type = typeAnalyzer.getPrecisePostRegisterType(dexInstruction_Const.getRegTo(), instruction);
-		if (type.category == Category.Unknown) {
+		
+		if (value == 0) {
+		    type = null;
+		} else {
+		    type = RegisterType.getRegisterType(Category.Integer, null);
+		}
+		
+		type = typeAnalyzer.getPrecisePostRegisterType(dexInstruction_Const.getRegTo(), instruction, type);
+		
+		if (value == 0) {
+		    // Null type is only applicable to references
+		    // which is witnessed by the conflicted result
+	        if (type.category == Category.Conflicted )  
+	            type = RegisterType.getRegisterType(Category.Null, null);
+	        else if ( type.category == Category.Unknown )
+                type = RegisterType.getRegisterType(Category.Null, null);
+		} else {
+		    assert type.category != Category.Conflicted;
+		}
+		    //typeAnalyzer.getPrecisePostRegisterType(dexInstruction_Const.getRegTo(), instruction, RegisterType.getRegisterTypeForLiteral(value));
+		//if (type.category == Category.Unknown) {
 			// If this were a NULL type, then getPrecisePostRegisterType should have found out.
 			// Hence this must be an integer/boolean
-			if (value == 0)
-				type = RegisterType.getRegisterType(Category.Integer, null);
-			else
-				type = RegisterType.getRegisterTypeForLiteral(value);
-			
-		}
+			//if (value == 0)
+			//	type = RegisterType.getRegisterType(Category.Integer, null);
+			//else
+			//	type = RegisterType.getRegisterTypeForLiteral(value);
+		//}
 		
 		setDestinationRegisterType(instruction, type);
 //            analyzeConst(analyzedInstruction);
 	}
 	@Override
 	public void visit(DexInstruction_ConstWide dexInstruction_ConstWide) {
-		RegisterType type = typeAnalyzer.getPrecisePostRegisterType(dexInstruction_ConstWide.getRegTo1(), instruction);
+		RegisterType type = typeAnalyzer.getPrecisePostRegisterType(dexInstruction_ConstWide.getRegTo1(), instruction, null);
 		if(type.category == Category.Unknown)
 			type = RegisterType.getRegisterType(Category.LongLo, null);
 		
@@ -381,7 +397,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 				category = RegisterType.Category.Char;
 				break;
 			case IntFloat:
-				if (typeAnalyzer.getPrecisePostRegisterType(inst.getRegTo(), instruction).category == Category.Float)
+				if (typeAnalyzer.getPrecisePostRegisterType(inst.getRegTo(), instruction, null).category == Category.Float)
 					category = Category.Float;
 				else
 					category = Category.Integer; // Assume it is integer if we cannot infer its type.

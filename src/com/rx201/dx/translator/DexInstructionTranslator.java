@@ -213,17 +213,52 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		
 		return result;
 	}
+	
+    private Type toType(RegisterType t) {
+        switch(t.category) {
+        case Boolean:
+        case One: // happened in translation stage of switch test case 
+            return Type.intern("Z");
+        case Byte:
+        case PosByte:
+            return Type.intern("B");
+        case Short:
+        case PosShort:
+            return Type.intern("S");
+        case Char:
+            return Type.intern("C");
+        case Integer:
+        case Null: // <cinit> in assert test case 
+            return Type.intern("I");
+        case Float:
+            return Type.intern("F");
+        case LongLo:
+        case LongHi:
+            return Type.intern("J");
+        case DoubleLo:
+        case DoubleHi:
+            return Type.intern("D");
 
-	private RegisterSpec toRegSpec(DexRegister reg, DexRegisterType type) {
-		return RegisterSpec.make(DexRegisterHelper.normalize(reg), Type.intern(type.getDescriptor()));
+        case UninitRef:
+        case UninitThis:
+        case Reference:
+            return Type.intern(t.type.getClassType());
+        
+        default:
+            throw new UnsupportedOperationException("Unknown register type");
+        }
+    }
+    
+	private RegisterSpec toRegSpec(DexRegister reg, RegisterType registerType) {
+		return RegisterSpec.make(DexRegisterHelper.normalize(reg), toType(registerType));
 	}
 
 	private RegisterSpec getPreRegSpec(DexRegister reg) {
-		return toRegSpec(reg, curInst.getPreInstructionRegisterType(reg));
+		return toRegSpec(reg, curInst.getPreRegisterType(reg));
 	}
 	
 	private RegisterSpec getPostRegSpec(DexRegister reg) {
-		return toRegSpec(reg, curInst.getPostInstructionRegisterType(reg));
+		return toRegSpec(reg, curInst.getPostRegisterType(reg));
 	}
 
 	private List<AnalyzedDexInstruction> getCatchers(Rop opcode) {
@@ -519,7 +554,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				constant = CstFloat.make((int)value);
 				break;
 			case Null:
-				constant = CstKnownNull.THE_ONE;
+				constant = CstInteger.make((int)value); //CstKnownNull.THE_ONE;
 				break;
 			case Reference:
 				if (value == 0) {

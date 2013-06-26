@@ -45,6 +45,10 @@ public class TypeUnification {
 				t1.category == Category.Integer) 
 			return t2;
 		
+		if ( (t1.category == Category.Integer && t2.category == Category.Float) ||
+		        (t2.category == Category.Integer && t1.category == Category.Float))
+		    return RegisterType.getRegisterType(Category.Float, null);
+		
 		if (t1.category == Category.UninitRef && t2.category == Category.UninitRef)
 			return RegisterType.getRegisterType(Category.UninitRef, 
 					getCommonSuperclass(parentFile, t1.type, t2.type));
