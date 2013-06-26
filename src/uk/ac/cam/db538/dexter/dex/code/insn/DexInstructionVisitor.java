@@ -1,18 +1,18 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_FilledNewArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalClassAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetInternalMethodAnnotation;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetMethodCaller;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetQueryTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_GetServiceTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintIntegerConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintString;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_PrintStringConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.DexPseudoinstruction_SetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.pseudo.invoke.DexPseudoinstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_FilledNewArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalClassAnnotation;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalMethodAnnotation;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetMethodCaller;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetQueryTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetServiceTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintIntegerConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintString;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
 
 public interface DexInstructionVisitor {
 
@@ -124,30 +124,30 @@ public interface DexInstructionVisitor {
 
 	void visit(DexInstruction_Unknown dexInstruction_Unknown);
 
-	void visit(DexPseudoinstruction_FilledNewArray dexPseudoinstruction_FilledNewArray);
+	void visit(DexMacro_FilledNewArray DexMacro_FilledNewArray);
 
-	void visit(DexPseudoinstruction_GetInternalClassAnnotation dexPseudoinstruction_GetInternalClassAnnotation);
+	void visit(DexMacro_GetInternalClassAnnotation DexMacro_GetInternalClassAnnotation);
 
-	void visit(DexPseudoinstruction_GetInternalMethodAnnotation dexPseudoinstruction_GetInternalMethodAnnotation);
+	void visit(DexMacro_GetInternalMethodAnnotation DexMacro_GetInternalMethodAnnotation);
 
-	void visit(DexPseudoinstruction_GetMethodCaller dexPseudoinstruction_GetMethodCaller);
+	void visit(DexMacro_GetMethodCaller DexMacro_GetMethodCaller);
 
-	void visit(DexPseudoinstruction_GetObjectTaint dexPseudoinstruction_GetObjectTaint);
+	void visit(DexMacro_GetObjectTaint DexMacro_GetObjectTaint);
 
-	void visit(DexPseudoinstruction_GetQueryTaint dexPseudoinstruction_GetQueryTaint);
+	void visit(DexMacro_GetQueryTaint DexMacro_GetQueryTaint);
 
-	void visit(DexPseudoinstruction_GetServiceTaint dexPseudoinstruction_GetServiceTaint);
+	void visit(DexMacro_GetServiceTaint DexMacro_GetServiceTaint);
 
-	void visit(DexPseudoinstruction_PrintInteger dexPseudoinstruction_PrintInteger);
+	void visit(DexMacro_PrintInteger DexMacro_PrintInteger);
 
-	void visit(DexPseudoinstruction_PrintIntegerConst dexPseudoinstruction_PrintIntegerConst);
+	void visit(DexMacro_PrintIntegerConst DexMacro_PrintIntegerConst);
 
-	void visit(DexPseudoinstruction_PrintString dexPseudoinstruction_PrintString);
+	void visit(DexMacro_PrintString DexMacro_PrintString);
 
-	void visit(DexPseudoinstruction_PrintStringConst dexPseudoinstruction_PrintStringConst);
+	void visit(DexMacro_PrintStringConst DexMacro_PrintStringConst);
 
-	void visit(DexPseudoinstruction_SetObjectTaint dexPseudoinstruction_SetObjectTaint);
+	void visit(DexMacro_SetObjectTaint DexMacro_SetObjectTaint);
 
-	void visit(DexPseudoinstruction_Invoke dexPseudoinstruction_Invoke);
+    void visit(DexPseudoinstruction_Invoke dexPseudoinstruction_Invoke);
 
 }
