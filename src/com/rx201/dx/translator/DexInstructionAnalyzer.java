@@ -93,7 +93,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
             RegisterType.Category.One,
             RegisterType.Category.Boolean);
 
-	private AnalyzedDexInstruction instruction;
+	private AnalyzedDexInstruction analyzedInst;
 	private DexCodeAnalyzer analyzer;
 	private UseDefTypeAnalyzer typeAnalyzer;
 	
@@ -103,7 +103,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	}
 	
 	public void setAnalyzedInstruction(AnalyzedDexInstruction i) {
-		this.instruction = i;
+		this.analyzedInst = i;
 	}
 	
 	private void setPostRegisterType(AnalyzedDexInstruction inst, DexRegister registerNumber, 
@@ -131,14 +131,17 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	public void visit(DexInstruction_Nop dexInstruction_Nop) {}
 	
 	private void analyzeMove(DexRegister srcReg) {
-		RegisterType valueType = instruction.getPreRegisterType(srcReg);
-		setDestinationRegisterType(instruction, valueType);
+		RegisterType valueType = analyzedInst.getPreRegisterType(srcReg);
+		setDestinationRegisterType(analyzedInst, valueType);
 	}
 
 	@Override
-	public void visit(DexInstruction_Move dexInstruction_Move) {
-		analyzeMove(dexInstruction_Move.getRegFrom());
-//        analyzeMove(analyzedInstruction);
+	public void visit(DexInstruction_Move instruction) {
+		analyzeMove(instruction.getRegFrom());
+		
+		useRegister(instruction.getRegFrom(), instruction.isObjectMoving() ? Reference : Primitive);
+		defineRegister(instruction.getRegTo(), instruction.isObjectMoving() ? Reference : Primitive);
+		moveRegister(instruction.getRegFrom(), instruction.getRegTo());
 
 	}
 	@Override
@@ -152,7 +155,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	
 	private void analyzeMoveResult(DexRegister srcReg) {
 		
-        AnalyzedDexInstruction prevAnalyzedInst = instruction;
+        AnalyzedDexInstruction prevAnalyzedInst = analyzedInst;
         //Skip auxillary blocks like TryBlockEnd etc.
         do {
     		assert prevAnalyzedInst.getPredecessorCount() == 1;
@@ -167,11 +170,11 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
         	DexInstruction_FilledNewArray i = (DexInstruction_FilledNewArray)prevAnalyzedInst.instruction;
         	resultRegisterType = i.getArrayType();
         } else {
-            throw new ValidationException(instruction.instruction.getOriginalAssembly() + " must occur after an " +
+            throw new ValidationException(analyzedInst.instruction.getOriginalAssembly() + " must occur after an " +
                     "invoke-*/fill-new-array instruction");
         }
         
-        setDestinationRegisterType(instruction, resultRegisterType);			
+        setDestinationRegisterType(analyzedInst, resultRegisterType);			
 	}
 	@Override
 	public void visit(DexInstruction_MoveResult dexInstruction_MoveResult) {
@@ -187,8 +190,8 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	}
 	@Override
 	public void visit(DexInstruction_MoveException dexInstruction_MoveException) {
-		assert instruction.getPredecessorCount() == 1;
-		DexCodeElement catchElement = instruction.getPredecessors().get(0).auxillaryElement;
+		assert analyzedInst.getPredecessorCount() == 1;
+		DexCodeElement catchElement = analyzedInst.getPredecessors().get(0).auxillaryElement;
 		assert catchElement != null && (catchElement instanceof DexCatch || catchElement instanceof DexCatchAll);
 		String exception = null;
 		if (catchElement instanceof DexCatch)
@@ -196,7 +199,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		else 
 			exception = "Ljava/lang/Throwable;";
 				
-		setDestinationRegisterType(instruction, RegisterType.getRegisterTypeForType(exception));
+		setDestinationRegisterType(analyzedInst, RegisterType.getRegisterTypeForType(exception));
 //            analyzeMoveException(analyzedInstruction);
 
 	}
@@ -220,7 +223,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		    type = RegisterType.getRegisterType(Category.Integer, null);
 		}
 		
-		type = typeAnalyzer.getPrecisePostRegisterType(dexInstruction_Const.getRegTo(), instruction, type);
+		type = typeAnalyzer.getPrecisePostRegisterType(dexInstruction_Const.getRegTo(), analyzedInst, type);
 		
         assert type.category != Category.Conflicted;
 		if (value == 0) {
@@ -228,27 +231,27 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
                 type = RegisterType.getRegisterType(Category.Null, null);
 		}
 		
-		setDestinationRegisterType(instruction, type);
+		setDestinationRegisterType(analyzedInst, type);
 //            analyzeConst(analyzedInstruction);
 	}
 	@Override
 	public void visit(DexInstruction_ConstWide dexInstruction_ConstWide) {
-		RegisterType type = typeAnalyzer.getPrecisePostRegisterType(dexInstruction_ConstWide.getRegTo1(), instruction, null);
+		RegisterType type = typeAnalyzer.getPrecisePostRegisterType(dexInstruction_ConstWide.getRegTo1(), analyzedInst, null);
 		if(type.category == Category.Unknown)
 			type = RegisterType.getRegisterType(Category.LongLo, null);
 		
-		setDestinationRegisterType(instruction, type);
+		setDestinationRegisterType(analyzedInst, type);
 //            analyzeConstWide(analyzedInstruction);
 	}
 	
 	@Override
 	public void visit(DexInstruction_ConstString dexInstruction_ConstString) {
-		setDestinationRegisterType(instruction, "Ljava/lang/String;");
+		setDestinationRegisterType(analyzedInst, "Ljava/lang/String;");
 //            analyzeConstString(analyzedInstruction);
 	}
 	@Override
 	public void visit(DexInstruction_ConstClass dexInstruction_ConstClass) {
-		setDestinationRegisterType(instruction, dexInstruction_ConstClass.getValue().getDescriptor());
+		setDestinationRegisterType(analyzedInst, dexInstruction_ConstClass.getValue().getDescriptor());
 //            analyzeConstClass(analyzedInstruction);
 	}
 	@Override
@@ -256,24 +259,24 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	
 	@Override
 	public void visit(DexInstruction_CheckCast dexInstruction_CheckCast) {
-		setDestinationRegisterType(instruction, dexInstruction_CheckCast.getValue().getDescriptor());
+		setDestinationRegisterType(analyzedInst, dexInstruction_CheckCast.getValue().getDescriptor());
 //            analyzeCheckCast(analyzedInstruction);
 	}
 	@Override
 	public void visit(DexInstruction_InstanceOf dexInstruction_InstanceOf) {
-        setDestinationRegisterType(instruction,
+        setDestinationRegisterType(analyzedInst,
                 RegisterType.getRegisterType(RegisterType.Category.Boolean, null));
 //            analyzeInstanceOf(analyzedInstruction);
 	}
 	@Override
 	public void visit(DexInstruction_ArrayLength dexInstruction_ArrayLength) {
-        setDestinationRegisterType(instruction,
+        setDestinationRegisterType(analyzedInst,
                 RegisterType.getRegisterType(RegisterType.Category.Boolean, null));
 //            analyzeArrayLength(analyzedInstruction);
 	}
 	@Override
 	public void visit(DexInstruction_NewInstance dexInstruction_NewInstance) {
-        RegisterType destRegisterType = instruction.getPostRegisterType(instruction.getDestinationRegister());
+        RegisterType destRegisterType = analyzedInst.getPostRegisterType(analyzedInst.getDestinationRegister());
         if (destRegisterType.category != RegisterType.Category.Unknown) {
             assert destRegisterType.category == RegisterType.Category.UninitRef;
             //the post-instruction destination register will only be set if we have already analyzed this instruction
@@ -284,14 +287,14 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
         
         RegisterType classType = RegisterType.getRegisterTypeForType(dexInstruction_NewInstance.getValue().getDescriptor());
 
-        setDestinationRegisterType(instruction,
+        setDestinationRegisterType(analyzedInst,
                 RegisterType.getUnitializedReference(classType.type));
 //            analyzeNewInstance(analyzedInstruction);
 
 	}
 	@Override
 	public void visit(DexInstruction_NewArray dexInstruction_NewArray) {
-		setDestinationRegisterType(instruction, dexInstruction_NewArray.getValue().getDescriptor());
+		setDestinationRegisterType(analyzedInst, dexInstruction_NewArray.getValue().getDescriptor());
 	}
 	
 	@Override
@@ -320,14 +323,14 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	
 	@Override
 	public void visit(DexInstruction_CompareFloat dexInstruction_CompareFloat) {
-		setDestinationRegisterType(instruction,
+		setDestinationRegisterType(analyzedInst,
                 RegisterType.getRegisterType(RegisterType.Category.Byte, null));
 //			  analyzeFloatWideCmp(analyzedInstruction);
 
 	}
 	@Override
 	public void visit(DexInstruction_CompareWide dexInstruction_CompareWide) {
-		setDestinationRegisterType(instruction,
+		setDestinationRegisterType(analyzedInst,
                 RegisterType.getRegisterType(RegisterType.Category.Byte, null));
 //            analyzeFloatWideCmp(analyzedInstruction);
 
@@ -342,7 +345,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	public void visit(DexInstruction_ArrayGet inst) {
     	if (inst.getOpcode() == Opcode_GetPut.Object) {
 
-            RegisterType arrayRegisterType = instruction.getPreRegisterType(inst.getRegArray());
+            RegisterType arrayRegisterType = analyzedInst.getPreRegisterType(inst.getRegArray());
             assert arrayRegisterType != null;
 
             if (arrayRegisterType.category != RegisterType.Category.Null) {
@@ -362,10 +365,10 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
                             "array type for the instruction.", arrayRegisterType.type.getClassType()));
                 }
 
-                setDestinationRegisterType(instruction,
+                setDestinationRegisterType(analyzedInst,
                         RegisterType.getRegisterType(RegisterType.Category.Reference, elementClassDef));
             } else {
-                setDestinationRegisterType(instruction,
+                setDestinationRegisterType(analyzedInst,
                         RegisterType.getRegisterType(RegisterType.Category.Null, null));
             }
     		
@@ -383,7 +386,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 				category = RegisterType.Category.Char;
 				break;
 			case IntFloat:
-				if (typeAnalyzer.getPrecisePostRegisterType(inst.getRegTo(), instruction, null).category == Category.Float)
+				if (typeAnalyzer.getPrecisePostRegisterType(inst.getRegTo(), analyzedInst, null).category == Category.Float)
 					category = Category.Float;
 				else
 					category = Category.Integer; // Assume it is integer if we cannot infer its type.
@@ -394,13 +397,13 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 			default:
 				throw new ValidationException("wrong type AGET");
 	    	}
-	    	setDestinationRegisterType(instruction, RegisterType.getRegisterType(category, null));
+	    	setDestinationRegisterType(analyzedInst, RegisterType.getRegisterType(category, null));
     	}
 	}		
 	@Override
 	public void visit(DexInstruction_ArrayGetWide dexInstruction_ArrayGetWide) {
 
-        RegisterType arrayRegisterType = instruction.getPreRegisterType(dexInstruction_ArrayGetWide.getRegArray());
+        RegisterType arrayRegisterType = analyzedInst.getPreRegisterType(dexInstruction_ArrayGetWide.getRegArray());
         assert arrayRegisterType != null;
 
         if (arrayRegisterType.category != RegisterType.Category.Null) {
@@ -415,17 +418,17 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 
             char arrayBaseType = arrayClassDef.getBaseElementClass().getClassType().charAt(0);
             if (arrayBaseType == 'J') {
-                setDestinationRegisterType(instruction,
+                setDestinationRegisterType(analyzedInst,
                         RegisterType.getRegisterType(RegisterType.Category.LongLo, null));
             } else if (arrayBaseType == 'D') {
-                setDestinationRegisterType(instruction,
+                setDestinationRegisterType(analyzedInst,
                         RegisterType.getRegisterType(RegisterType.Category.DoubleLo, null));
             } else {
                 throw new ValidationException(String.format("Cannot use aget-wide with array type %s. Incorrect " +
                         "array type for the instruction.", arrayRegisterType.type.getClassType()));
             }
         } else {
-            setDestinationRegisterType(instruction,
+            setDestinationRegisterType(analyzedInst,
                         RegisterType.getRegisterType(RegisterType.Category.LongLo, null));
         }
 //            analyzeAgetWide(analyzedInstruction);
@@ -439,7 +442,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	
 	@Override
 	public void visit(DexInstruction_InstanceGet dexInstruction_InstanceGet) {
-		setDestinationRegisterType(instruction, dexInstruction_InstanceGet.getFieldType());
+		setDestinationRegisterType(analyzedInst, dexInstruction_InstanceGet.getFieldType());
 //            analyze32BitPrimitiveIget(analyzedInstruction, RegisterType.Category.Integer);
 //            analyzeIgetWideObject(analyzedInstruction);
 
@@ -447,7 +450,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	@Override
 	public void visit(
 			DexInstruction_InstanceGetWide dexInstruction_InstanceGetWide) {
-		setDestinationRegisterType(instruction, dexInstruction_InstanceGetWide.getFieldType());
+		setDestinationRegisterType(analyzedInst, dexInstruction_InstanceGetWide.getFieldType());
 //            analyze32BitPrimitiveIget(analyzedInstruction, RegisterType.Category.Integer);
 //            analyzeIgetWideObject(analyzedInstruction);
 		
@@ -460,14 +463,14 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	
 	@Override
 	public void visit(DexInstruction_StaticGet dexInstruction_StaticGet) {
-		setDestinationRegisterType(instruction, dexInstruction_StaticGet.getFieldType());
+		setDestinationRegisterType(analyzedInst, dexInstruction_StaticGet.getFieldType());
 //            analyze32BitPrimitiveSget(analyzedInstruction, RegisterType.Category.Integer);
 //            analyzeSgetWideObject(analyzedInstruction);
 
 	}
 	@Override
 	public void visit(DexInstruction_StaticGetWide dexInstruction_StaticGetWide) {
-		setDestinationRegisterType(instruction, dexInstruction_StaticGetWide.getFieldType());
+		setDestinationRegisterType(analyzedInst, dexInstruction_StaticGetWide.getFieldType());
 //            analyze32BitPrimitiveSget(analyzedInstruction, RegisterType.Category.Integer);
 //            analyzeSgetWideObject(analyzedInstruction);
 
@@ -487,7 +490,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		if (!dexInstruction_Invoke.getMethodName().equals("<init>")) return;
 		
 		DexRegister objectRegister = dexInstruction_Invoke.getArgumentRegisters().get(0);
-		RegisterType objectRegisterType = instruction.getPreRegisterType(objectRegister);
+		RegisterType objectRegisterType = analyzedInst.getPreRegisterType(objectRegister);
         assert objectRegisterType != null;
 
         if (objectRegisterType.category != RegisterType.Category.UninitRef &&
@@ -495,25 +498,25 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
             return;
         }
 
-        setPostRegisterType(instruction, objectRegister,
+        setPostRegisterType(analyzedInst, objectRegister,
                 RegisterType.getRegisterType(RegisterType.Category.Reference, objectRegisterType.type));
 
-        for(Integer i : instruction.getPostRegisters()) {
-            RegisterType postInstructionRegisterType = instruction.getPostRegisterType(i);
+        for(Integer i : analyzedInst.getPostRegisters()) {
+            RegisterType postInstructionRegisterType = analyzedInst.getPostRegisterType(i);
             if (postInstructionRegisterType.category == RegisterType.Category.Unknown) {
-                RegisterType preInstructionRegisterType = instruction.getPreRegisterType(i);
+                RegisterType preInstructionRegisterType = analyzedInst.getPreRegisterType(i);
 
                 if (preInstructionRegisterType.category == RegisterType.Category.UninitRef ||
                     preInstructionRegisterType.category == RegisterType.Category.UninitThis) {
 
                     RegisterType registerType;
                     if (preInstructionRegisterType == objectRegisterType) {
-                        registerType = instruction.getPostRegisterType(objectRegister);
+                        registerType = analyzedInst.getPostRegisterType(objectRegister);
                     } else {
                         registerType = preInstructionRegisterType;
                     }
 
-                    setPostRegisterType(instruction, new DexRegister(i), registerType);
+                    setPostRegisterType(analyzedInst, new DexRegister(i), registerType);
                 }
             }
         }			
@@ -535,7 +538,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		    default:
 		    	throw new ValidationException("Unknown opcode for DexInstruction_UnaryOp");
 		}
-		setDestinationRegisterType(instruction, 
+		setDestinationRegisterType(analyzedInst, 
 				RegisterType.getRegisterType(category, null));
 //            analyzeUnaryOp(analyzedInstruction, RegisterType.Category.Integer);
 
@@ -556,7 +559,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	    default:
 	    	throw new ValidationException("Unknown opcode for DexInstruction_UnaryOpWide");
 	    }
-		setDestinationRegisterType(instruction, 
+		setDestinationRegisterType(analyzedInst, 
 				RegisterType.getRegisterType(category, null));
 //          analyzeUnaryOp(analyzedInstruction, RegisterType.Category.LongLo);
 	}
@@ -583,7 +586,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 			throw new ValidationException("Unknown opcode for DexInstruction_Convert");
 	    
 	    }
-		setDestinationRegisterType(instruction, 
+		setDestinationRegisterType(analyzedInst, 
 				RegisterType.getRegisterType(category, null));
 	}
 	@Override
@@ -596,7 +599,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	    } else {
 	    	category = Category.DoubleLo;
 	    }
-		setDestinationRegisterType(instruction, 
+		setDestinationRegisterType(analyzedInst, 
 				RegisterType.getRegisterType(category, null));
 	}
 	@Override
@@ -615,7 +618,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		default:
 			throw new ValidationException("Unknown opcode for DexInstruction_ConvertFromWide");
 	    }
-		setDestinationRegisterType(instruction, 
+		setDestinationRegisterType(analyzedInst, 
 				RegisterType.getRegisterType(category, null));
 	}
 	@Override
@@ -634,7 +637,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		default:
 	    	throw new ValidationException("Unknown opcode for DexInstruction_UnaryOpWide");
 	    }
-		setDestinationRegisterType(instruction, 
+		setDestinationRegisterType(analyzedInst, 
 				RegisterType.getRegisterType(category, null));
 	}
 	
@@ -642,9 +645,9 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
     		Category destRegisterCategory, boolean checkForBoolean) {
 		if (checkForBoolean) {
 			RegisterType source1RegisterType =
-			    instruction.getPreRegisterType(srcReg1);
+			    analyzedInst.getPreRegisterType(srcReg1);
 			RegisterType source2RegisterType =
-			    instruction.getPreRegisterType(srcReg2);
+			    analyzedInst.getPreRegisterType(srcReg2);
 			
 			if (BooleanCategories.contains(source1RegisterType.category) &&
 			BooleanCategories.contains(source2RegisterType.category)) {
@@ -652,7 +655,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 			}
 		}
 		
-		setDestinationRegisterType(instruction,
+		setDestinationRegisterType(analyzedInst,
 		RegisterType.getRegisterType(destRegisterCategory, null));
 	}		
     
@@ -761,7 +764,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	@Override
 	public void visit(DexInstruction_BinaryOpLiteral dexInstruction_BinaryOpLiteral) {
 		Category category = Category.Integer;
-		RegisterType sourceRegisterType = instruction.getPreRegisterType(dexInstruction_BinaryOpLiteral.getRegSource());
+		RegisterType sourceRegisterType = analyzedInst.getPreRegisterType(dexInstruction_BinaryOpLiteral.getRegSource());
 		switch(dexInstruction_BinaryOpLiteral.getInsnOpcode()){
 		case Add:
 		case Div:
@@ -791,7 +794,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 			break;
 		
 		}
-		setDestinationRegisterType(instruction, 
+		setDestinationRegisterType(analyzedInst, 
 				RegisterType.getRegisterType(category, null));
 //            analyzeLiteralBinaryOp(analyzedInstruction, RegisterType.Category.Integer, true);
 	}
@@ -825,7 +828,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		default:
 			throw new ValidationException("Unknown opcode for DexInstruction_BinaryOpWide");
 		}
-		setDestinationRegisterType(instruction,
+		setDestinationRegisterType(analyzedInst,
 				RegisterType.getRegisterType(category, null));
 //            analyzeBinaryOp(analyzedInstruction, RegisterType.Category.LongLo, false);
 
