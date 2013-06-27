@@ -66,6 +66,12 @@ public class AnalyzedDexInstruction {
 
 	    public final int instructionIndex;
 	    
+		protected HashMap<Integer, RegisterType> useSet;
+		protected HashMap<Integer, RegisterType> defSet;
+		// <regSource, regDestination>
+		protected HashMap<Integer, Integer> moveSet;
+	    
+	    
 	    public AnalyzedDexInstruction(int index, DexInstruction instruction, Dex parentFile) {
 	        this.instruction = instruction;
 	        this.postRegisterMap = new HashMap<Integer, RegisterType>();
@@ -74,6 +80,11 @@ public class AnalyzedDexInstruction {
 	        this.cache = parentFile.getParsingCache();
 	        this.instructionIndex = index;
 	        this.auxillaryElement = null;
+	        
+			useSet = new HashMap<Integer, RegisterType>();
+			defSet = new HashMap<Integer, RegisterType>();
+			moveSet = new HashMap<Integer, Integer>();
+	        
 	    }
 
 	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexCodeElement element, Dex parentFile) {
@@ -332,4 +343,14 @@ public class AnalyzedDexInstruction {
 	    	return instructionIndex;
 	    }
 	    
+		public void defineRegister(DexRegister regTo, RegisterType registerType) {
+			defSet.put(DexRegisterHelper.normalize(regTo), registerType);
+		}
+		public void useRegister(DexRegister regFrom, RegisterType registerType) {
+			useSet.put(DexRegisterHelper.normalize(regFrom), registerType);
+		}
+		public void moveRegister(DexRegister regFrom, DexRegister regTo) {
+			moveSet.put(DexRegisterHelper.normalize(regFrom), DexRegisterHelper.normalize(regTo));
+		}
+			    
 }

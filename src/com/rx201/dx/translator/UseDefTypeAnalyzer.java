@@ -90,16 +90,11 @@ import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 
-	private HashMap<Integer, RegisterType> useSet;
-	private HashMap<Integer, RegisterType> defSet;
-	// <regSource, regDestination>
-	private HashMap<Integer, Integer> moveSet;
 	
 	// Some of these are partial type information, we don't distinguish them
 	// for now, but this may be changed in future.
 	private final static RegisterType Primitive = null;
 	private final static RegisterType PrimitiveWide = null;
-	private final static RegisterType PrimitiveOrReference = null;
 	private final static RegisterType Reference = ObjectType("Ljava/lang/Object;");
 	private final static RegisterType Array = null;
 	private final static RegisterType Boolean = RegisterType.getRegisterType(Category.Boolean, null);
@@ -123,25 +118,6 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 		return RegisterType.getRegisterTypeForType(arrayType.getElementType().getDescriptor());
 	}
 	public UseDefTypeAnalyzer() {
-		useSet = new HashMap<Integer, RegisterType>();
-		defSet = new HashMap<Integer, RegisterType>();
-		moveSet = new HashMap<Integer, Integer>();
-	}
-	
-	public void reset() {
-		useSet.clear();
-		defSet.clear();
-		moveSet.clear();
-	}
-
-	private void defineRegister(DexRegister regTo, RegisterType registerType) {
-		defSet.put(DexRegisterHelper.normalize(regTo), registerType);
-	}
-	private void useRegister(DexRegister regFrom, RegisterType registerType) {
-		useSet.put(DexRegisterHelper.normalize(regFrom), registerType);
-	}
-	private void moveRegister(DexRegister regFrom, DexRegister regTo) {
-		moveSet.put(DexRegisterHelper.normalize(regFrom), DexRegisterHelper.normalize(regTo));
 	}
 	
 	public RegisterType getPrecisePostRegisterType(DexRegister reg, AnalyzedDexInstruction instruction, RegisterType priorTypeInfo) {
@@ -229,9 +205,6 @@ public class UseDefTypeAnalyzer implements DexInstructionVisitor {
 
 	@Override
 	public void visit(DexInstruction_Move instruction) {
-		useRegister(instruction.getRegFrom(), instruction.isObjectMoving() ? Reference : Primitive);
-		defineRegister(instruction.getRegTo(), instruction.isObjectMoving() ? Reference : Primitive);
-		moveRegister(instruction.getRegFrom(), instruction.getRegTo());
 	}
 
 	@Override
