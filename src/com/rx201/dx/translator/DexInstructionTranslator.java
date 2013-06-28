@@ -12,8 +12,6 @@ import java.util.Set;
 
 import org.jf.dexlib.Code.Analysis.ClassPath;
 import org.jf.dexlib.Code.Analysis.ClassPath.ClassDef;
-import org.jf.dexlib.Code.Analysis.RegisterType.Category;
-import org.jf.dexlib.Code.Analysis.RegisterType;
 
 import lombok.Getter;
 import lombok.val;
@@ -55,6 +53,7 @@ import com.android.dx.rop.type.Type;
 import com.android.dx.rop.type.TypeBearer;
 import com.android.dx.rop.type.TypeList;
 import com.android.dx.util.IntList;
+import com.rx201.dx.translator.RopType.Category;
 import com.rx201.dx.translator.util.DexRegisterHelper;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -215,16 +214,14 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		return result;
 	}
 	
-    private Type toType(RegisterType t) {
+    private Type toType(RopType t) {
         switch(t.category) {
         case Boolean:
         case One: // happened in translation stage of switch test case 
             return Type.intern("Z");
         case Byte:
-        case PosByte:
             return Type.intern("B");
         case Short:
-        case PosShort:
             return Type.intern("S");
         case Char:
             return Type.intern("C");
@@ -241,8 +238,6 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
         case DoubleHi:
             return Type.intern("D");
 
-        case UninitRef:
-        case UninitThis:
         case Reference:
             return Type.intern(t.type.getClassType());
         
@@ -251,7 +246,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
         }
     }
     
-	private RegisterSpec toRegSpec(DexRegister reg, RegisterType registerType) {
+	private RegisterSpec toRegSpec(DexRegister reg, RopType registerType) {
 		return RegisterSpec.make(DexRegisterHelper.normalize(reg), toType(registerType));
 	}
 
@@ -538,16 +533,14 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	
 	private void doConst(DexRegister to, long value) {
 		TypedConstant constant;
-		RegisterType type = curInst.getPostRegisterType(to);
+		RopType type = curInst.getPostRegisterType(to);
 		
 		switch (type.category) {
 			case Boolean:
 			case One:
 			case Byte:
-			case PosByte:
 			case Char:
 			case Short:
-			case PosShort:
 			case Integer:
             case DoubleLo:
             case DoubleHi:
@@ -574,7 +567,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	
 	private void doConstWide(DexRegister to, long value) {
 		TypedConstant constant;
-		RegisterType type = curInst.getPostRegisterType(to);
+		RopType type = curInst.getPostRegisterType(to);
 		switch (type.category) {
 			case LongLo:
 			case LongHi:
@@ -1060,8 +1053,8 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		
 		// Filter out high reg for long/double type
 		for(DexRegister paramReg : instruction.getArgumentRegisters()) {
-			RegisterType paramType = curInst.getPreRegisterType(paramReg);
-			if (paramType.category != RegisterType.Category.LongHi && paramType.category != RegisterType.Category.DoubleHi)
+			RopType paramType = curInst.getPreRegisterType(paramReg);
+			if (paramType.category != Category.LongHi && paramType.category != Category.DoubleHi)
 				operands_list.add(paramReg);
 		}
 		DexRegister[] operands_array = operands_list.toArray(new DexRegister[operands_list.size()]);
