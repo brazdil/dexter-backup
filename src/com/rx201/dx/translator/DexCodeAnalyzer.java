@@ -2,132 +2,26 @@ package com.rx201.dx.translator;
 
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
-import org.jf.dexlib.ClassDataItem;
-import org.jf.dexlib.CodeItem;
-import org.jf.dexlib.FieldIdItem;
-import org.jf.dexlib.Item;
-import org.jf.dexlib.ItemType;
-import org.jf.dexlib.MethodIdItem;
-import org.jf.dexlib.TypeIdItem;
-import org.jf.dexlib.TypeListItem;
-import org.jf.dexlib.Code.FiveRegisterInstruction;
-import org.jf.dexlib.Code.Instruction;
-import org.jf.dexlib.Code.InstructionWithReference;
-import org.jf.dexlib.Code.LiteralInstruction;
-import org.jf.dexlib.Code.MultiOffsetInstruction;
-import org.jf.dexlib.Code.OffsetInstruction;
-import org.jf.dexlib.Code.Opcode;
-import org.jf.dexlib.Code.RegisterRangeInstruction;
-import org.jf.dexlib.Code.SingleRegisterInstruction;
-import org.jf.dexlib.Code.ThreeRegisterInstruction;
-import org.jf.dexlib.Code.TwoRegisterInstruction;
-import org.jf.dexlib.Code.Analysis.AnalyzedInstruction;
-import org.jf.dexlib.Code.Analysis.ClassPath;
-import org.jf.dexlib.Code.Analysis.DeodexUtil;
-import org.jf.dexlib.Code.Analysis.InlineMethodResolver;
-import org.jf.dexlib.Code.Analysis.OdexedFieldInstructionMapper;
-import org.jf.dexlib.Code.Analysis.RegisterType;
-import org.jf.dexlib.Code.Analysis.RegisterType.Category;
-import org.jf.dexlib.Code.Analysis.ValidationException;
-import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction;
-import org.jf.dexlib.Code.Format.Format;
-import org.jf.dexlib.Code.Format.Instruction10x;
-import org.jf.dexlib.Code.Format.Instruction21c;
-import org.jf.dexlib.Code.Format.Instruction22c;
-import org.jf.dexlib.Code.Format.Instruction22cs;
-import org.jf.dexlib.Code.Format.Instruction35c;
-import org.jf.dexlib.Code.Format.Instruction35mi;
-import org.jf.dexlib.Code.Format.Instruction35ms;
-import org.jf.dexlib.Code.Format.Instruction3rc;
-import org.jf.dexlib.Code.Format.Instruction3rmi;
-import org.jf.dexlib.Code.Format.Instruction3rms;
-import org.jf.dexlib.Code.Format.Instruction41c;
-import org.jf.dexlib.Code.Format.Instruction52c;
-import org.jf.dexlib.Code.Format.Instruction5rc;
-import org.jf.dexlib.Code.Format.UnresolvedOdexInstruction;
-import org.jf.dexlib.Util.AccessFlags;
-import org.jf.dexlib.Util.ExceptionWithContext;
-import org.jf.dexlib.Util.SparseArray;
 
+import com.rx201.dx.translator.RopType.Category;
 import com.rx201.dx.translator.util.DexRegisterHelper;
 
 import uk.ac.cam.db538.dexter.analysis.cfg.CfgBasicBlock;
 import uk.ac.cam.db538.dexter.analysis.cfg.CfgBlock;
 import uk.ac.cam.db538.dexter.analysis.cfg.ControlFlowGraph;
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
+import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionVisitor;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPutWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CompareFloat;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CompareWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertFromWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertToWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGetWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePutWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveException;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Nop;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_PackedSwitchData;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_SparseSwitchData;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGetWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPutWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_ConvertWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
+
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 
@@ -174,34 +68,21 @@ public class DexCodeAnalyzer {
     private void analyzeParameters() {
     	boolean isStatic = code.getParentMethod().isStatic();
     	DexPrototype prototype = code.getParentMethod().getPrototype();
-    	boolean isConstructor = code.getParentMethod().isConstructor();
     	List<DexRegister> parameterMapping = code.getParentMethod().getParameterMappedRegisters();
     	
     	for(int i=0; i<prototype.getParameterCount(isStatic); i++) {
     		DexRegisterType dexRegType = prototype.getParameterType(i, isStatic, code.getParentClass());
-    		RegisterType regType = DexRegisterTypeHelper.toRegisterType(dexRegType);
+    		RopType regType = RopType.getRopType(dexRegType.getDescriptor());
 			int paramRegIndex = prototype.getFirstParameterRegisterIndex(i, isStatic);
 			DexRegister paramReg = parameterMapping.get(paramRegIndex);
-			
-			if (!isStatic && isConstructor && i == 0) // Instance constructor has an uninit this ptr
-				regType = RegisterType.getRegisterType(RegisterType.Category.UninitThis, regType.type);
 			
 			switch (dexRegType.getTypeSize()) {
 	        case SINGLE:
 	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, paramReg, regType);
 	        	break;
 	        case WIDE:
-	        	RegisterType regTypeHi = null;
-	        	
-	        	if (regType.category == RegisterType.Category.DoubleLo)
-	        		regTypeHi = RegisterType.getRegisterType(RegisterType.Category.DoubleHi, null);
-	        	else if (regType.category == RegisterType.Category.LongLo)
-	        		regTypeHi = RegisterType.getRegisterType(RegisterType.Category.LongHi, null);
-	        	else
-	        		throw new ValidationException("Bad register type.");
-	        	
 	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, paramReg, regType);
-	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, DexRegisterHelper.next(paramReg), regTypeHi);
+	        	setPostRegisterTypeAndPropagateChanges(startOfMethod, DexRegisterHelper.next(paramReg), regType.lowToHigh());
 	        	break;
 			}
 	        	
@@ -266,26 +147,20 @@ public class DexCodeAnalyzer {
             }
 
         } while (true);
+
         
-        for(AnalyzedDexInstruction instructionToAnalyze : instructions) {
-            if (instructionToAnalyze.instruction == null || (!(instructionToAnalyze.instruction instanceof DexInstruction_Const)))
-                continue;
-            DexInstruction_Const inst = (DexInstruction_Const)instructionToAnalyze.instruction;
-            if (instructionToAnalyze.getPostRegisterType(inst.getRegTo()).category == Category.Null) {
-                analyzeInstruction(instructionToAnalyze);
-            }
-        }
+        preciseTypeAnalysis();
         
         analyzerState = ANALYZED;
     }
 
-    public AnalyzedDexInstruction getStartOfMethod() {
+	public AnalyzedDexInstruction getStartOfMethod() {
         return startOfMethod;
     }
 
 
     protected void setPostRegisterTypeAndPropagateChanges(AnalyzedDexInstruction analyzedInstruction, DexRegister registerNumber,
-                                                RegisterType registerType) {
+    		RopType registerType) {
 
         BitSet changedInstructions = new BitSet(instructions.size());
 
@@ -313,20 +188,23 @@ public class DexCodeAnalyzer {
             }
         }
 
-        if (registerType.category == RegisterType.Category.LongLo) {
+        if (registerType.category == Category.LongLo) {
 //            checkWidePair(registerNumber, analyzedInstruction);
             setPostRegisterTypeAndPropagateChanges(analyzedInstruction, DexRegisterHelper.next(registerNumber),
-                    RegisterType.getRegisterType(RegisterType.Category.LongHi, null));
-        } else if (registerType.category == RegisterType.Category.DoubleLo) {
+            		RopType.LongHi);
+        } else if (registerType.category == Category.DoubleLo) {
 //            checkWidePair(registerNumber, analyzedInstruction);
             setPostRegisterTypeAndPropagateChanges(analyzedInstruction, DexRegisterHelper.next(registerNumber),
-                    RegisterType.getRegisterType(RegisterType.Category.DoubleHi, null));
+            		RopType.DoubleHi);
+        } else if (registerType.category == Category.Wide) {
+            setPostRegisterTypeAndPropagateChanges(analyzedInstruction, DexRegisterHelper.next(registerNumber),
+            		RopType.Wide);
         }
     }
 
     private void propagateRegisterToSuccessors(AnalyzedDexInstruction instruction, DexRegister registerNumber,
                                                BitSet changedInstructions) {
-        RegisterType postRegisterType = instruction.getPostRegisterType(registerNumber);
+    	RopType postRegisterType = instruction.getPostRegisterType(registerNumber);
         for (AnalyzedDexInstruction successor: instruction.successors) {
             if (successor.mergeRegister(registerNumber, postRegisterType, analyzedInstructions)) {
                 changedInstructions.set(successor.getInstructionIndex());
@@ -428,4 +306,94 @@ public class DexCodeAnalyzer {
     public int getMaxInstructionIndex() {
     	return maxInstructionIndex;
     }
+    
+
+    private void preciseTypeAnalysis() {
+    	for(AnalyzedDexInstruction inst : instructions) {
+    		for (DexRegister reg : inst.getDefinedRegisters()) {
+    			if (!inst.getPostRegisterType(reg).isPolymorphic())
+    				continue;
+    			RopType type = getPrecisePostRegisterType(reg, inst, null);
+    			assert type.category != Category.Conflicted;
+    			setPostRegisterTypeAndPropagateChanges(inst, reg, type);
+    		}
+    	}
+	}
+    
+	private RopType getPrecisePostRegisterType(DexRegister reg, AnalyzedDexInstruction instruction, RopType priorTypeInfo) {
+		// bfs for register type propagation
+		HashMap<AnalyzedDexInstruction, HashSet<Integer>> visited = new HashMap<AnalyzedDexInstruction, HashSet<Integer>>(); 
+		// These two linkedList are always paired together, maybe a better way is to have a separate class for them?
+		LinkedList<AnalyzedDexInstruction> queue = new LinkedList<AnalyzedDexInstruction>();
+		LinkedList<Integer> targetReg_queue = new LinkedList<Integer>();
+		
+		Dex parentFile = instruction.instruction.getParentFile();
+		
+		int regNum = DexRegisterHelper.normalize(reg);
+		for(AnalyzedDexInstruction successor : instruction.getSuccesors()) {
+			queue.add(successor);
+			targetReg_queue.add(regNum);
+		}
+		
+		RopType type;
+		if (priorTypeInfo != null)
+		    type = priorTypeInfo;
+		else
+		    type = RopType.Unknown;
+		
+		while(queue.size() > 0) {
+			AnalyzedDexInstruction head = queue.remove();
+			int head_reg = targetReg_queue.remove();
+			
+			if (!visited.containsKey(head))
+				visited.put(head, new HashSet<Integer>());
+			if (visited.get(head).contains(head_reg) ) continue;
+			visited.get(head).add(head_reg);
+			
+			boolean deadEnd = false;
+            RopType typeInfo = null;
+			if (head.instruction != null) {
+
+	            typeInfo = head.getUsedRegType(head_reg);
+
+				// Do not search further is this instruction overwrites the target register.
+				if (head.getDefinedRegType(head_reg) != null)
+					deadEnd = true;
+			}
+			//A different control flow may provide additional type information.
+            if (typeInfo == null && head.getPredecessorCount() > 1) {
+                typeInfo = head.peekPreRegister(head_reg);
+                if (typeInfo != null && typeInfo.category == Category.Conflicted)
+                    typeInfo = null;
+            }
+            
+            if (typeInfo != null) {
+                //TODO: UGLY HACK WARNING
+                /* This is valid, so deal with this special case here
+                 *     const/4 v8, 0x0
+                 *     const/16 v7, 0x20
+                 *     shl-long/2addr v5, v7
+                 *     
+                 * a.k.a merging Integer with LongLo/Hi should be allowed    
+                 */
+                RopType newType = type.merge(typeInfo);
+                assert newType.category != Category.Conflicted;
+                type = newType;
+            }
+			
+			if (!deadEnd) {
+				for(AnalyzedDexInstruction successor : head.getSuccesors()) {
+					queue.add(successor);
+					targetReg_queue.add(head_reg);
+					if (head.getMovedReg(head_reg) != -1) {
+						queue.add(successor);
+						targetReg_queue.add(head.getMovedReg(head_reg));
+					}
+				}
+			}
+		}
+		
+		return type;
+	} 
+	    
 }

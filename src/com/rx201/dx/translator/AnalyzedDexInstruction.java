@@ -3,14 +3,13 @@ package com.rx201.dx.translator;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.jf.dexlib.Code.Analysis.RegisterType;
-import org.jf.dexlib.Code.Analysis.RegisterType.Category;
-
+import com.rx201.dx.translator.RopType.Category;
 import com.rx201.dx.translator.util.DexRegisterHelper;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
@@ -44,12 +43,12 @@ public class AnalyzedDexInstruction {
 	    /**
 	     * This contains the register types *before* the instruction has executed
 	     */
-	    protected final HashMap<Integer, RegisterType> preRegisterMap;
+	    protected final HashMap<Integer, RopType> preRegisterMap;
 
 	    /**
 	     * This contains the register types *after* the instruction has executed
 	     */
-	    protected final HashMap<Integer, RegisterType> postRegisterMap;
+	    protected final HashMap<Integer, RopType> postRegisterMap;
 
 	    /**
 	     * An analyzed instruction's "deadness" is set during analysis (i.e. MethodAnalyzer.analyzer()). A dead instruction
@@ -62,28 +61,27 @@ public class AnalyzedDexInstruction {
 
 		private final DexParsingCache cache;
 
-	    static final RegisterType unknown = RegisterType.getRegisterType(RegisterType.Category.Unknown, null);
-
 	    public final int instructionIndex;
 	    
-		protected HashMap<Integer, RegisterType> useSet;
-		protected HashMap<Integer, RegisterType> defSet;
+		protected HashMap<Integer, RopType> useSet;
+		protected HashMap<Integer, RopType> defSet;
 		// <regSource, regDestination>
 		protected HashMap<Integer, Integer> moveSet;
 	    
 	    
 	    public AnalyzedDexInstruction(int index, DexInstruction instruction, Dex parentFile) {
 	        this.instruction = instruction;
-	        this.postRegisterMap = new HashMap<Integer, RegisterType>();
-	        this.preRegisterMap = new HashMap<Integer, RegisterType>();
+	        this.postRegisterMap = new HashMap<Integer, RopType>();
+	        this.preRegisterMap = new HashMap<Integer, RopType>();
 	        this.parentFile = parentFile;
 	        this.cache = parentFile.getParsingCache();
 	        this.instructionIndex = index;
 	        this.auxillaryElement = null;
 	        
-			useSet = new HashMap<Integer, RegisterType>();
-			defSet = new HashMap<Integer, RegisterType>();
+			useSet = new HashMap<Integer, RopType>();
+			defSet = new HashMap<Integer, RopType>();
 			moveSet = new HashMap<Integer, Integer>();
+			definedRegisters = new HashSet<DexRegister>();
 	        
 	    }
 
@@ -129,20 +127,20 @@ public class AnalyzedDexInstruction {
 	        return dead;
 	    }
 
-	    private RegisterType getPreRegister(int reg) {
+	    private RopType getPreRegister(int reg) {
 	    	if (!preRegisterMap.containsKey(reg))
-	    		preRegisterMap.put(reg, unknown);
+	    		preRegisterMap.put(reg, RopType.Unknown);
 	    	
 	    	return preRegisterMap.get(reg);
 	    }
 	    
-	    RegisterType peekPreRegister(int reg) {
+	    RopType peekPreRegister(int reg) {
 	        return preRegisterMap.get(reg);
 	    }
 
-	    private RegisterType getPostRegister(int reg) {
+	    private RopType getPostRegister(int reg) {
 	    	if (!postRegisterMap.containsKey(reg))
-	    		postRegisterMap.put(reg, unknown);
+	    		postRegisterMap.put(reg, RopType.Unknown);
 	    	
 	    	return postRegisterMap.get(reg);
 	    }
@@ -155,12 +153,12 @@ public class AnalyzedDexInstruction {
 	     * register is a destination register for this instruction, or if the pre-instruction register type didn't change
 	     * after merging in the given register type
 	     */
-	    protected boolean mergeRegister(DexRegister dexRegister, RegisterType registerType, BitSet verifiedInstructions) {
+	    protected boolean mergeRegister(DexRegister dexRegister, RopType registerType, BitSet verifiedInstructions) {
 	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
 	        assert registerType != null;
 
-	        RegisterType oldRegisterType = getPreRegister(registerNumber);
-	        RegisterType mergedRegisterType = TypeUnification.permissiveMerge(parentFile, oldRegisterType, registerType);
+	        RopType oldRegisterType = getPreRegister(registerNumber);
+	        RopType mergedRegisterType = oldRegisterType.merge(registerType);
 	        //TODO: UGLY HACK WARNING
 	        /* 
 	         * in aosp/027/arithmatic.
@@ -172,15 +170,20 @@ public class AnalyzedDexInstruction {
 	         * second operand?
 	         */
 	        // This instruction to be valid as well: or-long v0, v1, v3, so account for it.
-	        if(mergedRegisterType.category == Category.Conflicted && 
-	        		oldRegisterType.category == Category.LongLo && registerType.category == Category.LongHi) {
-	        	mergedRegisterType = registerType;
-	        }
+//	        if(mergedRegisterType.category == Category.Conflicted && 
+//	        		oldRegisterType.category == Category.LongLo && registerType.category == Category.LongHi) {
+//	        	mergedRegisterType = registerType;
+//	        }
 	        if (mergedRegisterType == oldRegisterType) {
 	            return false;
 	        }
 
 	        preRegisterMap.put(registerNumber, mergedRegisterType);
+	        RopType t = getUsedRegType(registerNumber);
+	        if (t != null && t.merge(mergedRegisterType).category == Category.Conflicted) {
+	        	assert false;
+	        }
+	        
 	        verifiedInstructions.clear(instructionIndex);
 	        
 	        if (!setsRegister(dexRegister)) {
@@ -191,54 +194,28 @@ public class AnalyzedDexInstruction {
 	        return false;
 	    }
 
-	    /**
-	     * Iterates over the predecessors of this instruction, and merges all the post-instruction register types for the
-	     * given register. Any dead, unreachable, or odexed predecessor is ignored
-	     * @param registerNumber the register number
-	     * @return The register type resulting from merging the post-instruction register types from all predecessors
-	     */
-	    protected RegisterType mergePreRegisterTypeFromPredecessors(DexRegister dexRegister) {
-	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
-	        RegisterType mergedRegisterType = null;
-	        for (AnalyzedDexInstruction predecessor: predecessors) {
-	            RegisterType predecessorRegisterType = predecessor.getPostRegister(registerNumber);
-	            assert predecessorRegisterType != null;
-	            mergedRegisterType = predecessorRegisterType.merge(mergedRegisterType);
-	        }
-	        return mergedRegisterType;
-	    }
-
 	    /*
 	      * Sets the "post-instruction" register type as indicated.
 	      * @param registerNumber Which register to set
 	      * @param registerType The "post-instruction" register type
 	      * @returns true if the given register type is different than the existing post-instruction register type
 	      */
-	     protected boolean setPostRegisterType(DexRegister dexRegister, RegisterType registerType) {
+	     protected boolean setPostRegisterType(DexRegister dexRegister, RopType registerType) {
 	    	 int registerNumber = DexRegisterHelper.normalize(dexRegister);
 	         assert registerType != null;
 
-	         RegisterType oldRegisterType = getPostRegister(registerNumber);
+	         RopType oldRegisterType = getPostRegister(registerNumber);
 	         if (oldRegisterType == registerType) {
 	             return false;
 	         }
 
 	         postRegisterMap.put(registerNumber, registerType);
+	         RopType t = getDefinedRegType(registerNumber);
+	         if (t != null && t.merge(registerType).category == Category.Conflicted) {
+	        	 assert false;
+	         }
 	         return true;
 	     }
-
-
-	    protected boolean isInvokeInit() {
-	        if (instruction == null || !(instruction instanceof DexInstruction_Invoke)) {
-	            return false;
-	        }
-	        DexInstruction_Invoke inst = (DexInstruction_Invoke)instruction;
-	        if (inst.getCallType() != Opcode_Invoke.Direct) {
-	        	return false;
-	        }
-
-	        return inst.getMethodName().equals("<init>");
-	    }
 
 	    public boolean setsRegister() {
 	    	if (instruction == null)
@@ -256,32 +233,6 @@ public class AnalyzedDexInstruction {
 
 	    public boolean setsRegister(DexRegister dexRegister) {
 	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
-	        //When constructing a new object, the register type will be an uninitialized reference after the new-instance
-	        //instruction, but becomes an initialized reference once the <init> method is called. So even though invoke
-	        //instructions don't normally change any registers, calling an <init> method will change the type of its
-	        //object register. If the uninitialized reference has been copied to other registers, they will be initialized
-	        //as well, so we need to check for that too
-	        if (isInvokeInit()) {
-	            DexRegister destinationRegister;
-	            DexInstruction_Invoke inst = (DexInstruction_Invoke)instruction;
-	            destinationRegister = inst.getArgumentRegisters().get(0);
-
-	            if (registerNumber == DexRegisterHelper.normalize(destinationRegister)) {
-	                return true;
-	            }
-	            RegisterType preInstructionDestRegisterType = getPreRegister(registerNumber);
-	            if (preInstructionDestRegisterType.category != RegisterType.Category.UninitRef &&
-	                preInstructionDestRegisterType.category != RegisterType.Category.UninitThis) {
-
-	                return false;
-	            }
-	            //check if the uninit ref has been copied to another register
-	            // i.e. if dexRegister and destinationRegister hold the same uninit object instance.
-	            if (getPreRegisterType(destinationRegister) == preInstructionDestRegisterType) {
-	                return true;
-	            }
-	            return false;
-	        }
 
 	        if (!setsRegister()) {
 	            return false;
@@ -321,21 +272,21 @@ public class AnalyzedDexInstruction {
 	    	return postRegisterMap.keySet();
 	    }
 
-	    public RegisterType getPostRegisterType(DexRegister dexRegister) {
+	    public RopType getPostRegisterType(DexRegister dexRegister) {
 	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
 	    	return getPostRegisterType(registerNumber);
 	    }
 	    
-	    public RegisterType getPostRegisterType(int registerNumber) {
+	    public RopType getPostRegisterType(int registerNumber) {
 	    	return getPostRegister(registerNumber);
 	    }
 	    
-	    public RegisterType getPreRegisterType(DexRegister dexRegister) {
+	    public RopType getPreRegisterType(DexRegister dexRegister) {
 	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
 	    	return getPreRegister(registerNumber);
 	    }
 	    
-	    public RegisterType getPreRegisterType(int registerNumber) {
+	    public RopType getPreRegisterType(int registerNumber) {
 	    	return getPreRegisterType(registerNumber);
 	    }
 	    
@@ -343,14 +294,39 @@ public class AnalyzedDexInstruction {
 	    	return instructionIndex;
 	    }
 	    
-		public void defineRegister(DexRegister regTo, RegisterType registerType) {
+	    private HashSet<DexRegister> definedRegisters;
+		public void defineRegister(DexRegister regTo, RopType registerType) {
+			definedRegisters.add(regTo);
 			defSet.put(DexRegisterHelper.normalize(regTo), registerType);
 		}
-		public void useRegister(DexRegister regFrom, RegisterType registerType) {
+		public RopType getDefinedRegType(int regTo) {
+			if (defSet.containsKey(regTo))
+				return defSet.get(regTo);
+			else
+				return null;
+		}
+		public HashSet<DexRegister> getDefinedRegisters() {
+			return definedRegisters;
+		}
+		public void useRegister(DexRegister regFrom, RopType registerType) {
 			useSet.put(DexRegisterHelper.normalize(regFrom), registerType);
 		}
+		public RopType getUsedRegType(int regFrom) {
+			if (useSet.containsKey(regFrom))
+				return useSet.get(regFrom);
+			else
+				return null;
+		}
+		
 		public void moveRegister(DexRegister regFrom, DexRegister regTo) {
 			moveSet.put(DexRegisterHelper.normalize(regFrom), DexRegisterHelper.normalize(regTo));
+		}
+		
+		public int getMovedReg(int regFrom) {
+			if (moveSet.containsKey(regFrom))
+				return moveSet.get(regFrom);
+			else
+				return -1;
 		}
 			    
 }
