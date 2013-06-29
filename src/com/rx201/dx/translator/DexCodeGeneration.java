@@ -1,34 +1,21 @@
 package com.rx201.dx.translator;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Stack;
 
-import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
-import org.jf.dexlib.DebugInfoItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Item;
 import org.jf.dexlib.MethodIdItem;
-import org.jf.dexlib.ProtoIdItem;
 import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.TypeIdItem;
-import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.InstructionWithReference;
-import org.jf.dexlib.Code.Analysis.AnalyzedInstruction;
-import org.jf.dexlib.Code.Analysis.MethodAnalyzer;
 import org.jf.dexlib.Code.Format.Instruction20bc;
 import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction22c;
@@ -37,10 +24,7 @@ import org.jf.dexlib.Code.Format.Instruction3rc;
 import org.jf.dexlib.CodeItem.EncodedCatchHandler;
 import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
 import org.jf.dexlib.CodeItem.TryItem;
-import org.jf.dexlib.Util.AccessFlags;
-import org.jf.util.IndentingWriter;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -52,13 +36,9 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPutWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGetWide;
@@ -75,33 +55,19 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGetWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPutWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpLiteral;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
-import com.android.dx.cf.code.ConcreteMethod;
-import com.android.dx.cf.code.LocalVariableList;
-import com.android.dx.cf.code.Ropper;
-import com.android.dx.cf.direct.DirectClassFile;
-import com.android.dx.cf.direct.StdAttributeFactory;
 import com.android.dx.dex.DexOptions;
-import com.android.dx.dex.cf.CodeStatistics;
-import com.android.dx.dex.cf.OptimizerOptions;
 import com.android.dx.dex.code.DalvCode;
 import com.android.dx.dex.code.PositionList;
 import com.android.dx.dex.code.RopTranslator;
-import com.android.dx.dex.file.ClassDefItem;
-import com.android.dx.rop.annotation.Annotations;
 import com.android.dx.rop.code.BasicBlock;
 import com.android.dx.rop.code.BasicBlockList;
 import com.android.dx.rop.code.DexTranslationAdvice;
 import com.android.dx.rop.code.Insn;
 import com.android.dx.rop.code.InsnList;
-import com.android.dx.rop.code.LocalVariableExtractor;
-import com.android.dx.rop.code.LocalVariableInfo;
 import com.android.dx.rop.code.PlainCstInsn;
 import com.android.dx.rop.code.PlainInsn;
 import com.android.dx.rop.code.RegisterSpec;
@@ -110,18 +76,12 @@ import com.android.dx.rop.code.Rop;
 import com.android.dx.rop.code.RopMethod;
 import com.android.dx.rop.code.Rops;
 import com.android.dx.rop.code.SourcePosition;
-import com.android.dx.rop.code.TranslationAdvice;
 import com.android.dx.rop.cst.CstInteger;
-import com.android.dx.rop.cst.CstMethodRef;
-import com.android.dx.rop.cst.CstString;
-import com.android.dx.rop.cst.CstType;
 import com.android.dx.rop.type.Type;
 import com.android.dx.ssa.Optimizer;
 import com.android.dx.util.Hex;
 import com.android.dx.util.IntList;
 import com.rx201.dx.translator.util.DexRegisterHelper;
-import com.rx201.dx.translator.util.MethodParameter;
-import com.rx201.dx.translator.util.MethodPrototype;
 
 public class DexCodeGeneration {
 
@@ -135,6 +95,12 @@ public class DexCodeGeneration {
 	private DexCodeAnalyzer analyzer;
 	
 	public DexCodeGeneration(DexMethodWithCode method) {
+    	System.out.println("==================================================================================");
+    	System.out.println(String.format("%s param reg: %d", method.getName()  + method.getPrototype().toString(), 
+				inWords));
+        if (method.getName().equals("bar1")) {
+        	int x = 0;
+        }
 		dexOptions = new DexOptions();
 	    dexOptions.targetApiLevel = 10;
 	    
@@ -292,10 +258,6 @@ public class DexCodeGeneration {
         
         // Build basic blocks
         ArrayList<ArrayList<AnalyzedDexInstruction>> basicBlocks = buildBasicBlocks();
-        
-    	System.out.println("==================================================================================");
-    	System.out.println(String.format("%s param reg: %d", method.getName()  + method.getPrototype().toString(), 
-				inWords));
         
         // Convert basicBlocks, hold the result in the temporary map. It is indexed by the basic block's first AnalyzedInst.
         HashMap<AnalyzedDexInstruction, ArrayList<Insn>> translatedBasicBlocks = new HashMap<AnalyzedDexInstruction, ArrayList<Insn>>();
