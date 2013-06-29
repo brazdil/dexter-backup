@@ -1,27 +1,18 @@
 package com.rx201.dx.translator;
 
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.rx201.dx.translator.RopType.Category;
 import com.rx201.dx.translator.util.DexRegisterHelper;
 
-import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class AnalyzedDexInstruction {
@@ -57,11 +48,6 @@ public class AnalyzedDexInstruction {
 
 	    protected final HashMap<Integer, Pair<Integer, TypeSolver.CascadeType>> constrainedRegisters;
 	    
-	    
-		private Dex parentFile;
-
-		private final DexParsingCache cache;
-
 	    public final int instructionIndex;
 	    
 		protected HashMap<Integer, Pair<RopType, Boolean>> useSet;
@@ -70,13 +56,11 @@ public class AnalyzedDexInstruction {
 		protected HashMap<Integer, Integer> moveSet;
 	    
 	    
-	    public AnalyzedDexInstruction(int index, DexInstruction instruction, Dex parentFile) {
+	    public AnalyzedDexInstruction(int index, DexInstruction instruction) {
 	        this.instruction = instruction;
 	        this.usedRegisterMap = new HashMap<Integer, TypeSolver>();
 	        this.definedRegisterMap = new HashMap<Integer, TypeSolver>();
 	        this.constrainedRegisters = new HashMap<Integer, Pair<Integer, TypeSolver.CascadeType>>();
-	        this.parentFile = parentFile;
-	        this.cache = parentFile.getParsingCache();
 	        this.instructionIndex = index;
 	        this.auxillaryElement = null;
 	        
@@ -88,8 +72,8 @@ public class AnalyzedDexInstruction {
 	        
 	    }
 
-	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexCodeElement element, Dex parentFile) {
-	    	this(index, instruction, parentFile);
+	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexCodeElement element) {
+	    	this(index, instruction);
 	    	this.auxillaryElement = element;
 	    }
 

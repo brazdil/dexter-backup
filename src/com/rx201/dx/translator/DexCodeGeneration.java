@@ -98,9 +98,7 @@ public class DexCodeGeneration {
     	System.out.println("==================================================================================");
     	System.out.println(String.format("%s param reg: %d", method.getName()  + method.getPrototype().toString(), 
 				inWords));
-        if (method.getName().equals("bar1")) {
-        	int x = 0;
-        }
+    	
 		dexOptions = new DexOptions();
 	    dexOptions.targetApiLevel = 10;
 	    
@@ -112,7 +110,7 @@ public class DexCodeGeneration {
         DexRegisterHelper.reset(method.getRegisterCount());
         
 		stripMoveParameters();
-	    this.analyzer = new DexCodeAnalyzer(method);
+	    this.analyzer = new DexCodeAnalyzer(method.getCode());
 	    this.analyzer.analyze();
 	}
 
@@ -306,7 +304,7 @@ public class DexCodeGeneration {
         		} else if (lastInsn.auxInsns.size() != 0) { 
         			// Need to create an extra basic block to accommodate auxInsns 
         			AnalyzedDexInstruction extraBB_head = new AnalyzedDexInstruction(dummyInstructionIndex++,
-        					null, null, method.getParentFile());
+        					null, null);
         			DexConvertedResult extraBB_Info = new DexConvertedResult();
         			
         			// Chain this extra BB to original BB's primary successor.

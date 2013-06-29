@@ -3,10 +3,7 @@ package com.rx201.dx.translator;
 import java.util.HashMap;
 
 import org.jf.dexlib.Code.Analysis.ClassPath;
-import org.jf.dexlib.Code.Analysis.RegisterType;
-import org.jf.dexlib.Code.Analysis.ValidationException;
 import org.jf.dexlib.Code.Analysis.ClassPath.ClassDef;
-import org.jf.dexlib.Code.Analysis.RegisterType.Category;
 
 public class RopType {
 	public static final RopType Unknown = getRopType(Category.Unknown);

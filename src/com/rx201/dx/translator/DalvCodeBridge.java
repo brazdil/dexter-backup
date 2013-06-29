@@ -3,16 +3,12 @@ package com.rx201.dx.translator;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.jf.dexlib.Util.AccessFlags;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.CodeItem;
-import org.jf.dexlib.CodeItem.EncodedCatchHandler;
 import org.jf.dexlib.CodeItem.TryItem;
 
 import uk.ac.cam.db538.dexter.dex.DexClass;
