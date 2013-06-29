@@ -75,11 +75,11 @@ public class DexCodeAnalyzer {
 			
 			switch (dexRegType.getTypeSize()) {
 	        case SINGLE:
-	        	startOfMethod.defineRegister(paramReg, regType);
+	        	startOfMethod.defineRegister(paramReg, regType, true);
 	        	break;
 	        case WIDE:
-	        	startOfMethod.defineRegister(paramReg, regType);
-	        	startOfMethod.defineRegister(DexRegisterHelper.next(paramReg), regType.lowToHigh());
+	        	startOfMethod.defineRegister(paramReg, regType, true);
+	        	startOfMethod.defineRegister(DexRegisterHelper.next(paramReg), regType.lowToHigh(), true);
 	        	break;
 			}
 	        	
@@ -170,12 +170,15 @@ public class DexCodeAnalyzer {
 	}
 	
 	private void typeConstaintAnalysis() {
-		startOfMethod.propagateDefinitionConstraints();
+		// Firt add all definition constraints,
+		// then refine it with usage constraints
+		startOfMethod.initDefinitionConstraints();
 		for (AnalyzedDexInstruction inst : instructions) {
-			inst.propagateDefinitionConstraints();
+			inst.initDefinitionConstraints();
+		}
+		for (AnalyzedDexInstruction inst : instructions) {
 			inst.propagateUsageConstraints();
 		}
-		
 	}
 
 

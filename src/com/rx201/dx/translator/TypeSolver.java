@@ -63,7 +63,8 @@ public class TypeSolver {
 	
 	public boolean addConstraint(RopType constraint, boolean freeze) {
 		if (info.freezed) {
-			assert info.type.merge(constraint) == constraint;
+			RopType newType = info.type.merge(constraint);
+			assert newType.category != Category.Conflicted;
 			return false;
 		}
 		if (info.constraints.contains(constraint))
@@ -73,8 +74,8 @@ public class TypeSolver {
 		RopType newType = info.type.merge(constraint);
 		assert newType.category != Category.Conflicted;
 		if (freeze) {
+			assert !constraint.isPolymorphic();
 			info.freezed = true;
-			assert newType == constraint;
 		}
 		if (newType != info.type) {
 			info.type = newType;
@@ -103,7 +104,7 @@ public class TypeSolver {
 	}
 
 	public RopType getType() {
-		if (info.type.isPolymorphic()) {
+		if (info.type.isPolymorphic() && info.constraints.size() > 1) {
 			int x = 0;
 		}
 		if (info.type == RopType.One)

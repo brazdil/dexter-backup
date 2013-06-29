@@ -54,23 +54,23 @@ public class RopType {
         {
                 /*              Unknown     Null        Zero,       One,        Boolean     Byte        Short       Char        Integer,    Float,      LongLo      LongHi      DoubleLo    DoubleHi    Primitive,  IntFloat,   Wide,       Reference   Conflicted*/
                 /*Unknown*/    {Unknown,    Null,       Zero,       One,        Boolean,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   Primitive,  IntFloat,   Wide,       Reference,  Conflicted},
-                /*Null*/       {Null,       Null,       Null,       Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Null,       Conflicted},
-                /*Zero*/       {Zero,       Null,       Null,       Boolean,    Boolean,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   Zero,       Zero,       Zero,       Null,       Conflicted},
+                /*Null*/       {Null,       Null,       Null,       Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Reference,  Conflicted},
+                /*Zero*/       {Zero,       Null,       Zero,       Boolean,    Boolean,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   Integer,    Integer,    Wide,       Reference,  Conflicted},
                 /*One*/        {One,        Conflicted, Boolean,    One,        Boolean,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   One,        One,        One,        Conflicted, Conflicted},
                 /*Boolean*/    {Boolean,    Conflicted, Boolean,    Boolean,    Boolean,    Byte,       Short,      Char,       Integer,    Float,      Conflicted, Conflicted, Conflicted, Conflicted, Boolean,    Integer,    Conflicted, Conflicted, Conflicted},
                 /*Byte*/       {Byte,       Conflicted, Byte,       Byte,       Byte,       Byte,       Short,      Integer,    Byte,       Float,      Conflicted, Conflicted, Conflicted, Conflicted, Byte,       Integer,    Conflicted, Conflicted, Conflicted},
                 /*Short*/      {Short,      Conflicted, Short,      Short,      Short,      Short,      Short,      Integer,    Short,      Float,      Conflicted, Conflicted, Conflicted, Conflicted, Short,      Integer,    Conflicted, Conflicted, Conflicted},
                 /*Char*/       {Char,       Conflicted, Char,       Char,       Char,       Integer,    Integer,    Char,       Char,       Float,      Conflicted, Conflicted, Conflicted, Conflicted, Char,       Integer,    Conflicted, Conflicted, Conflicted},
-                /*Integer*/    {Integer,    Conflicted, Integer,    Integer,    Integer,    Byte,       Short,      Char,       Integer,    Float,      Conflicted, Conflicted, Conflicted, Conflicted, Integer,    Integer,    Conflicted, Conflicted, Conflicted},
+                /*Integer*/    {Integer,    Conflicted, Integer,    Integer,    Integer,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   Integer,    Integer,    Conflicted, Conflicted, Conflicted},
                 /*Float*/      {Float,      Conflicted, Float,      Float,      Float,      Float,      Float,      Float,      Float,      Float,      Conflicted, Conflicted, Conflicted, Conflicted, Float,      Float,      Conflicted, Conflicted, Conflicted},
-                /*LongLo*/     {LongLo,     Conflicted, LongLo,     LongLo,     Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, LongLo,     Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, LongLo,     Conflicted, Conflicted},
-                /*LongHi*/     {LongHi,     Conflicted, LongHi,     LongHi,     Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, LongLo,     Conflicted, Conflicted, Conflicted, Conflicted, LongHi,     Conflicted, Conflicted},
-                /*DoubleLo*/   {DoubleLo,   Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, DoubleLo,   Conflicted, Conflicted, Conflicted, DoubleLo,   Conflicted, Conflicted},
-                /*DoubleHi*/   {DoubleHi,   Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, DoubleHi,   Conflicted, Conflicted, DoubleHi,   Conflicted, Conflicted},
+                /*LongLo*/     {LongLo,     Conflicted, LongLo,     LongLo,     Conflicted, Conflicted, Conflicted, Conflicted, LongLo,     Conflicted, LongLo,     Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, LongLo,     Conflicted, Conflicted},
+                /*LongHi*/     {LongHi,     Conflicted, LongHi,     LongHi,     Conflicted, Conflicted, Conflicted, Conflicted, LongHi,     Conflicted, Conflicted, LongLo,     Conflicted, Conflicted, Conflicted, Conflicted, LongHi,     Conflicted, Conflicted},
+                /*DoubleLo*/   {DoubleLo,   Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, DoubleLo,   Conflicted, Conflicted, Conflicted, DoubleLo,   Conflicted, Conflicted, Conflicted, DoubleLo,   Conflicted, Conflicted},
+                /*DoubleHi*/   {DoubleHi,   Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, DoubleHi,   Conflicted, Conflicted, Conflicted, Conflicted, DoubleHi,   Conflicted, Conflicted, DoubleHi,   Conflicted, Conflicted},
                 /*Primitive*/  {Primitive,  Conflicted, Zero,       One,        Boolean,    Byte,       Short,      Char,       Integer,    Float,      Conflicted, Conflicted, Conflicted, Conflicted, Primitive,  IntFloat,   Conflicted, Conflicted, Conflicted},
                 /*IntFloat*/   {IntFloat,   Conflicted, Zero,       One,        Integer,    Integer,    Integer,    Integer,    Integer,    Float,      Conflicted, Conflicted, Conflicted, Conflicted, IntFloat,   IntFloat,   Conflicted, Conflicted, Conflicted},
                 /*Wide*/       {Wide,       Conflicted, Wide,       Wide,       Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, LongLo,     LongHi,     DoubleLo,   DoubleHi,   Conflicted, Conflicted, Wide,       Conflicted, Conflicted},
-                /*Reference*/  {Reference,  Null,       Null,       Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Reference,  Conflicted, Conflicted, Reference,  Conflicted},
+                /*Reference*/  {Reference,  Reference,  Reference,  Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Reference,  Conflicted, Conflicted, Reference,  Conflicted},
                 /*Conflicted*/ {Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted}
         };
 	}
@@ -182,9 +182,9 @@ public class RopType {
             if (this.type instanceof ClassPath.UnresolvedClassDef ||
                 type.type instanceof ClassPath.UnresolvedClassDef) {
                 mergedType = ClassPath.getUnresolvedObjectClassDef();
-            } else if (this == Reference && type != Unknown) {
+            } else if (this == Reference && (type != Unknown && type != Zero)) {
             	return type;
-            } else if (type == Reference && this != Unknown) {
+            } else if (type == Reference && (this != Unknown && this != Zero)) {
             	return this;
             } else {
                 mergedType = ClassPath.getCommonSuperclass(this.type, type.type);

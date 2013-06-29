@@ -64,8 +64,8 @@ public class AnalyzedDexInstruction {
 
 	    public final int instructionIndex;
 	    
-		protected HashMap<Integer, RopType> useSet;
-		protected HashMap<Integer, RopType> defSet;
+		protected HashMap<Integer, Pair<RopType, Boolean>> useSet;
+		protected HashMap<Integer, Pair<RopType, Boolean>> defSet;
 		// <regSource, regDestination>
 		protected HashMap<Integer, Integer> moveSet;
 	    
@@ -80,8 +80,8 @@ public class AnalyzedDexInstruction {
 	        this.instructionIndex = index;
 	        this.auxillaryElement = null;
 	        
-			useSet = new HashMap<Integer, RopType>();
-			defSet = new HashMap<Integer, RopType>();
+			useSet = new HashMap<Integer, Pair<RopType, Boolean>>();
+			defSet = new HashMap<Integer, Pair<RopType, Boolean>>();
 			moveSet = new HashMap<Integer, Integer>();
 			usedRegisters = new HashSet<DexRegister>();
 			definedRegisters = new HashSet<DexRegister>();
@@ -167,16 +167,16 @@ public class AnalyzedDexInstruction {
 	    	return instructionIndex;
 	    }
 	    
-		public void defineRegister(DexRegister regTo, RopType registerType) {
+		public void defineRegister(DexRegister regTo, RopType registerType, boolean freezed) {
 			int registerNumber = DexRegisterHelper.normalize(regTo);
 			definedRegisters.add(regTo);
 			definedRegisterMap.put(registerNumber, new TypeSolver());
-			defSet.put(registerNumber, registerType);
+			defSet.put(registerNumber, new Pair<RopType, Boolean>(registerType, freezed));
 		}
 		
-		public void useRegister(DexRegister regFrom, RopType registerType) {
+		public void useRegister(DexRegister regFrom, RopType registerType, boolean freezed) {
 			usedRegisters.add(regFrom);
-			useSet.put(DexRegisterHelper.normalize(regFrom), registerType);
+			useSet.put(DexRegisterHelper.normalize(regFrom), new Pair<RopType, Boolean>(registerType, freezed));
 		}
 		
 		public void addRegisterConstraint(DexRegister regTo, DexRegister regFrom, TypeSolver.CascadeType type) {
@@ -192,19 +192,21 @@ public class AnalyzedDexInstruction {
 			}
 		}
 		
-		public void propagateDefinitionConstraints() {
-			for(Entry<Integer, RopType> constraint : defSet.entrySet()) {
+		public void initDefinitionConstraints() {
+			for(Entry<Integer, Pair<RopType, Boolean>> constraint : defSet.entrySet()) {
 				TypeSolver target = definedRegisterMap.get(constraint.getKey());
-				RopType type = constraint.getValue();
-				target.addConstraint(type, false);
+				RopType type = constraint.getValue().getValA();
+				boolean freezed = constraint.getValue().getValB();
+				target.addConstraint(type, freezed);
 			}
 		}
 
 		public void propagateUsageConstraints() {
-			for(Entry<Integer, RopType> constraint : useSet.entrySet()) {
+			for(Entry<Integer, Pair<RopType, Boolean>> constraint : useSet.entrySet()) {
 				TypeSolver target = usedRegisterMap.get(constraint.getKey());
-				RopType type = constraint.getValue();
-				target.addConstraint(type, false);
+				RopType type = constraint.getValue().getValA();
+				boolean freezed = constraint.getValue().getValB();
+				target.addConstraint(type, freezed);
 			}
 		}
 
