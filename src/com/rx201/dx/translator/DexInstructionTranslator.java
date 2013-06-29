@@ -250,12 +250,12 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		return RegisterSpec.make(DexRegisterHelper.normalize(reg), toType(registerType));
 	}
 
-	private RegisterSpec getPreRegSpec(DexRegister reg) {
-		return toRegSpec(reg, curInst.getPreRegisterType(reg));
+	private RegisterSpec getSourceRegSpec(DexRegister reg) {
+		return toRegSpec(reg, curInst.getUsedRegisterType(reg));
 	}
 	
-	private RegisterSpec getPostRegSpec(DexRegister reg) {
-		return toRegSpec(reg, curInst.getPostRegisterType(reg));
+	private RegisterSpec getDestRegSpec(DexRegister reg) {
+		return toRegSpec(reg, curInst.getDefinedRegisterType(reg));
 	}
 
 	private List<AnalyzedDexInstruction> getCatchers(Rop opcode) {
@@ -335,7 +335,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			return RegisterSpecList.EMPTY;
 		RegisterSpecList result = new RegisterSpecList(operands.length);
 		for(int i=0;i <operands.length; i++)
-			result.set(i, getPreRegSpec(operands[i]));
+			result.set(i, getSourceRegSpec(operands[i]));
 		return result;
 	}
 	
@@ -393,7 +393,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	// instructions like INSTANCE_OF, ARRAY_LENGTH needs a macro move-result Insn, which (I guess) only
 	// helps with flow analysis and does not contribute to the actual assembled code.
 	private void domacroMoveResult(DexRegister to) {
-		RegisterSpec dst = getPostRegSpec(to);
+		RegisterSpec dst = getDestRegSpec(to);
 		result.addAuxInstruction(new PlainInsn(Rops.opMoveResultPseudo(dst), SourcePosition.NO_INFO, dst, RegisterSpecList.EMPTY));
 	}
 ////////////////////////////////////////////////////////////////////////////////
@@ -458,7 +458,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 
 	private void doMove(DexRegister to, DexRegister from) {
-		RegisterSpec dst = getPostRegSpec(to);
+		RegisterSpec dst = getDestRegSpec(to);
 		doPlainInsn(Rops.opMove(dst), dst, from);
 	}
 	
@@ -486,7 +486,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		boolean legitimate = prev.getInstruction() instanceof DexInstruction_Invoke || prev.getInstruction() instanceof DexInstruction_FilledNewArray ;
 		assert legitimate;
 		
-		RegisterSpec dst = getPostRegSpec(to);
+		RegisterSpec dst = getDestRegSpec(to);
 		doPlainInsn(Rops.opMoveResult(dst), dst);
 	}
 	
@@ -504,7 +504,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	@Override
 	public void visit(DexInstruction_MoveException instruction) {
-		RegisterSpec dst = getPostRegSpec(instruction.getRegTo());
+		RegisterSpec dst = getDestRegSpec(instruction.getRegTo());
 		doPlainInsn(Rops.opMoveException(dst), dst);
 	}
 
@@ -516,7 +516,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 
 	private void doReturn(DexRegister from) {
-		doPlainInsn(Rops.opReturn(getPreRegSpec(from)), null, from);
+		doPlainInsn(Rops.opReturn(getSourceRegSpec(from)), null, from);
 	}
 	
 	@Override
@@ -533,7 +533,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	
 	private void doConst(DexRegister to, long value) {
 		TypedConstant constant;
-		RopType type = curInst.getPostRegisterType(to);
+		RopType type = curInst.getDefinedRegisterType(to);
 		
 		switch (type.category) {
 			case Boolean:
@@ -546,11 +546,13 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
             case DoubleHi:
             case LongLo:
             case LongHi:
-			case Null:
 				constant = CstInteger.make((int)value);
 				break;
 			case Float:
 				constant = CstFloat.make((int)value);
+				break;
+			case Null:
+				constant = CstKnownNull.THE_ONE;
 				break;
 			case Reference:
 				if (value == 0) {
@@ -567,7 +569,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	
 	private void doConstWide(DexRegister to, long value) {
 		TypedConstant constant;
-		RopType type = curInst.getPostRegisterType(to);
+		RopType type = curInst.getDefinedRegisterType(to);
 		switch (type.category) {
 			case LongLo:
 			case LongHi:
@@ -580,7 +582,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			default:
 				throw new RuntimeException("Unknown constant type.");
 		}
-		RegisterSpec dst = getPostRegSpec(to);
+		RegisterSpec dst = getDestRegSpec(to);
 		doPlainCstInsn(Rops.opConst(dst), dst, constant);
 	}
 	
@@ -718,7 +720,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		AnalyzedDexInstruction arrayDataPtr = analyzer.reverseLookup(instruction.getArrayTable());
 		DexInstruction_FillArrayData arrayData = (DexInstruction_FillArrayData) arrayDataPtr.getOnlySuccesor().getInstruction();
 		
-		Type arrayElementType = getPostRegSpec(instruction.getRegArray()).getType().getComponentType();
+		Type arrayElementType = getSourceRegSpec(instruction.getRegArray()).getType().getComponentType();
 		Constant arrayType = null;
 		ArrayList<Constant> values = new ArrayList<Constant>();
 		for(byte[] element : arrayData.getElementData()) {
@@ -857,7 +859,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	@Override
 	public void visit(DexInstruction_CompareFloat instruction) {
 		doPlainInsn(instruction.isLtBias() ? Rops.CMPL_FLOAT : Rops.CMPG_FLOAT, 
-				getPostRegSpec(instruction.getRegTo()), instruction.getRegSourceA(), instruction.getRegSourceB());
+				getDestRegSpec(instruction.getRegTo()), instruction.getRegSourceA(), instruction.getRegSourceB());
 	}
 
 
@@ -876,7 +878,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			break;
 		
 		}
-		doPlainInsn(opcode, getPostRegSpec(instruction.getRegTo()), instruction.getRegSourceA1(), instruction.getRegSourceB1());
+		doPlainInsn(opcode, getDestRegSpec(instruction.getRegTo()), instruction.getRegSourceA1(), instruction.getRegSourceB1());
 	}
 
 	@Override
@@ -938,7 +940,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 
 	private void doAget(DexRegister to, DexRegister array, DexRegister index) {
-		doThrowingInsn(Rops.opAget(getPostRegSpec(to)), array, index);
+		doThrowingInsn(Rops.opAget(getDestRegSpec(to)), array, index);
 		domacroMoveResult(to);
 	}
 	@Override
@@ -954,7 +956,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 
 	private void doAput(DexRegister src, DexRegister array, DexRegister index) {
-		doThrowingInsn(Rops.opAput(getPreRegSpec(src)), src, array, index);
+		doThrowingInsn(Rops.opAput(getSourceRegSpec(src)), src, array, index);
 	}
 	@Override
 	public void visit(DexInstruction_ArrayPut instruction) {
@@ -968,7 +970,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	}
 
 	private void doIget(DexRegister to, DexRegister object, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
-		RegisterSpec dst = getPostRegSpec(to);
+		RegisterSpec dst = getDestRegSpec(to);
 		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
 		doThrowingCstInsn(Rops.opGetField(dst), fieldRef, object);
 		domacroMoveResult(to);
@@ -989,7 +991,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 
 	private void doIput(DexRegister from, DexRegister object, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
-		RegisterSpec src = getPreRegSpec(from);
+		RegisterSpec src = getSourceRegSpec(from);
 		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
 		doThrowingCstInsn(Rops.opPutField(src), fieldRef, from, object);
 	}
@@ -1008,7 +1010,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 
 	private void doSget(DexRegister to,  DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
-		RegisterSpec dst = getPostRegSpec(to);
+		RegisterSpec dst = getDestRegSpec(to);
 		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
 		doThrowingCstInsn(Rops.opGetStatic(dst), fieldRef);
 		domacroMoveResult(to);
@@ -1028,7 +1030,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	
 	private void doSput(DexRegister from, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
-		RegisterSpec src = getPreRegSpec(from);
+		RegisterSpec src = getSourceRegSpec(from);
 		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
 		doThrowingCstInsn(Rops.opPutStatic(src), fieldRef, from);
 	}
@@ -1051,12 +1053,20 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		Rop opcode = null;
 		ArrayList<DexRegister> operands_list = new ArrayList<DexRegister>();
 		
-		// Filter out high reg for long/double type
-		for(DexRegister paramReg : instruction.getArgumentRegisters()) {
-			RopType paramType = curInst.getPreRegisterType(paramReg);
-			if (paramType.category != Category.LongHi && paramType.category != Category.DoubleHi)
-				operands_list.add(paramReg);
+		List<DexRegister> arguments = instruction.getArgumentRegisters();
+		List<DexRegisterType> parameterTypes = instruction.getMethodPrototype().getParameterTypes();
+		
+		int regIndex = 0;
+		if (!instruction.isStaticCall()) {
+			operands_list.add(arguments.get(regIndex++));
 		}
+		// Filter out high reg for long/double type
+		for(int i=0 ;i<parameterTypes.size(); i++) {
+			DexRegisterType paramType = parameterTypes.get(i);
+			operands_list.add(arguments.get(regIndex));
+			regIndex += paramType.getRegisters();
+		}
+
 		DexRegister[] operands_array = operands_list.toArray(new DexRegister[operands_list.size()]);
 		RegisterSpecList operands = makeOperands(operands_array);
 		switch(instruction.getCallType()) {
@@ -1096,7 +1106,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			opcode = Rops.NOT_INT;
 			break;
 		}
-		doPlainInsn(opcode, getPostRegSpec(instruction.getRegTo()), instruction.getRegFrom());
+		doPlainInsn(opcode, getDestRegSpec(instruction.getRegTo()), instruction.getRegFrom());
 	}
 
 
@@ -1114,13 +1124,13 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			opcode = Rops.NOT_LONG;
 			break;
 		}
-		doPlainInsn(opcode, getPostRegSpec(instruction.getRegTo1()), instruction.getRegFrom1());
+		doPlainInsn(opcode, getDestRegSpec(instruction.getRegTo1()), instruction.getRegFrom1());
 	}
 
 
 	private void doConvert(DexRegister dst, DexRegister src) {
-		TypeBearer sourceType = getPreRegSpec(src);
-		TypeBearer targetType = getPostRegSpec(dst);
+		TypeBearer sourceType = getSourceRegSpec(src);
+		TypeBearer targetType = getDestRegSpec(dst);
 		Rop opcode = null;
         if (sourceType.getBasicFrameType() == BT_INT) {
             switch (targetType.getBasicType()) {
@@ -1138,7 +1148,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
         if (opcode == null)
         	opcode = Rops.opConv(targetType, sourceType);
 		
-		doPlainInsn(opcode, getPostRegSpec(dst), src);
+		doPlainInsn(opcode, getDestRegSpec(dst), src);
 	}
 	
 	@Override
@@ -1219,7 +1229,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			break;
 		}
 		if (opcode.getBranchingness() == Rop.BRANCH_NONE) {
-			doPlainInsn(opcode, getPostRegSpec(instruction.getRegTarget()), instruction.getRegSourceA(), instruction.getRegSourceB());
+			doPlainInsn(opcode, getDestRegSpec(instruction.getRegTarget()), instruction.getRegSourceA(), instruction.getRegSourceB());
 		} else { // Integer division/reminder will throw exception
 			doThrowingInsn(opcode, instruction.getRegSourceA(), instruction.getRegSourceB());
 			domacroMoveResult(instruction.getRegTarget());
@@ -1268,7 +1278,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		
 		if (opcode.getBranchingness() == Rop.BRANCH_NONE) {
 			
-			doPlainCstInsn(opcode, getPostRegSpec(instruction.getRegTarget()), makeCstInteger((int)instruction.getLiteral()), instruction.getRegSource());
+			doPlainCstInsn(opcode, getDestRegSpec(instruction.getRegTarget()), makeCstInteger((int)instruction.getLiteral()), instruction.getRegSource());
 			
 		} else { // Integer division/reminder will throw exception
 			doThrowingCstInsn(opcode, makeCstInteger((int)instruction.getLiteral()), instruction.getRegSource());
@@ -1332,7 +1342,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		}
 		
 		if (opcode.getBranchingness() == Rop.BRANCH_NONE) {
-			doPlainInsn(opcode, getPostRegSpec(instruction.getRegTarget1()), instruction.getRegSourceA1(), instruction.getRegSourceB1());
+			doPlainInsn(opcode, getDestRegSpec(instruction.getRegTarget1()), instruction.getRegSourceA1(), instruction.getRegSourceB1());
 		} else { // Long division/reminder will throw exception
 			doThrowingInsn(opcode, instruction.getRegSourceA1(), instruction.getRegSourceB1());
 			domacroMoveResult(instruction.getRegTarget1());
