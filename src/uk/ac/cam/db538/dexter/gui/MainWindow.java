@@ -23,7 +23,6 @@ import com.alee.laf.menu.WebMenu;
 import com.alee.laf.menu.WebMenuBar;
 import com.alee.laf.menu.WebMenuItem;
 import com.alee.laf.tabbedpane.WebTabbedPane;
-import com.rx201.dx.translator.Scratchpad;
 
 public class MainWindow {
 
@@ -241,7 +240,6 @@ public class MainWindow {
   // MAIN FUNCTION
 
   public static void main(String[] args) {
-	  Scratchpad.test();
     EventQueue.invokeLater(new Runnable() {
       public void run() {
         try {

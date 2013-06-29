@@ -1,33 +1,27 @@
 package com.rx201.dx.translator;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 
-import com.rx201.dx.translator.RopType.Category;
 import com.rx201.dx.translator.util.DexRegisterHelper;
 
 import uk.ac.cam.db538.dexter.analysis.cfg.CfgBasicBlock;
 import uk.ac.cam.db538.dexter.analysis.cfg.CfgBlock;
 import uk.ac.cam.db538.dexter.analysis.cfg.ControlFlowGraph;
-import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 
-import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 
 public class DexCodeAnalyzer {
-	private DexMethodWithCode method;
 	private DexCode code;
 
     private HashMap<DexCodeElement, AnalyzedDexInstruction> instructionMap;
@@ -35,7 +29,6 @@ public class DexCodeAnalyzer {
 
     private static final int NOT_ANALYZED = 0;
     private static final int ANALYZED = 1;
-    private static final int VERIFIED = 2;
     
     private int analyzerState = NOT_ANALYZED;
 
@@ -47,19 +40,14 @@ public class DexCodeAnalyzer {
     //instruction, etc.
     private AnalyzedDexInstruction startOfMethod;
 
-    public DexCodeAnalyzer(DexMethodWithCode method) {
-    	this.method = method;
-        this.code = method.getCode();
+    public DexCodeAnalyzer(DexCode code) {
+        this.code = code;
         maxInstructionIndex = 0;
         buildInstructionList();
     }
 
     public boolean isAnalyzed() {
         return analyzerState >= ANALYZED;
-    }
-
-    public boolean isVerified() {
-        return analyzerState == VERIFIED;
     }
 
     private void analyzeParameters() {
@@ -222,12 +210,8 @@ public class DexCodeAnalyzer {
     	
         //override AnalyzedInstruction and provide custom implementations of some of the methods, so that we don't
         //have to handle the case this special case of instruction being null, in the main class
-        startOfMethod = new AnalyzedDexInstruction(-1, null, method.getParentFile()) {
-            public boolean setsRegister() {
-                return false;
-            }
-
-        };
+        startOfMethod = new AnalyzedDexInstruction(-1, null);
+        
         for (CfgBlock startBB: cfg.getStartBlock().getSuccessors()) {
         	if (startBB instanceof CfgBasicBlock) {
         		AnalyzedDexInstruction realHead = instructionMap.get(((CfgBasicBlock)startBB).getFirstInstruction());
@@ -241,9 +225,9 @@ public class DexCodeAnalyzer {
     	if (index > maxInstructionIndex)
     		maxInstructionIndex = index;
     	if (element instanceof DexInstruction) {
-    		return new AnalyzedDexInstruction(index, (DexInstruction) element, method.getParentFile());
+    		return new AnalyzedDexInstruction(index, (DexInstruction) element);
     	} else /* DexCatch, DexCatchAll, DexLabel, DexTryBlockStart, DexTryBlockEnd */ {
-    		return new AnalyzedDexInstruction(index, null, element, method.getParentFile());
+    		return new AnalyzedDexInstruction(index, null, element);
     	}
 	}
 
