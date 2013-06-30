@@ -415,40 +415,6 @@ public class DexCodeGeneration {
 		if (current.getInstruction().cfgEndsBasicBlock())
 			return true; // Sufficient condition
 		
-		// A few more special cases, to patch up incorrect information
-		// in their original definition (cfgEndsBasicBlock)
-		DexInstruction i = current.getInstruction();
-		if (    i instanceof DexInstruction_StaticGet ||
-				i instanceof DexInstruction_StaticGetWide ||
-				
-				i instanceof DexInstruction_StaticPut ||
-				i instanceof DexInstruction_StaticPutWide ||
-				
-				i instanceof DexInstruction_InstanceGet ||
-				i instanceof DexInstruction_InstanceGetWide ||
-				
-				i instanceof DexInstruction_InstancePut ||
-				i instanceof DexInstruction_InstancePutWide ||
-				
-				i instanceof DexInstruction_ArrayGet ||
-				i instanceof DexInstruction_ArrayGetWide ||
-
-				i instanceof DexInstruction_ArrayPut ||
-				i instanceof DexInstruction_ArrayPutWide ||
-
-				i instanceof DexInstruction_ConstClass ||
-				i instanceof DexInstruction_ConstString ||
-				
-				i instanceof DexInstruction_Monitor ||
-
-				i instanceof DexInstruction_InstanceOf ||
-				i instanceof DexInstruction_ArrayLength ||
-				i instanceof DexInstruction_NewInstance ||
-				i instanceof DexInstruction_NewArray ||
-				i instanceof DexInstruction_FilledNewArray
-				)
-			return true;
-		
 		return false;
 	}
 	

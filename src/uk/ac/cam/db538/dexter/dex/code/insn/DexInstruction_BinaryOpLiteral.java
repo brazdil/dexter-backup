@@ -27,8 +27,6 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   @Getter private final long literal;
   @Getter private final Opcode_BinaryOpLiteral insnOpcode;
   
-  private DexClassType arithmeticException;
-
   public DexInstruction_BinaryOpLiteral(DexCode methodCode, DexRegister target, DexRegister source, long literal, Opcode_BinaryOpLiteral opcode) {
     super(methodCode);
 
@@ -164,9 +162,7 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   @Override
   protected DexClassType[] throwsExceptions() {
 	if (insnOpcode == Opcode_BinaryOpLiteral.Div || insnOpcode == Opcode_BinaryOpLiteral.Rem) {
-		if (arithmeticException == null)
-	          arithmeticException = DexClassType.parse("Ljava/lang/ArithmeticException;", getParentFile().getParsingCache());
-		return new DexClassType[] {arithmeticException};
+		return getParentFile().getParsingCache().LIST_Error_ArithmeticException;
 	} else
 		return null;
   }
