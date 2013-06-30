@@ -93,6 +93,8 @@ public class DexCodeGeneration {
 	private boolean isStatic;
 	
 	private DexCodeAnalyzer analyzer;
+
+	public static boolean DEBUG = true;
 	
 	public DexCodeGeneration(DexMethodWithCode method) {
     	System.out.println("==================================================================================");
@@ -110,8 +112,11 @@ public class DexCodeGeneration {
         DexRegisterHelper.reset(method.getRegisterCount());
         
 		stripMoveParameters();
+		long time = System.currentTimeMillis();
 	    this.analyzer = new DexCodeAnalyzer(method.getCode());
 	    this.analyzer.analyze();
+	    time = System.currentTimeMillis() - time;
+	    System.out.println("Analysis time: " + time);
 	}
 
 	private DexRegister getMappedParamReg(List<DexRegister> parameterMapping, DexParameterRegister reg) {
@@ -240,12 +245,16 @@ public class DexCodeGeneration {
 			return null;
 
 		RopMethod rmeth = toRop(code);
-		System.out.println("==== Before Optimization ====");
-		dump(rmeth);
+		if (DEBUG) {
+			System.out.println("==== Before Optimization ====");
+			dump(rmeth);
+		}
 		
         rmeth = Optimizer.optimize(rmeth, inWords, isStatic, false, DexTranslationAdvice.THE_ONE);
-		System.out.println("==== After Optimization ====");
-		dump(rmeth);
+		if (DEBUG) {
+			System.out.println("==== After Optimization ====");
+			dump(rmeth);
+		}
 		
         DalvCode dcode = RopTranslator.translate(rmeth, PositionList.NONE, null, inWords, dexOptions);
         
@@ -290,7 +299,7 @@ public class DexCodeGeneration {
         	DexConvertedResult lastInsn = null;
         	for(int i = 0; i < basicBlock.size(); i++) {
         		AnalyzedDexInstruction inst = basicBlock.get(i);
-        		if (inst.getInstruction() != null) {
+        		if (DEBUG && inst.getInstruction() != null) {
 					System.out.println(inst.getInstruction().getOriginalAssembly());
         		}
         		lastInsn = translator.translate(inst);
