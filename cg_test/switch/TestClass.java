@@ -7,6 +7,7 @@ public class TestClass {
 		case 2:
 			return 3;
 		case 3:
+		case 5:
 			return 4;
 		default:
 			return 3*v + 4;

@@ -809,7 +809,8 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		// Sanity check
 		assert curInst.getSuccessorCount() == 2;
 		List<AnalyzedDexInstruction> switchSuccessors = analyzedSwitchData.getSuccesors();
-		assert switchSuccessors.size() == targetList.size();
+		// Note: targetList may have duplicated entries.
+		//assert switchSuccessors.size() <= targetList.size();
 		HashSet<DexCodeElement> set0 = new HashSet<DexCodeElement>(targetList);
 		HashSet<DexCodeElement> set1 = new HashSet<DexCodeElement>();
 		for(int i=0; i<switchSuccessors.size(); i++)
@@ -825,7 +826,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 		// Overwrite result.successor here, according to the requirement of Rops.SWITCH
 		result.successors.clear();
-		for(int i=0; i < switchSuccessors.size(); i++)
+		for(int i=0; i < targetList.size(); i++)
 			result.addSuccessor(analyzer.reverseLookup(targetList.get(i)));
 		result.addSuccessor(defaultSuccessor);
 		result.setPrimarySuccessor(defaultSuccessor);
