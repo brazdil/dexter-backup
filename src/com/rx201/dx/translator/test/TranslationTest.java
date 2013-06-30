@@ -17,13 +17,17 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.rx201.dx.translator.DexCodeGeneration;
+
 import uk.ac.cam.db538.dexter.apk.Apk;
 
 @RunWith(Parameterized.class)
 public class TranslationTest {
 
-	private static File frameworkDir = new File("framework-2.3-lite");
-	private static File testsDir = new File("cg_test/tests/");
+//	private static File frameworkDir = new File("framework-2.3-lite");
+//	private static File testsDir = new File("cg_test/tests/");
+	private static File frameworkDir = new File("framework-2.3");
+	private static File testsDir = new File("cg_test/android-apps/");
 	
 	@BeforeClass 
 	public static void onlyOnce() {
@@ -72,6 +76,7 @@ public class TranslationTest {
 	public void test() throws IOException{
 	    val APK = new Apk(file, frameworkDir);
 	    APK.getDexFile().instrument(false);
+	    DexCodeGeneration.DEBUG = false;
 	    APK.getDexFile().writeToFile();
 	}
 	
