@@ -330,7 +330,7 @@ public class DexCodeGeneration {
         			translatedBasicBlocksInfo.put(extraBB_head, extraBB_Info);
         		}
         			
-				if (lastInsn.insns.size() > 0) {
+				if (DEBUG && lastInsn.insns.size() > 0) {
 					System.out.print("    --> ");
 					System.out.print(lastInsn.insns.get(0).toHuman());
 					if (lastInsn.insns.size() > 1)
