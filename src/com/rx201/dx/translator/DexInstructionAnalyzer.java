@@ -709,7 +709,6 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		case OrLong:
 		case RemLong:
 		case SubLong:
-		case UshrLong:
 		case XorLong:
 			useFreezedRegister(instruction.getRegSourceA1(), RopType.LongLo);
 			useFreezedRegister(instruction.getRegSourceA2(), RopType.LongHi);
@@ -720,6 +719,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 			break;
 		case ShlLong:
 		case ShrLong:
+		case UshrLong:
 			useFreezedRegister(instruction.getRegSourceA1(), RopType.LongLo);
 			useFreezedRegister(instruction.getRegSourceA2(), RopType.LongHi);
 			useFreezedRegister(instruction.getRegSourceB1(), RopType.Integer);
