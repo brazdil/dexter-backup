@@ -221,8 +221,12 @@ public class RopType {
     }
     
     public RopType toArrayType() {
-    	assert !isPolymorphic();
-    	return getRopType("[" + toDescriptor(this.category, this.type));
+    	if (this == Zero) {
+    			return Reference;
+    	} else {
+    		assert !isPolymorphic();
+    		return getRopType("[" + toDescriptor(this.category, this.type));
+    	}
     }
     
     @Override
