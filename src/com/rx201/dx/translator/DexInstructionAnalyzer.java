@@ -413,6 +413,8 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	public void visit(DexInstruction_ArrayPutWide instruction) {
 		useRegister(instruction.getRegArray(), RopType.Array);
 		useFreezedRegister(instruction.getRegIndex(), RopType.Integer);
+		analyzedInst.addRegisterConstraint(instruction.getRegFrom1(), instruction.getRegArray(), CascadeType.ArrayToElement);
+		analyzedInst.addRegisterConstraint(instruction.getRegFrom2(), instruction.getRegArray(), CascadeType.ArrayToElement);
 		useRegister(instruction.getRegFrom1(), RopType.Wide);
 		useRegister(instruction.getRegFrom2(), RopType.Wide);
 	}

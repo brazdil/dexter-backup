@@ -171,6 +171,9 @@ public class AnalyzedDexInstruction {
 		public void createConstraintEdges() {
 			for(Entry<Integer, Pair<Integer, TypeSolver.CascadeType>> constraint : constrainedRegisters.entrySet()) {
 				TypeSolver target = definedRegisterMap.get(constraint.getKey());
+				//TODO: Hack for now, should add another addRegisterConstraint() interface
+				if (target == null)
+					target = usedRegisterMap.get(constraint.getKey());
 				TypeSolver source = usedRegisterMap.get(constraint.getValue().getValA());
 				target.addDependingTS(source, constraint.getValue().getValB());
 			}

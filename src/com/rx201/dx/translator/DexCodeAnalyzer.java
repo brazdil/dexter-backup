@@ -129,7 +129,7 @@ public class DexCodeAnalyzer {
 			}
 		}
 		
-		// Create the register contraint graph
+		// Create the register constraint graph
 		for (AnalyzedDexInstruction inst : instructions) {
 			inst.createConstraintEdges();
 		}
