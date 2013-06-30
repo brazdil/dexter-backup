@@ -207,4 +207,10 @@ public class DexInstruction_InstanceGet extends DexInstruction {
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }
+
+  @Override
+  protected DexClassType[] throwsExceptions() {
+	return getParentFile().getParsingCache().LIST_Error_NullPointerException;
+  }
+  
 }

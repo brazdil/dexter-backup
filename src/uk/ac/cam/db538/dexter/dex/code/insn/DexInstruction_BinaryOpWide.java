@@ -203,9 +203,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   @Override
   protected DexClassType[] throwsExceptions() {
 	if (insnOpcode == Opcode_BinaryOpWide.DivLong || insnOpcode == Opcode_BinaryOpWide.RemLong) {
-		if (arithmeticException == null)
-	          arithmeticException = DexClassType.parse("Ljava/lang/ArithmeticException;", getParentFile().getParsingCache());
-		return new DexClassType[] {arithmeticException};
+		return getParentFile().getParsingCache().LIST_Error_ArithmeticException;
 	} else
 		return null;
   }

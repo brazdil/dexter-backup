@@ -32,8 +32,6 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   @Getter private final DexRegister regSourceB;
   @Getter private final Opcode_BinaryOp insnOpcode;
   
-  private DexClassType arithmeticException;
-
   public DexInstruction_BinaryOp(DexCode methodCode, DexRegister target, DexRegister sourceA, DexRegister sourceB, Opcode_BinaryOp opcode) {
     super(methodCode);
 
@@ -159,9 +157,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   @Override
   protected DexClassType[] throwsExceptions() {
 	if (insnOpcode == Opcode_BinaryOp.DivInt || insnOpcode == Opcode_BinaryOp.RemInt) {
-		if (arithmeticException == null)
-	          arithmeticException = DexClassType.parse("Ljava/lang/ArithmeticException;", getParentFile().getParsingCache());
-		return new DexClassType[] {arithmeticException};
+		return getParentFile().getParsingCache().LIST_Error_ArithmeticException;
 	} else
 		return null;
   }

@@ -19,6 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -111,4 +112,10 @@ public class DexInstruction_ConstClass extends DexInstruction {
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }
+  
+  @Override
+  protected DexClassType[] throwsExceptions() {
+	return getParentFile().getParsingCache().LIST_Error;
+  }
+  
 }
