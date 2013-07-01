@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,8 +17,8 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexInstruction_BinaryOpWide extends DexInstruction {
 
@@ -35,8 +34,6 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   @Getter private final DexRegister regSourceB2;
   @Getter private final Opcode_BinaryOpWide insnOpcode;
   
-  private DexClassType arithmeticException;
-
   public DexInstruction_BinaryOpWide(DexCode methodCode,
                                      DexRegister target1, DexRegister target2,
                                      DexRegister sourceA1, DexRegister sourceA2,
@@ -95,7 +92,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
     val code = getMethodCode();
     val insnCombineTaintForResult = new DexInstruction_BinaryOp(code, state.getTaintRegister(regTarget1), state.getTaintRegister(regSourceA1), state.getTaintRegister(regSourceB1), Opcode_BinaryOp.OrInt);
 
-    if (insnOpcode == Opcode_BinaryOpWide.DivLong) {
+    if (insnOpcode == Opcode_BinaryOpWide.DivLong || insnOpcode == Opcode_BinaryOpWide.RemLong) {
       val regException = new DexRegister();
       val regExceptionTaint = new DexRegister();
       val insnCombineTaintForException = new DexInstruction_BinaryOp(code, regExceptionTaint, state.getTaintRegister(regSourceA1), state.getTaintRegister(regSourceB1), Opcode_BinaryOp.OrInt);
