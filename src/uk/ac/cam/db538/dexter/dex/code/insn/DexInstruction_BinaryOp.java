@@ -79,7 +79,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
     val code = getMethodCode();
     val insnCombineTaint = new DexInstruction_BinaryOp(code, state.getTaintRegister(regTarget), state.getTaintRegister(regSourceA), state.getTaintRegister(regSourceB), Opcode_BinaryOp.OrInt);
 
-    if (insnOpcode == Opcode_BinaryOp.DivInt) {
+    if (insnOpcode == Opcode_BinaryOp.DivInt || insnOpcode == Opcode_BinaryOp.RemInt) {
       val regException = new DexRegister();
       val insnAssignTaintToException = new DexMacro_SetObjectTaint(code, regException, state.getTaintRegister(regSourceB));
 
