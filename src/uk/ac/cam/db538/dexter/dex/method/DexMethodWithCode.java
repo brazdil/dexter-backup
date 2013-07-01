@@ -168,12 +168,6 @@ public abstract class DexMethodWithCode extends DexMethod {
   }
 
   @Override
-  public void transformSSA() {
-    if (code != null)
-      code.transformSSA();
-  }
-
-  @Override
   protected CodeItem generateCodeItem(DexFile outFile, DexAssemblingCache cache) {
     if (code == null)
       return null;

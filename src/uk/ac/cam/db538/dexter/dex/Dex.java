@@ -305,11 +305,6 @@ public class Dex {
   private static final String CLASS_INTERNALMETHOD = "Luk/ac/cam/db538/dexter/merge/InternalMethodAnnotation;";
   private static final String CLASS_TAINTCONSTANTS = "Luk/ac/cam/db538/dexter/merge/TaintConstants;";
 
-  public void transformSSA() {
-    for (val clazz : classes)
-      clazz.transformSSA();
-  }
-
   public void countInstructions() {
     val count = new HashMap<Class, Integer>();
     for (val clazz : classes)
