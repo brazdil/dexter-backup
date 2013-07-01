@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -10,7 +9,6 @@ import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -88,25 +86,6 @@ public class DexInstruction_StaticGet extends DexInstruction {
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     return createSet(regTo);
-  }
-
-  @Override
-  public gcRegType gcDefinedRegisterType(DexRegister reg) {
-    if (reg.equals(regTo))
-      return (opcode == Opcode_GetPut.Object) ? gcRegType.Object : gcRegType.PrimitiveSingle;
-    else
-      return super.gcDefinedRegisterType(reg);
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(new GcRangeConstraint(regTo, ColorRange.RANGE_8BIT));
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
-    return new DexInstruction_StaticGet(getMethodCode(), newTo, fieldClass, fieldType, fieldName, opcode);
   }
 
   @Override

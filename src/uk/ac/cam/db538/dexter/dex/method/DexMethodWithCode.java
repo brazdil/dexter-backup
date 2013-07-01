@@ -11,17 +11,13 @@ import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.AnnotationSetItem;
+import org.jf.dexlib.AnnotationSetRefList;
 import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
-import org.jf.dexlib.AnnotationSetRefList;
 import org.jf.dexlib.CodeItem;
-import org.jf.dexlib.DebugInfoItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.AccessFlags;
 
-import com.rx201.dx.translator.DexCodeGeneration;
-
-import uk.ac.cam.db538.dexter.analysis.coloring.GraphColoring;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -32,6 +28,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
+
+import com.rx201.dx.translator.DexCodeGeneration;
 
 public abstract class DexMethodWithCode extends DexMethod {
 
@@ -167,72 +165,14 @@ public abstract class DexMethodWithCode extends DexMethod {
     }
   }
 
+  
   @Override
   protected CodeItem generateCodeItem(DexFile outFile, DexAssemblingCache cache) {
     if (code == null)
       return null;
 
     DexCodeGeneration cg = new DexCodeGeneration(this);
-    if (outFile != null)
-    	return cg.generateCodeItem(outFile);
-    
-    // do register allocation
-    // note that this changes the code itself
-    // (adds temporaries, inserts move instructions)
-    val codeColoring = new GraphColoring(code); // changes the code itself (potentially)
-
-    // add parameter registers to the register allocation
-    val registerAllocation = new HashMap<DexRegister, Integer>(codeColoring.getColoring());
-    int registerCount = codeColoring.getColorsUsed();
-    val inWords = this.getPrototype().countParamWords(this.isStatic());
-//    if (registerCount >= inWords) {
-//      int startReg = registerCount - inWords;
-//      for (int i = 0; i < inWords; ++i)
-//        registerAllocation.put(parameterRegisters.get(i), startReg + i);
-//    } else {
-//      for (int i = 0; i < inWords; ++i)
-//        registerAllocation.put(parameterRegisters.get(i), i);
-//      registerCount = inWords;
-//    }
-    if (registerCount + inWords >= (1 << 16))
-      throw new RuntimeException("Cannot allocate paramter registers");
-    for (int i = 0; i < inWords; ++i)
-      registerAllocation.put(parameterRegisters.get(i), registerCount++);
-
-    // sometimes a register is not used in the code
-    // and thus would not get allocated...
-    // but if it's mapped to a parameter, assembling
-    // the move instruction would fail...
-    // so add these into the register allocation...
-    // the color doesn't matter
-    for (val reg : parameterRegistersMappings.values())
-      if (!registerAllocation.containsKey(reg))
-        registerAllocation.put(reg, 0);
-
-//    val assembledMoveInstructions = parameterMoveInstructions.assembleBytecode(registerAllocation, cache, 0);
-//    val assembledCode = code.assembleBytecode(registerAllocation, cache, assembledMoveInstructions.getTotalCodeLength());
-    val assembledCode = code.assembleBytecode(registerAllocation, cache, 0);
-
-//    List<Instruction> instructions = new ArrayList<Instruction>();
-//    instructions.addAll(assembledMoveInstructions.getInstructions());
-//    instructions.addAll(assembledCode.getInstructions());
-    val instructions = assembledCode.getInstructions();
-
-//    List<TryItem> tries = new ArrayList<TryItem>();
-//    tries.addAll(assembledMoveInstructions.getTries());
-//    tries.addAll(assembledCode.getTries());
-    val tries = assembledCode.getTries();
-
-//    List<EncodedCatchHandler> catchHandlers = new ArrayList<EncodedCatchHandler>();
-//    catchHandlers.addAll(assembledMoveInstructions.getCatchHandlers());
-//    catchHandlers.addAll(assembledCode.getCatchHandlers());
-    val catchHandlers = assembledCode.getCatchHandlers();
-
-    int outWords = code.getOutWords();
-
-    DebugInfoItem debugInfo = null;
-
-    return CodeItem.internCodeItem(outFile, registerCount, inWords, outWords, debugInfo, instructions, tries, catchHandlers);
+	return cg.generateCodeItem(outFile);
   }
 
   @Override

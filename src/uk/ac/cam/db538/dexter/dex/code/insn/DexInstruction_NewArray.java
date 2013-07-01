@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -11,13 +10,11 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -80,36 +77,6 @@ public class DexInstruction_NewArray extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regSize);
-  }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regSize))
-      return gcRegType.PrimitiveSingle;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public gcRegType gcDefinedRegisterType(DexRegister reg) {
-    if (reg.equals(regTo))
-      return gcRegType.Object;
-    else
-      return super.gcDefinedRegisterType(reg);
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(
-             new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT),
-             new GcRangeConstraint(regSize, ColorRange.RANGE_4BIT));
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
-    val newSize = (toRefs) ? mapping.get(regSize) : regSize;
-    return new DexInstruction_NewArray(getMethodCode(), newTo, newSize, value);
   }
 
   @Override

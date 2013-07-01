@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -10,13 +9,11 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexInstruction_Throw extends DexInstruction {
@@ -65,30 +62,6 @@ public class DexInstruction_Throw extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom);
-  }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regFrom))
-      return gcRegType.Object;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(new GcRangeConstraint(regFrom, ColorRange.RANGE_8BIT));
-  }
-
-  @Override
-  public Set<DexCodeElement> cfgJumpTargets() {
-    return throwingInsn_CatchHandlers();
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newFrom = (toRefs) ? mapping.get(regFrom) : regFrom;
-    return new DexInstruction_Throw(getMethodCode(), newFrom);
   }
 
   @Override

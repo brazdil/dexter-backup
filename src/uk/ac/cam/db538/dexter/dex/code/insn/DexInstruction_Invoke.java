@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -15,15 +14,12 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 
 public class DexInstruction_Invoke extends DexInstruction {
@@ -235,74 +231,8 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
 
   @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (argumentRegisters.contains(reg)) {
-      int regIndex = argumentRegisters.indexOf(reg); // can be present multiple times, but the type must match
-      if (!isStaticCall()) {
-        if (regIndex == 0)
-          return gcRegType.Object;
-        else
-          regIndex--;
-      }
-      for (val paramType : methodPrototype.getParameterTypes()) {
-        if (regIndex == 0) {
-          if (paramType instanceof DexPrimitiveType) {
-            if (paramType.isWide())
-              return gcRegType.PrimitiveWide_High;
-            else
-              return gcRegType.PrimitiveSingle;
-          } else
-            return gcRegType.Object;
-        } else if (regIndex == 1 && paramType instanceof DexPrimitiveType && paramType.isWide())
-          return gcRegType.PrimitiveWide_Low;
-
-        regIndex -= paramType.getRegisters();
-      }
-    }
-
-    return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
   public boolean cfgEndsBasicBlock() {
     return true;
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    val set = new HashSet<GcRangeConstraint>();
-
-    if (!assemblesToRange())
-      for(val argReg : argumentRegisters)
-        set.add(new GcRangeConstraint(argReg, ColorRange.RANGE_4BIT));
-
-    return set;
-  }
-
-  @Override
-  public Set<GcFollowConstraint> gcFollowConstraints() {
-    val set = new HashSet<GcFollowConstraint>();
-
-    if (assemblesToRange()) {
-      DexRegister previous = null;
-      for(val current : argumentRegisters) {
-        if (previous != null)
-          set.add(new GcFollowConstraint(previous, current));
-        previous = current;
-      }
-    }
-
-    return set;
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newArgRegs = new LinkedList<DexRegister>();
-    for (val argReg : argumentRegisters) {
-      newArgRegs.add(toRefs ? mapping.get(argReg) : argReg);
-    }
-
-    return new DexInstruction_Invoke(getMethodCode(), classType, methodName, methodPrototype, newArgRegs, callType);
   }
 
   @Override

@@ -28,15 +28,12 @@ import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
 import sun.management.counter.perf.InstrumentationException;
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
-import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement.GcFollowConstraint;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeStart;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
@@ -629,81 +626,6 @@ public class DexCode {
     }
 
     insertBefore(addedCode, startingLabel);
-  }
-
-  public Map<DexRegister, ColorRange> getRangeConstraints() {
-    val allConstraints = new HashMap<DexRegister, ColorRange>();
-
-    for (val insn : instructionList) {
-      val insnConstraints = insn.gcRangeConstraints();
-
-      for (val constraint : insnConstraints) {
-        val register = constraint.getValA();
-        val range = constraint.getValB();
-
-        val savedRange = allConstraints.get(register);
-        if (savedRange == null || savedRange.ordinal() > range.ordinal())
-          allConstraints.put(register, range);
-      }
-    }
-
-    return allConstraints;
-  }
-
-  private static void processFollowConstraint(GcFollowConstraint constraint, Map<DexRegister, NodeRun> allConstraints) {
-    // we've gotten a constraint...
-    // this means: color(reg2) = color(reg1) + 1
-    val reg1 = constraint.getValA();
-    val reg2 = constraint.getValB();
-
-    // find runs containing reg1 and reg2
-    val run1 = allConstraints.get(reg1);
-    val run2 = allConstraints.get(reg2);
-
-    // if registers are in the same run, they must be following each other,
-    // so the loop can continue
-    if (run1 == run2) {
-      val loc1 = run1.getIndexOf(reg1);
-      val loc2 = run1.getIndexOf(reg2);
-
-      if (loc1 + 1 == loc2)
-        return;
-      else
-        throw new RuntimeException("Getting follow-constraints of code failed (inconsistent constraints)");
-    }
-
-    // we need to connect the two runs, so reg1 must be the last element
-    // of run1, and reg2 must be the first element of run2
-    if (run1.peekLast() != reg1 || run2.peekFirst() != reg2)
-      throw new RuntimeException("Getting follow-constraints of code failed (inconsistent constraints)");
-
-    // all is fine now => connect the two runs
-    val connectedRun = new NodeRun();
-    connectedRun.addAll(run1.getNodes());
-    connectedRun.addAll(run2.getNodes());
-
-    // store the new connected run with all its nodes
-    for (val node : connectedRun.getNodes())
-      allConstraints.put(node, connectedRun);
-  }
-
-  public Map<DexRegister, NodeRun> getFollowRuns() {
-    val allConstraints = new HashMap<DexRegister, NodeRun>();
-
-    // create a single-element run for each register
-    for (val reg : getUsedRegisters()) {
-      val newRun = new NodeRun();
-      newRun.add(reg);
-      allConstraints.put(reg, newRun);
-    }
-
-    // connect runs into larger ones based on the constraints
-    // given by instructions
-    for (val insn : instructionList)
-      for (val constraint : insn.gcFollowConstraints())
-        processFollowConstraint(constraint, allConstraints);
-
-    return allConstraints;
   }
 
   public void replaceInstructions(List<DexCodeElement> newInsns) {

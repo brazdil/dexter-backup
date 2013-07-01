@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lombok.val;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -61,44 +59,9 @@ public class DexInstruction_ArrayGet extends DexInstruction {
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regArray, regIndex);
   }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regArray))
-      return gcRegType.Object;
-    else if (reg.equals(regIndex))
-      return gcRegType.PrimitiveSingle;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public gcRegType gcDefinedRegisterType(DexRegister reg) {
-    if (reg.equals(regTo))
-      return (opcode == Opcode_GetPut.Object) ? gcRegType.Object : gcRegType.PrimitiveSingle;
-    else
-      return super.gcDefinedRegisterType(reg);
-  }
-
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     return createSet(regTo);
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(
-             new GcRangeConstraint(regTo, ColorRange.RANGE_8BIT),
-             new GcRangeConstraint(regArray, ColorRange.RANGE_8BIT),
-             new GcRangeConstraint(regIndex, ColorRange.RANGE_8BIT));
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
-    val newArray = (toRefs) ? mapping.get(regArray) : regArray;
-    val newIndex = (toRefs) ? mapping.get(regIndex) : regIndex;
-    return new DexInstruction_ArrayGet(getMethodCode(), newTo, newArray, newIndex, opcode);
   }
 
   @Override

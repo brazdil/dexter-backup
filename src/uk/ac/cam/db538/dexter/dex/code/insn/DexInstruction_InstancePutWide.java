@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -11,7 +10,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
@@ -95,38 +93,6 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom1, regFrom2, regObject);
-  }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regObject))
-      return gcRegType.Object;
-    else if (reg.equals(regFrom1))
-      return gcRegType.PrimitiveWide_High;
-    else if (reg.equals(regFrom2))
-      return gcRegType.PrimitiveWide_Low;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public Set<GcFollowConstraint> gcFollowConstraints() {
-    return createSet(new GcFollowConstraint(regFrom1, regFrom2));
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(
-             new GcRangeConstraint(regFrom1, ColorRange.RANGE_4BIT),
-             new GcRangeConstraint(regObject, ColorRange.RANGE_4BIT));
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newFrom1 = (toRefs) ? mapping.get(regFrom1) : regFrom1;
-    val newFrom2 = (toRefs) ? mapping.get(regFrom2) : regFrom2;
-    val newObject = (toRefs) ? mapping.get(regObject) : regObject;
-    return new DexInstruction_InstancePutWide(getMethodCode(), newFrom1, newFrom2, newObject, fieldClass, fieldType, fieldName);
   }
 
   @Override

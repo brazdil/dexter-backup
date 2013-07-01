@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lombok.val;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -49,13 +47,6 @@ public class DexInstruction_UnaryOp extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
-    val newFrom = (toRefs) ? mapping.get(regFrom) : regFrom;
-    return new DexInstruction_UnaryOp(getMethodCode(), newTo, newFrom, insnOpcode);
-  }
-
-  @Override
   public void instrument(DexCode_InstrumentationState state) {
     val code = getMethodCode();
     code.replace(this, new DexCodeElement[] {
@@ -77,13 +68,6 @@ public class DexInstruction_UnaryOp extends DexInstruction {
   }
 
   @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(
-             new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT),
-             new GcRangeConstraint(regFrom, ColorRange.RANGE_4BIT));
-  }
-
-  @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     return createSet(regTo);
   }
@@ -91,22 +75,6 @@ public class DexInstruction_UnaryOp extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom);
-  }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regFrom))
-      return gcRegType.PrimitiveSingle;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public gcRegType gcDefinedRegisterType(DexRegister reg) {
-    if (reg.equals(regTo))
-      return gcRegType.PrimitiveSingle;
-    else
-      return super.gcDefinedRegisterType(reg);
   }
 
   @Override

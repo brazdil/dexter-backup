@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lombok.val;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction22t;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -75,16 +73,6 @@ public class DexInstruction_IfTest extends DexInstruction {
   }
 
   @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (insnOpcode == Opcode_IfTest.eq || insnOpcode == Opcode_IfTest.ne)
-      throw new UnsupportedOperationException();
-    else if (reg.equals(regA) || reg.equals(regB))
-      return gcRegType.PrimitiveSingle;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
     int rA = state.getRegisterAllocation().get(regA);
     int rB = state.getRegisterAllocation().get(regB);
@@ -115,20 +103,6 @@ public class DexInstruction_IfTest extends DexInstruction {
              new DexInstruction_Goto(code, target),
              labelSuccessor
            };
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(
-             new GcRangeConstraint(regA, ColorRange.RANGE_4BIT),
-             new GcRangeConstraint(regB, ColorRange.RANGE_4BIT));
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newA = (toRefs) ? mapping.get(regA) : regA;
-    val newB = (toRefs) ? mapping.get(regB) : regB;
-    return new DexInstruction_IfTest(getMethodCode(), newA, newB, target, insnOpcode);
   }
 
   @Override
