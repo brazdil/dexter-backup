@@ -74,12 +74,13 @@ public class DexInstruction_IfTestZero extends DexInstruction {
   }
 
   @Override
-  public Set<DexCodeElement> cfgGetSuccessors() {
-    return createSet(
-             (DexCodeElement) target,
-             this.getNextCodeElement());
+  public Set<DexCodeElement> cfgJumpTargets() {
+	val set = createSet((DexCodeElement) target);
+	val next = this.getNextCodeElement();
+	if (next != null)
+		set.add(next);
+	return set;
   }
-
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(reg);

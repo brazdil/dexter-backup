@@ -67,7 +67,7 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   }
 
   @Override
-  public Set<DexCodeElement> cfgGetSuccessors() {
+  public Set<DexCodeElement> cfgJumpTargets() {
     return Collections.emptySet();
   }
 

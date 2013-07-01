@@ -102,7 +102,7 @@ public class DexInstruction_SparseSwitchData extends DexInstruction {
   }
 
   @Override
-  public Set<DexCodeElement> cfgGetSuccessors() {
+  public Set<DexCodeElement> cfgJumpTargets() {
     val succ = new HashSet<DexCodeElement>();
     for (val pair : keyTargetPairs)
       succ.add(pair.getValB());

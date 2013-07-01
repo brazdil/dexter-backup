@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -93,8 +94,12 @@ public class DexInstruction_FillArrayData extends DexInstruction {
   }
 
   @Override
-  public Set<DexCodeElement> cfgGetSuccessors() {
-    return createSet(parentInstruction.getNextCodeElement());
+  public Set<DexCodeElement> cfgJumpTargets() {
+	val next = parentInstruction.getNextCodeElement();
+	if (next != null)
+		return createSet(next);
+	else
+		return Collections.emptySet();
   }
 
   @Override

@@ -66,13 +66,18 @@ public abstract class DexCodeElement {
     return false;
   }
 
+  protected Set<DexCodeElement> cfgJumpTargets() {
+    val set = new HashSet<DexCodeElement>();
+	val next = this.getNextCodeElement();
+    if (next != null)
+    	set.add(next);
+    return set;
+  }
+
   public Set<DexCodeElement> cfgGetSuccessors() {
     val set = new HashSet<DexCodeElement>();
-
-    val next = this.getNextCodeElement();
-    if (next != null)
-      set.add(next);
-
+    for (DexCodeElement target : cfgJumpTargets())
+    	set.add(target);
     return set;
   }
 

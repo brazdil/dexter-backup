@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,8 +19,8 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -148,14 +147,6 @@ public class DexInstruction_InstanceGet extends DexInstruction {
   @Override
   public boolean cfgExitsMethod() {
     return throwingInsn_CanExitMethod();
-  }
-
-  @Override
-  public Set<DexCodeElement> cfgGetSuccessors() {
-    val set = new HashSet<DexCodeElement>();
-    set.add(getNextCodeElement());
-    set.addAll(throwingInsn_CatchHandlers());
-    return set;
   }
 
   @Override

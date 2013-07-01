@@ -220,26 +220,28 @@ public abstract class DexInstruction extends DexCodeElement {
   protected DexClassType[] throwsExceptions() {
 	return null;  
   }
-
+  
   @Override
   public boolean cfgEndsBasicBlock() {
 	DexClassType[] exceptions = throwsExceptions();
-	return exceptions != null && exceptions.length > 0;
+	return  exceptions != null && exceptions.length > 0;
   }
 
   @Override
-  public Set<DexCodeElement> cfgGetSuccessors() {
+  public final Set<DexCodeElement> cfgGetSuccessors() {
+	  // uses the DexCodeElement definition of cfgGetSuccessors
+	  // (non-throwing semantics) but adds behavior after exceptions
+	  // are thrown
+	  
+	  val set = super.cfgGetSuccessors();
+	  
 	  DexClassType[] exceptions = throwsExceptions();
-	  if (exceptions != null && exceptions.length > 0) {
-
-		  val set = new HashSet<DexCodeElement>();
-		  set.add(getNextCodeElement());
+	  if (exceptions != null) {
 		  for(DexClassType exception : exceptions)
 			  set.addAll(throwingInsn_CatchHandlers(exception));
-		  return set;
-	  } else {
-		  return super.cfgGetSuccessors();
 	  }
+	  
+	  return set;
   }
   
 }
