@@ -19,10 +19,5 @@ public abstract class DexMacro extends DexInstruction {
     throw new UnsupportedOperationException("Pseudoinstructions should not be displayed");
   }
 
-  @Override
-  public DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    throw new UnsupportedOperationException();
-  }
-
   public abstract List<DexCodeElement> unwrap();
 }
