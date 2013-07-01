@@ -1,10 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.code.insn.macro;
 
 import java.util.List;
-import java.util.Map;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 
