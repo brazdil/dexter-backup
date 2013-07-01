@@ -16,10 +16,6 @@ import lombok.val;
 
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
-import org.jf.dexlib.Code.Instruction;
-import org.jf.dexlib.Code.Opcode;
-import org.jf.dexlib.Code.Format.Instruction21c;
-import org.jf.dexlib.Code.Format.Instruction31c;
 import org.jf.dexlib.Util.AccessFlags;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
