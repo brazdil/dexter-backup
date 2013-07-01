@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -10,13 +9,11 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexInstruction_Monitor extends DexInstruction {
@@ -66,25 +63,6 @@ public class DexInstruction_Monitor extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regMonitor);
-  }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regMonitor))
-      return gcRegType.Object;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-  
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(new GcRangeConstraint(regMonitor, ColorRange.RANGE_8BIT));
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newMonitor = (toRefs) ? mapping.get(regMonitor) : regMonitor;
-    return new DexInstruction_Monitor(getMethodCode(), newMonitor, enter);
   }
 
   @Override

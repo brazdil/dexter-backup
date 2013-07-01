@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -10,7 +9,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -52,20 +50,6 @@ public class DexInstruction_ArrayLength extends DexInstruction {
   }
 
   @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(
-             new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT),
-             new GcRangeConstraint(regArray, ColorRange.RANGE_4BIT));
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
-    val newArray = (toRefs) ? mapping.get(regArray) : regArray;
-    return new DexInstruction_ArrayLength(getMethodCode(), newTo, newArray);
-  }
-
-  @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     return createSet(regTo);
   }
@@ -73,22 +57,6 @@ public class DexInstruction_ArrayLength extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regArray);
-  }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regArray))
-      return gcRegType.Object;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public gcRegType gcDefinedRegisterType(DexRegister reg) {
-    if (reg.equals(regTo))
-      return gcRegType.PrimitiveSingle;
-    else
-      return super.gcDefinedRegisterType(reg);
   }
 
   @Override

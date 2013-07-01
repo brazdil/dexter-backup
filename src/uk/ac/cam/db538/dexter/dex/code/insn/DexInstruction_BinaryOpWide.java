@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -10,7 +9,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -135,61 +133,6 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regSourceA1, regSourceA2, regSourceB1, regSourceB2);
-  }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regSourceA1) || reg.equals(regSourceB1))
-      return gcRegType.PrimitiveWide_High;
-    else if (reg.equals(regSourceA2) || reg.equals(regSourceB2))
-      return gcRegType.PrimitiveWide_Low;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public gcRegType gcDefinedRegisterType(DexRegister reg) {
-    if (reg.equals(regTarget1))
-      return gcRegType.PrimitiveWide_High;
-    else if (reg.equals(regTarget2))
-      return gcRegType.PrimitiveWide_Low;
-    else
-      return super.gcDefinedRegisterType(reg);
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(
-             new GcRangeConstraint(regTarget1, ColorRange.RANGE_8BIT),
-             new GcRangeConstraint(regSourceA1, ColorRange.RANGE_8BIT),
-             new GcRangeConstraint(regSourceB1, ColorRange.RANGE_8BIT));
-  }
-
-  @Override
-  public Set<GcFollowConstraint> gcFollowConstraints() {
-    return createSet(
-             new GcFollowConstraint(regTarget1, regTarget2),
-             new GcFollowConstraint(regSourceA1, regSourceA2),
-             new GcFollowConstraint(regSourceB1, regSourceB2));
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newTarget1 = (toDefs) ? mapping.get(regTarget1) : regTarget1;
-    val newTarget2 = (toDefs) ? mapping.get(regTarget2) : regTarget2;
-    val newSourceA1 = (toRefs) ? mapping.get(regSourceA1) : regSourceA1;
-    val newSourceA2 = (toRefs) ? mapping.get(regSourceA2) : regSourceA2;
-    val newSourceB1 = (toRefs) ? mapping.get(regSourceB1) : regSourceB1;
-    val newSourceB2 = (toRefs) ? mapping.get(regSourceB2) : regSourceB2;
-    return new DexInstruction_BinaryOpWide(
-             getMethodCode(),
-             newTarget1,
-             newTarget2,
-             newSourceA1,
-             newSourceA2,
-             newSourceB1,
-             newSourceB2,
-             insnOpcode);
   }
 
   @Override

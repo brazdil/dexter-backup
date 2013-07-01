@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -88,22 +87,6 @@ public class DexInstruction_Move extends DexInstruction {
   }
 
   @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regFrom))
-      return (objectMoving) ? gcRegType.Object : gcRegType.PrimitiveSingle;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public gcRegType gcDefinedRegisterType(DexRegister reg) {
-    if (reg.equals(regTo))
-      return (objectMoving) ? gcRegType.Object : gcRegType.PrimitiveSingle;
-    else
-      return super.gcDefinedRegisterType(reg);
-  }
-
-  @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
     val regAlloc = state.getRegisterAllocation();
     int rTo = regAlloc.get(regTo);
@@ -130,13 +113,6 @@ public class DexInstruction_Move extends DexInstruction {
                new Instruction32x(Opcode.MOVE_OBJECT_16, rTo, rFrom) :
                new Instruction32x(Opcode.MOVE_16, rTo, rFrom)
              };
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
-    val newFrom = (toRefs) ? mapping.get(regFrom) : regFrom;
-    return new DexInstruction_Move(getMethodCode(), newTo, newFrom, objectMoving);
   }
 
   @Override

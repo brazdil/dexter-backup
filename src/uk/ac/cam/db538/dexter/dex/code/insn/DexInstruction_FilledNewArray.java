@@ -3,7 +3,6 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -16,15 +15,12 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 
 public class DexInstruction_FilledNewArray extends DexInstruction {
 
@@ -106,14 +102,6 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newRegArgs = new LinkedList<DexRegister>();
-    for (val arg : argumentRegisters)
-      newRegArgs.add(toRefs ? mapping.get(arg) : arg);
-    return new DexInstruction_FilledNewArray(getMethodCode(), newRegArgs, arrayType);
-  }
-
-  @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
     val regAlloc = state.getRegisterAllocation();
     int[] r = new int[argumentRegisters.size()];
@@ -159,43 +147,6 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return new HashSet<DexRegister>(argumentRegisters);
-  }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (argumentRegisters.contains(reg))
-      return (arrayType.getElementType() instanceof DexPrimitiveType) ?
-             gcRegType.PrimitiveSingle :
-             gcRegType.Object;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    val set = new HashSet<GcRangeConstraint>();
-
-    if (!assemblesToRange())
-      for(val argReg : argumentRegisters)
-        set.add(new GcRangeConstraint(argReg, ColorRange.RANGE_4BIT));
-
-    return set;
-  }
-
-  @Override
-  public Set<GcFollowConstraint> gcFollowConstraints() {
-    val set = new HashSet<GcFollowConstraint>();
-
-    if (assemblesToRange()) {
-      DexRegister previous = null;
-      for(val current : argumentRegisters) {
-        if (previous != null)
-          set.add(new GcFollowConstraint(previous, current));
-        previous = current;
-      }
-    }
-
-    return set;
   }
 
   @Override

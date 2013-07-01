@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lombok.val;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -54,14 +52,6 @@ public class DexInstruction_ConvertFromWide extends DexInstruction {
   }
 
   @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newTo = (toDefs) ? mapping.get(regTo) : regTo;
-    val newFrom1 = (toRefs) ? mapping.get(regFrom1) : regFrom1;
-    val newFrom2 = (toRefs) ? mapping.get(regFrom2) : regFrom2;
-    return new DexInstruction_ConvertFromWide(getMethodCode(), newTo, newFrom1, newFrom2, insnOpcode);
-  }
-
-  @Override
   public void instrument(DexCode_InstrumentationState state) {
     // need to combine the taint of the two wide registers and assign it the operation result
     val code = getMethodCode();
@@ -89,17 +79,6 @@ public class DexInstruction_ConvertFromWide extends DexInstruction {
   }
 
   @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT),
-                     new GcRangeConstraint(regFrom1, ColorRange.RANGE_4BIT));
-  }
-
-  @Override
-  public Set<GcFollowConstraint> gcFollowConstraints() {
-    return createSet(new GcFollowConstraint(regFrom1, regFrom2));
-  }
-
-  @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     return createSet(regTo);
   }
@@ -108,25 +87,6 @@ public class DexInstruction_ConvertFromWide extends DexInstruction {
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom1, regFrom2);
   }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regFrom1))
-      return gcRegType.PrimitiveWide_High;
-    else if (reg.equals(regFrom2))
-      return gcRegType.PrimitiveWide_Low;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public gcRegType gcDefinedRegisterType(DexRegister reg) {
-    if (reg.equals(regTo))
-      return gcRegType.PrimitiveSingle;
-    else
-      return super.gcDefinedRegisterType(reg);
-  }
-
 
   @Override
   public void accept(DexInstructionVisitor visitor) {

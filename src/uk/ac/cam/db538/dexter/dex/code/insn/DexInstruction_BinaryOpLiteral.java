@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -10,7 +9,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction22b;
 import org.jf.dexlib.Code.Format.Instruction22s;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -106,42 +104,6 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regSource);
-  }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regSource))
-      return gcRegType.PrimitiveSingle;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public gcRegType gcDefinedRegisterType(DexRegister reg) {
-    if (reg.equals(regTarget))
-      return gcRegType.PrimitiveSingle;
-    else
-      return super.gcDefinedRegisterType(reg);
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    if (isLiteral8bit()) {
-      return createSet(
-               new GcRangeConstraint(regTarget, ColorRange.RANGE_8BIT),
-               new GcRangeConstraint(regSource, ColorRange.RANGE_8BIT));
-    } else {
-      return createSet(
-               new GcRangeConstraint(regTarget, ColorRange.RANGE_4BIT),
-               new GcRangeConstraint(regSource, ColorRange.RANGE_4BIT));
-    }
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newTarget = (toDefs) ? mapping.get(regTarget) : regTarget;
-    val newSource = (toRefs) ? mapping.get(regSource) : regSource;
-    return new DexInstruction_BinaryOpLiteral(getMethodCode(), newTarget, newSource, literal, insnOpcode);
   }
 
   @Override

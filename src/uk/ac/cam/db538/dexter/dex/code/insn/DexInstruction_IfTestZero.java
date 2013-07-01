@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lombok.val;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction21t;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -87,21 +85,6 @@ public class DexInstruction_IfTestZero extends DexInstruction {
   }
 
   @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (insnOpcode == Opcode_IfTestZero.eqz || insnOpcode == Opcode_IfTestZero.nez)
-      throw new UnsupportedOperationException();
-    if (reg.equals(reg))
-      return gcRegType.PrimitiveSingle;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(new GcRangeConstraint(reg, ColorRange.RANGE_8BIT));
-  }
-
-  @Override
   public DexCodeElement[] fixLongJump() {
     val code = this.getMethodCode();
 
@@ -115,12 +98,6 @@ public class DexInstruction_IfTestZero extends DexInstruction {
              new DexInstruction_Goto(code, target),
              labelSuccessor
            };
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newReg = (toRefs) ? mapping.get(reg) : reg;
-    return new DexInstruction_IfTestZero(getMethodCode(), newReg, target, insnOpcode);
   }
 
   @Override

@@ -1,7 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,8 +11,6 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 
 public class DexInstruction_Nop extends DexInstruction {
 
@@ -49,11 +45,6 @@ public class DexInstruction_Nop extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState mapping) { }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    return this;
-  }
 
   @Override
   public void accept(DexInstructionVisitor visitor) {

@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -11,7 +10,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -29,8 +27,6 @@ public class DexInstruction_CheckCast extends DexInstruction {
   @Getter private final DexRegister regObject;
   @Getter private final DexReferenceType value;
 
-  private final DexClassType classCastException;
-
   // CAREFUL: likely to throw exception
 
   public DexInstruction_CheckCast(DexCode methodCode, DexRegister object, DexReferenceType value) {
@@ -38,8 +34,6 @@ public class DexInstruction_CheckCast extends DexInstruction {
 
     this.regObject = object;
     this.value = value;
-
-    this.classCastException = DexClassType.parse("Ljava/lang/ClassCastException;", getParentFile().getParsingCache());
   }
 
   public DexInstruction_CheckCast(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
@@ -53,8 +47,6 @@ public class DexInstruction_CheckCast extends DexInstruction {
                      ((TypeIdItem) insnCheckCast.getReferencedItem()).getTypeDescriptor(),
                      parsingState.getCache());
 
-      this.classCastException = DexClassType.parse("Ljava/lang/ClassCastException;", parsingState.getCache());
-
     } else
       throw FORMAT_EXCEPTION;
   }
@@ -62,12 +54,6 @@ public class DexInstruction_CheckCast extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "check-cast " + regObject.getOriginalIndexString() + ", " + value.getDescriptor();
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newObject = (toDefs || toRefs) ? mapping.get(regObject) : regObject;
-    return new DexInstruction_CheckCast(getMethodCode(), newObject, value);
   }
 
   @Override
@@ -89,27 +75,6 @@ public class DexInstruction_CheckCast extends DexInstruction {
   public Set<DexRegister> lvaDefinedRegisters() {
     // it defines it, because the object gets its type changed inside the VM
     return createSet(regObject);
-  }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regObject))
-      return gcRegType.Object;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public gcRegType gcDefinedRegisterType(DexRegister reg) {
-    if (reg.equals(regObject))
-      return gcRegType.Object;
-    else
-      return super.gcDefinedRegisterType(reg);
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(new GcRangeConstraint(regObject, ColorRange.RANGE_8BIT));
   }
 
   @Override

@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lombok.val;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -60,34 +58,6 @@ public class DexInstruction_ArrayPut extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom, regArray, regIndex);
-  }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regArray))
-      return gcRegType.Object;
-    else if (reg.equals(regIndex))
-      return gcRegType.PrimitiveSingle;
-    else if (reg.equals(regFrom))
-      return (opcode == Opcode_GetPut.Object) ? gcRegType.Object : gcRegType.PrimitiveSingle;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(
-             new GcRangeConstraint(regFrom, ColorRange.RANGE_8BIT),
-             new GcRangeConstraint(regArray, ColorRange.RANGE_8BIT),
-             new GcRangeConstraint(regIndex, ColorRange.RANGE_8BIT));
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newFrom = (toRefs) ? mapping.get(regFrom) : regFrom;
-    val newArray = (toRefs) ? mapping.get(regArray) : regArray;
-    val newIndex = (toRefs) ? mapping.get(regIndex) : regIndex;
-    return new DexInstruction_ArrayPut(getMethodCode(), newFrom, newArray, newIndex, opcode);
   }
 
   @Override

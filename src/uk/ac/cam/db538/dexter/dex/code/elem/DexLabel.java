@@ -1,11 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.code.elem;
 
-import java.util.Map;
-
 import lombok.Getter;
 import lombok.Setter;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexLabel extends DexCodeElement {
@@ -49,10 +46,5 @@ public class DexLabel extends DexCodeElement {
         return new DexLabel(code, absoluteOffset);
       }
     };
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    return this;
   }
 }

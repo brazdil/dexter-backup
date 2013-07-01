@@ -1,7 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 import lombok.val;
@@ -14,7 +13,6 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 
@@ -64,11 +62,6 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   @Override
   public Set<DexCodeElement> cfgJumpTargets() {
     return Collections.emptySet();
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    return this;
   }
 
   @Override

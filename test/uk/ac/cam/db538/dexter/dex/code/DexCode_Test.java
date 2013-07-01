@@ -20,7 +20,6 @@ import org.jf.dexlib.Code.Format.Instruction10t;
 import org.jf.dexlib.Code.Format.Instruction10x;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
@@ -29,12 +28,10 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Nop;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 
 public class DexCode_Test {
@@ -133,163 +130,6 @@ public class DexCode_Test {
 
     code.add(elem3);
     code.insertAfter(elem1, elem2);
-  }
-
-  private static void addFollowConstraint(DexRegister r1, DexRegister r2, DexCode code) {
-    code.add(new DexInstruction_BinaryOpWide(code, r1, r2, r1, r2, r1, r2, Opcode_BinaryOpWide.AddLong));
-  }
-
-  @Test
-  public void testGetFollowConstraints_Empty() {
-    val code = new DexCode();
-    val constraints = code.getFollowRuns();
-    assertTrue(constraints.isEmpty());
-  }
-
-  @Test
-  public void testGetFollowConstraints_NoConstraints() {
-    val code = new DexCode();
-
-    val r1 = new DexRegister(1);
-    val r2 = new DexRegister(2);
-    val r3 = new DexRegister(3);
-
-    code.add(new DexInstruction_BinaryOp(code, r1, r2, r3, Opcode_BinaryOp.AddInt));
-
-    val constraints = code.getFollowRuns();
-    assertEquals(3, constraints.values().size());
-
-    val run1 = new NodeRun();
-    run1.add(r1);
-    val run2 = new NodeRun();
-    run2.add(r2);
-    val run3 = new NodeRun();
-    run3.add(r3);
-
-    assertTrue(constraints.values().contains(run1));
-    assertTrue(constraints.values().contains(run2));
-    assertTrue(constraints.values().contains(run3));
-  }
-
-  @Test
-  public void testGetFollowConstraints_SingleConstraint() {
-    val code = new DexCode();
-
-    val r1 = new DexRegister(1);
-    val r2 = new DexRegister(2);
-    val r3 = new DexRegister(3);
-
-    code.add(new DexInstruction_BinaryOp(code, r1, r2, r3, Opcode_BinaryOp.AddInt));
-    addFollowConstraint(r1, r2, code);
-
-    val constraints = code.getFollowRuns();
-
-    val run1 = new NodeRun();
-    run1.add(r1);
-    run1.add(r2);
-    val run2 = new NodeRun();
-    run2.add(r3);
-
-    assertEquals(run1, constraints.get(r1));
-    assertEquals(run1, constraints.get(r2));
-    assertEquals(run2, constraints.get(r3));
-  }
-
-  @Test
-  public void testGetFollowConstraints_SingleConstraintMultipleTimes() {
-    val code = new DexCode();
-
-    val r1 = new DexRegister(1);
-    val r2 = new DexRegister(2);
-    val r3 = new DexRegister(3);
-
-    code.add(new DexInstruction_BinaryOp(code, r1, r2, r3, Opcode_BinaryOp.AddInt));
-    addFollowConstraint(r1, r2, code);
-    addFollowConstraint(r1, r2, code);
-
-    val constraints = code.getFollowRuns();
-
-    val run1 = new NodeRun();
-    run1.add(r1);
-    run1.add(r2);
-    val run2 = new NodeRun();
-    run2.add(r3);
-
-    assertEquals(run1, constraints.get(r1));
-    assertEquals(run1, constraints.get(r2));
-    assertEquals(run2, constraints.get(r3));
-  }
-
-  @Test
-  public void testGetFollowConstraints_ChainingConstraints() {
-    val code = new DexCode();
-
-    val r1 = new DexRegister(1);
-    val r2 = new DexRegister(2);
-    val r3 = new DexRegister(3);
-    val r4 = new DexRegister(4);
-
-    addFollowConstraint(r1, r2, code);
-    addFollowConstraint(r2, r3, code);
-    addFollowConstraint(r3, r4, code);
-
-    val constraints = code.getFollowRuns();
-
-    val run1 = new NodeRun();
-    run1.add(r1);
-    run1.add(r2);
-    run1.add(r3);
-    run1.add(r4);
-
-    assertEquals(run1, constraints.get(r1));
-    assertEquals(run1, constraints.get(r2));
-    assertEquals(run1, constraints.get(r3));
-    assertEquals(run1, constraints.get(r4));
-  }
-
-  @Test(expected=RuntimeException.class)
-  public void testGetFollowConstraints_Inconsistency_ClashingConstraints() {
-    val code = new DexCode();
-
-    val r1 = new DexRegister(1);
-    val r2 = new DexRegister(2);
-    val r3 = new DexRegister(3);
-
-    addFollowConstraint(r1, r2, code);
-    addFollowConstraint(r1, r3, code);
-
-    code.getFollowRuns();
-  }
-
-  @Test(expected=RuntimeException.class)
-  public void testGetFollowConstraints_Inconsistency_ClashingConstraints_OppositeDirection() {
-    val code = new DexCode();
-
-    val r1 = new DexRegister(1);
-    val r2 = new DexRegister(2);
-    val r3 = new DexRegister(3);
-
-    addFollowConstraint(r1, r3, code);
-    addFollowConstraint(r2, r3, code);
-
-    code.getFollowRuns();
-  }
-
-  @Test(expected=RuntimeException.class)
-  public void testGetFollowConstraints_Inconsistency_ClashingConstraints_WithinRun() {
-    val code = new DexCode();
-
-    val r1 = new DexRegister(1);
-    val r2 = new DexRegister(2);
-    val r3 = new DexRegister(3);
-    val r4 = new DexRegister(4);
-
-    addFollowConstraint(r1, r2, code);
-    addFollowConstraint(r2, r3, code);
-    addFollowConstraint(r3, r4, code);
-    addFollowConstraint(r1, r4, code);
-
-    code.getFollowRuns();
   }
 
   @Test(expected=InstructionParsingException.class)

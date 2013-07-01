@@ -2,7 +2,6 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -12,7 +11,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -52,13 +50,6 @@ public class DexInstruction_ReturnWide extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "return-wide " + regFrom1.getOriginalIndexString() + "|" + regFrom2.getOriginalIndexString();
-  }
-
-  @Override
-  protected DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val newFrom1 = (toRefs) ? mapping.get(regFrom1) : regFrom1;
-    val newFrom2 = (toRefs) ? mapping.get(regFrom2) : regFrom2;
-    return new DexInstruction_ReturnWide(getMethodCode(), newFrom1, newFrom2);
   }
 
   @Override
@@ -148,26 +139,6 @@ public class DexInstruction_ReturnWide extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom1, regFrom2);
-  }
-
-  @Override
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    if (reg.equals(regFrom1))
-      return gcRegType.PrimitiveWide_High;
-    else if (reg.equals(regFrom2))
-      return gcRegType.PrimitiveWide_Low;
-    else
-      return super.gcReferencedRegisterType(reg);
-  }
-
-  @Override
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return createSet(new GcRangeConstraint(regFrom1, ColorRange.RANGE_8BIT));
-  }
-
-  @Override
-  public Set<GcFollowConstraint> gcFollowConstraints() {
-    return createSet(new GcFollowConstraint(regFrom1, regFrom2));
   }
 
   @Override

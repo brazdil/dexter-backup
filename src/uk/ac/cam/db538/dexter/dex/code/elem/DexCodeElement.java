@@ -2,27 +2,18 @@ package uk.ac.cam.db538.dexter.dex.code.elem;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
-import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
-import uk.ac.cam.db538.dexter.utils.Pair;
 
 public abstract class DexCodeElement {
 
@@ -96,153 +87,6 @@ public abstract class DexCodeElement {
     set.addAll(lvaDefinedRegisters());
     set.addAll(lvaReferencedRegisters());
     return set;
-  }
-
-  // GRAPH COLORING
-
-  public static class GcRangeConstraint extends Pair<DexRegister, ColorRange> {
-    public GcRangeConstraint(DexRegister valA, ColorRange valB) {
-      super(valA, valB);
-    }
-  }
-
-  public static class GcFollowConstraint extends Pair<DexRegister, DexRegister> {
-    public GcFollowConstraint(DexRegister valA, DexRegister valB) {
-      super(valA, valB);
-    }
-  }
-
-  public Set<GcRangeConstraint> gcRangeConstraints() {
-    return Collections.emptySet();
-  }
-
-  public Set<GcFollowConstraint> gcFollowConstraints() {
-    return Collections.emptySet();
-  }
-
-  public final Map<DexCodeElement, List<DexCodeElement>> gcAddTemporaries(List<DexRegister> regList) {
-    val tempMapping = new HashMap<DexRegister, DexRegister>();
-    val methodCode = getMethodCode();
-    val referencedRegs = lvaReferencedRegisters();
-    val definedRegs = lvaDefinedRegisters();
-    val newElem = new LinkedList<DexCodeElement>();
-
-    for (val usedReg : lvaUsedRegisters())
-      if (regList.contains(usedReg)) {
-        val newReg = new DexRegister();
-        newReg.setSpilledRegister(true);
-        tempMapping.put(usedReg, newReg);
-      } else
-        tempMapping.put(usedReg, usedReg);
-
-    for (int i = 0; i < regList.size(); ++i) {
-      val spilledReg = regList.get(i);
-      if (referencedRegs.contains(spilledReg)) {
-        val spilledRegType = gcReferencedRegisterType(spilledReg);
-        switch (spilledRegType) {
-        case Object:
-          newElem.add(new DexInstruction_Move(methodCode, tempMapping.get(spilledReg), spilledReg, true));
-          break;
-        case PrimitiveSingle:
-        case PrimitiveSingleOrNull:
-          newElem.add(new DexInstruction_Move(methodCode, tempMapping.get(spilledReg), spilledReg, false));
-          break;
-        case PrimitiveWide_High:
-          val nextReg = regList.get(i + 1);
-          if (gcReferencedRegisterType(nextReg) != gcRegType.PrimitiveWide_Low)
-            throw new RuntimeException("Register type inconsistency");
-          newElem.add(new DexInstruction_MoveWide(methodCode, tempMapping.get(spilledReg), tempMapping.get(nextReg), spilledReg, nextReg));
-          break;
-        case PrimitiveWide_Low:
-          break;
-        default:
-          throw new Error("Register of type " + spilledRegType.name());
-        }
-      }
-    }
-
-    val insnReplacement = gcReplaceWithTemporaries(tempMapping, true, true);
-    newElem.add(insnReplacement);
-
-    for (int i = 0; i < regList.size(); ++i) {
-      val spilledReg = regList.get(i);
-      if (definedRegs.contains(spilledReg)) {
-        val spilledRegType = gcDefinedRegisterType(spilledReg);
-        switch (spilledRegType) {
-        case Object:
-          newElem.add(new DexInstruction_Move(methodCode, spilledReg, tempMapping.get(spilledReg), true));
-          break;
-        case PrimitiveSingle:
-        case PrimitiveSingleOrNull:
-          newElem.add(new DexInstruction_Move(methodCode, spilledReg, tempMapping.get(spilledReg), false));
-          break;
-        case PrimitiveWide_High:
-          val nextReg = regList.get(i + 1);
-          if (gcDefinedRegisterType(nextReg) != gcRegType.PrimitiveWide_Low)
-            throw new RuntimeException("Register type inconsistency");
-          newElem.add(new DexInstruction_MoveWide(methodCode, spilledReg, nextReg, tempMapping.get(spilledReg), tempMapping.get(nextReg)));
-          break;
-        case PrimitiveWide_Low:
-          break;
-        default:
-          throw new Error();
-        }
-      }
-    }
-
-    val replacementMapping = new HashMap<DexCodeElement, List<DexCodeElement>>();
-    replacementMapping.put(this, newElem);
-
-    if (this instanceof DexInstruction_Switch) {
-      val thisSwitch = (DexInstruction_Switch) this;
-      val switchTableReplacement = thisSwitch.gcReplaceSwitchTableParentReference((DexInstruction_Switch) insnReplacement);
-      replacementMapping.put(switchTableReplacement.getValA(), Arrays.asList( switchTableReplacement.getValB() ));
-    } else if (this instanceof DexInstruction_FillArray) {
-      val thisFillArray = (DexInstruction_FillArray) this;
-      val arrayDataReplacement = thisFillArray.gcReplaceFillArrayDataReference((DexInstruction_FillArray) insnReplacement);
-      replacementMapping.put(arrayDataReplacement.getValA(), Arrays.asList( arrayDataReplacement.getValB() ));
-    }
-
-    return replacementMapping;
-  }
-
-  public final Map<DexCodeElement, DexCodeElement> getRegisterMappingChanges(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs) {
-    val replacementMapping = new HashMap<DexCodeElement, DexCodeElement>();
-
-    val insnReplacement = gcReplaceWithTemporaries(mapping, toRefs, toDefs);
-    replacementMapping.put(this, insnReplacement);
-
-    if (this instanceof DexInstruction_Switch) {
-      val thisSwitch = (DexInstruction_Switch) this;
-      val switchTableReplacement = thisSwitch.gcReplaceSwitchTableParentReference((DexInstruction_Switch) insnReplacement);
-      replacementMapping.put(switchTableReplacement.getValA(), switchTableReplacement.getValB());
-    } else if (this instanceof DexInstruction_FillArray) {
-      val thisFillArray = (DexInstruction_FillArray) this;
-      val arrayDataReplacement = thisFillArray.gcReplaceFillArrayDataReference((DexInstruction_FillArray) insnReplacement);
-      replacementMapping.put(arrayDataReplacement.getValA(), arrayDataReplacement.getValB());
-    }
-
-    return replacementMapping;
-  }
-
-  protected abstract DexCodeElement gcReplaceWithTemporaries(Map<DexRegister, DexRegister> mapping, boolean toRefs, boolean toDefs);
-
-  public enum gcRegType {
-    Object,
-    PrimitiveSingle,
-    PrimitiveSingleOrNull,
-    PrimitiveWide_High,
-    PrimitiveWide_Low,
-    Conflicted,
-    Undefined
-  }
-
-  public gcRegType gcReferencedRegisterType(DexRegister reg) {
-    throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have referenced register type information");
-  }
-
-  public gcRegType gcDefinedRegisterType(DexRegister reg) {
-    throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have defined register type information");
   }
 
   // UTILS
