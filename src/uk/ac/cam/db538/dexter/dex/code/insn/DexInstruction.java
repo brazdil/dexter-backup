@@ -61,11 +61,21 @@ public abstract class DexInstruction extends DexCodeElement {
 
   // THROWING INSTRUCTIONS
 
-  protected final boolean throwingInsn_CanExitMethod() {
-    return throwingInsn_CanExitMethod(
-             DexClassType.parse("Ljava/lang/Throwable;",
-                                getParentFile().getParsingCache()));
+  @Override
+  public final boolean cfgExitsMethod() {
+    val exceptions = this.throwsExceptions();
+    if (exceptions != null)
+    	for (val exception : exceptions)
+    		if (throwingInsn_CanExitMethod(exception))
+    			return true;
+    return false;
   }
+  
+//  protected final boolean throwingInsn_CanExitMethod() {
+//    return throwingInsn_CanExitMethod(
+//             DexClassType.parse("Ljava/lang/Throwable;",
+//                                getParentFile().getParsingCache()));
+//  }
 
   protected final boolean throwingInsn_CanExitMethod(DexClassType thrownExceptionType) {
     val code = getMethodCode();

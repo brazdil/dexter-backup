@@ -94,11 +94,6 @@ public class DexInstruction_ConstClass extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return throwingInsn_CanExitMethod();
-  }
-
-  @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }

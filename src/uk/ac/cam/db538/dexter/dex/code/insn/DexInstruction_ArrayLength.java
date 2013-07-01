@@ -92,11 +92,6 @@ public class DexInstruction_ArrayLength extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return throwingInsn_CanExitMethod();
-  }
-
-  @Override
   public void instrument(DexCode_InstrumentationState state) {
     // length needs to carry the taint of the array object
     val code = getMethodCode();

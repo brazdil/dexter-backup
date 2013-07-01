@@ -145,11 +145,6 @@ public class DexInstruction_InstanceGet extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return throwingInsn_CanExitMethod();
-  }
-
-  @Override
   public void instrument(DexCode_InstrumentationState state) {
     val code = getMethodCode();
     val classHierarchy = getParentFile().getClassHierarchy();

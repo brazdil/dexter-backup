@@ -62,11 +62,6 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return true;
-  }
-
-  @Override
   public Set<DexCodeElement> cfgJumpTargets() {
     return Collections.emptySet();
   }

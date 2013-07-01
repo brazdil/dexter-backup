@@ -81,11 +81,6 @@ public class DexInstruction_CheckCast extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return throwingInsn_CanExitMethod(classCastException);
-  }
-
-  @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regObject);
   }

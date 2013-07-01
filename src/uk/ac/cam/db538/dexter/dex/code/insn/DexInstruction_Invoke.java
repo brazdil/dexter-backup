@@ -264,11 +264,6 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return throwingInsn_CanExitMethod();
-  }
-
-  @Override
   public boolean cfgEndsBasicBlock() {
     return true;
   }
