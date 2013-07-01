@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -147,6 +146,9 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) {
+	// taint propagation into ArithmeticException is not necessary here
+	// because only taint of the denominator propagates and that's
+	// zero for constant literals
     getMethodCode().replace(this,
                             new DexCodeElement[] {
                               this,
