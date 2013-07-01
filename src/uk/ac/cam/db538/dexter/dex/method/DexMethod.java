@@ -168,7 +168,5 @@ public abstract class DexMethod {
 
   public abstract void markMethodOriginal();
 
-  public abstract void transformSSA();
-
   public abstract void countInstructions(HashMap<Class, Integer> count);
 }

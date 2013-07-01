@@ -100,7 +100,6 @@ public class MainConsole {
     val warnings = APK.getDexFile().instrument(false);
     for (val warning : warnings)
       System.err.println("warning: " + warning.getMessage());
-    // APK.getDexFile().transformSSA();
 //    APK.getDexFile().countInstructions();
     APK.writeToFile(apkFile_new);
 //    APK.getDexFile().countInstructions();

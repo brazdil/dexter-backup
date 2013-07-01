@@ -9,11 +9,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Queue;
 import java.util.Set;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
@@ -30,9 +28,6 @@ import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
 import sun.management.counter.perf.InstrumentationException;
-import uk.ac.cam.db538.dexter.analysis.DominanceAnalysis;
-import uk.ac.cam.db538.dexter.analysis.LiveVarAnalysis;
-import uk.ac.cam.db538.dexter.analysis.cfg.CfgBasicBlock;
 import uk.ac.cam.db538.dexter.analysis.coloring.ColorRange;
 import uk.ac.cam.db538.dexter.analysis.coloring.NodeRun;
 import uk.ac.cam.db538.dexter.dex.Dex;
@@ -42,7 +37,6 @@ import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement.GcFollowConstraint;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement.gcRegType;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeStart;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
@@ -109,14 +103,14 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalClassAnnotation;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetMethodCaller;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -855,398 +849,6 @@ public class DexCode {
     }
 
     return maxWords;
-  }
-
-  @AllArgsConstructor
-  @Data
-  private static class PhiMovingInstruction {
-    private final DexCodeElement insertPoint;
-    private final boolean insertBefore;
-    private final DexCodeElement moveInsn;
-  }
-
-  private boolean shouldInsertBefore(DexCodeElement insn, DexRegister defReg) {
-    return (insn.cfgEndsBasicBlock() || insn.cfgExitsMethod()) &&
-           (insn instanceof DexInstruction_CheckCast ||
-            !insn.lvaDefinedRegisters().contains(defReg));
-  }
-
-  private String printBlock(CfgBasicBlock block) {
-    val str = new StringBuilder();
-    str.append(block.getBlockStartIndex());
-    str.append("-");
-    str.append(block.getBlockEndIndex());
-    str.append(": ");
-    for (val insn : block.getInstructions()) {
-      str.append(insn.getOriginalAssembly());
-      str.append("; ");
-    }
-    return str.toString();
-  }
-
-  private void ssaAddPhiMoving(DominanceAnalysis dom, BlockPhiMap phies, RegisterTyping regTypes, WideRegisters wideRegs) {
-    val toAdd = new ArrayList<PhiMovingInstruction>();
-
-    // first acquire all the instructions to be added
-    for (val block : dom.getCfg().getBasicBlocks()) {
-      val phiList = phies.get(block);
-      for (val phiFunc : phiList) {
-        for (val phiFuncArg : phiFunc.arguments) {
-          if (phiFuncArg.register != null) {
-            val argPred_LastInsn = instructionList.get(phiFuncArg.predecessor.getBlockEndIndex());
-            boolean insertBefore = shouldInsertBefore(argPred_LastInsn, phiFuncArg.register);
-
-            // System.out.println("inserting move " + phiFunc.definedRegister.getOriginalIndexString() + " <- " + phiFuncArg.register.getOriginalIndexString() + (insertBefore ? "(before)" : "(after)") + " into predecessor " + printBlock(phiFuncArg.predecessor));
-
-            gcRegType argPred_Reg_Type = regTypes.get(phiFuncArg.register);
-            if (argPred_Reg_Type == null) {
-              argPred_Reg_Type = phies.findPhiRegisterType(phiFuncArg.register, regTypes);
-            }
-
-            DexCodeElement moveInsn = null;
-            switch (argPred_Reg_Type) {
-            case PrimitiveSingle:
-            case PrimitiveSingleOrNull:
-              moveInsn = new DexInstruction_Move(this, phiFunc.definedRegister, phiFuncArg.register, false);
-              break;
-            case Object:
-              moveInsn = new DexInstruction_Move(this, phiFunc.definedRegister, phiFuncArg.register, true);
-              break;
-            case PrimitiveWide_High:
-              val fromHigh = phiFuncArg.register;
-              val fromLow = wideRegs.get(fromHigh);
-              val destHigh = phiFunc.definedRegister;
-              val destLow = phiList.findDefinedRegister(phiFuncArg.predecessor, fromLow);
-              if (destLow != null)
-                moveInsn = new DexInstruction_MoveWide(this, destHigh, destLow, fromHigh, fromLow);
-              break;
-            case PrimitiveWide_Low:
-              break;
-            case Conflicted:
-              // System.out.println("ignoring conflicted phi register " + phiFuncArg.register.getOriginalIndexString() + " in " + printBlock(block));
-              break;
-            case Undefined:
-              // System.out.println("ignoring undefined phi register " + phiFuncArg.register.getOriginalIndexString() + " in " + printBlock(block));
-              break;
-            }
-
-            if (moveInsn != null)
-              toAdd.add(new PhiMovingInstruction(argPred_LastInsn, insertBefore, moveInsn));
-          }
-        }
-      }
-    }
-
-    for (val moveInsnInfo : toAdd)
-      if (moveInsnInfo.isInsertBefore())
-        this.insertBefore(moveInsnInfo.getMoveInsn(), moveInsnInfo.getInsertPoint());
-      else
-        this.insertAfter(moveInsnInfo.getMoveInsn(), moveInsnInfo.getInsertPoint());
-  }
-
-  @AllArgsConstructor
-  private static class Phi {
-    public DexRegister originalRegister;
-    public DexRegister definedRegister;
-    public List<PhiArg> arguments;
-  }
-
-  @AllArgsConstructor
-  private static class PhiArg {
-    public CfgBasicBlock predecessor;
-    public DexRegister register;
-  }
-
-  private static class PhiList extends ArrayList<Phi> {
-    private static final long serialVersionUID = -4282126416858685357L;
-
-    public boolean redefinesRegister(DexRegister reg) {
-      for (val phi : this)
-        if (phi.originalRegister == reg)
-          return true;
-      return false;
-    }
-
-    public Map<DexRegister, DexRegister> getAllDefinedMappings() {
-      val mapping = new HashMap<DexRegister, DexRegister>();
-      for (val phi : this)
-        mapping.put(phi.originalRegister, phi.definedRegister);
-      return mapping;
-    }
-
-    public void addAllRegisterMappings(CfgBasicBlock block, RegisterMapping regMap) {
-      for (val phi : this)
-        for (val phiArg : phi.arguments)
-          if (phiArg.predecessor == block) {
-            if (phiArg.register != null)
-              throw new RuntimeException("Multiple definitions of the same phi argument");
-            else {
-              val predecessorRegister = regMap.get(phi.originalRegister);
-              if (predecessorRegister != null)
-                phiArg.register = predecessorRegister;
-            }
-          }
-    }
-
-    public DexRegister findDefinedRegister(CfgBasicBlock predecessor, DexRegister originReg) {
-      for (val phi : this) {
-        for (val arg : phi.arguments)
-          if (arg.predecessor == predecessor && arg.register == originReg)
-            return phi.definedRegister;
-      }
-      return null;
-    }
-  }
-
-  private static class BlockPhiMap extends HashMap<CfgBasicBlock, PhiList> {
-
-    private static final long serialVersionUID = 8258305089123529595L;
-
-    public gcRegType findPhiRegisterType(DexRegister definedReg, RegisterTyping regTypes) {
-      return findPhiRegisterType(definedReg, regTypes, new HashSet<DexRegister>());
-    }
-
-    public gcRegType findPhiRegisterType(DexRegister definedReg, RegisterTyping regTypes, Set<DexRegister> workingSet) {
-      for (val entry : this.entrySet()) {
-        for (val phi : entry.getValue()) {
-          if (phi.definedRegister == definedReg) {
-            gcRegType type = null;
-            boolean foundArg = false;
-            for (val phiArg : phi.arguments) {
-              if (phiArg.register == null)
-                return gcRegType.Undefined;
-
-              if (phiArg.register != null && !workingSet.contains(phiArg.register)) {
-                gcRegType phiArgType = regTypes.get(phiArg.register);
-                if (phiArgType == null) {
-                  workingSet.add(phiArg.register);
-                  phiArgType = findPhiRegisterType(phiArg.register, regTypes, workingSet);
-                  workingSet.remove(phiArg.register);
-                }
-
-                if (phiArgType != null) {
-                  foundArg = true;
-
-                  if (type == null)
-                    type = phiArgType;
-                  else if (type != phiArgType) {
-                    if ((type == gcRegType.Object && phiArgType == gcRegType.PrimitiveSingleOrNull)
-                        || (type == gcRegType.PrimitiveSingleOrNull && phiArgType == gcRegType.Object))
-                      type = gcRegType.Object;
-                    else
-                      type = gcRegType.Conflicted;
-                  }
-                }
-              }
-            }
-
-            if (!foundArg)
-              return null;
-
-            if (type == null)
-              throw new RuntimeException("Couldn't find type of phi register");
-
-            regTypes.put(definedReg, type);
-            return type;
-          }
-        }
-      }
-      throw new RuntimeException("Couldn't find type of phi register");
-    }
-  }
-
-  private BlockPhiMap ssaGeneratePhies(DominanceAnalysis dom) {
-    val basicBlocks = dom.getCfg().getBasicBlocks();
-    val defsites = new HashMap<DexRegister, Queue<CfgBasicBlock>>();
-    val phi = new BlockPhiMap();
-
-    for (val n : basicBlocks) {
-      phi.put(n, new PhiList());
-      for (val a : n.getAllDefinedRegisters()) {
-        Queue<CfgBasicBlock> defsitesA = defsites.get(a);
-        if (defsitesA == null) {
-          defsitesA = new LinkedList<CfgBasicBlock>();
-          defsites.put(a, defsitesA);
-        }
-        defsitesA.add(n);
-      }
-    }
-
-    for (val entry : defsites.entrySet()) {
-      val a = entry.getKey();
-      val defsitesA = entry.getValue();
-
-      while (!defsitesA.isEmpty()) {
-        val n = defsitesA.poll();
-        for (val y : dom.getDominanceFrontier(n)) {
-          val yPhi = phi.get(y);
-          if (!yPhi.redefinesRegister(a)) {
-
-            val phiArgsA = new ArrayList<PhiArg>();
-            for (val yPred : y.getPredecessors())
-              if (yPred instanceof CfgBasicBlock)
-                phiArgsA.add(new PhiArg((CfgBasicBlock) yPred, null));
-            val newReg = new DexRegister();
-            yPhi.add(new Phi(a, newReg, phiArgsA));
-
-            // System.out.println(newReg.getOriginalIndexString() + " <- phi(" + a.getOriginalIndexString() + ") in " + printBlock(y));
-
-            if (!y.getAllDefinedRegisters().contains(a))
-              defsitesA.add(y);
-          }
-        }
-      }
-    }
-
-    return phi;
-  }
-
-  private static class RegisterMapping extends HashMap<DexRegister, DexRegister> {
-    private static final long serialVersionUID = -4237424266083204694L;
-  }
-
-  public static class RegisterTyping extends HashMap<DexRegister, gcRegType> {
-    private static final long serialVersionUID = -2635461405493323471L;
-  }
-
-  public static class WideRegisters extends HashMap<DexRegister, DexRegister> {
-    private static final long serialVersionUID = -2635461405493323421L;
-  }
-
-  private void applyCodeChanges(Map<DexCodeElement, DexCodeElement> changes) {
-    for (val entry : changes.entrySet())
-      this.replace(entry.getKey(), Arrays.asList(entry.getValue()));
-  }
-
-  private Pair<RegisterTyping, WideRegisters> ssaRenameRegisters(DominanceAnalysis dom, BlockPhiMap phies) {
-    val cfgStartingBlock = dom.getCfg().getStartingBasicBlock();
-    val mappingsPerBlock = new HashMap<CfgBasicBlock, RegisterMapping>();
-    val registerTypes = new RegisterTyping();
-    val wideRegisters = new WideRegisters();
-
-    // will traverse the dominance tree
-    val blockQueue = new LinkedList<CfgBasicBlock>();
-    blockQueue.add(cfgStartingBlock);
-
-    while (!blockQueue.isEmpty()) {
-      val block = blockQueue.poll();
-      val phiList = phies.get(block);
-      val blockStart = block.getBlockStartIndex();
-      val blockEnd = block.getBlockEndIndex();
-      blockQueue.addAll(dom.getAllDirectlyDominatedBlocks(block));
-
-      // System.out.println("renaming " + printBlock(block));
-
-      // take mapping from dominator
-      RegisterMapping regMap = new RegisterMapping();
-      if (block == cfgStartingBlock) {
-        // add parameter mappings
-        for (val paramReg : parentMethod.getParameterRegisters())
-          regMap.put(paramReg, paramReg);
-      } else
-        regMap.putAll(mappingsPerBlock.get(dom.getDirectDominator(block)));
-
-      // add mappings from phi
-      regMap.putAll(phiList.getAllDefinedMappings());
-
-      // walk through instructions
-      for (int i = blockStart; i <= blockEnd; ++i) {
-        DexCodeElement insn = instructionList.get(i);
-        val defRegs = insn.lvaDefinedRegisters();
-
-        // first apply mapping on referenced variables
-        applyCodeChanges(insn.getRegisterMappingChanges(regMap, true, false));
-
-        // update the current instruction
-        insn = instructionList.get(i);
-
-        // create new mappings for all defined variables
-        for (val defReg : defRegs) {
-          DexRegister newReg;
-          gcRegType newRegType;
-          if (insn instanceof DexInstruction_CheckCast) {
-            newReg = regMap.get(defReg);
-            newRegType = gcRegType.Object;
-          } else {
-            newReg = new DexRegister();
-            newRegType = insn.gcDefinedRegisterType(defReg);
-            // System.out.println(newReg.getOriginalIndexString() + " for " + defReg.getOriginalIndexString() + " (" + newRegType.name() + ")");
-          }
-          regMap.put(defReg, newReg);
-          registerTypes.put(newReg, newRegType);
-        }
-
-        // handle wide registers
-        for (val defReg : defRegs) {
-          val highReg = regMap.get(defReg);
-          if (registerTypes.get(highReg) == gcRegType.PrimitiveWide_High) {
-            // find lowReg
-            for (val follow : insn.gcFollowConstraints()) {
-              if (follow.getValA() == defReg) {
-                val lowReg = regMap.get(follow.getValB());
-                if (registerTypes.get(lowReg) != gcRegType.PrimitiveWide_Low)
-                  throw new RuntimeException("Couldn't find low wide primitive register");
-                wideRegisters.put(highReg, lowReg);
-              }
-            }
-          }
-        }
-
-        // apply the new mapping to the same instruction, only on defined regs
-        if (! (insn instanceof DexInstruction_CheckCast))
-          applyCodeChanges(insn.getRegisterMappingChanges(regMap, false, true));
-      }
-
-      // look at all successors and pass them the final mapping
-      for (val succ : block.getSuccessors()) {
-        if (succ instanceof CfgBasicBlock) {
-          val succPhiList = phies.get(succ);
-          succPhiList.addAllRegisterMappings(block, regMap);
-        }
-      }
-
-      // store final register mapping
-      mappingsPerBlock.put(block, regMap);
-    }
-
-    return new Pair<>(registerTypes, wideRegisters);
-  }
-
-  private void removeDeadMoves() {
-    val toRemove = new ArrayList<DexCodeElement>();
-    do {
-      toRemove.clear();
-      val lva = new LiveVarAnalysis(this);
-
-      for (val insn : instructionList) {
-        if (insn instanceof DexInstruction_Move) {
-          val insnMove = (DexInstruction_Move) insn;
-          val liveAfter = lva.getLiveVarsAfter(insnMove);
-          if (!liveAfter.contains(insnMove.getRegTo()) ||
-              (insnMove.getRegFrom() == insnMove.getRegTo()))
-            toRemove.add(insnMove);
-        } else if (insn instanceof DexInstruction_MoveWide) {
-          val insnMove = (DexInstruction_MoveWide) insn;
-          val liveAfter = lva.getLiveVarsAfter(insnMove);
-          if (!liveAfter.contains(insnMove.getRegTo1()) ||
-              (insnMove.getRegFrom1() == insnMove.getRegTo1()))
-            toRemove.add(insnMove);
-        }
-      }
-
-      for (val insn : toRemove)
-        instructionList.remove(insn);
-    } while (!toRemove.isEmpty());
-  }
-
-  public void transformSSA() {
-    // System.out.println("METHOD " + parentMethod.getName());
-    DexRegister.resetCounter();
-    val dom = new DominanceAnalysis(this);
-    val phies = ssaGeneratePhies(dom);
-    val renameResult = ssaRenameRegisters(dom, phies);
-    ssaAddPhiMoving(dom, phies, renameResult.getValA(), renameResult.getValB());
-    removeDeadMoves();
   }
 
   private DexInstruction parseInstruction(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {

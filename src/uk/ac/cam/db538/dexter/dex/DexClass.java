@@ -355,13 +355,6 @@ public class DexClass {
     return false;
   }
 
-  public void transformSSA() {
-    System.out.println("SSA transforming class " + this.getType().getPrettyName());
-
-    for (val method : methods)
-      method.transformSSA();
-  }
-
   public void countInstructions(HashMap<Class, Integer> count) {
     for (val method : methods)
       method.countInstructions(count);

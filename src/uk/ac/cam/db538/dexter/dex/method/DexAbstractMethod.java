@@ -43,8 +43,5 @@ public class DexAbstractMethod extends DexMethod {
   public void markMethodOriginal() { }
 
   @Override
-  public void transformSSA() { }
-
-  @Override
   public void countInstructions(HashMap<Class, Integer> count) { }
 }
