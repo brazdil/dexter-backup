@@ -113,11 +113,6 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return throwingInsn_CanExitMethod();
-  }
-
-  @Override
   public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
     val regAlloc = state.getRegisterAllocation();
     int rTo = regAlloc.get(regTo);

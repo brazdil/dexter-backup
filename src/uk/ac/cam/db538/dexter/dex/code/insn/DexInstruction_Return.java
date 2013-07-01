@@ -76,11 +76,6 @@ public class DexInstruction_Return extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return true;
-  }
-
-  @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom);
   }

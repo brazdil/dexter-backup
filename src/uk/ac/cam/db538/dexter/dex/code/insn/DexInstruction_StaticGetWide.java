@@ -105,11 +105,6 @@ public class DexInstruction_StaticGetWide extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return throwingInsn_CanExitMethod();
-  }
-
-  @Override
   public Set<GcFollowConstraint> gcFollowConstraints() {
     return createSet(new GcFollowConstraint(regTo1, regTo2));
   }

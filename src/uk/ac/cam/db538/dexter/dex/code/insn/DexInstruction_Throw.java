@@ -17,6 +17,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexInstruction_Throw extends DexInstruction {
 
@@ -80,11 +81,6 @@ public class DexInstruction_Throw extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return throwingInsn_CanExitMethod();
-  }
-
-  @Override
   public Set<DexCodeElement> cfgJumpTargets() {
     return throwingInsn_CatchHandlers();
   }
@@ -101,5 +97,10 @@ public class DexInstruction_Throw extends DexInstruction {
   @Override
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
+  }
+
+  @Override
+  protected DexClassType[] throwsExceptions() {
+    return new DexClassType[] { DexClassType.parse("Ljava/lang/Throwable;", getParentFile().getParsingCache()) };
   }
 }

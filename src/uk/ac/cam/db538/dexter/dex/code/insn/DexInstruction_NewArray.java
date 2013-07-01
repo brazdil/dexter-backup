@@ -99,11 +99,6 @@ public class DexInstruction_NewArray extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return throwingInsn_CanExitMethod();
-  }
-
-  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(
              new GcRangeConstraint(regTo, ColorRange.RANGE_4BIT),

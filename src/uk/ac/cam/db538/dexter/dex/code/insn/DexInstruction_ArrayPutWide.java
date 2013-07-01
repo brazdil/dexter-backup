@@ -77,11 +77,6 @@ public class DexInstruction_ArrayPutWide extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return throwingInsn_CanExitMethod();
-  }
-
-  @Override
   public Set<GcFollowConstraint> gcFollowConstraints() {
     return createSet(new GcFollowConstraint(regFrom1, regFrom2));
   }

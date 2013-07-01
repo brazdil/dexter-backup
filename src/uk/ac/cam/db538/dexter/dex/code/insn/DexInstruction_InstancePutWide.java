@@ -115,11 +115,6 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return throwingInsn_CanExitMethod();
-  }
-
-  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     return createSet(
              new GcRangeConstraint(regFrom1, ColorRange.RANGE_4BIT),

@@ -146,11 +146,6 @@ public class DexInstruction_ReturnWide extends DexInstruction {
   }
 
   @Override
-  public boolean cfgExitsMethod() {
-    return true;
-  }
-
-  @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom1, regFrom2);
   }
