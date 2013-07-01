@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -95,14 +94,6 @@ public class DexInstruction_ArrayLength extends DexInstruction {
   @Override
   public boolean cfgExitsMethod() {
     return throwingInsn_CanExitMethod();
-  }
-
-  @Override
-  public Set<DexCodeElement> cfgGetSuccessors() {
-    val set = new HashSet<DexCodeElement>();
-    set.add(getNextCodeElement());
-    set.addAll(throwingInsn_CatchHandlers());
-    return set;
   }
 
   @Override

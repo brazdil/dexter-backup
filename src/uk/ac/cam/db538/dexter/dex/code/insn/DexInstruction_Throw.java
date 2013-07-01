@@ -85,7 +85,7 @@ public class DexInstruction_Throw extends DexInstruction {
   }
 
   @Override
-  public Set<DexCodeElement> cfgGetSuccessors() {
+  public Set<DexCodeElement> cfgJumpTargets() {
     return throwingInsn_CatchHandlers();
   }
 

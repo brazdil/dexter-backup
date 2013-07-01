@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,8 +18,8 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -87,19 +86,6 @@ public class DexInstruction_CheckCast extends DexInstruction {
   }
 
   @Override
-  public boolean cfgEndsBasicBlock() {
-    return true;
-  }
-
-  @Override
-  public Set<DexCodeElement> cfgGetSuccessors() {
-    val set = new HashSet<DexCodeElement>();
-    set.add(getNextCodeElement());
-    set.addAll(throwingInsn_CatchHandlers(classCastException));
-    return set;
-  }
-
-  @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regObject);
   }
@@ -150,4 +136,10 @@ public class DexInstruction_CheckCast extends DexInstruction {
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }
+
+  @Override
+  protected DexClassType[] throwsExceptions() {
+	return getParentFile().getParsingCache().LIST_Error_ClassCastException;
+  }
+  
 }

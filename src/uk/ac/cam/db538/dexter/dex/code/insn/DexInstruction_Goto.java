@@ -56,8 +56,8 @@ public class DexInstruction_Goto extends DexInstruction {
   }
 
   @Override
-  public Set<DexCodeElement> cfgGetSuccessors() {
-    return createSet((DexCodeElement) target);
+  public Set<DexCodeElement> cfgJumpTargets() {
+	  return createSet((DexCodeElement) target);
   }
 
   @Override

@@ -93,8 +93,8 @@ public class DexInstruction_PackedSwitchData extends DexInstruction {
   }
 
   @Override
-  public Set<DexCodeElement> cfgGetSuccessors() {
-    return new HashSet<DexCodeElement>(targets);
+  public Set<DexCodeElement> cfgJumpTargets() {
+	return new HashSet<DexCodeElement>(targets);
   }
 
   @Override

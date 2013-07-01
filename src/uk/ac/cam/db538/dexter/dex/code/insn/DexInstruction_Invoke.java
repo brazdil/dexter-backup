@@ -274,14 +274,6 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
 
   @Override
-  public Set<DexCodeElement> cfgGetSuccessors() {
-    val set = new HashSet<DexCodeElement>();
-    set.add(getNextCodeElement());
-    set.addAll(throwingInsn_CatchHandlers());
-    return set;
-  }
-
-  @Override
   public Set<GcRangeConstraint> gcRangeConstraints() {
     val set = new HashSet<GcRangeConstraint>();
 
