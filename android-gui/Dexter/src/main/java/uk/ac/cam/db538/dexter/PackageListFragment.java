@@ -8,8 +8,6 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import uk.ac.cam.db538.dexter.dummy.DummyContent;
-
 /**
  * A list fragment representing a list of Packages. This fragment
  * also supports tablet devices by allowing list items to be given an
