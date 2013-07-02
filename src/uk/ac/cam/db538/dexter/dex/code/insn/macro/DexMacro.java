@@ -17,5 +17,5 @@ public abstract class DexMacro extends DexInstruction {
     throw new UnsupportedOperationException("Pseudoinstructions should not be displayed");
   }
 
-  public abstract List<DexCodeElement> unwrap();
+  public abstract List<? extends DexCodeElement> unwrap();
 }

@@ -24,7 +24,7 @@ public class DexMacro_GetServiceTaint extends DexMacro {
   }
 
   @Override
-  public List<DexCodeElement> unwrap() {
+  public List<? extends DexCodeElement> unwrap() {
     val code = getMethodCode();
     val dex = getParentFile();
 

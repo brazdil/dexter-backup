@@ -30,7 +30,7 @@ public class DexMacro_FilledNewArray extends DexMacro {
   }
 
   @Override
-  public List<DexCodeElement> unwrap() {
+  public List<? extends DexCodeElement> unwrap() {
     return createList(
              (DexCodeElement) instructionFilledNewArray,
              (DexCodeElement) instructionMoveResult);

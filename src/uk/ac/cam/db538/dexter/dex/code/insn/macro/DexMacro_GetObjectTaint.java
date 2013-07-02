@@ -26,7 +26,7 @@ public class DexMacro_GetObjectTaint extends DexMacro {
   }
 
   @Override
-  public List<DexCodeElement> unwrap() {
+  public List<? extends DexCodeElement> unwrap() {
     val code = getMethodCode();
     val dex = getParentFile();
 
