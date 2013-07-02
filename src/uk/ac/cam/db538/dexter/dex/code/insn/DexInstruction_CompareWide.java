@@ -9,7 +9,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -67,24 +66,6 @@ public class DexInstruction_CompareWide extends DexInstruction {
     return insnOpcode.getAssemblyName() + " " + regTo.getOriginalIndexString()
            + ", " + regSourceA1.getOriginalIndexString() + "|" + regSourceA2.getOriginalIndexString()
            + ", " + regSourceB1.getOriginalIndexString() + "|" + regSourceB2.getOriginalIndexString();
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rTarget = regAlloc.get(regTo);
-    int rSourceA1 = regAlloc.get(regSourceA1);
-    int rSourceA2 = regAlloc.get(regSourceA2);
-    int rSourceB1 = regAlloc.get(regSourceB1);
-    int rSourceB2 = regAlloc.get(regSourceB2);
-
-    if (!formWideRegister(rSourceA1, rSourceA2) || !formWideRegister(rSourceB1, rSourceB2))
-      return throwWideRegistersExpected();
-
-    if (fitsIntoBits_Unsigned(rTarget, 8) && fitsIntoBits_Unsigned(rSourceA1, 8) && fitsIntoBits_Unsigned(rSourceB1, 8))
-      return new Instruction[] { new Instruction23x(Opcode_CompareWide.convert(insnOpcode), (short) rTarget, (short) rSourceA1, (short) rSourceB1)	};
-    else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

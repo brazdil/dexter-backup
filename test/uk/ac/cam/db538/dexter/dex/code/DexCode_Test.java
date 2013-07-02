@@ -20,19 +20,14 @@ import org.jf.dexlib.Code.Format.Instruction10t;
 import org.jf.dexlib.Code.Format.Instruction10x;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Nop;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 
 public class DexCode_Test {
 
@@ -148,36 +143,6 @@ public class DexCode_Test {
         new Instruction10x(Opcode.NOP),
         new Instruction10t(Opcode.GOTO, -2)
       }, null);
-  }
-
-  @Test
-  public void testAssembleBytecode_OffsetTooLong_Instrumentation() {
-    val code = new DexCode();
-
-    val regNum = Utils.numFitsInto_Unsigned(8);
-    val reg = new DexRegister(regNum);
-
-    val label = new DexLabel(code);
-    val nop = new DexInstruction_Nop(code);
-    val insn = new DexInstruction_IfTestZero(code, reg, label, Opcode_IfTestZero.eqz);
-
-    val r1 = new DexRegister(1);
-    val r2 = new DexRegister(2);
-    val r3 = new DexRegister(3);
-
-    code.add(insn);
-    for (int i = 0; i < 32766 / 2; ++i) // size of BinOp is 2
-      code.add(new DexInstruction_BinaryOp(code, r1, r2, r3, Opcode_BinaryOp.AddInt));
-    code.add(label);
-    code.add(nop);
-
-    val regAlloc = Utils.genRegAlloc(reg, r1, r2, r3);
-    val asm = code.assembleBytecode(regAlloc, new DexAssemblingCache(new DexFile(), null)).getInstructions();
-    assertEquals(3 + 32766/2 + 1, asm.size());
-    assertEquals(Opcode.IF_EQZ, asm.get(0).opcode); // the original IfTestZero
-    assertEquals(Opcode.GOTO, asm.get(1).opcode); // jump to successor
-    assertEquals(Opcode.GOTO_32, asm.get(2).opcode); // long jump to branch
-    assertEquals(Opcode.ADD_INT, asm.get(3).opcode); // original successor
   }
 
   @Test
@@ -411,45 +376,5 @@ public class DexCode_Test {
 
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
     new DexCode(codeItem, new DexParsingCache());
-  }
-
-  @Test
-  public void testAssembly_EvenAlignedLabels_NoNeed() {
-    val code = new DexCode();
-    val label = new DexLabel(code);
-    label.setEvenAligned(true);
-    code.add(new DexInstruction_Nop(code));
-    code.add(new DexLabel(code)); // normal label
-    code.add(new DexInstruction_Nop(code));
-    code.add(label); // already correctly aligned
-    code.add(new DexInstruction_Nop(code));
-
-    val asm = code.assembleBytecode(null, null);
-    assertEquals(3, asm.getInstructions().size());
-    assertEquals(3, asm.getTotalCodeLength());
-    assertEquals(Opcode.NOP, asm.getInstructions().get(0).opcode);
-    assertEquals(Opcode.NOP, asm.getInstructions().get(1).opcode);
-    assertEquals(Opcode.NOP, asm.getInstructions().get(2).opcode);
-  }
-
-  @Test
-  public void testAssembly_EvenAlignedLabels_BadlyAligned() {
-    val code = new DexCode();
-    val label = new DexLabel(code);
-    label.setEvenAligned(true);
-    code.add(new DexInstruction_Nop(code));
-    code.add(new DexInstruction_Nop(code));
-    code.add(new DexInstruction_Nop(code));
-    code.add(label); // badly aligned
-    code.add(new DexInstruction_Nop(code));
-
-    val asm = code.assembleBytecode(null, null);
-    assertEquals(5, asm.getInstructions().size());
-    assertEquals(5, asm.getTotalCodeLength());
-    assertEquals(Opcode.NOP, asm.getInstructions().get(0).opcode);
-    assertEquals(Opcode.NOP, asm.getInstructions().get(1).opcode);
-    assertEquals(Opcode.NOP, asm.getInstructions().get(2).opcode);
-    assertEquals(Opcode.NOP, asm.getInstructions().get(3).opcode);
-    assertEquals(Opcode.NOP, asm.getInstructions().get(4).opcode);
   }
 }

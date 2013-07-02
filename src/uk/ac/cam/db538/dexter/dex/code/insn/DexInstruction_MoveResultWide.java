@@ -10,7 +10,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
@@ -50,23 +49,6 @@ public class DexInstruction_MoveResultWide extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "move-result-wide " + regTo1.getOriginalIndexString() + "|" + regTo2.getOriginalIndexString();
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rTo1 = regAlloc.get(regTo1);
-    int rTo2 = regAlloc.get(regTo2);
-
-    if (!formWideRegister(rTo1, rTo2))
-      return throwWideRegistersExpected();
-
-    if (fitsIntoBits_Unsigned(rTo1, 8))
-      return new Instruction[] {
-               new Instruction11x(Opcode.MOVE_RESULT_WIDE, (short) rTo1)
-             };
-    else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

@@ -11,7 +11,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -53,20 +52,6 @@ public class DexInstruction_NewArray extends DexInstruction {
   public String getOriginalAssembly() {
     return "new-array " + regTo.getOriginalIndexString() + ", [" + regSize.getOriginalIndexString() +
            "], " + value.getDescriptor();
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rTo = regAlloc.get(regTo);
-    int rSize = regAlloc.get(regSize);
-
-    if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Unsigned(rSize, 4)) {
-      return new Instruction[] {
-               new Instruction22c(Opcode.NEW_ARRAY, (byte) rTo, (byte) rSize, state.getCache().getType(value))
-             };
-    } else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

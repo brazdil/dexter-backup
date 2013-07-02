@@ -12,7 +12,6 @@ import org.jf.dexlib.Code.Format.Instruction22x;
 import org.jf.dexlib.Code.Format.Instruction32x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -84,35 +83,6 @@ public class DexInstruction_Move extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom);
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rTo = regAlloc.get(regTo);
-    int rFrom = regAlloc.get(regFrom);
-
-    if (rTo == rFrom)
-      return new Instruction[0];
-
-    if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Unsigned(rFrom, 4))
-      return new Instruction[] {
-               objectMoving ?
-               new Instruction12x(Opcode.MOVE_OBJECT, (byte) rTo, (byte) rFrom) :
-               new Instruction12x(Opcode.MOVE, (byte) rTo, (byte) rFrom)
-             };
-    else if (fitsIntoBits_Unsigned(rTo, 8))
-      return new Instruction[] {
-               objectMoving ?
-               new Instruction22x(Opcode.MOVE_OBJECT_FROM16, (short) rTo, rFrom) :
-               new Instruction22x(Opcode.MOVE_FROM16, (short) rTo, rFrom)
-             };
-    else
-      return new Instruction[] {
-               objectMoving ?
-               new Instruction32x(Opcode.MOVE_OBJECT_16, rTo, rFrom) :
-               new Instruction32x(Opcode.MOVE_16, rTo, rFrom)
-             };
   }
 
   @Override

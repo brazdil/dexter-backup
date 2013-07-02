@@ -10,7 +10,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 
@@ -52,19 +51,6 @@ public class DexInstruction_MoveResult extends DexInstruction {
   public String getOriginalAssembly() {
     return "move-result" + (objectMoving ? "-object" : "") +
            " " + regTo.getOriginalIndexString();
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    int rTo = state.getRegisterAllocation().get(regTo);
-    val opcode = objectMoving ? Opcode.MOVE_RESULT_OBJECT : Opcode.MOVE_RESULT;
-
-    if (fitsIntoBits_Unsigned(rTo, 8))
-      return new Instruction[] {
-               new Instruction11x(opcode, (short) rTo)
-             };
-    else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

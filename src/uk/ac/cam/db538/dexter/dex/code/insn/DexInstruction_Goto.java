@@ -11,7 +11,6 @@ import org.jf.dexlib.Code.Format.Instruction20t;
 import org.jf.dexlib.Code.Format.Instruction30t;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -56,26 +55,6 @@ public class DexInstruction_Goto extends DexInstruction {
   @Override
   public Set<DexCodeElement> cfgJumpTargets() {
 	  return createSet((DexCodeElement) target);
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    long offset = computeRelativeOffset(target, state);
-
-    if (fitsIntoBits_Signed(offset, 8))
-      return new Instruction[] {
-               new Instruction10t(Opcode.GOTO, (int) offset)
-             };
-    else if (fitsIntoBits_Signed(offset, 16))
-      return new Instruction[] {
-               new Instruction20t(Opcode.GOTO_16, (int) offset)
-             };
-    else if (fitsIntoBits_Signed(offset, 32))
-      return new Instruction[] {
-               new Instruction30t(Opcode.GOTO_32, (int) offset)
-             };
-    else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

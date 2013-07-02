@@ -14,7 +14,6 @@ import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction.ArrayElement;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -62,24 +61,6 @@ public class DexInstruction_FillArrayData extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) { }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    if (elementData.isEmpty())
-      return throwCannotAssembleException("Empty element list of DexInstruction_FillArrayData");
-
-    val elementWidth = elementData.get(0).length;
-    val encodedData = new byte[elementWidth * elementData.size()];
-    for (int i = 0; i < elementData.size(); ++i) {
-      val element = elementData.get(i);
-      if (element.length != elementWidth)
-        return throwCannotAssembleException("Inconsistent element width of DexInstruction_FillArrayData data");
-      else
-        System.arraycopy(element, 0, encodedData, i * elementWidth, elementWidth);
-    }
-
-    return new Instruction[] { new ArrayDataPseudoInstruction(elementWidth, encodedData) };
-  }
 
   @Override
   public boolean cfgEndsBasicBlock() {

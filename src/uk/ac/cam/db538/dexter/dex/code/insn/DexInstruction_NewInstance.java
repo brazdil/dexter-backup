@@ -11,7 +11,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -53,18 +52,6 @@ public class DexInstruction_NewInstance extends DexInstruction {
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     return createSet(regTo);
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    int rTo = state.getRegisterAllocation().get(regTo);
-
-    if (fitsIntoBits_Unsigned(rTo, 8)) {
-      return new Instruction[] {
-               new Instruction21c(Opcode.NEW_INSTANCE, (short) rTo, state.getCache().getType(value))
-             };
-    } else
-      return throwCannotAssembleException("No suitable instruction format found");
   }
 
   @Override

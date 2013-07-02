@@ -1,20 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import lombok.val;
-
-import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.Utils;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 public class DexInstruction_InstanceGetWide_Test {
 
@@ -35,109 +26,5 @@ public class DexInstruction_InstanceGetWide_Test {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IGET_WIDE, (byte) 0, (byte) 1, Utils.getFieldItem("Lcom/example/MyClass1;", "I", "TestField1")),
       "");
-  }
-
-  @Test
-  public void testAssemble_InstanceGetWide() {
-    val cache = new DexParsingCache();
-
-    val regNTo = Utils.numFitsInto_Unsigned(4);
-    val regNObject = Utils.numFitsInto_Unsigned(4) - 1;
-    val regTo1 = new DexRegister(regNTo);
-    val regTo2 = new DexRegister(regNTo + 1);
-    val regObject = new DexRegister(regNObject);
-    val regAlloc = Utils.genRegAlloc(regTo1, regTo2, regObject);
-
-    val insn = new DexInstruction_InstanceGetWide(
-      null,
-      regTo1,
-      regTo2,
-      regObject,
-      DexClassType.parse("Lcom/test/SomeClass;", cache),
-      DexRegisterType.parse("D", cache),
-      "AwesomeField");
-
-    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
-    assertEquals(1, asm.length);
-    assertTrue(asm[0] instanceof Instruction22c);
-
-    val asmInsn = (Instruction22c) asm[0];
-    assertEquals(regNTo, asmInsn.getRegisterA());
-    assertEquals(regNObject, asmInsn.getRegisterB());
-    assertEquals(Opcode.IGET_WIDE, asmInsn.opcode);
-
-    val asmInsnRef = (FieldIdItem) asmInsn.getReferencedItem();
-    assertEquals("Lcom/test/SomeClass;", asmInsnRef.getContainingClass().getTypeDescriptor());
-    assertEquals("D", asmInsnRef.getFieldType().getTypeDescriptor());
-    assertEquals("AwesomeField", asmInsnRef.getFieldName().getStringValue());
-  }
-
-  @Test(expected=InstructionAssemblyException.class)
-  public void testAssemble_InstanceGetWide_WrongAllocation_RegisterTo() {
-    val cache = new DexParsingCache();
-
-    val regNTo = Utils.numFitsInto_Unsigned(5);
-    val regNObject = Utils.numFitsInto_Unsigned(4);
-    val regTo1 = new DexRegister(regNTo);
-    val regTo2 = new DexRegister(regNTo + 1);
-    val regObject = new DexRegister(regNObject);
-    val regAlloc = Utils.genRegAlloc(regTo1, regTo2, regObject);
-
-    val insn = new DexInstruction_InstanceGetWide(
-      null,
-      regTo1,
-      regTo2,
-      regObject,
-      DexClassType.parse("Lcom/test/SomeClass;", cache),
-      DexRegisterType.parse("D", cache),
-      "AwesomeField");
-
-    insn.assembleBytecode(Utils.genAsmState(regAlloc));
-  }
-
-  @Test(expected=InstructionAssemblyException.class)
-  public void testAssemble_InstanceGetWide_WrongAllocation_RegisterObject() {
-    val cache = new DexParsingCache();
-
-    val regNTo = Utils.numFitsInto_Unsigned(4);
-    val regNObject = Utils.numFitsInto_Unsigned(5);
-    val regTo1 = new DexRegister(regNTo);
-    val regTo2 = new DexRegister(regNTo + 1);
-    val regObject = new DexRegister(regNObject);
-    val regAlloc = Utils.genRegAlloc(regTo1, regTo2, regObject);
-
-    val insn = new DexInstruction_InstanceGetWide(
-      null,
-      regTo1,
-      regTo2,
-      regObject,
-      DexClassType.parse("Lcom/test/SomeClass;", cache),
-      DexRegisterType.parse("D", cache),
-      "AwesomeField");
-
-    insn.assembleBytecode(Utils.genAsmState(regAlloc));
-  }
-
-  @Test(expected=InstructionAssemblyException.class)
-  public void testAssemble_InstanceGetWide_WrongAllocation_FollowUp() {
-    val cache = new DexParsingCache();
-
-    val regNTo = Utils.numFitsInto_Unsigned(4);
-    val regNObject = Utils.numFitsInto_Unsigned(4) - 1;
-    val regTo1 = new DexRegister(regNTo);
-    val regTo2 = new DexRegister(regNTo - 2);
-    val regObject = new DexRegister(regNObject);
-    val regAlloc = Utils.genRegAlloc(regTo1, regTo2, regObject);
-
-    val insn = new DexInstruction_InstanceGetWide(
-      null,
-      regTo1,
-      regTo2,
-      regObject,
-      DexClassType.parse("Lcom/test/SomeClass;", cache),
-      DexRegisterType.parse("D", cache),
-      "AwesomeField");
-
-    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 }

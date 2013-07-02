@@ -12,7 +12,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -114,21 +113,6 @@ public class DexInstruction_ReturnWide extends DexInstruction {
         code.replace(this, new DexCodeElement[] {insnGetSRES, insnAcquireSRES, insnSetRES, this});
       }
     }
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rFrom1 = regAlloc.get(regFrom1);
-    int rFrom2 = regAlloc.get(regFrom2);
-
-    if (!formWideRegister(rFrom1, rFrom2))
-      return throwWideRegistersExpected();
-
-    if (fitsIntoBits_Unsigned(rFrom1, 8))
-      return new Instruction[] { new Instruction11x(Opcode.RETURN_WIDE, (short) rFrom1) };
-    else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

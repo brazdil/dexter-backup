@@ -11,7 +11,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -54,16 +53,6 @@ public class DexInstruction_CheckCast extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "check-cast " + regObject.getOriginalIndexString() + ", " + value.getDescriptor();
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    int rObj = state.getRegisterAllocation().get(regObject);
-
-    if (fitsIntoBits_Unsigned(rObj, 8))
-      return new Instruction[] { new Instruction21c(Opcode.CHECK_CAST, (short) rObj, state.getCache().getType(value)) };
-    else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

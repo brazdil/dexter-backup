@@ -10,7 +10,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -46,18 +45,6 @@ public class DexInstruction_Monitor extends DexInstruction {
   public String getOriginalAssembly() {
     return "monitor-" + (enter ? "enter" : "exit") +
            " " + regMonitor.getOriginalIndexString();
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    int rObj = state.getRegisterAllocation().get(regMonitor);
-
-    if (fitsIntoBits_Unsigned(rObj, 8))
-      return new Instruction[] {
-               new Instruction11x(enter ? Opcode.MONITOR_ENTER : Opcode.MONITOR_EXIT, (short) rObj)
-             };
-    else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

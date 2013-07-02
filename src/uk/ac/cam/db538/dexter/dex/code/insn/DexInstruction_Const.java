@@ -13,7 +13,6 @@ import org.jf.dexlib.Code.Format.Instruction21s;
 import org.jf.dexlib.Code.Format.Instruction31i;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -80,22 +79,6 @@ public class DexInstruction_Const extends DexInstruction {
                                 state.getTaintRegister(regTo),
                                 (value == 0xdec0ded) ? 1 : 0)
                             });
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    int rTo = state.getRegisterAllocation().get(regTo);
-
-    if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Signed(value, 4))
-      return new Instruction[] { new Instruction11n(Opcode.CONST_4, (byte) rTo, (byte) value) };
-    else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoBits_Signed(value, 16))
-      return new Instruction[] { new Instruction21s(Opcode.CONST_16, (short) rTo, (short) value) };
-    else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoHighBits_Signed(value, 16, 16))
-      return new Instruction[] { new Instruction21h(Opcode.CONST_HIGH16, (short) rTo, (short) (value >> 16)) };
-    else if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoBits_Signed(value, 32))
-      return new Instruction[] { new Instruction31i(Opcode.CONST, (short) rTo, (int) value) };
-    else
-      return throwNoSuitableFormatFound();
   }
 
   @Override
