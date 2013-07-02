@@ -54,7 +54,7 @@ public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
   }
 
   @Override
-  public List<DexCodeElement> unwrap() {
+  public List<? extends DexCodeElement> unwrap() {
     val methodCode = getMethodCode();
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();

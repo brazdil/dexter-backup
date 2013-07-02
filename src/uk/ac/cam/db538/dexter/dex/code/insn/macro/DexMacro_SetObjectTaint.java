@@ -8,8 +8,11 @@ import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionVisitor;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 
 public class DexMacro_SetObjectTaint extends DexMacro {
@@ -25,22 +28,25 @@ public class DexMacro_SetObjectTaint extends DexMacro {
   }
 
   @Override
-  public List<DexCodeElement> unwrap() {
+  public List<? extends DexCodeElement> unwrap() {
     val code = getMethodCode();
     val dex = getParentFile();
 
     val classStorage = dex.getObjectTaintStorage_Type();
     val methodSetTaint = dex.getObjectTaintStorage_Set();
+    
+    val labelAfter = new DexLabel(code);
 
     return createList(
-             (DexCodeElement) new DexInstruction_Invoke(
+    		new DexInstruction_IfTestZero(code, regTaint, labelAfter, Opcode_IfTestZero.eqz), 
+            new DexInstruction_Invoke(
                code,
                classStorage,
                methodSetTaint.getName(),
                methodSetTaint.getPrototype(),
                Arrays.asList(new DexRegister[] { regObject, regTaint }),
-               Opcode_Invoke.Static)
-           );
+               Opcode_Invoke.Static),
+            labelAfter);
   }
 
   @Override

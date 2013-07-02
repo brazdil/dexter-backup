@@ -36,7 +36,7 @@ public class DexMacro_GetMethodCaller extends DexMacro {
   }
 
   @Override
-  public List<DexCodeElement> unwrap() {
+  public List<? extends DexCodeElement> unwrap() {
     val code = getMethodCode();
     val parsingCache = getParentFile().getParsingCache();
 

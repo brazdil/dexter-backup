@@ -65,7 +65,7 @@ public class ObjectTaintStorage {
   }
 
   public static final void set(Object obj, int taint) {
-    if (obj == null || taint == 0)
+    if (obj == null) // (taint == 0) tested by the taint-set macro
       return;
 
     // generate hash code and table index

@@ -27,7 +27,7 @@ public class DexMacro_GetQueryTaint extends DexMacro {
   }
 
   @Override
-  public List<DexCodeElement> unwrap() {
+  public List<? extends DexCodeElement> unwrap() {
     val code = getMethodCode();
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();

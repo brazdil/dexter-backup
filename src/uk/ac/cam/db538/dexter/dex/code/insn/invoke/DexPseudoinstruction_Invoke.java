@@ -62,7 +62,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
   }
 
   @Override
-  public List<DexCodeElement> unwrap() {
+  public List<? extends DexCodeElement> unwrap() {
     if (movesResult())
       return createList(
                (DexCodeElement) instructionInvoke,
