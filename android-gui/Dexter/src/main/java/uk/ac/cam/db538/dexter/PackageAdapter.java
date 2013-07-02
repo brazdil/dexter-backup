@@ -74,8 +74,6 @@ public class PackageAdapter implements ListAdapter {
         else
             itemView = (PackageListItem) view;
 
-        System.out.println(i + "/" + packages.size());
-
         // update the fields
         itemView.setPackageInfo(this.packages.get(i));
 
