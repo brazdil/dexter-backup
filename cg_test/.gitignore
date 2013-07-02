@@ -1,8 +1,1 @@
-*.apk
-classes.dex
-*.class
-*.out
-annot_original.txt
-annot.txt
-output.txt
-
+path_config
