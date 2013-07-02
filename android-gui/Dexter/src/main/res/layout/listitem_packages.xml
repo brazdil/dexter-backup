@@ -1,15 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+              android:orientation="horizontal"
+              android:layout_width="fill_parent"
+              android:layout_height="?android:attr/listPreferredItemHeight"
+              android:focusableInTouchMode="false">
 
-    <TextView
+    <ImageView
+            android:adjustViewBounds="true"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Large Text"
-            android:id="@+id/textPackageName"
-            android:layout_gravity="left|center_vertical"/>
+            android:layout_height="fill_parent"
+            android:id="@+id/imgPackageIcon"/>
+
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:paddingLeft="3pt"
+            android:paddingTop="2pt"
+            android:paddingBottom="2pt">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Small"
+                android:text="com.example.packagename"
+                android:id="@+id/textPackageName"
+                android:layout_gravity="left|center_vertical"/>
+    </LinearLayout>
+
 </LinearLayout>
