@@ -27,7 +27,7 @@ public class AnalyzedDexInstruction {
 	     * Instructions that can pass on execution to this one during normal execution
 	     */
 	    protected final LinkedList<AnalyzedDexInstruction> predecessors = new LinkedList<AnalyzedDexInstruction>();
-
+	    protected final Set<AnalyzedDexInstruction> exceptionPredecessors = new HashSet<AnalyzedDexInstruction>();
 	    /**
 	     * Instructions that can execution could pass on to next during normal execution
 	     */
@@ -85,14 +85,17 @@ public class AnalyzedDexInstruction {
 	        return Collections.unmodifiableList(predecessors);
 	    }
 
-	    protected boolean addPredecessor(AnalyzedDexInstruction predecessor) {
-	        return predecessors.add(predecessor);
+	    protected void linkToSuccessor(AnalyzedDexInstruction successor, boolean exceptionPath) {
+	    	successors.add(successor);
+	    	successor.predecessors.add(this);
+	    	if (exceptionPath) 
+	    		successor.exceptionPredecessors.add(this);
 	    }
 
-	    protected void addSuccessor(AnalyzedDexInstruction successor) {
-	        successors.add(successor);
+	    public boolean isExceptionPredecessor(AnalyzedDexInstruction predecessor) {
+	    	return exceptionPredecessors.contains(predecessor);
 	    }
-
+	    
 	    public int getSuccessorCount() {
 	        return successors.size();
 	    }
@@ -110,6 +113,16 @@ public class AnalyzedDexInstruction {
 	        return instruction;
 	    }
 
+	    public DexCodeElement getCodeElement() {
+	    	if (instruction != null) {
+	    		assert auxillaryElement == null;
+	    		return instruction;
+	    	} else if (auxillaryElement != null) {
+	    		return auxillaryElement;
+	    	} else {
+	    		throw new RuntimeException("bad AnalyzedDexInstruction structure");
+	    	}
+	    }
 		public Set<DexRegister> getUsedRegisters() {
 			return usedRegisters;
 		}
@@ -154,7 +167,7 @@ public class AnalyzedDexInstruction {
 		public void defineRegister(DexRegister regTo, RopType registerType, boolean freezed) {
 			int registerNumber = DexRegisterHelper.normalize(regTo);
 			definedRegisters.add(regTo);
-			definedRegisterMap.put(registerNumber, new TypeSolver());
+			definedRegisterMap.put(registerNumber, new TypeSolver(this));
 			defSet.put(registerNumber, new Pair<RopType, Boolean>(registerType, freezed));
 		}
 		
@@ -197,5 +210,13 @@ public class AnalyzedDexInstruction {
 			}
 		}
 
-		
+		@Override
+		public String toString() {
+			if (auxillaryElement != null)
+				return auxillaryElement.toString();
+			else if (instruction != null)
+				return instruction.toString();
+			else
+				return "null:" + instructionIndex;
+		}
 }

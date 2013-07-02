@@ -13,6 +13,7 @@ public class TypeSolver {
 	enum CascadeType {Equivalent, ArrayToElement, ElementToArray};
 	
 	private class TypeInfo {
+		HashSet<AnalyzedDexInstruction> definedSites;
 		HashSet<RopType> constraints;
 		RopType type;
 		boolean freezed;
@@ -21,6 +22,7 @@ public class TypeSolver {
 		public TypeInfo() {
 			freezed = false;
 			type = RopType.Unknown;
+			definedSites = new HashSet<AnalyzedDexInstruction>();
 			constraints = new HashSet<RopType>();
 			depends = new HashMap<TypeSolver, CascadeType>();
 		}
@@ -28,8 +30,9 @@ public class TypeSolver {
 	
 	TypeInfo info;
 	
-	public TypeSolver() {
+	public TypeSolver(AnalyzedDexInstruction site) {
 		info = new TypeInfo();
+		info.definedSites.add(site);
 	}
 	
 	public void unify(TypeSolver other) {
@@ -40,7 +43,7 @@ public class TypeSolver {
 				assert this.info.depends.get(dep.getKey()) == dep.getValue();
 			this.info.depends.put(dep.getKey(), dep.getValue());
 		}
-		
+		this.info.definedSites.addAll(other.info.definedSites);
 		other.info = this.info;
 	}
 	
