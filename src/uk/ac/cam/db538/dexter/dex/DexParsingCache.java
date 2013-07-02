@@ -17,6 +17,7 @@ public class DexParsingCache {
   private final Map<String, String> descriptorReplacements;
 
   // From com.android.dx.rop.code.Exceptions
+  public final DexClassType TYPE_Throwable;
   public final DexClassType TYPE_ArithmeticException;
   public final DexClassType TYPE_ArrayIndexOutOfBoundsException;
   public final DexClassType TYPE_ArrayStoreException;
@@ -26,6 +27,7 @@ public class DexParsingCache {
   public final DexClassType TYPE_NegativeArraySizeException;
   public final DexClassType TYPE_NullPointerException;
   
+  public final DexClassType[] LIST_Throwable;
   public final DexClassType[] LIST_Error;
   public final DexClassType[] LIST_Error_ArithmeticException;
   public final DexClassType[] LIST_Error_ClassCastException;
@@ -48,8 +50,8 @@ public class DexParsingCache {
     TYPE_NegativeArraySizeException = getClassType("Ljava/lang/NegativeArraySizeException;");
     TYPE_NullPointerException = getClassType("Ljava/lang/NullPointerException;");
     TYPE_Error = getClassType("Ljava/lang/Error;");
+    TYPE_Throwable = getClassType("Ljava/lang/Throwable;");
     
-
     LIST_Error_ArithmeticException = new DexClassType[] {TYPE_Error, TYPE_ArithmeticException};
     LIST_Error_ClassCastException = new DexClassType[] {TYPE_Error, TYPE_ClassCastException};
     LIST_Error_NegativeArraySizeException = new DexClassType[] {TYPE_Error, TYPE_NegativeArraySizeException};
@@ -65,6 +67,7 @@ public class DexParsingCache {
     																	TYPE_NullPointerException,
 																		TYPE_IllegalMonitorStateException};
     LIST_Error = new DexClassType[] {TYPE_Error};
+    LIST_Throwable = new DexClassType[] {TYPE_Throwable};
   }
 
   public DexClassType getClassType(String desc) {
