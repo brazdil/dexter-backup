@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter;
 
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
@@ -21,8 +22,7 @@ import android.support.v4.app.FragmentActivity;
  * {@link PackageListFragment.Callbacks} interface
  * to listen for item selections.
  */
-public class PackageListActivity extends FragmentActivity
-        implements PackageListFragment.Callbacks {
+public class PackageListActivity extends FragmentActivity implements PackageListFragment.Callbacks {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -57,13 +57,12 @@ public class PackageListActivity extends FragmentActivity
      * indicating that the item with the given ID was selected.
      */
     @Override
-    public void onItemSelected(String id) {
+    public void onItemSelected(PackageInfo pkg) {
         if (mTwoPane) {
             // In two-pane mode, show the detail view in this activity by
-            // adding or replacing the detail fragment using a
-            // fragment transaction.
+            // adding or replacing the detail fragment using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(PackageDetailFragment.ARG_ITEM_ID, id);
+            arguments.putString(PackageDetailFragment.ARG_ITEM_ID, pkg.packageName);
             PackageDetailFragment fragment = new PackageDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
@@ -71,10 +70,9 @@ public class PackageListActivity extends FragmentActivity
                     .commit();
 
         } else {
-            // In single-pane mode, simply start the detail activity
-            // for the selected item ID.
+            // In single-pane mode, simply start the detail activity for the selected item ID.
             Intent detailIntent = new Intent(this, PackageDetailActivity.class);
-            detailIntent.putExtra(PackageDetailFragment.ARG_ITEM_ID, id);
+            detailIntent.putExtra(PackageDetailFragment.ARG_ITEM_ID, pkg.packageName);
             startActivity(detailIntent);
         }
     }
