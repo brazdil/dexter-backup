@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.Collections;
 import java.util.Set;
 
 import lombok.Getter;
@@ -14,6 +15,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexInstruction_Throw extends DexInstruction {
@@ -58,7 +60,7 @@ public class DexInstruction_Throw extends DexInstruction {
   public boolean cfgEndsBasicBlock() {
     return true;
   }
-
+  
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom);
@@ -75,5 +77,10 @@ public class DexInstruction_Throw extends DexInstruction {
   @Override
   protected DexClassType[] throwsExceptions() {
     return new DexClassType[] { DexClassType.parse("Ljava/lang/Throwable;", getParentFile().getParsingCache()) };
+  }
+
+  @Override
+  protected Set<DexCodeElement> cfgJumpTargets() {
+	  return Collections.emptySet();
   }
 }
