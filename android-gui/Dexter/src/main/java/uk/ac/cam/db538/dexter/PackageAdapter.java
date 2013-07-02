@@ -53,7 +53,7 @@ public class PackageAdapter implements ListAdapter {
 
     @Override
     public long getItemId(int i) {
-        return this.packages.get(i).firstInstallTime;
+        return this.packages.get(i).packageName.hashCode();
     }
 
     @Override
