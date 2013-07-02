@@ -251,12 +251,12 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	private List<AnalyzedDexInstruction> getCatchers(Rop opcode) {
 		ArrayList<AnalyzedDexInstruction> result = new ArrayList<AnalyzedDexInstruction>();
 		DexCode code = curInst.getInstruction().getMethodCode();
-//		val classHierarchy = code.getParentFile().getClassHierarchy();
-//		
-//		ArrayList<DexClassType> thrownExceptions = new ArrayList<DexClassType>();
-//		TypeList exceptions = opcode.getExceptions();
-//		for(int i=0; i<exceptions.size(); i++)
-//			thrownExceptions.add(DexClassType.parse(exceptions.getType(i).getDescriptor(), analyzer.cache));
+		val classHierarchy = code.getParentFile().getClassHierarchy();
+		
+		ArrayList<DexClassType> thrownExceptions = new ArrayList<DexClassType>();
+		TypeList exceptions = opcode.getExceptions();
+		for(int i=0; i<exceptions.size(); i++)
+			thrownExceptions.add(DexClassType.parse(exceptions.getType(i).getDescriptor(), code.getParentFile().getParsingCache()));
 		
 		// Order of catch matters, so we need to preserve that, which means
 		// we cannot just iterate through the successors ( which is unordered)
@@ -268,32 +268,23 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	        if (code.isBetween(tryBlockStart, tryBlockEnd, curInst.getInstruction())) {
 
 	            for (val catchBlock : tryBlockStart.getCatchHandlers()) {
-	            	/*****
-	            	 * If we want to be precise, then need to filter out those catch blocks
-	            	 * that do no catch opcode's throwing exceptions. But it turns out to be
-	            	 * difficult to know exactly what exceptions opcode throws (try invoke_xx)
-	            	 * so we just included all catchers here. It seems that this works for
-	            	 * dx's optimizer and code generations.
-	            	 * *****
+	            	
 					DexClassType catchException = catchBlock.getExceptionType();
 					
 					boolean canCatch = false;
+					// Check if the exception thrown by the given Rop can potentially 
+					// be caught by the current catch block.
+				    // which is either the catch block catches the given exception type or its ancestor (a guaranteed catch)
+			        // or if the catch is the subclass of the thrown exception (a potential catch)
+ 					// **Logic duplicated from DexInstruction.throwingInsn_CatchHandlers
 					for(DexClassType thrown : thrownExceptions)
-						if (classHierarchy.isAncestor(thrown, catchException)) {
-							assert !canCatch;
+						if (classHierarchy.isAncestor(thrown, catchException) || 
+							classHierarchy.isAncestor(catchException, thrown)) {
 							canCatch = true;
-							// Continue searching, just as a sanity check
-							// break
+							break;
 						}
-					// Dirty hack here: Invoke/throw will raise Throwable which is the base class of 
-					// all excpetion/errors. Without properly type analysis we cannot know if 
-					// the catch statement will catch it. To be safe, we assume it can catch,
-					// so that the successor analysis will not remove them.
-					if (canCatch || opcode.getExceptions() == StdTypeList.THROWABLE)
+					if (canCatch)
 						result.add(analyzer.reverseLookup(catchBlock));
-					*/
-					result.add(analyzer.reverseLookup(catchBlock));
-	            	
 	            }
 				// if the block has CatchAll handler, it can jump to it
 				val catchAllHandler = tryBlockStart.getCatchAllHandler();
