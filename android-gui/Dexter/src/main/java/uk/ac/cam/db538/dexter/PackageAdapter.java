@@ -1,12 +1,15 @@
 package uk.ac.cam.db538.dexter;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.DataSetObserver;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
@@ -15,15 +18,17 @@ import java.util.List;
 public class PackageAdapter implements ListAdapter {
 
     Context context;
+    PackageManager packageManager;
     List<PackageInfo> packages;
 
     public PackageAdapter(Context context) {
         this.context = context;
+        this.packageManager = this.context.getPackageManager();
         this.updateList();
     }
 
     public void updateList() {
-        this.packages = this.context.getPackageManager().getInstalledPackages(0);
+        this.packages = this.packageManager.getInstalledPackages(0);
     }
 
     @Override
@@ -75,10 +80,14 @@ public class PackageAdapter implements ListAdapter {
             rowView = inflater.inflate(R.layout.listitem_packages, parent, false);
         }
         TextView textPackageName = (TextView) rowView.findViewById(R.id.textPackageName);
+        ImageView imgPackageIcon = (ImageView) rowView.findViewById(R.id.imgPackageIcon);
 
         // update the info
         PackageInfo pkg = this.packages.get(i);
         textPackageName.setText(pkg.packageName);
+        imgPackageIcon.setImageDrawable(pkg.applicationInfo.loadIcon(this.packageManager));
+
+        // set package icon size
 
         return rowView;
     }
