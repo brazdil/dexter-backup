@@ -13,7 +13,6 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -90,23 +89,6 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom1, regFrom2);
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rTo1 = regAlloc.get(regFrom1);
-    int rTo2 = regAlloc.get(regFrom2);
-
-    if (!formWideRegister(rTo1, rTo2))
-      return throwWideRegistersExpected();
-
-    if (fitsIntoBits_Unsigned(rTo1, 8)) {
-      return new Instruction[] {
-               new Instruction21c(Opcode.SPUT_WIDE, (short) rTo1, state.getCache().getField(fieldClass, fieldType, fieldName))
-             };
-    } else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

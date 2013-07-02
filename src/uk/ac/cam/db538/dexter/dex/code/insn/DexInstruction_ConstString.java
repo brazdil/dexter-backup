@@ -13,7 +13,6 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction31c;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -59,19 +58,6 @@ public class DexInstruction_ConstString extends DexInstruction {
     if (escapedVal.length() > 15)
       escapedVal = escapedVal.substring(0, 15) + "...";
     return "const-string " + regTo.getOriginalIndexString() + ", \"" + escapedVal + "\"";
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    int rTo = state.getRegisterAllocation().get(regTo);
-    StringIdItem cStr = state.getCache().getStringConstant(stringConstant);
-
-    if (fitsIntoBits_Unsigned(rTo, 8))
-      return new Instruction[] {
-               new Instruction21c(Opcode.CONST_STRING, (short) rTo, cStr)
-             };
-    else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

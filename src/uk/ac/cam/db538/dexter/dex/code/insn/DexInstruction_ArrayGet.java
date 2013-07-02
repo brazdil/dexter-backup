@@ -9,7 +9,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -65,21 +64,6 @@ public class DexInstruction_ArrayGet extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rTo = regAlloc.get(regTo);
-    int rArray = regAlloc.get(regArray);
-    int rIndex = regAlloc.get(regIndex);
-
-    if (fitsIntoBits_Unsigned(rTo, 8) && fitsIntoBits_Unsigned(rArray, 8) && fitsIntoBits_Unsigned(rIndex, 8)) {
-      return new Instruction[] {
-               new Instruction23x(Opcode_GetPut.convert_AGET(opcode), (short) rTo, (short) rArray, (short) rIndex)
-             };
-    } else
-      return throwNoSuitableFormatFound();
-  }
-
-  @Override
   public void instrument(DexCode_InstrumentationState state) {
     // need to combine the taint of the array object and the index
     val code = getMethodCode();
@@ -107,7 +91,6 @@ public class DexInstruction_ArrayGet extends DexInstruction {
   public void accept(DexInstructionVisitor visitor) {
 	visitor.visit(this);
   }
-  
   
   @Override
   protected DexClassType[] throwsExceptions() {

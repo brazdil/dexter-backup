@@ -10,7 +10,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -58,25 +57,6 @@ public class DexInstruction_ArrayPutWide extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom1, regFrom2, regArray, regIndex);
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rFrom1 = regAlloc.get(regFrom1);
-    int rFrom2 = regAlloc.get(regFrom2);
-    int rArray = regAlloc.get(regArray);
-    int rIndex = regAlloc.get(regIndex);
-
-    if (!formWideRegister(rFrom1, rFrom2))
-      return throwWideRegistersExpected();
-
-    if (fitsIntoBits_Unsigned(rFrom1, 8) && fitsIntoBits_Unsigned(rArray, 8) && fitsIntoBits_Unsigned(rIndex, 8)) {
-      return new Instruction[] {
-               new Instruction23x(Opcode.APUT_WIDE, (short) rFrom1, (short) rArray, (short) rIndex)
-             };
-    } else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

@@ -11,7 +11,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -78,18 +77,6 @@ public class DexInstruction_InstanceOf extends DexInstruction {
                    new DexMacro_GetObjectTaint(code, state.getTaintRegister(regTo), regObject),
                    this
                  });
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rTo = regAlloc.get(regTo);
-    int rObject = regAlloc.get(regObject);
-
-    if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Unsigned(rObject, 4))
-      return new Instruction[] { new Instruction22c(Opcode.INSTANCE_OF, (byte) rTo, (byte) rObject, state.getCache().getType(value)) };
-    else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

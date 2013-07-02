@@ -15,7 +15,6 @@ import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
@@ -178,52 +177,6 @@ public class DexInstruction_Invoke extends DexInstruction {
     }
 
     return str.toString();
-  }
-
-  private boolean assemblesToRange() {
-    return argumentRegisters.size() > 5;
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int[] r = new int[argumentRegisters.size()];
-    for (int i = 0; i < r.length; ++i)
-      r[i] = regAlloc.get(argumentRegisters.get(i));
-
-    val methodItem = state.getCache().getMethod(classType, methodPrototype, methodName);
-
-    if (assemblesToRange()) {
-      if (!fitsIntoBits_Unsigned(r.length, 8))
-        return throwCannotAssembleException("Too many argument registers");
-
-      val firstReg = r[0];
-      for (int i = 1; i < r.length; ++i)
-        if (!(r[i] == r[i - 1] + 1))
-          return throwCannotAssembleException("Argument registers don't form an interval");
-
-      return new Instruction[] {
-               new Instruction3rc(Opcode_Invoke.convertRange(callType),
-                                  (short) r.length,
-                                  firstReg,
-                                  methodItem)
-             };
-    } else {
-      for (int regNum : r)
-        if (!fitsIntoBits_Unsigned(regNum, 4))
-          return throwCannotAssembleException("Register numbers don't fit into 4 bits");
-
-      return new Instruction[] {
-               new Instruction35c(Opcode_Invoke.convertStandard(callType),
-                                  r.length,
-                                  (byte) ((r.length >= 1) ? r[0] : 0),
-                                  (byte) ((r.length >= 2) ? r[1] : 0),
-                                  (byte) ((r.length >= 3) ? r[2] : 0),
-                                  (byte) ((r.length >= 4) ? r[3] : 0),
-                                  (byte) ((r.length >= 5) ? r[4] : 0),
-                                  methodItem)
-             };
-    }
   }
 
   @Override

@@ -12,7 +12,6 @@ import org.jf.dexlib.Code.Format.Instruction22c;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -96,20 +95,6 @@ public class DexInstruction_InstanceGet extends DexInstruction {
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
     return createSet(regTo);
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rTo = regAlloc.get(regTo);
-    int rObject = regAlloc.get(regObject);
-
-    if (fitsIntoBits_Unsigned(rTo, 4) && fitsIntoBits_Unsigned(rObject, 4)) {
-      return new Instruction[] {
-               new Instruction22c(Opcode_GetPut.convert_IGET(opcode), (byte) rTo, (byte) rObject, state.getCache().getField(fieldClass, fieldType, fieldName))
-             };
-    } else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

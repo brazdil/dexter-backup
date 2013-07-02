@@ -10,7 +10,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction31t;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -82,20 +81,6 @@ public class DexInstruction_Switch extends DexInstruction {
                  insnSparseSwitchData.getKeyTargetPairs()));
     } else
       throw new RuntimeException("Target instruction of Switch is not Packed/SparseSwitchData");
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    int rTest = state.getRegisterAllocation().get(regTest);
-    long offset = computeRelativeOffset(switchTable, state);
-
-    if ((!fitsIntoBits_Unsigned(rTest, 8)) || (!fitsIntoBits_Signed(offset, 32)))
-      return throwNoSuitableFormatFound();
-
-    if (packed)
-      return new Instruction[] { new Instruction31t(Opcode.PACKED_SWITCH, (short) rTest, (int) offset) };
-    else
-      return new Instruction[] { new Instruction31t(Opcode.SPARSE_SWITCH, (short) rTest, (int) offset) };
   }
 
   @Override

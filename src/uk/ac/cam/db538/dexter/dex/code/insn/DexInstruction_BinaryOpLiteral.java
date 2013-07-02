@@ -10,7 +10,6 @@ import org.jf.dexlib.Code.Format.Instruction22b;
 import org.jf.dexlib.Code.Format.Instruction22s;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -66,34 +65,6 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   public String getOriginalAssembly() {
     return insnOpcode.name().toLowerCase() + "-int/lit " + regTarget.getOriginalIndexString() +
            ", " + regSource.getOriginalIndexString() + ", #" + literal;
-  }
-
-  private boolean isLiteral8bit() {
-    return fitsIntoBits_Signed(literal, 8);
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rTarget = regAlloc.get(regTarget);
-    int rSource = regAlloc.get(regSource);
-
-    if (isLiteral8bit()) {
-      if (fitsIntoBits_Unsigned(rTarget, 8) && fitsIntoBits_Unsigned(rSource, 8)) {
-        return new Instruction[] {
-                 new Instruction22b(Opcode_BinaryOpLiteral.convert_lit8(insnOpcode), (short) rTarget, (short) rSource, (byte) literal)
-               };
-      } else
-        return throwCannotAssembleException("No suitable instruction format found");
-    } else {
-      // note: check the opcode as well, because lit16 doesn't support SHL, SHR and USHR
-      if (fitsIntoBits_Unsigned(rTarget, 4) && fitsIntoBits_Unsigned(rSource, 4) && Opcode_BinaryOpLiteral.convert_lit16(insnOpcode) != null) {
-        return new Instruction[] {
-                 new Instruction22s(Opcode_BinaryOpLiteral.convert_lit16(insnOpcode), (byte) rTarget, (byte) rSource, (short) literal)
-               };
-      } else
-        return throwNoSuitableFormatFound();
-    }
   }
 
   @Override

@@ -8,7 +8,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 
@@ -33,14 +32,6 @@ public class DexInstruction_Nop extends DexInstruction {
   @Override
   public String getOriginalAssembly() {
     return "nop";
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) throws InstructionAssemblyException {
-    if (forcedAssembly)
-      return new Instruction[] { new Instruction10x(Opcode.NOP) };
-    else
-      return new Instruction[] { };
   }
 
   @Override

@@ -10,7 +10,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -52,21 +51,6 @@ public class DexInstruction_CompareFloat extends DexInstruction {
   public String getOriginalAssembly() {
     return (ltBias ? "cmpl" : "cmpg") + "-float " + regTo.getOriginalIndexString() +
            ", " + regSourceA.getOriginalIndexString() + ", " + regSourceB.getOriginalIndexString();
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rTarget = regAlloc.get(regTo);
-    int rSourceA = regAlloc.get(regSourceA);
-    int rSourceB = regAlloc.get(regSourceB);
-
-    if (fitsIntoBits_Unsigned(rTarget, 8) && fitsIntoBits_Unsigned(rSourceA, 8) && fitsIntoBits_Unsigned(rSourceB, 8))
-      return new Instruction[] {
-               new Instruction23x((ltBias ? Opcode.CMPL_FLOAT : Opcode.CMPG_FLOAT), (short) rTarget, (short) rSourceA, (short) rSourceB)
-             };
-    else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

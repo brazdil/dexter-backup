@@ -13,7 +13,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -67,27 +66,6 @@ public class DexInstruction_SparseSwitchData extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) { }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val pairCount = keyTargetPairs.size();
-
-    val keys = new int[pairCount];
-    val targetOffsets = new int[pairCount];
-
-    for (int i = 0; i < pairCount; ++i) {
-      val pair = keyTargetPairs.get(i);
-      long offset = computeRelativeOffset(parentInstruction, pair.getValB(), state);
-      if (fitsIntoBits_Signed(offset, 32)) {
-        keys[i] = pair.getValA();
-        targetOffsets[i] = (int) offset;
-      }
-      else
-        return throwNoSuitableFormatFound();
-    }
-
-    return new Instruction[] { new SparseSwitchDataPseudoInstruction(keys, targetOffsets) };
-  }
 
   @Override
   public boolean cfgEndsBasicBlock() {

@@ -1,6 +1,5 @@
 package com.rx201.dx.translator;
 
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +7,9 @@ import java.util.List;
 import java.util.Stack;
 
 import org.jf.dexlib.CodeItem;
+import org.jf.dexlib.CodeItem.EncodedCatchHandler;
+import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
+import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Item;
@@ -21,39 +23,15 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction22c;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
-import org.jf.dexlib.CodeItem.EncodedCatchHandler;
-import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
-import org.jf.dexlib.CodeItem.TryItem;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGetWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPutWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGetWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePutWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGetWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPutWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;

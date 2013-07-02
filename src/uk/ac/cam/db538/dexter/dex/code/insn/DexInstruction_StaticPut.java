@@ -12,7 +12,6 @@ import org.jf.dexlib.Code.Format.Instruction21c;
 import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -86,18 +85,6 @@ public class DexInstruction_StaticPut extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom);
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    int rFrom = state.getRegisterAllocation().get(regFrom);
-
-    if (fitsIntoBits_Unsigned(rFrom, 8)) {
-      return new Instruction[] {
-               new Instruction21c(Opcode_GetPut.convert_SPUT(opcode), (short) rFrom, state.getCache().getField(fieldClass, fieldType, fieldName))
-             };
-    } else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

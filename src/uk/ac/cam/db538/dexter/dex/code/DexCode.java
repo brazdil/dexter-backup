@@ -1,35 +1,27 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
 
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.EncodedCatchHandler;
-import org.jf.dexlib.CodeItem.EncodedTypeAddrPair;
 import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.Code.Instruction;
-import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction;
-import org.jf.dexlib.Code.Format.Instruction10x;
 import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
 import sun.management.counter.perf.InstrumentationException;
 import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
@@ -92,8 +84,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionAssemblyException;
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionOffsetException;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
@@ -632,145 +622,21 @@ public class DexCode {
     instructionList.clear();
     addAll(newInsns);
   }
-
-  private boolean allowJumpFix = true;
-
-  public void disableJumpFixing() {
-    allowJumpFix = false;
-  }
-
-  @AllArgsConstructor
-  @Getter
-  public static class AssembledCode {
-    private final List<Instruction> instructions;
-    private final List<TryItem> tries;
-    private final List<EncodedCatchHandler> catchHandlers;
-    private final int totalCodeLength;
-  }
-
-  public AssembledCode assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache) {
-    return assembleBytecode(regAlloc, cache, 0);
-  }
-
-  public AssembledCode assembleBytecode(Map<DexRegister, Integer> regAlloc, DexAssemblingCache cache, int absoluteAddressOffset) {
-    while (true) {
-      try {
-        val asmState = new DexCode_AssemblingState(this, cache, regAlloc);
-        val bytecode = new LinkedList<Instruction>();
-        int totalCodeLength;
-
-        // keep updating the offsets of instructions
-        // until they converge
-        boolean offsetsChanged = true;
-        boolean didSecondPass;
-        do {
-          bytecode.clear();
-          didSecondPass = !offsetsChanged;
-          offsetsChanged = false;
-
-          // assemble each instruction
-          long offset = 0;
-          for (val elem : instructionList) {
-            if (elem instanceof DexLabel) {
-              val label = (DexLabel) elem;
-
-              if (label.isEvenAligned() && ((offset & 1L) != 0)) {
-                // can't use assembly method of DexInstruction_NOP here,
-                // because it returns empty instruction list
-                val nop = new Instruction10x(Opcode.NOP);
-                offset += nop.getSize(0); // argument ignored
-                bytecode.add(nop);
-              }
-            }
-
-            long previousOffset = asmState.getElementOffsets().get(elem);
-            offsetsChanged |= (offset != previousOffset);
-            asmState.setNextPassElementOffset(elem, offset);
-
-            if (elem instanceof DexInstruction) {
-              val insn = (DexInstruction) elem;
-
-              val asm = insn.assembleBytecode(asmState);
-              for (val asmInsn : asm)
-                offset += asmInsn.getSize(0); // argument ignored
-
-              bytecode.addAll(Arrays.asList(asm));
-            }
-          }
-
-          totalCodeLength = (int) offset;
-          asmState.swapElementOffsetBuffers();
-        } while (offsetsChanged || !didSecondPass);
-
-        // all is ready, let's create the result
-
-        // create TryItems and EncodedCatchHandlers
-        val elemOffsets = asmState.getElementOffsets();
-        val tryItems = new ArrayList<TryItem>();
-        val encodedCatchHandlers = new ArrayList<EncodedCatchHandler>();
-        for (val elem : instructionList)
-          if (elem instanceof DexTryBlockEnd) {
-            val tryEnd = (DexTryBlockEnd) elem;
-            val tryStart = tryEnd.getBlockStart();
-
-            val catchAllHandler = tryStart.getCatchAllHandler();
-            int catchAllOffset;
-            if (catchAllHandler == null)
-              catchAllOffset = -1;
-            else
-              catchAllOffset = elemOffsets.get(catchAllHandler).intValue() + absoluteAddressOffset;
-
-            val catchHandlers = tryStart.getCatchHandlers();
-            val typeAddrPairs = new EncodedTypeAddrPair[catchHandlers.size()];
-            int i = 0;
-            for (val catchHandler : catchHandlers)
-              typeAddrPairs[i++] = new EncodedTypeAddrPair(
-                asmState.getCache().getType(catchHandler.getExceptionType()),
-                elemOffsets.get(catchHandler).intValue() + absoluteAddressOffset);
-
-            int tryStartAddr = elemOffsets.get(tryStart).intValue() + absoluteAddressOffset;
-            int tryEndAddr = elemOffsets.get(tryEnd).intValue() + absoluteAddressOffset;
-
-            if (tryStartAddr > tryEndAddr)
-              throw new InstructionAssemblyException("Try block of negative length");
-            else if (tryStartAddr == tryEndAddr)
-              continue;
-
-            val encodedCatchHandler = new EncodedCatchHandler(typeAddrPairs, catchAllOffset);
-            val tryItem = new TryItem(
-              tryStartAddr,
-              tryEndAddr - tryStartAddr,
-              encodedCatchHandler);
-
-            tryItems.add(tryItem);
-            encodedCatchHandlers.add(encodedCatchHandler);
-          }
-
-        return new AssembledCode(bytecode, tryItems, encodedCatchHandlers, totalCodeLength);
-      } catch (InstructionOffsetException e) {
-        if (!allowJumpFix) // for testing only
-          throw e;
-
-        val problematicInsn = e.getProblematicInstruction();
-        replace(problematicInsn, problematicInsn.fixLongJump());
-      }
-    }
-  }
-
+  
   public int getOutWords() {
-    // outWords is the max of all inWords of methods in the code
-    int maxWords = 0;
+	  // outWords is the max of all inWords of methods in the code
+	  int maxWords = 0;
+	
+	  for (val insn : this.instructionList) {
+		  if (insn instanceof DexInstruction_Invoke) {
+			  val insnInvoke = (DexInstruction_Invoke) insn;
+			  int insnOutWords = insnInvoke.getMethodPrototype().countParamWords(insnInvoke.isStaticCall());
+			  if (insnOutWords > maxWords)
+				  maxWords = insnOutWords;
+		  }
+	  }
 
-    for (val insn : this.instructionList) {
-      if (insn instanceof DexInstruction_Invoke) {
-        val insnInvoke = (DexInstruction_Invoke) insn;
-        int insnOutWords = insnInvoke.getMethodPrototype().countParamWords(insnInvoke.isStaticCall());
-        if (insnOutWords > maxWords)
-          maxWords = insnOutWords;
-      }
-    }
-
-    return maxWords;
+	  return maxWords;
   }
 
   private DexInstruction parseInstruction(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {

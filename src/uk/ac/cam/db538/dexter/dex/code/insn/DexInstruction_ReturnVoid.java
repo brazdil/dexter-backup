@@ -10,7 +10,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -50,13 +49,6 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
 
       code.replace(this, new DexCodeElement[] { insnPrintDebug, this });
     }
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    return new Instruction[] {
-             new Instruction10x(Opcode.RETURN_VOID)
-           };
   }
 
   @Override

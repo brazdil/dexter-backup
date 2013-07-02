@@ -27,34 +27,7 @@ import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 
-
 public class DexInstruction_Test {
-
-  @Test
-  public void testFitsIntoBits_Signed() {
-    assertTrue(DexInstruction.fitsIntoBits_Signed(127L, 8));
-    assertFalse(DexInstruction.fitsIntoBits_Signed(128L, 8));
-    assertTrue(DexInstruction.fitsIntoBits_Signed(-128L, 8));
-    assertFalse(DexInstruction.fitsIntoBits_Signed(-129L, 8));
-  }
-
-  @Test
-  public void testFitsIntoBits_Unsigned() {
-    assertTrue(DexInstruction.fitsIntoBits_Unsigned(255L, 8));
-    assertFalse(DexInstruction.fitsIntoBits_Unsigned(256L, 8));
-    assertTrue(DexInstruction.fitsIntoBits_Unsigned(0L, 8));
-    assertFalse(DexInstruction.fitsIntoBits_Unsigned(-1L, 8));
-  }
-
-  @Test
-  public void testFitsIntoHighBits_Signed() {
-    assertTrue(DexInstruction.fitsIntoHighBits_Signed(127L << 4, 8, 4));
-    assertFalse(DexInstruction.fitsIntoHighBits_Signed(128L << 4, 8, 4));
-    assertFalse(DexInstruction.fitsIntoHighBits_Signed((127L << 4) | (1L << 3), 8, 4));
-    assertTrue(DexInstruction.fitsIntoHighBits_Signed(-128L << 4, 8, 4));
-    assertFalse(DexInstruction.fitsIntoHighBits_Signed(-129L << 4, 8, 4));
-    assertFalse(DexInstruction.fitsIntoHighBits_Signed((-128L << 4) | (1L << 3), 8, 4));
-  }
 
   private static boolean execThrowingInsn_CanExitMethod(DexInstruction insn) {
     try {

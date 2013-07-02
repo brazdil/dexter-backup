@@ -1,20 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import lombok.val;
-
-import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.Utils;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 public class DexInstruction_StaticGet_Test {
 
@@ -80,54 +71,5 @@ public class DexInstruction_StaticGet_Test {
     Utils.parseAndCompare(
       new Instruction21c(Opcode.SGET_SHORT, (short) 236, Utils.getFieldItem("Lcom/example/MyClass1;", "I", "TestField1")),
       "");
-  }
-
-  @Test
-  public void testAssemble_StaticGet() {
-    val cache = new DexParsingCache();
-
-    val regNTo = Utils.numFitsInto_Unsigned(8);
-    val regTo = new DexRegister(regNTo);
-    val regAlloc = Utils.genRegAlloc(regTo);
-
-    val insn = new DexInstruction_StaticGet(
-      null,
-      regTo,
-      DexClassType.parse("Lcom/test/SomeClass;", cache),
-      DexRegisterType.parse("Ljava/lang/String;", cache),
-      "AwesomeField",
-      Opcode_GetPut.Object);
-
-    val asm = insn.assembleBytecode(Utils.genAsmState(regAlloc));
-    assertEquals(1, asm.length);
-    assertTrue(asm[0] instanceof Instruction21c);
-
-    val asmInsn = (Instruction21c) asm[0];
-    assertEquals(regNTo, asmInsn.getRegisterA());
-    assertEquals(Opcode.SGET_OBJECT, asmInsn.opcode);
-
-    val asmInsnRef = (FieldIdItem) asmInsn.getReferencedItem();
-    assertEquals("Lcom/test/SomeClass;", asmInsnRef.getContainingClass().getTypeDescriptor());
-    assertEquals("Ljava/lang/String;", asmInsnRef.getFieldType().getTypeDescriptor());
-    assertEquals("AwesomeField", asmInsnRef.getFieldName().getStringValue());
-  }
-
-  @Test(expected=InstructionAssemblyException.class)
-  public void testAssemble_StaticGet_WrongAllocation() {
-    val cache = new DexParsingCache();
-
-    val regNTo = Utils.numFitsInto_Unsigned(9);
-    val regTo = new DexRegister(regNTo);
-    val regAlloc = Utils.genRegAlloc(regTo);
-
-    val insn = new DexInstruction_StaticGet(
-      null,
-      regTo,
-      DexClassType.parse("Lcom/test/SomeClass;", cache),
-      DexRegisterType.parse("Ljava/lang/String;", cache),
-      "AwesomeField",
-      Opcode_GetPut.Object);
-
-    insn.assembleBytecode(Utils.genAsmState(regAlloc));
   }
 }

@@ -9,7 +9,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -58,21 +57,6 @@ public class DexInstruction_ArrayPut extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom, regArray, regIndex);
-  }
-
-  @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    val regAlloc = state.getRegisterAllocation();
-    int rFrom = regAlloc.get(regFrom);
-    int rArray = regAlloc.get(regArray);
-    int rIndex = regAlloc.get(regIndex);
-
-    if (fitsIntoBits_Unsigned(rFrom, 8) && fitsIntoBits_Unsigned(rArray, 8) && fitsIntoBits_Unsigned(rIndex, 8)) {
-      return new Instruction[] {
-               new Instruction23x(Opcode_GetPut.convert_APUT(opcode), (short) rFrom, (short) rArray, (short) rIndex)
-             };
-    } else
-      return throwNoSuitableFormatFound();
   }
 
   @Override

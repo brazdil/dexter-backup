@@ -9,7 +9,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction21t;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_AssemblingState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -51,22 +50,6 @@ public class DexInstruction_IfTestZero extends DexInstruction {
   }
 
   @Override
-  public Instruction[] assembleBytecode(DexCode_AssemblingState state) {
-    int rTest = state.getRegisterAllocation().get(reg);
-    long offset = computeRelativeOffset(target, state);
-
-    if (!fitsIntoBits_Signed(offset, 16))
-      throw new InstructionOffsetException(this);
-
-    if (fitsIntoBits_Unsigned(rTest, 8))
-      return new Instruction[] {
-               new Instruction21t(Opcode_IfTestZero.convert(insnOpcode), (short) rTest, (short) offset)
-             };
-    else
-      return throwNoSuitableFormatFound();
-  }
-
-  @Override
   public boolean cfgEndsBasicBlock() {
     return true;
   }
@@ -82,22 +65,6 @@ public class DexInstruction_IfTestZero extends DexInstruction {
   @Override
   public Set<DexRegister> lvaReferencedRegisters() {
     return createSet(reg);
-  }
-
-  @Override
-  public DexCodeElement[] fixLongJump() {
-    val code = this.getMethodCode();
-
-    val labelSuccessor = new DexLabel(code);
-    val labelLongJump = new DexLabel(code);
-
-    return new DexCodeElement[] {
-             new DexInstruction_IfTestZero(code, reg, labelLongJump, insnOpcode),
-             new DexInstruction_Goto(code, labelSuccessor),
-             labelLongJump,
-             new DexInstruction_Goto(code, target),
-             labelSuccessor
-           };
   }
 
   @Override
