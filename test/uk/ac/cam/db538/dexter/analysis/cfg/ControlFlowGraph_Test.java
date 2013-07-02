@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeStart;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
@@ -24,12 +25,24 @@ public class ControlFlowGraph_Test {
     val cfg = new ControlFlowGraph(code);
     val start = cfg.getStartBlock();
     val exit = cfg.getExitBlock();
+    
+    val basicBlocks = cfg.getBasicBlocks();
+    assertEquals(1, basicBlocks.size());
+    val b0 = basicBlocks.get(0);
 
     assertEquals(1, start.getSuccessors().size());
+    assertTrue(start.getSuccessors().contains(b0));
+    assertEquals(1, b0.getPredecessors().size());
+    assertTrue(b0.getPredecessors().contains(start));
+    
+    assertEquals(1, b0.getSuccessors().size());
+    assertTrue(b0.getSuccessors().contains(exit));
     assertEquals(1, exit.getPredecessors().size());
-
-    assertEquals(exit, start.getSuccessors().toArray()[0]);
-    assertEquals(start, exit.getPredecessors().toArray()[0]);
+    assertTrue(exit.getPredecessors().contains(b0));
+    
+    assertEquals(1, b0.getInstructions().size());
+    assertTrue(b0.getFirstInstruction() instanceof DexCodeStart);
+    
   }
 
   @Test
@@ -50,8 +63,9 @@ public class ControlFlowGraph_Test {
     // inspect block
     val block = (CfgBasicBlock) succ;
     val insns = block.getInstructions();
-    assertEquals(1, insns.size());
-    assertEquals(insnReturn, insns.get(0));
+    assertEquals(2, insns.size());
+    assertTrue(insns.get(0) instanceof DexCodeStart);
+    assertEquals(insnReturn, insns.get(1));
 
     // check it points to EXIT
     assertEquals(1, block.getSuccessors().size());
@@ -86,22 +100,30 @@ public class ControlFlowGraph_Test {
     val start = cfg.getStartBlock();
     val exit = cfg.getExitBlock();
 
-    assertEquals(5, cfg.getBasicBlocks().size());
-    val b1 = cfg.getBasicBlocks().get(0);
+    assertEquals(6, cfg.getBasicBlocks().size());
+    val b0 = cfg.getBasicBlocks().get(0);
+    val b0Insns = b0.getInstructions();
+    val b1 = cfg.getBasicBlocks().get(1);
     val b1Insns = b1.getInstructions();
-    val b2 = cfg.getBasicBlocks().get(1);
+    val b2 = cfg.getBasicBlocks().get(2);
     val b2Insns = b2.getInstructions();
-    val b3 = cfg.getBasicBlocks().get(2);
+    val b3 = cfg.getBasicBlocks().get(3);
     val b3Insns = b3.getInstructions();
-    val b4 = cfg.getBasicBlocks().get(3);
+    val b4 = cfg.getBasicBlocks().get(4);
     val b4Insns = b4.getInstructions();
-    val b5 = cfg.getBasicBlocks().get(4);
+    val b5 = cfg.getBasicBlocks().get(5);
     val b5Insns = b5.getInstructions();
 
     // find successor of START
-    // check that it contains i0, i1
+    // check that it contains only DexCodeStart
     assertEquals(1, start.getSuccessors().size());
-    assertTrue(start.getSuccessors().contains(b1));
+    assertTrue(start.getSuccessors().contains(b0));
+    assertEquals(1, b0Insns.size());
+    assertTrue(b0Insns.get(0) instanceof DexCodeStart);
+    assertEquals(1, b0.getSuccessors().size());
+    assertTrue(b0.getSuccessors().contains(b1));
+    
+    // first block contains i0, i1
     assertEquals(2, b1Insns.size());
     assertEquals(i0, b1Insns.get(0));
     assertEquals(i1, b1Insns.get(1));

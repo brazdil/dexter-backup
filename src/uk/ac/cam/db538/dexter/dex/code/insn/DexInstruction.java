@@ -63,6 +63,9 @@ public abstract class DexInstruction extends DexCodeElement {
 
   @Override
   public final boolean cfgExitsMethod() {
+	val jumpTargets = this.cfgJumpTargets();
+	if (jumpTargets.isEmpty())
+		return true;
     val exceptions = this.throwsExceptions();
     if (exceptions != null)
     	for (val exception : exceptions)
