@@ -69,15 +69,15 @@ public class PackageAdapter implements ListAdapter {
                 context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             rowView = inflater.inflate(R.layout.listitem_packages, parent, false);
         }
-        TextView textPackageName = (TextView) rowView.findViewById(R.id.textPackageName);
         ImageView imgPackageIcon = (ImageView) rowView.findViewById(R.id.imgPackageIcon);
+        TextView textPackageName = (TextView) rowView.findViewById(R.id.textPackageName);
+        TextView textApkPath = (TextView) rowView.findViewById(R.id.textApkPath);
 
         // update the info
         PackageInfo pkg = this.packages.get(i);
-        textPackageName.setText(pkg.packageName);
         imgPackageIcon.setImageDrawable(pkg.applicationInfo.loadIcon(this.packageManager));
-
-        // set package icon size
+        textPackageName.setText(pkg.applicationInfo.packageName);
+        textApkPath.setText(pkg.applicationInfo.sourceDir);
 
         return rowView;
     }
