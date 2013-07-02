@@ -97,9 +97,12 @@ public abstract class DexInstruction extends DexCodeElement {
           set.add(catchAllHandler);
 
         // similarly, add all catch blocks as possible successors
-        // if they catch the given exception type or its ancestor
+        // if either they catch the given exception type or its ancestor (a guaranteed catch)
+        // or if the catch is the subclass of the thrown exception (a potential catch)
         for (val catchBlock : tryBlockStart.getCatchHandlers())
-          if (thrownExceptionType == null || classHierarchy.isAncestor(thrownExceptionType, catchBlock.getExceptionType()))
+          if (thrownExceptionType == null || 
+              classHierarchy.isAncestor(catchBlock.getExceptionType(), thrownExceptionType) ||
+        	  classHierarchy.isAncestor(thrownExceptionType, catchBlock.getExceptionType()))
             set.add(catchBlock);
       }
     }
