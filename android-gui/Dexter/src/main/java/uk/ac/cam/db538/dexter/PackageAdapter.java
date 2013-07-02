@@ -21,15 +21,13 @@ import java.util.List;
 
 public class PackageAdapter implements ListAdapter {
 
-    private final Activity activity;
-    private final LayoutInflater inflater;
+    private final Context context;
     private final PackageManager packageManager;
     private List<PackageInfo> packages;
 
-    public PackageAdapter(Activity activity) {
-        this.activity = activity;
-        this.inflater = this.activity.getLayoutInflater();
-        this.packageManager = this.activity.getPackageManager();
+    public PackageAdapter(Context context) {
+        this.context = context;
+        this.packageManager = this.context.getPackageManager();
         this.updateList();
     }
 
@@ -68,28 +66,20 @@ public class PackageAdapter implements ListAdapter {
     }
 
     @Override
-    public View getView(int i, View rowView, ViewGroup parent) {
+    public View getView(int i, View view, ViewGroup parent) {
         // initialize (if needed) the row view
-        if (rowView == null)
-            rowView = this.inflater.inflate(R.layout.listitem_packages, parent, false);
+        PackageListItem itemView;
+        if (view == null || !(view instanceof PackageListItem))
+            itemView = new PackageListItem(this.context, parent);
+        else
+            itemView = (PackageListItem) view;
 
-        // find widgets
-        ImageView imgPackageIcon = (ImageView) rowView.findViewById(R.id.imgPackageIcon);
-        TextView textPackageName = (TextView) rowView.findViewById(R.id.textPackageName);
-        TextView textApkPath = (TextView) rowView.findViewById(R.id.textApkPath);
-
-        // acquire package info
-        PackageInfo pkg = this.packages.get(i);
-        final Drawable pkgIcon = pkg.applicationInfo.loadIcon(this.packageManager);
-        final String pkgName = pkg.applicationInfo.packageName;
-        final String pkgApkPath = pkg.applicationInfo.sourceDir;
+        System.out.println(i + "/" + packages.size());
 
         // update the fields
-        imgPackageIcon.setImageDrawable(pkgIcon);
-        textPackageName.setText(pkgName);
-        textApkPath.setText(pkgApkPath);
+        itemView.setPackageInfo(this.packages.get(i));
 
-        return rowView;
+        return itemView;
     }
 
     @Override
