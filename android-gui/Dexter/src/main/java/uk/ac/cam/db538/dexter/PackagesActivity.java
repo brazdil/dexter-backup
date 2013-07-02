@@ -1,15 +1,11 @@
 package uk.ac.cam.db538.dexter;
 
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
 import android.widget.ListView;
 
-import java.util.List;
-
-public class MainActivity extends Activity {
+public class PackagesActivity extends Activity {
 
     protected ListView listPackages = null;
     protected PackageAdapter adapterPackages = null;
@@ -17,7 +13,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_packages);
 
         listPackages = (ListView) this.findViewById(R.id.listPackages);
         adapterPackages = new PackageAdapter(this);
