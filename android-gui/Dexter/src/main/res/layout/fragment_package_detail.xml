@@ -36,12 +36,14 @@
 
     <TableLayout
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
+            android:layout_height="wrap_content"
+            android:shrinkColumns="1"
+            android:layout_weight="1">
 
         <TableRow
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                >
+                android:gravity="center_vertical">
 
             <TextView
                     android:layout_width="wrap_content"
@@ -49,20 +51,28 @@
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/version_"/>
 
-            <EditText
+            <HorizontalScrollView
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/textVersion"
-                    android:layout_column="1"
-                    android:editable="false"
-                    android:inputType="none"
-                    android:textIsSelectable="true"/>
+                    >
+
+                <EditText
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textVersion"
+                        android:layout_column="1"
+                        android:editable="false"
+                        android:inputType="none"
+                        android:textIsSelectable="true"
+                        android:singleLine="true"/>
+            </HorizontalScrollView>
+
         </TableRow>
 
         <TableRow
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                >
+                android:gravity="center_vertical">
 
             <TextView
                     android:layout_width="wrap_content"
@@ -70,19 +80,28 @@
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/last_updated_"/>
 
-            <EditText
+            <HorizontalScrollView
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/textLastUpdated"
-                    android:layout_column="1"
-                    android:editable="false"
-                    android:inputType="none"
-                    android:textIsSelectable="true"/>
+                    >
+
+                <EditText
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textLastUpdated"
+                        android:layout_column="1"
+                        android:editable="false"
+                        android:inputType="none"
+                        android:textIsSelectable="true"
+                        android:singleLine="true"/>
+            </HorizontalScrollView>
+
         </TableRow>
 
         <TableRow
                 android:layout_width="fill_parent"
-                android:layout_height="fill_parent">
+                android:layout_height="fill_parent"
+                android:gravity="center_vertical">
 
             <TextView
                     android:layout_width="wrap_content"
@@ -91,20 +110,28 @@
                     android:text="@string/path_"
                     />
 
-            <EditText
+            <HorizontalScrollView
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/textApkPath"
-                    android:layout_column="1"
-                    android:editable="false"
-                    android:inputType="none"
-                    android:textIsSelectable="true"/>
+                    >
+
+                <EditText
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textApkPath"
+                        android:layout_column="1"
+                        android:editable="false"
+                        android:textIsSelectable="true"
+                        android:inputType="none"
+                        android:singleLine="false"/>
+            </HorizontalScrollView>
+
         </TableRow>
 
         <TableRow
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                >
+                android:gravity="center_vertical">
 
             <TextView
                     android:layout_width="wrap_content"
@@ -112,16 +139,31 @@
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:text="@string/size_"/>
 
-            <EditText
+            <HorizontalScrollView
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:id="@+id/textApkSize"
-                    android:layout_column="1"
-                    android:editable="false"
-                    android:inputType="none"
-                    android:textIsSelectable="true"/>
+                    >
+
+                <EditText
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/textApkSize"
+                        android:layout_column="1"
+                        android:editable="false"
+                        android:inputType="none"
+                        android:textIsSelectable="true"
+                        android:singleLine="true"/>
+            </HorizontalScrollView>
+
         </TableRow>
 
     </TableLayout>
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/instrument"
+            android:id="@+id/buttonInstrument"
+            android:layout_gravity="right"/>
 
 </LinearLayout>
