@@ -1,6 +1,7 @@
 package uk.ac.cam.db538.dexter;
 
 import android.app.Activity;
+import android.content.pm.PackageInfo;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.view.View;
@@ -46,7 +47,7 @@ public class PackageListFragment extends ListFragment {
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(String id);
+        public void onItemSelected(PackageInfo pkg);
     }
 
     /**
@@ -55,8 +56,7 @@ public class PackageListFragment extends ListFragment {
      */
     private static Callbacks sDummyCallbacks = new Callbacks() {
         @Override
-        public void onItemSelected(String id) {
-        }
+        public void onItemSelected(PackageInfo pkg) { }
     };
 
     /**
@@ -106,9 +106,8 @@ public class PackageListFragment extends ListFragment {
     public void onListItemClick(ListView listView, View view, int position, long id) {
         super.onListItemClick(listView, view, position, id);
 
-        // Notify the active callbacks interface (the activity, if the
-        // fragment is attached to one) that an item has been selected.
-        mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);
+        PackageListItem listItem = (PackageListItem) view;
+        mCallbacks.onItemSelected(listItem.getPackageInfo());
     }
 
     @Override
