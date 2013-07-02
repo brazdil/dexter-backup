@@ -3,5 +3,9 @@
 
     <string name="app_name">Dexter</string>
     <string name="title_package_detail">Package Detail</string>
+    <string name="path_">Path:</string>
+    <string name="size_">Size:</string>
+    <string name="last_updated_">Last updated:</string>
+    <string name="version_">Version:</string>
 
 </resources>
