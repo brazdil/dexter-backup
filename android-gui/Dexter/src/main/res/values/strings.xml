@@ -2,7 +2,6 @@
 <resources>
 
     <string name="app_name">Dexter</string>
-    <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="title_package_detail">Package Detail</string>
 
 </resources>
