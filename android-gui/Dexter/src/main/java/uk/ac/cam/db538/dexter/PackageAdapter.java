@@ -42,16 +42,6 @@ public class PackageAdapter implements ListAdapter {
     }
 
     @Override
-    public void registerDataSetObserver(DataSetObserver dataSetObserver) {
-
-    }
-
-    @Override
-    public void unregisterDataSetObserver(DataSetObserver dataSetObserver) {
-
-    }
-
-    @Override
     public int getCount() {
         return this.packages.size();
     }
@@ -106,4 +96,11 @@ public class PackageAdapter implements ListAdapter {
     public boolean isEmpty() {
         return this.packages.isEmpty();
     }
+
+    @Override
+    public void registerDataSetObserver(DataSetObserver dataSetObserver) { }
+
+    @Override
+    public void unregisterDataSetObserver(DataSetObserver dataSetObserver) { }
+
 }
