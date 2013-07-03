@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PackageAdapter implements ListAdapter {
@@ -32,7 +33,12 @@ public class PackageAdapter implements ListAdapter {
     }
 
     public void updateList() {
-        this.packages = this.packageManager.getInstalledPackages(0);
+        List<PackageInfo> pkgs = this.packageManager.getInstalledPackages(0);
+        this.packages = new ArrayList<PackageInfo>(pkgs.size());
+        for (PackageInfo pkg : pkgs)
+            if (!pkg.applicationInfo.sourceDir.startsWith("/system/") &&
+                !pkg.packageName.equals("uk.ac.cam.db538.dexter"))
+                    this.packages.add(pkg);
     }
 
     @Override
