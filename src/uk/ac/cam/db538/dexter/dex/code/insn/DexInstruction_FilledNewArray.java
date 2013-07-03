@@ -18,15 +18,15 @@ import org.jf.dexlib.Code.Format.Instruction3rc;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Array;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
 
 public class DexInstruction_FilledNewArray extends DexInstruction {
 
   @Getter private final List<DexRegister> argumentRegisters;
-  @Getter private final DexArrayType arrayType;
+  @Getter private final DexType_Array arrayType;
 
-  public DexInstruction_FilledNewArray(DexCode methodCode, List<DexRegister> arrayElems, DexArrayType arrayType) {
+  public DexInstruction_FilledNewArray(DexCode methodCode, List<DexRegister> arrayElems, DexType_Array arrayType) {
     super(methodCode);
 
     this.argumentRegisters = new LinkedList<DexRegister>(arrayElems);
@@ -73,7 +73,7 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
     } else
       throw FORMAT_EXCEPTION;
 
-    this.arrayType = DexArrayType.parse(((TypeIdItem)((InstructionWithReference) insn).getReferencedItem()).getTypeDescriptor(), parsingState.getCache());
+    this.arrayType = DexType_Array.parse(((TypeIdItem)((InstructionWithReference) insn).getReferencedItem()).getTypeDescriptor(), parsingState.getCache());
     if (this.arrayType.getElementType().isWide())
       throw new InstructionParsingException("FilledNewArray doesn't support wide types");
 
@@ -107,7 +107,7 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
   }
   
   @Override
-  protected DexClassType[] throwsExceptions() {
+  protected DexType_Class[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error;
   }
   

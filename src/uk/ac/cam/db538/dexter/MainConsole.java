@@ -2,16 +2,15 @@ package uk.ac.cam.db538.dexter;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 
 import lombok.val;
 
 import org.jf.dexlib.DexFile;
-import org.jf.dexlib.Code.Analysis.ClassPath;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
-import uk.ac.cam.db538.dexter.apk.Apk;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
 
 public class MainConsole {
 	private static void dumpAnnotation(File apkFile) {
@@ -68,28 +67,36 @@ public class MainConsole {
       System.exit(1);
     }
     
-    val APK = new Apk(apkFile, frameworkDir);
-
-    ClassPath.InitializeClassPath(new String[]{frameworkDir.getAbsolutePath()}, 
-    		frameworkDir.list(new FilenameFilter() {
-				public boolean accept(File dir, String name) {
-					return name.endsWith(".jar");
-				}
-    		}), 
-    		new String[]{}, 
-    		"dexfile", 
-    		new DexFile(apkFile), 
-    		false);
+//    val APK = new Apk(apkFile, frameworkDir);
+//
+//    ClassPath.InitializeClassPath(new String[]{frameworkDir.getAbsolutePath()}, 
+//    		frameworkDir.list(new FilenameFilter() {
+//				public boolean accept(File dir, String name) {
+//					return name.endsWith(".jar");
+//				}
+//    		}), 
+//    		new String[]{}, 
+//    		"dexfile", 
+//    		new DexFile(apkFile), 
+//    		false);
+//    
+////    writeToJar(APK, apkFile_new);
+//
+////    APK.getDexFile().countInstructions();
+//    val warnings = APK.getDexFile().instrument(false);
+//    for (val warning : warnings)
+//      System.err.println("warning: " + warning.getMessage());
+////    APK.getDexFile().countInstructions();
+//    APK.writeToFile(apkFile_new);
+////    APK.getDexFile().countInstructions();
     
-//    writeToJar(APK, apkFile_new);
-
-//    APK.getDexFile().countInstructions();
-    val warnings = APK.getDexFile().instrument(false);
-    for (val warning : warnings)
-      System.err.println("warning: " + warning.getMessage());
-//    APK.getDexFile().countInstructions();
-    APK.writeToFile(apkFile_new);
-//    APK.getDexFile().countInstructions();
-
+    val parsingState = new DexTypeCache();
+    
+    // build runtime class hierarchy
+    val hierarchyBuilder = new HierarchyBuilder(parsingState);
+    hierarchyBuilder.scanDex(apkFile);
+    hierarchyBuilder.scanDexFolder(frameworkDir);
+    
+    System.out.println("DONE");
   }
 }

@@ -17,18 +17,18 @@ import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Reference;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_CheckCast extends DexInstruction {
 
   @Getter private final DexRegister regObject;
-  @Getter private final DexReferenceType value;
+  @Getter private final DexType_Reference value;
 
   // CAREFUL: likely to throw exception
 
-  public DexInstruction_CheckCast(DexCode methodCode, DexRegister object, DexReferenceType value) {
+  public DexInstruction_CheckCast(DexCode methodCode, DexRegister object, DexType_Reference value) {
     super(methodCode);
 
     this.regObject = object;
@@ -42,7 +42,7 @@ public class DexInstruction_CheckCast extends DexInstruction {
 
       val insnCheckCast = (Instruction21c) insn;
       this.regObject = parsingState.getRegister(insnCheckCast.getRegisterA());
-      this.value = DexReferenceType.parse(
+      this.value = DexType_Reference.parse(
                      ((TypeIdItem) insnCheckCast.getReferencedItem()).getTypeDescriptor(),
                      parsingState.getCache());
 
@@ -87,7 +87,7 @@ public class DexInstruction_CheckCast extends DexInstruction {
   }
 
   @Override
-  protected DexClassType[] throwsExceptions() {
+  protected DexType_Class[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error_ClassCastException;
   }
   

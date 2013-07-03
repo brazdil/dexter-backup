@@ -14,7 +14,7 @@ import org.jf.dexlib.CodeItem.TryItem;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
 
 import com.android.dx.dex.DexOptions;
 import com.android.dx.dex.code.DalvCode;
@@ -58,7 +58,7 @@ class DalvCodeBridge {
 		CstType superClass = toCstType(dexClass.getSuperclassType().getDescriptor());
 		
 		StdTypeList interfaces = StdTypeList.EMPTY;
-		for(DexClassType intf : dexClass.getInterfaces()) {
+		for(DexType_Class intf : dexClass.getInterfaces()) {
 			interfaces.withAddedType(Type.intern(intf.getDescriptor()));
 		}
 

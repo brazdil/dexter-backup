@@ -18,7 +18,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 
@@ -57,7 +57,7 @@ public class DexCodeAnalyzer {
     	List<DexRegister> parameterMapping = code.getParentMethod().getParameterMappedRegisters();
     	
     	for(int i=0; i<prototype.getParameterCount(isStatic); i++) {
-    		DexRegisterType dexRegType = prototype.getParameterType(i, isStatic, code.getParentClass());
+    		DexType_Register dexRegType = prototype.getParameterType(i, isStatic, code.getParentClass());
     		RopType regType = RopType.getRopType(dexRegType.getDescriptor());
 			int paramRegIndex = prototype.getFirstParameterRegisterIndex(i, isStatic);
 			DexRegister paramReg = parameterMapping.get(paramRegIndex);

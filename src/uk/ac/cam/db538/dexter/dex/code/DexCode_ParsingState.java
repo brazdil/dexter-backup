@@ -11,7 +11,6 @@ import lombok.val;
 import org.jf.dexlib.CodeItem.EncodedCatchHandler;
 import org.jf.dexlib.CodeItem.TryItem;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
@@ -19,7 +18,8 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -27,14 +27,14 @@ public class DexCode_ParsingState {
   private final Cache<Integer, DexRegister> registerIdCache;
   private final Cache<Long, DexLabel> labelOffsetCache;
   private final Cache<Long, DexCatchAll> catchAllOffsetCache;
-  private final Cache<Pair<Long, DexClassType>, DexCatch> catchOffsetCache;
+  private final Cache<Pair<Long, DexType_Class>, DexCatch> catchOffsetCache;
   private final Map<Long, DexInstruction> instructionOffsetMap;
   private final Map<Long, DexInstruction> instructionParents;
   private long currentOffset;
-  @Getter private final DexParsingCache cache;
+  @Getter private final DexTypeCache cache;
   @Getter private final DexCode code;
 
-  public DexCode_ParsingState(DexParsingCache cache, DexCode code) {
+  public DexCode_ParsingState(DexTypeCache cache, DexCode code) {
     this.registerIdCache = DexRegister.createCache();
     this.labelOffsetCache = DexLabel.createCache(code);
     this.catchAllOffsetCache = DexCatchAll.createCache(code);
@@ -76,8 +76,8 @@ public class DexCode_ParsingState {
     return catchAllOffsetCache.getCachedEntry(handlerOffset);
   }
 
-  public DexCatch getCatch(long handlerOffset, DexClassType exceptionType) {
-    return catchOffsetCache.getCachedEntry(new Pair<Long, DexClassType>(handlerOffset, exceptionType));
+  public DexCatch getCatch(long handlerOffset, DexType_Class exceptionType) {
+    return catchOffsetCache.getCachedEntry(new Pair<Long, DexType_Class>(handlerOffset, exceptionType));
   }
 
   public void addInstruction(long size, DexInstruction insn) {
@@ -143,7 +143,7 @@ public class DexCode_ParsingState {
         if (insnAtOffset == null)
           throw new InstructionParsingException("Catch handler could not be placed (non-existent offset " + handlerOffset + ")");
 
-        val catchElem = getCatch(handlerOffset, DexClassType.parse(catchHandler.exceptionType.getTypeDescriptor(), cache));
+        val catchElem = getCatch(handlerOffset, DexType_Class.parse(catchHandler.exceptionType.getTypeDescriptor(), cache));
         if (!placedCatchHandlers.contains(catchElem)) {
           code.insertBefore(catchElem, insnAtOffset);
           placedCatchHandlers.add(catchElem);
@@ -177,7 +177,7 @@ public class DexCode_ParsingState {
         for (val catchBlock : tryBlock.encodedCatchHandler.handlers)
           catchHandlers.add(
             getCatch(catchBlock.getHandlerAddress(),
-                     DexClassType.parse(catchBlock.exceptionType.getTypeDescriptor(), cache)));
+                     DexType_Class.parse(catchBlock.exceptionType.getTypeDescriptor(), cache)));
 
       val newBlockStart = new DexTryBlockStart(code, startOffset, catchAllHandler, catchHandlers);
       val newBlockEnd = new DexTryBlockEnd(code, newBlockStart);
