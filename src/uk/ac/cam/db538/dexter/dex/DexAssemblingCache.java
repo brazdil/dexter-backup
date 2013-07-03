@@ -78,6 +78,6 @@ public class DexAssemblingCache {
   }
 
   public MethodIdItem getMethod(DexReferenceType classType, DexPrototype methodPrototype, String name) {
-    return methods.getCachedEntry(new Triple<>(classType, methodPrototype, name));
+    return methods.getCachedEntry(new Triple<DexReferenceType, DexPrototype, String>(classType, methodPrototype, name));
   }
 }

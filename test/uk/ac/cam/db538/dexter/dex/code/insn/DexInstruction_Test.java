@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
 
@@ -34,7 +33,7 @@ public class DexInstruction_Test {
       Method m = DexInstruction.class.getDeclaredMethod("throwingInsn_CanExitMethod");
       m.setAccessible(true);
       return (Boolean) m.invoke(insn);
-    } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
+    } catch (Exception e) {
       e.printStackTrace(System.err);
       fail("Couldn't execute method: " + e.getClass().getSimpleName());
       return false;
@@ -177,7 +176,7 @@ public class DexInstruction_Test {
       Method m = DexInstruction.class.getDeclaredMethod("throwingInsn_CatchHandlers");
       m.setAccessible(true);
       return (Set<DexCodeElement>) m.invoke(insn);
-    } catch (NoSuchMethodException | SecurityException | InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
+    } catch (Exception e) {
       e.printStackTrace(System.err);
       fail("Couldn't execute method: " + e.getClass().getSimpleName());
       return null;

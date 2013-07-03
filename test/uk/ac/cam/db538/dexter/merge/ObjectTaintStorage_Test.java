@@ -15,7 +15,7 @@ public class ObjectTaintStorage_Test {
       Field fH = ObjectTaintStorage.class.getDeclaredField("H");
       fH.setAccessible(true);
       return (Entry[]) fH.get(null);
-    } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+    } catch (Exception e) {
       e.printStackTrace();
       fail("Couldn't get the internal H field of ObjectTaintStorage");
       return null;

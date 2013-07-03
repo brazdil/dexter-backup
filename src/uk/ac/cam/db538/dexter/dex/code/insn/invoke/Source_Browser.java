@@ -67,7 +67,7 @@ public class Source_Browser extends FallbackInstrumentor {
     // insert instrumentation right after the method call
     codeAfter.addAll(0, instrumentation);
 
-    return new Pair<>(codeBefore, codeAfter);
+    return new Pair<List<DexCodeElement>, List<DexCodeElement>>(codeBefore, codeAfter);
   }
 
 }

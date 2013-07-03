@@ -1,5 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import java.util.Arrays;
+import java.util.List;
+
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 
 public abstract class DexReferenceType extends DexRegisterType {
@@ -28,19 +31,19 @@ public abstract class DexReferenceType extends DexRegisterType {
     return false;
   }
 
+  private static List<String> sImmutables = Arrays.asList(
+	  "Ljava/lang/String;",
+	  "Ljava/lang/Boolean;",
+	  "Ljava/lang/Byte;",
+	  "Ljava/lang/Character;",
+	  "Ljava/lang/Double;",
+	  "Ljava/lang/Float;",
+	  "Ljava/lang/Integer;",
+	  "Ljava/lang/Long;",
+	  "Ljava/lang/Short;"
+  );
+  
   public boolean isImmutable() {
-    switch (this.getDescriptor()) {
-    case "Ljava/lang/String;":
-    case "Ljava/lang/Boolean;":
-    case "Ljava/lang/Byte;":
-    case "Ljava/lang/Character;":
-    case "Ljava/lang/Double;":
-    case "Ljava/lang/Float;":
-    case "Ljava/lang/Integer;":
-    case "Ljava/lang/Long;":
-    case "Ljava/lang/Short;":
-      return true;
-    }
-    return false;
+	return sImmutables.contains(this.getDescriptor());
   }
 }
