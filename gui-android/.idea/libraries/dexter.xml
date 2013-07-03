@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="dexter">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Dexter/libs/dexter-standalone.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

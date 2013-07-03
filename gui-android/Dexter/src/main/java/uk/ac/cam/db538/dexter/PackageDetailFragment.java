@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -35,6 +36,7 @@ public class PackageDetailFragment extends Fragment {
     private EditText textLastUpdated;
     private EditText textApkPath;
     private EditText textApkSize;
+    private Button btnInstrument;
 
     public PackageDetailFragment() { }
 
@@ -79,6 +81,7 @@ public class PackageDetailFragment extends Fragment {
         textLastUpdated = (EditText) rootView.findViewById(R.id.textLastUpdated);
         textApkPath = (EditText) rootView.findViewById(R.id.textApkPath);
         textApkSize = (EditText) rootView.findViewById(R.id.textApkSize);
+        btnInstrument = (Button) rootView.findViewById(R.id.buttonInstrument);
 
         if (packageInfo != null) {
             Drawable icon = packageInfo.applicationInfo.loadIcon(packageManager);
