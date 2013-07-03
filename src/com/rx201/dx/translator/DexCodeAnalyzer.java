@@ -19,6 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 
 public class DexCodeAnalyzer {
@@ -138,20 +139,31 @@ public class DexCodeAnalyzer {
 	private Set<TypeSolver> getDefinedSites(AnalyzedDexInstruction location, DexRegister reg) {
 		HashSet<TypeSolver> result = new HashSet<TypeSolver>();
 		
-		HashSet<AnalyzedDexInstruction> visited = new HashSet<AnalyzedDexInstruction>();
-		ArrayList<AnalyzedDexInstruction> stack = new ArrayList<AnalyzedDexInstruction>();
-		stack.addAll(location.getPredecessors());
+		HashSet<AnalyzedDexInstruction> visitedNormal = new HashSet<AnalyzedDexInstruction>();
+		HashSet<AnalyzedDexInstruction> visitedException = new HashSet<AnalyzedDexInstruction>();
+		ArrayList<Pair<AnalyzedDexInstruction, Boolean>> stack = new ArrayList<Pair<AnalyzedDexInstruction, Boolean>>();
+		for(AnalyzedDexInstruction pred : location.getPredecessors() )
+			stack.add(new Pair<AnalyzedDexInstruction, Boolean>(pred, location.isExceptionPredecessor(pred)));
 		
 		while(stack.size() > 0) {
-			AnalyzedDexInstruction head = stack.remove(stack.size() - 1);
-			if (visited.contains(head)) continue;
-			visited.add(head);
+			Pair<AnalyzedDexInstruction, Boolean> headPair = stack.remove(stack.size() - 1);
+			AnalyzedDexInstruction head = headPair.getValA();
+			Boolean isExceptionPath = headPair.getValB();
+			
+			if (isExceptionPath) {
+				if (visitedException.contains(head)) continue;
+				visitedException.add(head);
+			} else {
+				if (visitedNormal.contains(head)) continue;
+				visitedNormal.add(head);
+			}
 			
 			TypeSolver definer = head.getDefinedRegisterSolver(reg);
-			if (definer != null) {
+			if (definer != null && (!isExceptionPath)) {
 				result.add(definer);
 			} else {
-				stack.addAll(head.getPredecessors());
+				for(AnalyzedDexInstruction pred : head.getPredecessors() )
+					stack.add(new Pair<AnalyzedDexInstruction, Boolean>(pred, head.isExceptionPredecessor(pred)));
 			}
 		}
 		return result;
@@ -188,22 +200,25 @@ public class DexCodeAnalyzer {
     	
     	for(CfgBasicBlock bb : cfg.getBasicBlocks()) {
         	AnalyzedDexInstruction prevA = null;
+        	Set<DexCodeElement> prevExceptionSuccessors = null;
+        	
         	// Connect predecessor/successor within a basic block
     		for(DexCodeElement cur: bb.getInstructions()) {
     			AnalyzedDexInstruction curA = instructionMap.get(cur);
     			if (prevA != null) {
-    				prevA.addSuccessor(curA);
-        			curA.addPredecessor(prevA);
+    				prevA.linkToSuccessor(curA, false);
+    				// Cannot have exception path within a basic block
+    				assert !prevExceptionSuccessors.contains(curA.getCodeElement());
     			}
     			prevA = curA;
+    			prevExceptionSuccessors = prevA.getCodeElement().cfgGetExceptionSuccessors();
     		}
     		// Connect with successor basic block
     		for(CfgBlock nextBB : bb.getSuccessors()) {
     			if (nextBB instanceof CfgBasicBlock) {
     				DexCodeElement cur = ((CfgBasicBlock)nextBB).getFirstInstruction();
         			AnalyzedDexInstruction curA = instructionMap.get(cur);
-    				prevA.addSuccessor(curA);
-        			curA.addPredecessor(prevA);
+    				prevA.linkToSuccessor(curA, prevExceptionSuccessors.contains(curA.getCodeElement()));
     			}
     		}
     	}
@@ -215,8 +230,7 @@ public class DexCodeAnalyzer {
         for (CfgBlock startBB: cfg.getStartBlock().getSuccessors()) {
         	if (startBB instanceof CfgBasicBlock) {
         		AnalyzedDexInstruction realHead = instructionMap.get(((CfgBasicBlock)startBB).getFirstInstruction());
-        		startOfMethod.addSuccessor(realHead);
-        		realHead.addPredecessor(startOfMethod);
+        		startOfMethod.linkToSuccessor(realHead, false);
         	}
         }
     }
