@@ -18,20 +18,20 @@ import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_InstanceGet extends DexInstruction {
 
   @Getter private final DexRegister regTo;
   @Getter private final DexRegister regObject;
-  @Getter private final DexClassType fieldClass;
-  @Getter private final DexRegisterType fieldType;
+  @Getter private final DexType_Class fieldClass;
+  @Getter private final DexType_Register fieldType;
   @Getter private final String fieldName;
   @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_InstanceGet(DexCode methodCode, DexRegister to, DexRegister obj, DexClassType fieldClass, DexRegisterType fieldType, String fieldName, Opcode_GetPut opcode) {
+  public DexInstruction_InstanceGet(DexCode methodCode, DexRegister to, DexRegister obj, DexType_Class fieldClass, DexType_Register fieldType, String fieldName, Opcode_GetPut opcode) {
     super(methodCode);
 
     this.regTo = to;
@@ -67,10 +67,10 @@ public class DexInstruction_InstanceGet extends DexInstruction {
       val refItem = (FieldIdItem) insnInstanceGet.getReferencedItem();
       regTo = parsingState.getRegister(insnInstanceGet.getRegisterA());
       regObject = parsingState.getRegister(insnInstanceGet.getRegisterB());
-      fieldClass = DexClassType.parse(
+      fieldClass = DexType_Class.parse(
                      refItem.getContainingClass().getTypeDescriptor(),
                      parsingState.getCache());
-      fieldType = DexRegisterType.parse(
+      fieldType = DexType_Register.parse(
                     refItem.getFieldType().getTypeDescriptor(),
                     parsingState.getCache());
       fieldName = refItem.getFieldName().getStringValue();
@@ -99,47 +99,47 @@ public class DexInstruction_InstanceGet extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) {
-    val code = getMethodCode();
-    val classHierarchy = getParentFile().getClassHierarchy();
-
-    if (opcode != Opcode_GetPut.Object) {
-      val regValueTaint = state.getTaintRegister(regTo);
-      val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, false);
-
-      if (fieldDeclaringClass.isDefinedInternally()) {
-        // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
-        // combine the taint stored in adjoined field with the taint of the object
-        val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
-        val regObjectTaint = (regTo == regObject) ? new DexRegister() : state.getTaintRegister(regObject);
-        code.replace(this,
-                     new DexCodeElement[] {
-                       // must get the object taint BEFORE the original instruction, or the object reference could be overwritten
-                       new DexMacro_GetObjectTaint(code, regObjectTaint, regObject),
-                       new DexInstruction_InstanceGet(code, regValueTaint, regObject, state.getCache().getTaintField(field)),
-                       new DexInstruction_BinaryOp(code, regValueTaint, regValueTaint, regObjectTaint, Opcode_BinaryOp.OrInt),
-                       this
-                     });
-
-      } else
-        // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
-        // assign the same taint as the containing object has
-        code.replace(this,
-                     new DexCodeElement[] {
-                       new DexMacro_GetObjectTaint(code, regValueTaint, regObject),
-                       this
-                     });
-
-    } else {
-      // FIELD OF REFERENCE TYPE
-      // the object itself has taint, but the taint of the object must be added
-      val regObjectTaint = new DexRegister();
-      code.replace(this,
-                   new DexCodeElement[] {
-                     this,
-                     new DexMacro_GetObjectTaint(code, regObjectTaint, regObject),
-                     new DexMacro_SetObjectTaint(code, regTo, regObjectTaint)
-                   });
-    }
+//    val code = getMethodCode();
+//    val classHierarchy = getParentFile().getClassHierarchy();
+//
+//    if (opcode != Opcode_GetPut.Object) {
+//      val regValueTaint = state.getTaintRegister(regTo);
+//      val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, false);
+//
+//      if (fieldDeclaringClass.isDefinedInternally()) {
+//        // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
+//        // combine the taint stored in adjoined field with the taint of the object
+//        val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
+//        val regObjectTaint = (regTo == regObject) ? new DexRegister() : state.getTaintRegister(regObject);
+//        code.replace(this,
+//                     new DexCodeElement[] {
+//                       // must get the object taint BEFORE the original instruction, or the object reference could be overwritten
+//                       new DexMacro_GetObjectTaint(code, regObjectTaint, regObject),
+//                       new DexInstruction_InstanceGet(code, regValueTaint, regObject, state.getCache().getTaintField(field)),
+//                       new DexInstruction_BinaryOp(code, regValueTaint, regValueTaint, regObjectTaint, Opcode_BinaryOp.OrInt),
+//                       this
+//                     });
+//
+//      } else
+//        // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
+//        // assign the same taint as the containing object has
+//        code.replace(this,
+//                     new DexCodeElement[] {
+//                       new DexMacro_GetObjectTaint(code, regValueTaint, regObject),
+//                       this
+//                     });
+//
+//    } else {
+//      // FIELD OF REFERENCE TYPE
+//      // the object itself has taint, but the taint of the object must be added
+//      val regObjectTaint = new DexRegister();
+//      code.replace(this,
+//                   new DexCodeElement[] {
+//                     this,
+//                     new DexMacro_GetObjectTaint(code, regObjectTaint, regObject),
+//                     new DexMacro_SetObjectTaint(code, regTo, regObjectTaint)
+//                   });
+//    }
   }
 
   @Override
@@ -148,7 +148,7 @@ public class DexInstruction_InstanceGet extends DexInstruction {
   }
 
   @Override
-  protected DexClassType[] throwsExceptions() {
+  protected DexType_Class[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error_NullPointerException;
   }
   

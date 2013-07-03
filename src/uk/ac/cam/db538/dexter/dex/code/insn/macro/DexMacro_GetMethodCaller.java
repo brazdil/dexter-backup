@@ -22,9 +22,9 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexVoid;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Array;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Void;
 
 public class DexMacro_GetMethodCaller extends DexMacro {
 
@@ -40,11 +40,11 @@ public class DexMacro_GetMethodCaller extends DexMacro {
     val code = getMethodCode();
     val parsingCache = getParentFile().getParsingCache();
 
-    val typeVoid = DexVoid.parse("V", parsingCache);
-    val typeException = DexClassType.parse("Ljava/lang/Exception;", parsingCache);
-    val typeString = DexClassType.parse("Ljava/lang/String;", parsingCache);
-    val typeStackTraceElement = DexClassType.parse("Ljava/lang/StackTraceElement;", parsingCache);
-    val typeStackTraceElementArray = DexArrayType.parse("[Ljava/lang/StackTraceElement;", parsingCache);
+    val typeVoid = DexType_Void.parse("V", parsingCache);
+    val typeException = DexType_Class.parse("Ljava/lang/Exception;", parsingCache);
+    val typeString = DexType_Class.parse("Ljava/lang/String;", parsingCache);
+    val typeStackTraceElement = DexType_Class.parse("Ljava/lang/StackTraceElement;", parsingCache);
+    val typeStackTraceElementArray = DexType_Array.parse("[Ljava/lang/StackTraceElement;", parsingCache);
 
     val regException = new DexRegister();
     val regStackArray = new DexRegister();

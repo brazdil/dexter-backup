@@ -15,40 +15,40 @@ import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Array;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Reference;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexClassHierarchy {
 
-  private final Map<DexClassType, ClassEntry> classes;
-  private final DexClassType rootClass;
+  private final Map<DexType_Class, ClassEntry> classes;
+  private final DexType_Class rootClass;
 
-  public DexClassHierarchy(DexClassType rootClass) {
-    this.classes = new HashMap<DexClassType, ClassEntry>();
+  public DexClassHierarchy(DexType_Class rootClass) {
+    this.classes = new HashMap<DexType_Class, ClassEntry>();
     this.rootClass = rootClass;
   }
 
-  public void addClass(DexClassType classType, DexClassType superclassType) {
-    Set<DexClassType> emptyInterfaces = Collections.emptySet();
+  public void addClass(DexType_Class classType, DexType_Class superclassType) {
+    Set<DexType_Class> emptyInterfaces = Collections.emptySet();
     Set<DexAnnotation> emptyAnnotations = Collections.emptySet();
     addMember(classType, superclassType, emptyInterfaces, emptyAnnotations, false);
   }
 
-  public void addClass(DexClassType classType, DexClassType superclassType, Set<DexClassType> interfaces) {
+  public void addClass(DexType_Class classType, DexType_Class superclassType, Set<DexType_Class> interfaces) {
     Set<DexAnnotation> emptyAnnotations = Collections.emptySet();
     addMember(classType, superclassType, interfaces, emptyAnnotations, false);
   }
 
-  public void addInterface(DexClassType classType) {
-    Set<DexClassType> emptyInterfaces = Collections.emptySet();
+  public void addInterface(DexType_Class classType) {
+    Set<DexType_Class> emptyInterfaces = Collections.emptySet();
     Set<DexAnnotation> emptyAnnotations = Collections.emptySet();
     addMember(classType, rootClass, emptyInterfaces, emptyAnnotations, true);
   }
 
-  public void addMember(DexClassType classType, DexClassType superclassType, Set<DexClassType> interfaces, Set<DexAnnotation> annotations, boolean flagInterface) {
+  public void addMember(DexType_Class classType, DexType_Class superclassType, Set<DexType_Class> interfaces, Set<DexAnnotation> annotations, boolean flagInterface) {
     if (classes.containsKey(classType)) {
       System.err.println("warning: class " + classType.getDescriptor() + " is defined multiple times");
       return;
@@ -58,24 +58,24 @@ public class DexClassHierarchy {
       throw new ClassHierarchyException("Class " + classType.getPrettyName() + " introduces a loop in the class hierarchy");
 
     if (interfaces == null)
-      interfaces = new HashSet<DexClassType>();
+      interfaces = new HashSet<DexType_Class>();
     else
-      interfaces = new HashSet<DexClassType>(interfaces);
+      interfaces = new HashSet<DexType_Class>(interfaces);
 
     if (annotations == null)
       annotations = new HashSet<DexAnnotation>();
     else
       annotations = new HashSet<DexAnnotation>(annotations);
 
-    val classEntry = new ClassEntry(classType, superclassType, interfaces, annotations, new HashSet<MethodEntry>(), new HashSet<FieldEntry>(), flagInterface, new HashSet<DexClassType>());
+    val classEntry = new ClassEntry(classType, superclassType, interfaces, annotations, new HashSet<MethodEntry>(), new HashSet<FieldEntry>(), flagInterface, new HashSet<DexType_Class>());
     classes.put(classType, classEntry);
   }
 
-  public void addImplementedInterface(DexClassType clazz, DexClassType interfaceClazz) {
+  public void addImplementedInterface(DexType_Class clazz, DexType_Class interfaceClazz) {
     classes.get(clazz).getInterfaces().add(interfaceClazz);
   }
 
-  public void addImplementedMethod(DexClassType classType, String methodName, DexPrototype methodPrototype, boolean isPrivate, boolean isNative, boolean isPublic) {
+  public void addImplementedMethod(DexType_Class classType, String methodName, DexPrototype methodPrototype, boolean isPrivate, boolean isNative, boolean isPublic) {
     for (val method : classes.get(classType).implementedMethods)
       if (method.getName().equals(methodName) &&
           method.getPrototype().equals(methodPrototype)) {
@@ -86,7 +86,7 @@ public class DexClassHierarchy {
     classes.get(classType).implementedMethods.add(new MethodEntry(methodName, methodPrototype, isPrivate, isNative, isPublic));
   }
 
-  public void addDeclaredField(DexClassType classType, String fieldName, DexRegisterType fieldType, boolean isStatic, boolean isPrivate) {
+  public void addDeclaredField(DexType_Class classType, String fieldName, DexType_Register fieldType, boolean isStatic, boolean isPrivate) {
     for (val field : classes.get(classType).declaredFields)
       if (field.getName().equals(fieldName) &&
           field.getType().equals(fieldType)) {
@@ -97,7 +97,7 @@ public class DexClassHierarchy {
     classes.get(classType).declaredFields.add(new FieldEntry(fieldName, fieldType, isStatic, isPrivate));
   }
 
-  public void addClassAnnotation(DexClassType clazz, DexAnnotation anno) {
+  public void addClassAnnotation(DexType_Class clazz, DexAnnotation anno) {
     classes.get(clazz).annotations.add(anno);
   }
 
@@ -149,7 +149,7 @@ public class DexClassHierarchy {
 //    }
 //  }
 
-  public DexClassType getSuperclassType(DexClassType clazz) {
+  public DexType_Class getSuperclassType(DexType_Class clazz) {
     if (classes.get(clazz) == null) {
       System.err.println("warning: missing class hierarchy entry for " + clazz.getDescriptor());
       return rootClass;
@@ -157,11 +157,11 @@ public class DexClassHierarchy {
       return classes.get(clazz).getSuperclassType();
   }
 
-  public Set<DexClassType> getInterfaces(DexClassType clazz) {
+  public Set<DexType_Class> getInterfaces(DexType_Class clazz) {
     return Collections.unmodifiableSet(classes.get(clazz).getInterfaces());
   }
 
-  public Set<DexAnnotation> getAnnotations(DexClassType clazz) {
+  public Set<DexAnnotation> getAnnotations(DexType_Class clazz) {
     return Collections.unmodifiableSet(classes.get(clazz).getAnnotations());
   }
 
@@ -205,13 +205,13 @@ public class DexClassHierarchy {
 
   }
 
-  public boolean isAncestor(DexReferenceType refType, DexClassType ancestor) {
-    DexClassType clazz = getTrueCalledClass(refType);
+  public boolean isAncestor(DexType_Reference refType, DexType_Class ancestor) {
+    DexType_Class clazz = getTrueCalledClass(refType);
 
     // start at clazz and work our way up the hierarchy tree
     // checking equality at each level
 
-    DexClassType prevClazz = null;
+    DexType_Class prevClazz = null;
     do {
       if (clazz == ancestor)
         return true;
@@ -223,13 +223,13 @@ public class DexClassHierarchy {
     return false;
   }
 
-  public boolean implementsInterface(DexReferenceType refType, DexClassType intrface) {
-    DexClassType clazz = getTrueCalledClass(refType);
+  public boolean implementsInterface(DexType_Reference refType, DexType_Class intrface) {
+    DexType_Class clazz = getTrueCalledClass(refType);
 
     // start at clazz and work our way up the hierarchy tree
     // searching through implemented interfaces at each level
 
-    DexClassType prevClazz = null;
+    DexType_Class prevClazz = null;
     do {
       if (classes.get(clazz) == null) {
         System.err.println("warning: missing class hierarchy entry for " + clazz.getDescriptor());
@@ -244,8 +244,8 @@ public class DexClassHierarchy {
     return false;
   }
 
-  public boolean implementsMethod(DexReferenceType refType, String name, DexPrototype prototype) {
-    DexClassType clazz = getTrueCalledClass(refType);
+  public boolean implementsMethod(DexType_Reference refType, String name, DexPrototype prototype) {
+    DexType_Class clazz = getTrueCalledClass(refType);
 
     for (val method : classes.get(clazz).implementedMethods)
       if (method.getName().equals(name) && method.getPrototype().equals(prototype))
@@ -254,8 +254,8 @@ public class DexClassHierarchy {
     return false;
   }
 
-  public boolean isMethodNative(DexReferenceType refType, String name, DexPrototype prototype) {
-    DexClassType clazz = getTrueCalledClass(refType);
+  public boolean isMethodNative(DexType_Reference refType, String name, DexPrototype prototype) {
+    DexType_Class clazz = getTrueCalledClass(refType);
 
     for (val method : classes.get(clazz).implementedMethods)
       if (method.getName().equals(name) && method.getPrototype().equals(prototype))
@@ -264,8 +264,8 @@ public class DexClassHierarchy {
     return false;
   }
 
-  public boolean isMethodPublic(DexReferenceType refType, String name, DexPrototype prototype) {
-    DexClassType clazz = getTrueCalledClass(refType);
+  public boolean isMethodPublic(DexType_Reference refType, String name, DexPrototype prototype) {
+    DexType_Class clazz = getTrueCalledClass(refType);
 
     for (val method : classes.get(clazz).implementedMethods)
       if (method.getName().equals(name) && method.getPrototype().equals(prototype))
@@ -274,7 +274,7 @@ public class DexClassHierarchy {
     return false;
   }
 
-  public DexClassType getAccessedFieldDeclaringClass(DexClassType accessedClazz, String fieldName, DexRegisterType fieldType, boolean isStatic) {
+  public DexType_Class getAccessedFieldDeclaringClass(DexType_Class accessedClazz, String fieldName, DexType_Register fieldType, boolean isStatic) {
     for (val ancestor : getAllParents(accessedClazz, true))
       for (val field : classes.get(ancestor).getDeclaredFields())
         if (field.getName().equals(fieldName) && field.getType().equals(fieldType) && field.isDeclaredStatic() == isStatic) {
@@ -289,8 +289,8 @@ public class DexClassHierarchy {
     return null;
   }
 
-  private boolean wouldIntroduceLoop(DexClassType clazz, DexClassType superclazz) {
-    DexClassType currClazz = superclazz;
+  private boolean wouldIntroduceLoop(DexType_Class clazz, DexType_Class superclazz) {
+    DexType_Class currClazz = superclazz;
 
     do {
       if (currClazz == clazz)
@@ -310,9 +310,9 @@ public class DexClassHierarchy {
 //    return "L" + className.replace('.', '/') + ";";
 //  }
 
-  public Set<DexClassType> getAllChildren(DexClassType clazz) {
-    val set = new HashSet<DexClassType>();
-    val queue = new LinkedList<DexClassType>();
+  public Set<DexType_Class> getAllChildren(DexType_Class clazz) {
+    val set = new HashSet<DexType_Class>();
+    val queue = new LinkedList<DexType_Class>();
     queue.add(clazz);
 
     while(!queue.isEmpty()) {
@@ -327,10 +327,10 @@ public class DexClassHierarchy {
     return set;
   }
 
-  public List<DexClassType> getAllParents(DexClassType clazz, boolean includeItself) {
+  public List<DexType_Class> getAllParents(DexType_Class clazz, boolean includeItself) {
     // needs to return a list
     // and elements must be in order, starting with the closest parent
-    val list = new ArrayList<DexClassType>();
+    val list = new ArrayList<DexType_Class>();
     if (includeItself)
       list.add(clazz);
 
@@ -346,8 +346,8 @@ public class DexClassHierarchy {
       return list;
   }
 
-  public Set<DexClassType> getAllClassesImplementingInterface(DexClassType intrface) {
-    val set = new HashSet<DexClassType>();
+  public Set<DexType_Class> getAllClassesImplementingInterface(DexType_Class intrface) {
+    val set = new HashSet<DexType_Class>();
 
     for (val clazz : classes.keySet())
       if (implementsInterface(clazz, intrface))
@@ -356,10 +356,10 @@ public class DexClassHierarchy {
     return set;
   }
 
-  private DexClassType getTrueCalledClass(DexReferenceType refType) {
-    if (refType instanceof DexClassType)
-      return (DexClassType) refType;
-    else if (refType instanceof DexArrayType)
+  private DexType_Class getTrueCalledClass(DexType_Reference refType) {
+    if (refType instanceof DexType_Class)
+      return (DexType_Class) refType;
+    else if (refType instanceof DexType_Array)
       return rootClass;
     else
       throw new Error();
@@ -373,77 +373,78 @@ public class DexClassHierarchy {
    * the method call can be internal. Second is true if it can
    * be an external call.
    */
-  public Pair<Boolean, Boolean> decideMethodCallDestination(Opcode_Invoke callType, DexReferenceType refType, String methodName, DexPrototype methodPrototype) {
-    DexClassType callClass = getTrueCalledClass(refType);
-
-    if (callType == Opcode_Invoke.Direct) {
-      if (callClass.isDefinedInternally() && !isMethodNative(callClass, methodName, methodPrototype))
-        return CALL_INTERNAL;
-      else
-        return CALL_EXTERNAL;
-    } else if (callType == Opcode_Invoke.Super || callType == Opcode_Invoke.Static) {
-      // with super/static call we can always deduce the destination
-      // by going through the parents (DexClassHierarchy will
-      // return them ordered from the closest parent
-      // to Object) and deciding based on the first implementation
-      // we encounter
-
-      // need to put TRUE here, because classType is already a parent
-      for (val parentClass : this.getAllParents(callClass, true)) {
-        if (implementsMethod(parentClass, methodName, methodPrototype)) {
-          if (parentClass.isDefinedInternally() && !isMethodNative(parentClass, methodName, methodPrototype))
-            return CALL_INTERNAL;
-          else
-            return CALL_EXTERNAL;
-        }
-      }
-
-      throw new ClassHierarchyException("Cannot determine the destination of super/static method call: " + callClass.getPrettyName() + "." + methodName);
-
-    } else if (callType == Opcode_Invoke.Virtual || callType == Opcode_Invoke.Interface) {
-
-      Set<DexClassType> potentialDestinationClasses;
-      if (callType == Opcode_Invoke.Virtual) {
-        // call destination class can be a child which implements the given method,
-        // or it can be a parent which implements the given method
-        potentialDestinationClasses = new HashSet<DexClassType>();
-        potentialDestinationClasses.addAll(this.getAllChildren(callClass));
-        potentialDestinationClasses.addAll(this.getAllParents(callClass, true));
-      } else {
-        // in the case of an interface, we need to look at all the classes
-        // that implement it; class hierarchy will automatically return
-        // all the ancestors of such classes as well
-        potentialDestinationClasses = this.getAllClassesImplementingInterface(callClass);
-      }
-
-      boolean canBeInternal = false;
-      boolean canBeExternal = false;
-
-      for (val destClass : potentialDestinationClasses)
-        if (implementsMethod(destClass, methodName, methodPrototype)) {
-          if (destClass.isDefinedInternally() && !isMethodNative(destClass, methodName, methodPrototype))
-            canBeInternal = true;
-          else
-            canBeExternal = true;
-        }
-
-      return new Pair<Boolean, Boolean>(canBeInternal, canBeExternal);
-
-    } else
-      throw new Error("Wrong call type");
+  public Pair<Boolean, Boolean> decideMethodCallDestination(Opcode_Invoke callType, DexType_Reference refType, String methodName, DexPrototype methodPrototype) {
+//    DexType_Class callClass = getTrueCalledClass(refType);
+//
+//    if (callType == Opcode_Invoke.Direct) {
+//      if (callClass.isDefinedInternally() && !isMethodNative(callClass, methodName, methodPrototype))
+//        return CALL_INTERNAL;
+//      else
+//        return CALL_EXTERNAL;
+//    } else if (callType == Opcode_Invoke.Super || callType == Opcode_Invoke.Static) {
+//      // with super/static call we can always deduce the destination
+//      // by going through the parents (DexClassHierarchy will
+//      // return them ordered from the closest parent
+//      // to Object) and deciding based on the first implementation
+//      // we encounter
+//
+//      // need to put TRUE here, because classType is already a parent
+//      for (val parentClass : this.getAllParents(callClass, true)) {
+//        if (implementsMethod(parentClass, methodName, methodPrototype)) {
+//          if (parentClass.isDefinedInternally() && !isMethodNative(parentClass, methodName, methodPrototype))
+//            return CALL_INTERNAL;
+//          else
+//            return CALL_EXTERNAL;
+//        }
+//      }
+//
+//      throw new ClassHierarchyException("Cannot determine the destination of super/static method call: " + callClass.getPrettyName() + "." + methodName);
+//
+//    } else if (callType == Opcode_Invoke.Virtual || callType == Opcode_Invoke.Interface) {
+//
+//      Set<DexType_Class> potentialDestinationClasses;
+//      if (callType == Opcode_Invoke.Virtual) {
+//        // call destination class can be a child which implements the given method,
+//        // or it can be a parent which implements the given method
+//        potentialDestinationClasses = new HashSet<DexType_Class>();
+//        potentialDestinationClasses.addAll(this.getAllChildren(callClass));
+//        potentialDestinationClasses.addAll(this.getAllParents(callClass, true));
+//      } else {
+//        // in the case of an interface, we need to look at all the classes
+//        // that implement it; class hierarchy will automatically return
+//        // all the ancestors of such classes as well
+//        potentialDestinationClasses = this.getAllClassesImplementingInterface(callClass);
+//      }
+//
+//      boolean canBeInternal = false;
+//      boolean canBeExternal = false;
+//
+//      for (val destClass : potentialDestinationClasses)
+//        if (implementsMethod(destClass, methodName, methodPrototype)) {
+//          if (destClass.isDefinedInternally() && !isMethodNative(destClass, methodName, methodPrototype))
+//            canBeInternal = true;
+//          else
+//            canBeExternal = true;
+//        }
+//
+//      return new Pair<Boolean, Boolean>(canBeInternal, canBeExternal);
+//
+//    } else
+//      throw new Error("Wrong call type");
+	  return CALL_EXTERNAL;
   }
 
   @AllArgsConstructor
   @Getter
   private static class ClassEntry {
-    private final DexClassType classType;
-    private final DexClassType superclassType;
-    private final Set<DexClassType> interfaces;
+    private final DexType_Class classType;
+    private final DexType_Class superclassType;
+    private final Set<DexType_Class> interfaces;
     private final Set<DexAnnotation> annotations;
     private final Set<MethodEntry> implementedMethods;
     private final Set<FieldEntry> declaredFields;
     private final boolean flaggedInterface;
-    private final Set<DexClassType> children;
+    private final Set<DexType_Class> children;
   }
 
   @AllArgsConstructor
@@ -502,7 +503,7 @@ public class DexClassHierarchy {
   private static class FieldEntry {
     // must update hashCode and equals if new fields are added
     private final String name;
-    private final DexRegisterType type;
+    private final DexType_Register type;
     private final boolean declaredStatic;
     private final boolean declaredPrivate;
 

@@ -16,20 +16,20 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Primitive;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_StaticGet extends DexInstruction {
 
   @Getter private final DexRegister regTo;
-  @Getter private final DexClassType fieldClass;
-  @Getter private final DexRegisterType fieldType;
+  @Getter private final DexType_Class fieldClass;
+  @Getter private final DexType_Register fieldType;
   @Getter private final String fieldName;
   @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_StaticGet(DexCode methodCode, DexRegister to, DexClassType fieldClass, DexRegisterType fieldType, String fieldName, Opcode_GetPut opcode) {
+  public DexInstruction_StaticGet(DexCode methodCode, DexRegister to, DexType_Class fieldClass, DexType_Register fieldType, String fieldName, Opcode_GetPut opcode) {
     super(methodCode);
 
     this.regTo = to;
@@ -62,10 +62,10 @@ public class DexInstruction_StaticGet extends DexInstruction {
       val insnStaticGet = (Instruction21c) insn;
       val refItem = (FieldIdItem) insnStaticGet.getReferencedItem();
       regTo = parsingState.getRegister(insnStaticGet.getRegisterA());
-      fieldClass = DexClassType.parse(
+      fieldClass = DexType_Class.parse(
                      refItem.getContainingClass().getTypeDescriptor(),
                      parsingState.getCache());
-      fieldType = DexRegisterType.parse(
+      fieldType = DexType_Register.parse(
                     refItem.getFieldType().getTypeDescriptor(),
                     parsingState.getCache());
       fieldName = refItem.getFieldName().getStringValue();
@@ -89,43 +89,43 @@ public class DexInstruction_StaticGet extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) {
-    val code = getMethodCode();
-    val classHierarchy = getParentFile().getClassHierarchy();
-
-    if (opcode != Opcode_GetPut.Object) {
-      val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
-
-      if (fieldDeclaringClass == null)
-        System.err.println("warning: cannot find accessed static field " + fieldClass.getPrettyName() + "." + fieldName);
-
-      if (fieldDeclaringClass != null && fieldDeclaringClass.isDefinedInternally()) {
-        // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
-        // retrieve taint from the adjoined field
-        val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
-
-        code.replace(this,
-                     new DexCodeElement[] {
-                       this,
-                       new DexInstruction_StaticGet(code, state.getTaintRegister(regTo), state.getCache().getTaintField(field))
-                     });
-
-      } else {
-        // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
-        // OR NOT FOUND
-        // get the taint from adjoined field in special global class
-        code.replace(this,
-                     new DexCodeElement[] {
-                       this,
-                       new DexInstruction_StaticGet(
-                         code,
-                         state.getTaintRegister(regTo),
-                         state.getCache().getTaintField_ExternalStatic(fieldClass, (DexPrimitiveType) fieldType, fieldName))
-                     });
-      }
-    } else {
-      // FIELD OF REFERENCE TYPE
-      // the object itself has taint, no need to do anything
-    }
+//    val code = getMethodCode();
+//    val classHierarchy = getParentFile().getClassHierarchy();
+//
+//    if (opcode != Opcode_GetPut.Object) {
+//      val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
+//
+//      if (fieldDeclaringClass == null)
+//        System.err.println("warning: cannot find accessed static field " + fieldClass.getPrettyName() + "." + fieldName);
+//
+//      if (fieldDeclaringClass != null && fieldDeclaringClass.isDefinedInternally()) {
+//        // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
+//        // retrieve taint from the adjoined field
+//        val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
+//
+//        code.replace(this,
+//                     new DexCodeElement[] {
+//                       this,
+//                       new DexInstruction_StaticGet(code, state.getTaintRegister(regTo), state.getCache().getTaintField(field))
+//                     });
+//
+//      } else {
+//        // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
+//        // OR NOT FOUND
+//        // get the taint from adjoined field in special global class
+//        code.replace(this,
+//                     new DexCodeElement[] {
+//                       this,
+//                       new DexInstruction_StaticGet(
+//                         code,
+//                         state.getTaintRegister(regTo),
+//                         state.getCache().getTaintField_ExternalStatic(fieldClass, (DexType_Primitive) fieldType, fieldName))
+//                     });
+//      }
+//    } else {
+//      // FIELD OF REFERENCE TYPE
+//      // the object itself has taint, no need to do anything
+//    }
   }
 
   @Override
@@ -134,7 +134,7 @@ public class DexInstruction_StaticGet extends DexInstruction {
   }
   
   @Override
-  protected DexClassType[] throwsExceptions() {
+  protected DexType_Class[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error;
   }
   

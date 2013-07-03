@@ -15,7 +15,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
 
 public abstract class DexInstruction extends DexCodeElement {
 
@@ -54,7 +54,7 @@ public abstract class DexInstruction extends DexCodeElement {
 //                                getParentFile().getParsingCache()));
 //  }
 
-  protected final boolean throwingInsn_CanExitMethod(DexClassType thrownExceptionType) {
+  protected final boolean throwingInsn_CanExitMethod(DexType_Class thrownExceptionType) {
     val code = getMethodCode();
     val classHierarchy = getParentFile().getClassHierarchy();
 
@@ -79,7 +79,7 @@ public abstract class DexInstruction extends DexCodeElement {
     return true;
   }
 
-  protected final Set<DexCodeElement> throwingInsn_CatchHandlers(DexClassType thrownExceptionType) {
+  protected final Set<DexCodeElement> throwingInsn_CatchHandlers(DexType_Class thrownExceptionType) {
     val set = new HashSet<DexCodeElement>();
 
     val code = getMethodCode();
@@ -154,13 +154,13 @@ public abstract class DexInstruction extends DexCodeElement {
   abstract public void accept(DexInstructionVisitor visitor);
   
   // Subclasses should overrides this if the instruction may throw exceptions during execution.
-  protected DexClassType[] throwsExceptions() {
+  protected DexType_Class[] throwsExceptions() {
 	return null;  
   }
   
   @Override
   public boolean cfgEndsBasicBlock() {
-	DexClassType[] exceptions = throwsExceptions();
+	DexType_Class[] exceptions = throwsExceptions();
 	return  exceptions != null && exceptions.length > 0;
   }
 
@@ -180,9 +180,9 @@ public abstract class DexInstruction extends DexCodeElement {
   public final Set<DexCodeElement> cfgGetExceptionSuccessors() {
 	  val set = new HashSet<DexCodeElement>();
 	  
-	  DexClassType[] exceptions = throwsExceptions();
+	  DexType_Class[] exceptions = throwsExceptions();
 	  if (exceptions != null) {
-		  for(DexClassType exception : exceptions)
+		  for(DexType_Class exception : exceptions)
 			  set.addAll(throwingInsn_CatchHandlers(exception));
 	  }
 	  

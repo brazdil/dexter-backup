@@ -19,8 +19,8 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexVoid;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Void;
 
 public class DexInstruction_ReturnWide extends DexInstruction {
 
@@ -70,9 +70,9 @@ public class DexInstruction_ReturnWide extends DexInstruction {
     val insnGetSRES = new DexInstruction_StaticGet(code, regResSemaphore, dex.getMethodCallHelper_SRes());
     val insnAcquireSRES = new DexInstruction_Invoke(
       code,
-      (DexClassType) dex.getMethodCallHelper_SRes().getType(),
+      (DexType_Class) dex.getMethodCallHelper_SRes().getType(),
       "acquire",
-      new DexPrototype(DexVoid.parse("V", null), null),
+      new DexPrototype(DexType_Void.parse("V", null), null),
       Arrays.asList(regResSemaphore),
       Opcode_Invoke.Virtual);
     val insnSetRES = new DexInstruction_StaticPut(code, state.getTaintRegister(regFrom1), dex.getMethodCallHelper_Res());

@@ -18,9 +18,9 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Primitive;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Triple;
 
@@ -31,8 +31,8 @@ public class DexInstrumentationCache {
   @Getter private final boolean insertDebugLogging;
 
   private final Map<DexField, DexField> fieldInstrumentation;
-  private final Cache<Triple<DexClassType, DexPrimitiveType, String>, DexField>
-  staticExternalFieldInstrumentation = new Cache<Triple<DexClassType, DexPrimitiveType, String>, DexField>() {
+  private final Cache<Triple<DexType_Class, DexType_Primitive, String>, DexField>
+  staticExternalFieldInstrumentation = new Cache<Triple<DexType_Class, DexType_Primitive, String>, DexField>() {
     private boolean fieldExists(String name) {
       for (DexField field : parentFile.getExternalStaticFieldTaint_Class().getFields())
         if (field.getName().equals(name))
@@ -50,14 +50,14 @@ public class DexInstrumentationCache {
     }
 
     @Override
-    protected DexField createNewEntry(Triple<DexClassType, DexPrimitiveType, String> key) {
+    protected DexField createNewEntry(Triple<DexType_Class, DexType_Primitive, String> key) {
       DexClass taintClass = parentFile.getExternalStaticFieldTaint_Class();
       DexMethodWithCode taintClinit = parentFile.getExternalStaticFieldTaint_Clinit();
 
       DexField newField = new DexField(
         taintClass,
         generateFieldName(),
-        DexRegisterType.parse("I", parentFile.getParsingCache()),
+        DexType_Register.parse("I", parentFile.getParsingCache()),
         EnumSet.of(AccessFlags.PUBLIC, AccessFlags.STATIC),
         null);
       taintClass.addField(newField);
@@ -95,9 +95,9 @@ public class DexInstrumentationCache {
     return fieldInstrumentation.get(f);
   }
 
-  public DexField getTaintField_ExternalStatic(DexClassType clazz, DexPrimitiveType fieldType, String fieldName) {
+  public DexField getTaintField_ExternalStatic(DexType_Class clazz, DexType_Primitive fieldType, String fieldName) {
     return staticExternalFieldInstrumentation.getCachedEntry(
-             new Triple<DexClassType, DexPrimitiveType, String>(clazz, fieldType, fieldName));
+             new Triple<DexType_Class, DexType_Primitive, String>(clazz, fieldType, fieldName));
   }
 
   @AllArgsConstructor

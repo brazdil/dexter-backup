@@ -14,16 +14,16 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Reference;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_ConstClass extends DexInstruction {
 
   @Getter private final DexRegister regTo;
-  @Getter private final DexReferenceType value;
+  @Getter private final DexType_Reference value;
 
-  public DexInstruction_ConstClass(DexCode methodCode, DexRegister to, DexReferenceType value) {
+  public DexInstruction_ConstClass(DexCode methodCode, DexRegister to, DexType_Reference value) {
     super(methodCode);
 
     this.regTo = to;
@@ -37,7 +37,7 @@ public class DexInstruction_ConstClass extends DexInstruction {
 
       val insnConstClass = (Instruction21c) insn;
       regTo = parsingState.getRegister(insnConstClass.getRegisterA());
-      value = DexReferenceType.parse(
+      value = DexType_Reference.parse(
                 ((TypeIdItem) insnConstClass.getReferencedItem()).getTypeDescriptor(),
                 parsingState.getCache());
 
@@ -64,7 +64,7 @@ public class DexInstruction_ConstClass extends DexInstruction {
   }
   
   @Override
-  protected DexClassType[] throwsExceptions() {
+  protected DexType_Class[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error;
   }
   
