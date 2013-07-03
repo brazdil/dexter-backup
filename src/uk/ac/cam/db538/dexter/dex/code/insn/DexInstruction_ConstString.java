@@ -5,7 +5,6 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.val;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
@@ -54,7 +53,7 @@ public class DexInstruction_ConstString extends DexInstruction {
 
   @Override
   public String getOriginalAssembly() {
-    String escapedVal = StringEscapeUtils.escapeJava(stringConstant);
+    String escapedVal = stringConstant;
     if (escapedVal.length() > 15)
       escapedVal = escapedVal.substring(0, 15) + "...";
     return "const-string " + regTo.getOriginalIndexString() + ", \"" + escapedVal + "\"";
