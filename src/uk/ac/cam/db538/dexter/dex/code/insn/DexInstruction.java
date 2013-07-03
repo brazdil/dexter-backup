@@ -171,6 +171,14 @@ public abstract class DexInstruction extends DexCodeElement {
 	  // are thrown
 	  
 	  val set = super.cfgGetSuccessors();
+	  set.addAll(cfgGetExceptionSuccessors());
+	  
+	  return set;
+  }
+  
+  @Override
+  public final Set<DexCodeElement> cfgGetExceptionSuccessors() {
+	  val set = new HashSet<DexCodeElement>();
 	  
 	  DexClassType[] exceptions = throwsExceptions();
 	  if (exceptions != null) {
@@ -180,5 +188,5 @@ public abstract class DexInstruction extends DexCodeElement {
 	  
 	  return set;
   }
-  
+
 }
