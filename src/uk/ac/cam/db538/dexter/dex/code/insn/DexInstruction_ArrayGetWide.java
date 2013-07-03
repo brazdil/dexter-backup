@@ -15,7 +15,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_ArrayGetWide extends DexInstruction {
@@ -84,7 +84,7 @@ public class DexInstruction_ArrayGetWide extends DexInstruction {
   }
   
   @Override
-  protected DexClassType[] throwsExceptions() {
+  protected DexType_Class[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error_Null_ArrayIndexOutOfBounds;
   }
   

@@ -13,7 +13,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
 
 public class DexInstruction_Monitor extends DexInstruction {
 
@@ -61,7 +61,7 @@ public class DexInstruction_Monitor extends DexInstruction {
   }
   
   @Override
-  protected DexClassType[] throwsExceptions() {
+  protected DexType_Class[] throwsExceptions() {
 	if (enter)
 		return getParentFile().getParsingCache().LIST_Error_NullPointerException;
 	else

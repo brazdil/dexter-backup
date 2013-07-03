@@ -26,11 +26,11 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
-import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Array;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Primitive;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Reference;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
@@ -39,12 +39,12 @@ public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
 
   @Getter private final DexRegister regTo;
   @Getter private final DexRegister regDestObjectInstance;
-  @Getter private final DexReferenceType invokedClass;
+  @Getter private final DexType_Reference invokedClass;
   @Getter private final String invokedMethodName;
   @Getter private final DexPrototype invokedMethodPrototype;
 
   public DexMacro_GetInternalMethodAnnotation(DexCode methodCode, DexRegister regTo, DexRegister regDestObjectInstance,
-      DexReferenceType invokedClass, String methodName, DexPrototype methodPrototype) {
+      DexType_Reference invokedClass, String methodName, DexPrototype methodPrototype) {
     super(methodCode);
     this.regTo = regTo;
     this.regDestObjectInstance = regDestObjectInstance;
@@ -77,10 +77,10 @@ public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
     instrumentedCode.add(
       new DexInstruction_Invoke(
         methodCode,
-        DexClassType.parse("Ljava/lang/Object;", parsingCache),
+        DexType_Class.parse("Ljava/lang/Object;", parsingCache),
         "getClass",
         new DexPrototype(
-          DexClassType.parse("Ljava/lang/Class;", parsingCache),
+          DexType_Class.parse("Ljava/lang/Class;", parsingCache),
           null),
         Arrays.asList(new DexRegister[] { regDestObjectInstance } ),
         Opcode_Invoke.Virtual));
@@ -94,42 +94,42 @@ public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
       new DexInstruction_NewArray(methodCode,
                                   regMethodArgumentsArray,
                                   regMethodArgumentsCount,
-                                  DexArrayType.parse("[Ljava/lang/Class;", parsingCache)));
+                                  DexType_Array.parse("[Ljava/lang/Class;", parsingCache)));
     // load all the params
     int i = 0;
     for (val paramType : paramTypes) {
       // load the index
       instrumentedCode.add(new DexInstruction_Const(methodCode, regMethodArgumentsIndex, i++));
       // load the param type Class object
-      if (paramType instanceof DexPrimitiveType) {
-        val primitiveTypeClassField = ((DexPrimitiveType) paramType).getPrimitiveClassConstantField(parsingCache);
+      if (paramType instanceof DexType_Primitive) {
+        val primitiveTypeClassField = ((DexType_Primitive) paramType).getPrimitiveClassConstantField(parsingCache);
         instrumentedCode.add(
           new DexInstruction_StaticGet(
             methodCode,
             regMethodParamType,
             primitiveTypeClassField.getValA(),
-            DexClassType.parse("Ljava/lang/Class;", parsingCache),
+            DexType_Class.parse("Ljava/lang/Class;", parsingCache),
             primitiveTypeClassField.getValB(),
             Opcode_GetPut.Object));
       } else
-        instrumentedCode.add(new DexInstruction_ConstClass(methodCode, regMethodParamType, (DexReferenceType) paramType));
+        instrumentedCode.add(new DexInstruction_ConstClass(methodCode, regMethodParamType, (DexType_Reference) paramType));
       // store it in the array
       instrumentedCode.add(new DexInstruction_ArrayPut(methodCode, regMethodParamType, regMethodArgumentsArray, regMethodArgumentsIndex, Opcode_GetPut.Object));
     }
     // find the method
-    val classType = DexClassType.parse("Ljava/lang/Class;", parsingCache);
+    val classType = DexType_Class.parse("Ljava/lang/Class;", parsingCache);
     val getMethodPrototype = new DexPrototype(
-      DexClassType.parse("Ljava/lang/reflect/Method;", parsingCache),
-      Arrays.asList(new DexRegisterType[] {
-                      DexClassType.parse("Ljava/lang/String;", parsingCache),
-                      DexArrayType.parse("[Ljava/lang/Class;", parsingCache)
+      DexType_Class.parse("Ljava/lang/reflect/Method;", parsingCache),
+      Arrays.asList(new DexType_Register[] {
+                      DexType_Class.parse("Ljava/lang/String;", parsingCache),
+                      DexType_Array.parse("[Ljava/lang/Class;", parsingCache)
                     }));
     if (classHierarchy.isMethodPublic(invokedClass, invokedMethodName, invokedMethodPrototype)) {
       val getMethodParams = Arrays.asList(new DexRegister[] { regDestObjectClass, regMethodName, regMethodArgumentsArray } );
       instrumentedCode.add(new DexInstruction_Invoke(methodCode, classType, "getMethod", getMethodPrototype, getMethodParams, Opcode_Invoke.Virtual));
       instrumentedCode.add(new DexInstruction_MoveResult(methodCode, regMethodObject, true));
     } else {
-      val catchBlock = new DexCatch(methodCode, DexClassType.parse("Ljava/lang/NoSuchMethodException;", parsingCache));
+      val catchBlock = new DexCatch(methodCode, DexType_Class.parse("Ljava/lang/NoSuchMethodException;", parsingCache));
       val tryStart = new DexTryBlockStart(methodCode);
       val tryEnd = new DexTryBlockEnd(methodCode, tryStart);
       val labelBefore = new DexLabel(methodCode);
@@ -158,12 +158,12 @@ public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
     instrumentedCode.add(
       new DexInstruction_Invoke(
         methodCode,
-        DexClassType.parse("Ljava/lang/reflect/Method;", parsingCache),
+        DexType_Class.parse("Ljava/lang/reflect/Method;", parsingCache),
         "getAnnotation",
         new DexPrototype(
-          DexClassType.parse("Ljava/lang/annotation/Annotation;", parsingCache),
-          Arrays.asList(new DexRegisterType[] {
-                          DexClassType.parse("Ljava/lang/Class;", parsingCache)
+          DexType_Class.parse("Ljava/lang/annotation/Annotation;", parsingCache),
+          Arrays.asList(new DexType_Register[] {
+                          DexType_Class.parse("Ljava/lang/Class;", parsingCache)
                         })),
         Arrays.asList(new DexRegister[] { regMethodObject, regInternalAnnotationClass } ),
         Opcode_Invoke.Virtual));

@@ -17,20 +17,20 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Primitive;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_StaticPutWide extends DexInstruction {
 
   @Getter private final DexRegister regFrom1;
   @Getter private final DexRegister regFrom2;
-  @Getter private final DexClassType fieldClass;
-  @Getter private final DexRegisterType fieldType;
+  @Getter private final DexType_Class fieldClass;
+  @Getter private final DexType_Register fieldType;
   @Getter private final String fieldName;
 
-  public DexInstruction_StaticPutWide(DexCode methodCode, DexRegister from1, DexRegister from2, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
+  public DexInstruction_StaticPutWide(DexCode methodCode, DexRegister from1, DexRegister from2, DexType_Class fieldClass, DexType_Register fieldType, String fieldName) {
     super(methodCode);
 
     this.regFrom1 = from1;
@@ -66,10 +66,10 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
       val refItem = (FieldIdItem) insnStaticPut.getReferencedItem();
       regFrom1 = parsingState.getRegister(insnStaticPut.getRegisterA());
       regFrom2 = parsingState.getRegister(insnStaticPut.getRegisterA() + 1);
-      fieldClass = DexClassType.parse(
+      fieldClass = DexType_Class.parse(
                      refItem.getContainingClass().getTypeDescriptor(),
                      parsingState.getCache());
-      fieldType = DexRegisterType.parse(
+      fieldType = DexType_Register.parse(
                     refItem.getFieldType().getTypeDescriptor(),
                     parsingState.getCache());
       fieldName = refItem.getFieldName().getStringValue();
@@ -93,32 +93,32 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) {
-    val code = getMethodCode();
-    val classHierarchy = getParentFile().getClassHierarchy();
-
-    val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
-
-    if (fieldDeclaringClass.isDefinedInternally()) {
-      // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
-      // store the taint to the taint field
-      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
-      code.replace(this,
-                   new DexCodeElement[] {
-                     this,
-                     new DexInstruction_StaticPut(code, state.getTaintRegister(regFrom1), state.getCache().getTaintField(field)),
-                   });
-
-    } else
-      // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
-      // store the taint to the adjoined field in special global class
-      code.replace(this,
-                   new DexCodeElement[] {
-                     this,
-                     new DexInstruction_StaticPut(
-                       code,
-                       state.getTaintRegister(regFrom1),
-                       state.getCache().getTaintField_ExternalStatic(fieldClass, (DexPrimitiveType) fieldType, fieldName))
-                   });
+//    val code = getMethodCode();
+//    val classHierarchy = getParentFile().getClassHierarchy();
+//
+//    val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
+//
+//    if (fieldDeclaringClass.isDefinedInternally()) {
+//      // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
+//      // store the taint to the taint field
+//      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
+//      code.replace(this,
+//                   new DexCodeElement[] {
+//                     this,
+//                     new DexInstruction_StaticPut(code, state.getTaintRegister(regFrom1), state.getCache().getTaintField(field)),
+//                   });
+//
+//    } else
+//      // FIELD OF PRIMITIVE TYPE DEFINED EXTERNALLY
+//      // store the taint to the adjoined field in special global class
+//      code.replace(this,
+//                   new DexCodeElement[] {
+//                     this,
+//                     new DexInstruction_StaticPut(
+//                       code,
+//                       state.getTaintRegister(regFrom1),
+//                       state.getCache().getTaintField_ExternalStatic(fieldClass, (DexType_Primitive) fieldType, fieldName))
+//                   });
   }
 
   @Override
@@ -127,7 +127,7 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
   }
   
   @Override
-  protected DexClassType[] throwsExceptions() {
+  protected DexType_Class[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error;
   }
   

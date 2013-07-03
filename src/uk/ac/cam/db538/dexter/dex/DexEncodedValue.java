@@ -15,8 +15,8 @@ import org.jf.dexlib.EncodedValue.StringEncodedValue;
 import org.jf.dexlib.EncodedValue.TypeEncodedValue;
 
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 
 public class DexEncodedValue {
@@ -54,23 +54,23 @@ public class DexEncodedValue {
 	      val enumValue = (EnumEncodedValue) value;
 	      return new EnumEncodedValue(
 	               asmCache.getField(
-	                 DexClassType.parse(enumValue.value.getContainingClass().getTypeDescriptor(), parsingCache),
-	                 DexRegisterType.parse(enumValue.value.getFieldType().getTypeDescriptor(), parsingCache),
+	                 DexType_Class.parse(enumValue.value.getContainingClass().getTypeDescriptor(), parsingCache),
+	                 DexType_Register.parse(enumValue.value.getFieldType().getTypeDescriptor(), parsingCache),
 	                 enumValue.value.getFieldName().getStringValue()));
 	
 	    case VALUE_FIELD:
 	      val fieldValue = (FieldEncodedValue) value;
 	      return new FieldEncodedValue(
 	               asmCache.getField(
-	                 DexClassType.parse(fieldValue.value.getContainingClass().getTypeDescriptor(), parsingCache),
-	                 DexRegisterType.parse(fieldValue.value.getFieldType().getTypeDescriptor(), parsingCache),
+	                 DexType_Class.parse(fieldValue.value.getContainingClass().getTypeDescriptor(), parsingCache),
+	                 DexType_Register.parse(fieldValue.value.getFieldType().getTypeDescriptor(), parsingCache),
 	                 fieldValue.value.getFieldName().getStringValue()));
 	
 	    case VALUE_METHOD:
 	      val methodValue = (MethodEncodedValue) value;
 	      return new MethodEncodedValue(
 	               asmCache.getMethod(
-	                 DexClassType.parse(methodValue.value.getContainingClass().getTypeDescriptor(), parsingCache),
+	                 DexType_Class.parse(methodValue.value.getContainingClass().getTypeDescriptor(), parsingCache),
 	                 new DexPrototype(methodValue.value.getPrototype(), parsingCache),
 	                 methodValue.value.getMethodName().getStringValue()));
 	

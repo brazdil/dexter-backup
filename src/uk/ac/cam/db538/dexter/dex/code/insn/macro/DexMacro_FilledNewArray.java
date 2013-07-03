@@ -15,7 +15,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Primitive;
 
 public class DexMacro_FilledNewArray extends DexMacro {
 
@@ -46,7 +46,7 @@ public class DexMacro_FilledNewArray extends DexMacro {
     boolean first = true;
 
     val regCombinedTaint = new DexRegister();
-    if (instructionFilledNewArray.getArrayType().getElementType() instanceof DexPrimitiveType) {
+    if (instructionFilledNewArray.getArrayType().getElementType() instanceof DexType_Primitive) {
       for (val regArg : instructionFilledNewArray.getArgumentRegisters()) {
         if (first) {
           first = false;

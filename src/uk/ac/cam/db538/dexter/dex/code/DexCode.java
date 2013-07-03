@@ -23,7 +23,6 @@ import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.InstrumentationException;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeStart;
@@ -100,9 +99,10 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Primitive;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -130,19 +130,19 @@ public class DexCode {
     instructionList.add(startingLabel);
   }
 
-  public DexCode(CodeItem methodInfo, DexMethodWithCode parentMethod, DexParsingCache cache) {
+  public DexCode(CodeItem methodInfo, DexMethodWithCode parentMethod, DexTypeCache cache) {
     this(parentMethod);
     parsingInfo = new DexCode_ParsingState(cache, this);
     parseInstructions(methodInfo.getInstructions(), methodInfo.getHandlers(), methodInfo.getTries(), parsingInfo);
   }
 
-  public DexCode(CodeItem methodInfo, DexParsingCache cache) {
+  public DexCode(CodeItem methodInfo, DexTypeCache cache) {
     this(methodInfo, null, cache);
   }
 
   // called internally and from tests
   // should not be called directly in real life
-  DexCode(Instruction[] instructions, DexParsingCache cache) {
+  DexCode(Instruction[] instructions, DexTypeCache cache) {
     this();
     parsingInfo = new DexCode_ParsingState(cache, this);
     parseInstructions(instructions, null, null, parsingInfo);
@@ -464,7 +464,7 @@ public class DexCode {
     val addedCode = new NoDuplicatesList<DexCodeElement>();
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
-    val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
+    val semaphoreClass = DexType_Class.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
     boolean hasPrimitiveArgument = parentMethod.getPrototype().hasPrimitiveArgument();
     boolean staticMethod = parentMethod.isStatic();
     boolean constructorMethod = parentMethod.isConstructor();
@@ -530,7 +530,7 @@ public class DexCode {
       int paramRegIndex = staticMethod ? 0 : 1;
       int paramTaintArrayIndex = 0;
       for (val paramType : parentMethod.getPrototype().getParameterTypes()) {
-        if (paramType instanceof DexPrimitiveType) {
+        if (paramType instanceof DexType_Primitive) {
           // for primitives, put the taint information in their respective taint registers
           val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
           val regTaintParamMapping = instrumentationState.getTaintRegister(regParamMapping);
@@ -599,7 +599,7 @@ public class DexCode {
       int paramRegIndex = 1;
       for (val paramType : parentMethod.getPrototype().getParameterTypes()) {
         // assign the taint information of 'this' object to all the params
-        if (paramType instanceof DexPrimitiveType) {
+        if (paramType instanceof DexType_Primitive) {
           val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
           val regTaintParamMapping = instrumentationState.getTaintRegister(regParamMapping);
           addedCode.add(new DexInstruction_Move(this, regTaintParamMapping, regThisTaint, false));

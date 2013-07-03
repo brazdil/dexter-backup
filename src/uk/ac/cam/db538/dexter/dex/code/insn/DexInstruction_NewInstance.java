@@ -14,15 +14,15 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_NewInstance extends DexInstruction {
 
   @Getter private final DexRegister regTo;
-  @Getter private final DexClassType value;
+  @Getter private final DexType_Class value;
 
-  public DexInstruction_NewInstance(DexCode methodCode, DexRegister to, DexClassType value) {
+  public DexInstruction_NewInstance(DexCode methodCode, DexRegister to, DexType_Class value) {
     super(methodCode);
 
     this.regTo = to;
@@ -36,7 +36,7 @@ public class DexInstruction_NewInstance extends DexInstruction {
 
       val insnNewInstance = (Instruction21c) insn;
       regTo = parsingState.getRegister(insnNewInstance.getRegisterA());
-      value = DexClassType.parse(
+      value = DexType_Class.parse(
                 ((TypeIdItem) insnNewInstance.getReferencedItem()).getTypeDescriptor(),
                 parsingState.getCache());
 
@@ -63,7 +63,7 @@ public class DexInstruction_NewInstance extends DexInstruction {
   }
   
   @Override
-  protected DexClassType[] throwsExceptions() {
+  protected DexType_Class[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error;
   }
   

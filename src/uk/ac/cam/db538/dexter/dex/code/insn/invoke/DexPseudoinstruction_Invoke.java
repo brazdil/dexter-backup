@@ -30,10 +30,10 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalMethodAnno
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
-import uk.ac.cam.db538.dexter.dex.type.DexVoid;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Primitive;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Void;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class DexPseudoinstruction_Invoke extends DexMacro {
@@ -90,7 +90,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
     val methodCode = getMethodCode();
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
-    val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
+    val semaphoreClass = DexType_Class.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
     val callPrototype = instructionInvoke.getMethodPrototype();
 
     val hasPrimitiveArgument = callPrototype.hasPrimitiveArgument();
@@ -126,7 +126,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
       int arrayIndex = 0;
       int paramIndex = instructionInvoke.isStaticCall() ? 0 : 1;
       for (val paramType : callPrototype.getParameterTypes()) {
-        if (paramType instanceof DexPrimitiveType) {
+        if (paramType instanceof DexType_Primitive) {
           codePreInternalCall.add(new DexInstruction_Const(methodCode, regIndex, arrayIndex));
           codePreInternalCall.add(new DexInstruction_ArrayPut(
                                     methodCode,
@@ -152,7 +152,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
 
     val codePostInternalCall = new NoDuplicatesList<DexCodeElement>();
 
-    if (callPrototype.getReturnType() instanceof DexPrimitiveType) {
+    if (callPrototype.getReturnType() instanceof DexType_Primitive) {
       val regResSemaphore = new DexRegister();
 
       if (movesResult()) {
@@ -180,9 +180,9 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
       codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regResSemaphore, dex.getMethodCallHelper_SRes()));
       codePostInternalCall.add(new DexInstruction_Invoke(
                                  methodCode,
-                                 (DexClassType) dex.getMethodCallHelper_SRes().getType(),
+                                 (DexType_Class) dex.getMethodCallHelper_SRes().getType(),
                                  "release",
-                                 new DexPrototype(DexVoid.parse("V", null), null),
+                                 new DexPrototype(DexType_Void.parse("V", null), null),
                                  Arrays.asList(regResSemaphore),
                                  Opcode_Invoke.Virtual));
     } else {

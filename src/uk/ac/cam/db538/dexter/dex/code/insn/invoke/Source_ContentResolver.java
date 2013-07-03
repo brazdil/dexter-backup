@@ -12,7 +12,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetQueryTaint;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -56,7 +56,7 @@ public class Source_ContentResolver extends FallbackInstrumentor {
       return false;
 
     if (!classHierarchy.isAncestor(insnInvoke.getClassType(),
-                                   DexClassType.parse("Landroid/content/ContentResolver;", parsingCache)))
+                                   DexType_Class.parse("Landroid/content/ContentResolver;", parsingCache)))
       return false;
 
     if (!fitsAPI1(insnInvoke.getMethodPrototype()) && !fitsAPI16(insnInvoke.getMethodPrototype()))
