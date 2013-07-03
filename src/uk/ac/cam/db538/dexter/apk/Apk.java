@@ -45,8 +45,8 @@ public class Apk {
         val jar = new JarFile(file);
         if (jar.getJarEntry("classes.dex") != null)
           new Dex(file, false, this);
-        else
-          classHierarchy.addAllClassesFromJAR(file, parsingCache);
+//        else
+//          classHierarchy.addAllClassesFromJAR(file, parsingCache);
         jar.close();
       }
     }

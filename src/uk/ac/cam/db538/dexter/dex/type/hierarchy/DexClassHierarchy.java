@@ -1,27 +1,18 @@
 package uk.ac.cam.db538.dexter.dex.type.hierarchy;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
-import org.apache.bcel.classfile.Annotations;
-import org.apache.bcel.classfile.ClassParser;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
@@ -110,53 +101,53 @@ public class DexClassHierarchy {
     classes.get(clazz).annotations.add(anno);
   }
 
-  private String createDescriptor(String desc) {
-    return "L" + desc.replace(".", "/") + ";";
-  }
-
-  public void addAllClassesFromJAR(File file, DexParsingCache cache) throws IOException {
-    System.out.println("Loading " + file.getPath());
-    val jarFile = new JarFile(file);
-    try {
-      for (Enumeration<JarEntry> jarEntryEnum = jarFile.entries(); jarEntryEnum.hasMoreElements();) {
-        val jarEntry = jarEntryEnum.nextElement();
-
-        if (!jarEntry.isDirectory() && jarEntry.getName().endsWith(".class")) {
-
-          val jarClass = new ClassParser(jarFile.getInputStream(jarEntry), jarEntry.getName()).parse();
-
-          val setInterfaces = new HashSet<DexClassType>();
-          for (val i : jarClass.getInterfaceNames())
-            setInterfaces.add(DexClassType.parse(createDescriptor(i), cache));
-
-          val setAnnotations = new HashSet<DexAnnotation>();
-          for (val attr : jarClass.getAttributes())
-            if (attr instanceof Annotations)
-              for (val anno : ((Annotations) attr).getAnnotationEntries())
-                setAnnotations.add(new DexAnnotation(anno, cache));
-
-          val classType = DexClassType.parse(createDescriptor(jarClass.getClassName()), cache);
-
-          addMember(
-            classType,
-            DexClassType.parse(createDescriptor(jarClass.getSuperclassName()), cache),
-            setInterfaces,
-            setAnnotations,
-            jarClass.isInterface()
-          );
-
-          for (val method : jarClass.getMethods())
-            if (!method.isAbstract())
-              addImplementedMethod(classType, method.getName(), new DexPrototype(method.getSignature(), cache), method.isPrivate(), method.isNative(), method.isPublic());
-
-          for (val field : jarClass.getFields())
-            addDeclaredField(classType, field.getName(), DexRegisterType.parse(field.getSignature(), cache), field.isStatic(), field.isPrivate());
-        }
-      }
-    } finally {
-      jarFile.close();
-    }
-  }
+//  private String createDescriptor(String desc) {
+//    return "L" + desc.replace(".", "/") + ";";
+//  }
+//
+//  public void addAllClassesFromJAR(File file, DexParsingCache cache) throws IOException {
+//    System.out.println("Loading " + file.getPath());
+//    val jarFile = new JarFile(file);
+//    try {
+//      for (Enumeration<JarEntry> jarEntryEnum = jarFile.entries(); jarEntryEnum.hasMoreElements();) {
+//        val jarEntry = jarEntryEnum.nextElement();
+//
+//        if (!jarEntry.isDirectory() && jarEntry.getName().endsWith(".class")) {
+//
+//          val jarClass = new ClassParser(jarFile.getInputStream(jarEntry), jarEntry.getName()).parse();
+//
+//          val setInterfaces = new HashSet<DexClassType>();
+//          for (val i : jarClass.getInterfaceNames())
+//            setInterfaces.add(DexClassType.parse(createDescriptor(i), cache));
+//
+//          val setAnnotations = new HashSet<DexAnnotation>();
+//          for (val attr : jarClass.getAttributes())
+//            if (attr instanceof Annotations)
+//              for (val anno : ((Annotations) attr).getAnnotationEntries())
+//                setAnnotations.add(new DexAnnotation(anno, cache));
+//
+//          val classType = DexClassType.parse(createDescriptor(jarClass.getClassName()), cache);
+//
+//          addMember(
+//            classType,
+//            DexClassType.parse(createDescriptor(jarClass.getSuperclassName()), cache),
+//            setInterfaces,
+//            setAnnotations,
+//            jarClass.isInterface()
+//          );
+//
+//          for (val method : jarClass.getMethods())
+//            if (!method.isAbstract())
+//              addImplementedMethod(classType, method.getName(), new DexPrototype(method.getSignature(), cache), method.isPrivate(), method.isNative(), method.isPublic());
+//
+//          for (val field : jarClass.getFields())
+//            addDeclaredField(classType, field.getName(), DexRegisterType.parse(field.getSignature(), cache), field.isStatic(), field.isPrivate());
+//        }
+//      }
+//    } finally {
+//      jarFile.close();
+//    }
+//  }
 
   public DexClassType getSuperclassType(DexClassType clazz) {
     if (classes.get(clazz) == null) {
