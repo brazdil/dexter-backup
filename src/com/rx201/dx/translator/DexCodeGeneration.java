@@ -338,7 +338,7 @@ public class DexCodeGeneration {
         }
 	}
 
-	private SimpleRopMethod createRopMethod(
+	private RopMethod createRopMethod(
 			HashMap<AnalyzedDexInstruction, ArrayList<Insn>> translatedBasicBlocks,
 			HashMap<AnalyzedDexInstruction, DexConvertedResult> translatedBasicBlocksInfo) {
 		
@@ -380,7 +380,7 @@ public class DexCodeGeneration {
         }
 
 
-        return new SimpleRopMethod(ropBasicBlocks, analyzer.getStartOfMethod().getOnlySuccesor().getInstructionIndex());
+        return new RopMethod(ropBasicBlocks, analyzer.getStartOfMethod().getOnlySuccesor().getInstructionIndex());
 	}
 
 	private boolean endsBasicBlock(AnalyzedDexInstruction current) {
