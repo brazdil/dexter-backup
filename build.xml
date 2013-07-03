@@ -18,7 +18,7 @@
 	<property name="jar.dir"           value="${build.dir}/jar"/>
 	<property name="dex.dir"           value="${build.dir}/example_dex"/>
 	<property name="lib.dir"           value="lib"/>
-	<property name="main-class"        value="uk.ac.cam.db538.dexter.gui.MainWindow"/>
+	<property name="main-class"        value="uk.ac.cam.db538.dexter.MainConsole"/>
 	<property name="merges.pkg"        value="uk/ac/cam/db538/dexter/merge"/>
 	<property name="merges-build.dir"  value="${build.dir}/merges"/>
 
@@ -33,7 +33,7 @@
 
 	<target name="compile" depends="compile-examples,compile-merges">
 		<mkdir dir="${classes.dir}"/>
-		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="yes" includeantruntime="false"/>
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="yes" includeantruntime="false"  target="1.6" source="1.6"/>
 
 		<copy todir="${classes.dir}">
 			<fileset dir="${src.dir}" excludes="**/*.java" />
