@@ -105,7 +105,6 @@ public class PackageDetailFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     Apk dexterApk;
-                    DexFile dx = new DexFile();
                     try {
                         dexterApk = new Apk(PackageDetailFragment.this.packageFile,
                                             new File("/system/framework/"));
@@ -113,6 +112,8 @@ public class PackageDetailFragment extends Fragment {
                         // TODO: show error message
                         throw new RuntimeException(ex);
                     }
+
+                    dexterApk.getDexFile().instrument(false);
                 }
             });
         }
