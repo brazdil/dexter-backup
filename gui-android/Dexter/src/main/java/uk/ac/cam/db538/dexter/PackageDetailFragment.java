@@ -1,5 +1,8 @@
 package uk.ac.cam.db538.dexter;
 
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -30,6 +33,7 @@ import uk.ac.cam.db538.dexter.apk.Apk;
  */
 public class PackageDetailFragment extends Fragment {
 
+    private ActivityManager activityManager;
     private PackageManager packageManager;
 
     private PackageInfo packageInfo;
@@ -49,7 +53,9 @@ public class PackageDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        packageManager = this.getActivity().getPackageManager();
+        Activity activity = this.getActivity();
+        activityManager = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+        packageManager = activity.getPackageManager();
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             String packageName = getArguments().getString(ARG_ITEM_ID);
@@ -104,6 +110,12 @@ public class PackageDetailFragment extends Fragment {
             btnInstrument.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+
+                    System.out.println("Heap size: " +
+                        PackageDetailFragment.this.activityManager.getMemoryClass());
+                    System.out.println("Large heap size: " +
+                            PackageDetailFragment.this.activityManager.getLargeMemoryClass());
+
                     Apk dexterApk;
                     try {
                         dexterApk = new Apk(PackageDetailFragment.this.packageFile,
