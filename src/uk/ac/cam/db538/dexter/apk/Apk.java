@@ -3,8 +3,12 @@ package uk.ac.cam.db538.dexter.apk;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.jar.JarFile;
 
@@ -19,8 +23,6 @@ import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
-
-import com.alee.utils.FileUtils;
 
 public class Apk {
 
@@ -51,7 +53,7 @@ public class Apk {
     classHierarchy.checkConsistency();
 
     this.temporaryFilename = File.createTempFile("dexter-", ".apk");
-    FileUtils.copyFile(filename, this.temporaryFilename);
+    copyFile(filename, this.temporaryFilename);
   }
 
   public void writeToFile(File filename) throws IOException {
@@ -60,7 +62,7 @@ public class Apk {
     final byte[] newDex = dexFile.writeToFile();
 
     val fileCopy = File.createTempFile("dexter-", ".apk");
-    FileUtils.copyFile(this.temporaryFilename, fileCopy);
+    copyFile(this.temporaryFilename, fileCopy);
     ZipFile originalFile;
     try {
       originalFile = new ZipFile(fileCopy);
@@ -157,6 +159,18 @@ public class Apk {
     // copy the temp file to the given location
     System.out.println("fileCopy = " + fileCopy.getAbsolutePath());
     System.out.println("filename = " + filename.getAbsolutePath());
-    FileUtils.copyFile(fileCopy, filename);
+    copyFile(fileCopy, filename);
+  }
+  
+  private static void copyFile(File src, File dest) throws IOException {
+	  InputStream in = new FileInputStream(src);
+	  OutputStream out = new FileOutputStream(dest);
+	  byte[] buf = new byte[1024];
+	  int len;
+	  while ((len = in.read(buf)) > 0) {
+	     out.write(buf, 0, len);
+	  }
+	  in.close();
+	  out.close(); 	  
   }
 }

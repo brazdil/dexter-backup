@@ -7,10 +7,9 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 
-import lombok.val;
-
 import org.jf.dexlib.Util.AccessFlags;
 
+import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
@@ -76,7 +75,7 @@ public class MethodPanel extends InfoPanel {
 
     // create access flag checkboxes
     this.addRow(new WebLabel("Access flags:"), createAccessFlagCheckboxes(AccessFlags.getAccessFlagsForMethod(-1)), true);
-
+    
     // create group panel for method code
     panelInstructions = new GroupPanel();
     panelInstructions.setLayout(new BoxLayout(panelInstructions, BoxLayout.Y_AXIS));

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="lib" path="lib/WebLookAndFeel-1.4-dev.jar"/>
+	<classpathentry kind="lib" path="lib/zeus-jscl-1.70.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/dexter"/>
+	<classpathentry kind="lib" path="/dexter/lib/smali-1.4.2.jar" sourcepath="/dexter/C:/Users/rx201/projects/TaintAPK/smali/dexlib/src/main/java"/>
+	<classpathentry kind="lib" path="/dexter/lib/lombok.jar"/>
+	<classpathentry kind="lib" path="/dexter/lib/junit-4.11.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

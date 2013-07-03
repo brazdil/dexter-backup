@@ -1,30 +1,17 @@
 package uk.ac.cam.db538.dexter;
 
-import uk.ac.cam.db538.dexter.apk.Apk;
-import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
-
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.jar.JarFile;
 
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.model.FileHeader;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.util.Zip4jConstants;
+import lombok.val;
 
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Code.Analysis.ClassPath;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
-import com.alee.utils.FileUtils;
-
-import lombok.val;
+import uk.ac.cam.db538.dexter.apk.Apk;
 
 public class MainConsole {
 	private static void dumpAnnotation(File apkFile) {
@@ -42,23 +29,23 @@ public class MainConsole {
 		}
 	}
 	    
-  private static void writeToJar(Apk apk, File targetFile) {
-		final byte[] newDex = apk.getDexFile().writeToFile();
-
-		System.out.println("Creating JAR");
-		try {
-			targetFile.delete();
-			ZipFile jarFile = new ZipFile(targetFile);
-			
-			ZipParameters parameters = new ZipParameters();
-			parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
-			parameters.setFileNameInZip("classes.dex");
-			parameters.setSourceExternalStream(true);
-
-			jarFile.addStream(new ByteArrayInputStream(newDex), parameters);
-		} catch (ZipException e) {
-		}
-  }
+//  private static void writeToJar(Apk apk, File targetFile) {
+//		final byte[] newDex = apk.getDexFile().writeToFile();
+//
+//		System.out.println("Creating JAR");
+//		try {
+//			targetFile.delete();
+//			ZipFile jarFile = new ZipFile(targetFile);
+//			
+//			ZipParameters parameters = new ZipParameters();
+//			parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
+//			parameters.setFileNameInZip("classes.dex");
+//			parameters.setSourceExternalStream(true);
+//
+//			jarFile.addStream(new ByteArrayInputStream(newDex), parameters);
+//		} catch (ZipException e) {
+//		}
+//  }
   
   public static void main(String[] args) throws IOException {
     if (args.length != 2) {
