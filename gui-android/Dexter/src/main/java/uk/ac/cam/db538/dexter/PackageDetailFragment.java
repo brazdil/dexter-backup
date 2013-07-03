@@ -13,9 +13,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.jf.dexlib.DexFile;
+
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
+
+import uk.ac.cam.db538.dexter.apk.Apk;
 
 /**
  * A fragment representing a single Package detail screen.
@@ -95,6 +100,21 @@ public class PackageDetailFragment extends Fragment {
             textLastUpdated.setText(lastUpdated);
             textApkPath.setText(packageInfo.applicationInfo.sourceDir);
             textApkSize.setText(apkSize);
+
+            btnInstrument.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Apk dexterApk;
+                    DexFile dx = new DexFile();
+                    try {
+                        dexterApk = new Apk(PackageDetailFragment.this.packageFile,
+                                            new File("/system/framework/"));
+                    } catch (IOException ex) {
+                        // TODO: show error message
+                        throw new RuntimeException(ex);
+                    }
+                }
+            });
         }
 
         return rootView;
