@@ -36,22 +36,23 @@ import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexAbstractMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexVirtualMethod;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
 
 public class DexClass {
 
   @Getter private final Dex parentFile;
-  @Getter private final DexClassType type;
+  @Getter private final DexType_Class type;
   private final Set<AccessFlags> accessFlagSet;
   protected final Set<DexField> fields;
   protected final Set<DexMethod> methods;
   @Getter private final String sourceFile;
   private final Map<DexField, EncodedValue> staticInitializer;
   
-  public DexClass(Dex parent, DexClassType type, DexClassType superType,
+  public DexClass(Dex parent, DexType_Class type, DexType_Class superType,
                   Set<AccessFlags> accessFlags, Set<DexField> fields,
-                  Set<DexClassType> interfaces,
+                  Set<DexType_Class> interfaces,
                   Set<DexAnnotation> annotations, String sourceFile,
                   boolean isInternal) {
     this.parentFile = parent;
@@ -62,7 +63,7 @@ public class DexClass {
     this.sourceFile = sourceFile;
     this.staticInitializer = new HashMap<DexField, EncodedValue>();
     
-    this.type.setDefinedInternally(isInternal);
+    // this.type.setDefinedInternally(isInternal);
     this.parentFile.getClassHierarchy().addMember(
       this.type,
       superType,
@@ -88,8 +89,8 @@ public class DexClass {
 
   public DexClass(Dex parent, ClassDefItem clsInfo, boolean isInternal) {
     this(parent,
-         DexClassType.parse(clsInfo.getClassType().getTypeDescriptor(), parent.getParsingCache()),
-         DexClassType.parse(getSuperclassTypeDesc(clsInfo.getClassType(), clsInfo.getSuperclass()), parent.getParsingCache()),
+         DexType_Class.parse(clsInfo.getClassType().getTypeDescriptor(), parent.getParsingCache()),
+         DexType_Class.parse(getSuperclassTypeDesc(clsInfo.getClassType(), clsInfo.getSuperclass()), parent.getParsingCache()),
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForClass(clsInfo.getAccessFlags())),
          null,
          parseTypeList(clsInfo.getInterfaces(), parent.getParsingCache()),
@@ -167,17 +168,17 @@ public class DexClass {
 	    return null;
 	  }
 
-  private static Set<DexClassType> parseTypeList(TypeListItem list, DexParsingCache cache) {
-    val set = new HashSet<DexClassType>();
+  private static Set<DexType_Class> parseTypeList(TypeListItem list, DexTypeCache cache) {
+    val set = new HashSet<DexType_Class>();
 
     if (list != null)
       for (val elem : list.getTypes())
-        set.add(DexClassType.parse(elem.getTypeDescriptor(), cache));
+        set.add(DexType_Class.parse(elem.getTypeDescriptor(), cache));
 
     return set;
   }
 
-  private static Set<DexAnnotation> parseAnnotations(AnnotationDirectoryItem annotations, DexParsingCache cache) {
+  private static Set<DexAnnotation> parseAnnotations(AnnotationDirectoryItem annotations, DexTypeCache cache) {
     if (annotations == null)
       return Collections.emptySet();
     else
@@ -196,11 +197,11 @@ public class DexClass {
     return Collections.unmodifiableSet(methods);
   }
 
-  public DexClassType getSuperclassType() {
+  public DexType_Class getSuperclassType() {
     return parentFile.getClassHierarchy().getSuperclassType(type);
   }
 
-  public Set<DexClassType> getInterfaces() {
+  public Set<DexType_Class> getInterfaces() {
     return parentFile.getClassHierarchy().getInterfaces(type);
   }
 
@@ -257,7 +258,7 @@ public class DexClass {
     val asmAccessFlags = DexUtils.assembleAccessFlags(accessFlagSet);
     val asmInterfaces = (interfaces.isEmpty())
                         ? null
-                        : cache.getTypeList(new ArrayList<DexRegisterType>(interfaces));
+                        : cache.getTypeList(new ArrayList<DexType_Register>(interfaces));
     val asmSourceFile = (sourceFile == null)
                         ? null
                         : cache.getStringConstant(sourceFile);

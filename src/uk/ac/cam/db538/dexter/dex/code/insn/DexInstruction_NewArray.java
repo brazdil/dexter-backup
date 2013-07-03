@@ -14,17 +14,17 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Array;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_NewArray extends DexInstruction {
 
   @Getter private final DexRegister regTo;
   @Getter private final DexRegister regSize;
-  @Getter private final DexArrayType value;
+  @Getter private final DexType_Array value;
 
-  public DexInstruction_NewArray(DexCode methodCode, DexRegister to, DexRegister size, DexArrayType value) {
+  public DexInstruction_NewArray(DexCode methodCode, DexRegister to, DexRegister size, DexType_Array value) {
     super(methodCode);
 
     this.regTo = to;
@@ -40,7 +40,7 @@ public class DexInstruction_NewArray extends DexInstruction {
       val insnNewArray = (Instruction22c) insn;
       regTo = parsingState.getRegister(insnNewArray.getRegisterA());
       regSize = parsingState.getRegister(insnNewArray.getRegisterB());
-      value = DexArrayType.parse(
+      value = DexType_Array.parse(
                 ((TypeIdItem) insnNewArray.getReferencedItem()).getTypeDescriptor(),
                 parsingState.getCache());
 
@@ -73,7 +73,7 @@ public class DexInstruction_NewArray extends DexInstruction {
   }
   
   @Override
-  protected DexClassType[] throwsExceptions() {
+  protected DexType_Class[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error_NegativeArraySizeException;
   }
   

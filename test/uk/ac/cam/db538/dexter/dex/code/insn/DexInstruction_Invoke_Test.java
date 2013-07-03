@@ -18,13 +18,13 @@ import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.Utils;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 
 public class DexInstruction_Invoke_Test {
@@ -150,9 +150,9 @@ public class DexInstruction_Invoke_Test {
 
   @Test
   public void testCheckArguments_Static_Correct() {
-    val cache = new DexParsingCache();
-    val params = Arrays.asList(new DexRegisterType[] {
-                                 DexRegisterType.parse("J", cache)
+    val cache = new DexTypeCache();
+    val params = Arrays.asList(new DexType_Register[] {
+                                 DexType_Register.parse("J", cache)
                                });
     val regs = Arrays.asList(new DexRegister[] {
                                new DexRegister(),
@@ -160,7 +160,7 @@ public class DexInstruction_Invoke_Test {
                              });
 
     new DexInstruction_Invoke(new DexCode(),
-                              DexClassType.parse("Lcom.test;", cache),
+                              DexType_Class.parse("Lcom.test;", cache),
                               "myMethod",
                               new DexPrototype(DexType.parse("V", cache), params),
                               regs,
@@ -169,9 +169,9 @@ public class DexInstruction_Invoke_Test {
 
   @Test(expected=InstructionArgumentException.class)
   public void testCheckArguments_Static_Incorrect() {
-    val cache = new DexParsingCache();
-    val params = Arrays.asList(new DexRegisterType[] {
-                                 DexRegisterType.parse("J", cache)
+    val cache = new DexTypeCache();
+    val params = Arrays.asList(new DexType_Register[] {
+                                 DexType_Register.parse("J", cache)
                                });
     val regs = Arrays.asList(new DexRegister[] {
                                new DexRegister(),
@@ -179,7 +179,7 @@ public class DexInstruction_Invoke_Test {
                              });
 
     new DexInstruction_Invoke(new DexCode(),
-                              DexClassType.parse("Lcom.test;", cache),
+                              DexType_Class.parse("Lcom.test;", cache),
                               "myMethod",
                               new DexPrototype(DexType.parse("V", cache), params),
                               regs,
@@ -188,9 +188,9 @@ public class DexInstruction_Invoke_Test {
 
   @Test
   public void testCheckArguments_Direct_Correct() {
-    val cache = new DexParsingCache();
-    val params = Arrays.asList(new DexRegisterType[] {
-                                 DexRegisterType.parse("J", cache)
+    val cache = new DexTypeCache();
+    val params = Arrays.asList(new DexType_Register[] {
+                                 DexType_Register.parse("J", cache)
                                });
     val regs = Arrays.asList(new DexRegister[] {
                                new DexRegister(),
@@ -199,7 +199,7 @@ public class DexInstruction_Invoke_Test {
                              });
 
     new DexInstruction_Invoke(new DexCode(),
-                              DexClassType.parse("Lcom.test;", cache),
+                              DexType_Class.parse("Lcom.test;", cache),
                               "myMethod",
                               new DexPrototype(DexType.parse("V", cache), params),
                               regs,
@@ -208,9 +208,9 @@ public class DexInstruction_Invoke_Test {
 
   @Test(expected=InstructionArgumentException.class)
   public void testCheckArguments_Direct_Incorrect() {
-    val cache = new DexParsingCache();
-    val params = Arrays.asList(new DexRegisterType[] {
-                                 DexRegisterType.parse("J", cache)
+    val cache = new DexTypeCache();
+    val params = Arrays.asList(new DexType_Register[] {
+                                 DexType_Register.parse("J", cache)
                                });
     val regs = Arrays.asList(new DexRegister[] {
                                new DexRegister(),
@@ -219,7 +219,7 @@ public class DexInstruction_Invoke_Test {
                              });
 
     new DexInstruction_Invoke(new DexCode(),
-                              DexClassType.parse("Lcom.test;", cache),
+                              DexType_Class.parse("Lcom.test;", cache),
                               "myMethod",
                               new DexPrototype(DexType.parse("V", cache), params),
                               regs,
@@ -228,20 +228,20 @@ public class DexInstruction_Invoke_Test {
 
   @Test(expected=InstructionArgumentException.class)
   public void testCheckArguments_TooManyArgRegs() {
-    val cache = new DexParsingCache();
+    val cache = new DexTypeCache();
 
     int paramCount = 256; // > 5
-    val params = new ArrayList<DexRegisterType>(paramCount);
+    val params = new ArrayList<DexType_Register>(paramCount);
     val r = new DexRegister[paramCount];
 
     for (int i = 0; i < paramCount; ++i) {
-      params.add(DexRegisterType.parse("I", cache));
+      params.add(DexType_Register.parse("I", cache));
       r[i] = new DexRegister();
     }
 
     new DexInstruction_Invoke(
       new DexCode(),
-      DexClassType.parse("Lcom.test;", cache),
+      DexType_Class.parse("Lcom.test;", cache),
       "myMethod",
       new DexPrototype(DexType.parse("V", cache), params),
       Arrays.asList(r),

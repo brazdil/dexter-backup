@@ -20,8 +20,8 @@ import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
 import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
 
 public class Apk {
@@ -30,11 +30,11 @@ public class Apk {
   @Getter private final File temporaryFilename;
 
   @Getter private final DexClassHierarchy classHierarchy;
-  @Getter private final DexParsingCache parsingCache;
+  @Getter private final DexTypeCache parsingCache;
 
   public Apk(File filename, File frameworkDir) throws IOException {
-    this.parsingCache = new DexParsingCache();
-    this.classHierarchy = new DexClassHierarchy(DexClassType.parse("Ljava/lang/Object;", parsingCache));
+    this.parsingCache = new DexTypeCache();
+    this.classHierarchy = new DexClassHierarchy(DexType_Class.parse("Ljava/lang/Object;", parsingCache));
 
     this.dexFile = new Dex(filename, true, this);
     for (val file : frameworkDir.listFiles()) {
