@@ -15,8 +15,8 @@ import org.jf.dexlib.AnnotationDirectoryItem.MethodAnnotation;
 import org.jf.dexlib.AnnotationDirectoryItem.ParameterAnnotation;
 import org.jf.dexlib.AnnotationItem;
 import org.jf.dexlib.AnnotationSetItem;
-import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.AnnotationSetRefList;
+import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
@@ -28,6 +28,7 @@ import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Triple;
@@ -60,7 +61,7 @@ public abstract class DexMethod {
     this(parent,
          methodInfo.method.getMethodName().getStringValue(),
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForMethod(methodInfo.accessFlags)),
-         new DexPrototype(methodInfo.method.getPrototype(), parent.getParentFile().getParsingCache()),
+         DexPrototype.parse(methodInfo.method.getPrototype(), parent.getParentFile().getParsingCache()),
          DexAnnotation.parseAll(encodedAnnotations, parent.getParentFile().getParsingCache()),
          DexAnnotation.parseAll(paramAnnotations, parent.getParentFile().getParsingCache()));
     parentMethod = methodInfo;

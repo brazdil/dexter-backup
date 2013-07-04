@@ -24,15 +24,16 @@ public class HierarchyBuilder {
 
 	private boolean foundRoot = false;
 	private final DexTypeCache typeCache;
-	private final Map<DexClassType, BaseClassInfo> definedClasses;
-	private final Map<BaseClassInfo, DexClassType> superclasses;
-	private final Map<ClassInfo, Set<DexClassType>> interfaces;
+	private final Map<DexClassType, BaseClassDefinition> definedClasses;
+	private final Map<BaseClassDefinition, DexClassType> superclasses;
+	private final Map<ClassDefinition, Set<DexClassType>> interfaces;
+	
 	
 	public HierarchyBuilder(DexTypeCache cache) {
 		typeCache = cache;
-		definedClasses = new HashMap<DexClassType, BaseClassInfo>();
-		superclasses = new HashMap<BaseClassInfo, DexClassType>();
-		interfaces = new HashMap<ClassInfo, Set<DexClassType>>();
+		definedClasses = new HashMap<DexClassType, BaseClassDefinition>();
+		superclasses = new HashMap<BaseClassDefinition, DexClassType>();
+		interfaces = new HashMap<ClassDefinition, Set<DexClassType>>();
 	}
 
 	public void scanDexFolder(File dir, HierarchyScanCallback callback) throws IOException {
@@ -99,20 +100,22 @@ public class HierarchyBuilder {
 		List<AccessFlags> listFlags = Arrays.asList(AccessFlags.getAccessFlagsForClass(cls.getAccessFlags()));
 		
 		// create ClassInfo instance and store
-		BaseClassInfo clsInfo;
+		BaseClassDefinition clsInfo;
 		if (listFlags.contains(AccessFlags.INTERFACE))
-			clsInfo = new InterfaceInfo(clsType, iFlags);
+			clsInfo = new InterfaceDefinition(clsType, iFlags);
 		else {
-			clsInfo = new ClassInfo(clsType, cls.getAccessFlags(), isRoot);
+			clsInfo = new ClassDefinition(clsType, cls.getAccessFlags(), isRoot);
 
 			// parse interfaces
 			if (cls.getInterfaces() != null) {
 				val ifaces = new HashSet<DexClassType>();
 				for (val ifaceTypeItem : cls.getInterfaces().getTypes())
 					ifaces.add(DexClassType.parse(ifaceTypeItem.getTypeDescriptor(), typeCache));
-				interfaces.put((ClassInfo) clsInfo, ifaces);
+				interfaces.put((ClassDefinition) clsInfo, ifaces);
 			}
 		}
+		
+		// examine methods
 		
 		// store data
 		definedClasses.put(clsType, clsInfo);
@@ -133,16 +136,16 @@ public class HierarchyBuilder {
 			}
 
 			// connect to interfaces
-			if (cls instanceof ClassInfo) {
-				val clsInfo = (ClassInfo) cls;
+			if (cls instanceof ClassDefinition) {
+				val clsInfo = (ClassDefinition) cls;
 				val ifaces = interfaces.get(clsInfo);
 				if (ifaces != null)
 					for (val ifaceType : ifaces) {
 						val ifaceInfo = definedClasses.get(ifaceType);
-						if (ifaceInfo == null || !(ifaceInfo instanceof InterfaceInfo))
+						if (ifaceInfo == null || !(ifaceInfo instanceof InterfaceDefinition))
 							throw new HierarchyException("Class " + cls.getClassType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
 						else
-							clsInfo.setImplementsInterface((InterfaceInfo) ifaceInfo);
+							clsInfo.setImplementsInterface((InterfaceDefinition) ifaceInfo);
 					}
 			}
 		}

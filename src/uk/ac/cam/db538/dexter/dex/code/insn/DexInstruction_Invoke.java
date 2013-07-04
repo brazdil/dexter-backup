@@ -18,8 +18,8 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
-import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 
 public class DexInstruction_Invoke extends DexInstruction {
@@ -96,7 +96,7 @@ public class DexInstruction_Invoke extends DexInstruction {
     classType = DexReferenceType.parse(methodInfo.getContainingClass().getTypeDescriptor(), parsingState.getCache());
 
     methodName = methodInfo.getMethodName().getStringValue();
-    methodPrototype = new DexPrototype(methodInfo.getPrototype(), cache);
+    methodPrototype = DexPrototype.parse(methodInfo.getPrototype(), cache);
 
     callType = Opcode_Invoke.convert(insn.opcode);
 

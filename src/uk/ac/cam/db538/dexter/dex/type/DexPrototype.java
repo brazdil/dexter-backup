@@ -1,6 +1,5 @@
-package uk.ac.cam.db538.dexter.dex.method;
+package uk.ac.cam.db538.dexter.dex.type;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -18,11 +17,6 @@ import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
@@ -36,20 +30,18 @@ public class DexPrototype {
     this.parameterTypes = (argTypes == null) ? new LinkedList<DexRegisterType>() : argTypes;
   }
 
-  public DexPrototype(ProtoIdItem protoItem, DexTypeCache cache) {
-    this(parseReturnType(protoItem.getReturnType(), cache),
-         parseArgumentTypes(protoItem.getParameters(), cache));
-  }
-
-  public DexPrototype(String signature, DexTypeCache cache) {
-    val leftBracket = signature.indexOf('(');
-    val rightBracket = signature.indexOf(')');
-
-    val returnStr = signature.substring(rightBracket + 1);
-    val paramStr = signature.substring(leftBracket + 1, rightBracket);
-
-    this.returnType = DexType.parse(returnStr, cache);
-    this.parameterTypes = parseRegisterTypeList(paramStr, cache);
+  public static DexPrototype parse(ProtoIdItem protoItem, DexTypeCache cache) {
+	  String desc = protoItem.getPrototypeString();
+	  System.out.println(desc);
+	  
+	  DexPrototype result = cache.getCachedPrototype(desc);
+	  if (result == null) {
+		  result = new DexPrototype(parseReturnType(protoItem.getReturnType(), cache),
+				  					parseArgumentTypes(protoItem.getParameters(), cache));
+		  cache.putCachedPrototype(desc, result);
+	  }
+	  
+	  return result;
   }
 
   public List<DexRegisterType> getParameterTypes() {
@@ -66,32 +58,6 @@ public class DexPrototype {
       for (val type : params.getTypes())
         list.add(DexRegisterType.parse(type.getTypeDescriptor(), cache));
     }
-    return list;
-  }
-
-  private static String getFirstTypeSubstring(String str) {
-    String result;
-    if (str.startsWith("L")) {
-      val semicolon = str.indexOf(';');
-      result = str.substring(0, semicolon + 1);
-    } else if (str.startsWith("[")) {
-      result = "[" + getFirstTypeSubstring(str.substring(1));
-    } else {
-      result = str.substring(0, 1);
-    }
-
-    return result;
-  }
-
-  private static List<DexRegisterType> parseRegisterTypeList(String str, DexTypeCache cache) {
-    val list = new ArrayList<DexRegisterType>();
-
-    while (!str.isEmpty()) {
-      val firstType = getFirstTypeSubstring(str);
-      str = str.substring(firstType.length());
-      list.add(DexRegisterType.parse(firstType, cache));
-    }
-
     return list;
   }
 
