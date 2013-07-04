@@ -23,9 +23,9 @@ import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class MainWindow_Test {
@@ -56,9 +56,9 @@ public class MainWindow_Test {
     val cache = new DexTypeCache();
     val dexFile = new Dex();
 
-    val cls11 = new DexClass(dexFile, DexType_Class.parse("Lcom.example1.a;", cache), null, null, null, null, null, null, true);
-    val cls12 = new DexClass(dexFile, DexType_Class.parse("Lcom.example1.b;", cache), null, null, null, null, null, null, true);
-    val cls21 = new DexClass(dexFile, DexType_Class.parse("Lcom.example2.a;", cache), null, null, null, null, null, null, true);
+    val cls11 = new DexClass(dexFile, DexClassType.parse("Lcom.example1.a;", cache), null, null, null, null, null, null, true);
+    val cls12 = new DexClass(dexFile, DexClassType.parse("Lcom.example1.b;", cache), null, null, null, null, null, null, true);
+    val cls21 = new DexClass(dexFile, DexClassType.parse("Lcom.example2.a;", cache), null, null, null, null, null, null, true);
 
     classes.add(cls11);
     classes.add(cls12);
@@ -99,7 +99,7 @@ public class MainWindow_Test {
     val cache = new DexTypeCache();
     val dexFile = new Dex();
 
-    val cls = new DexClass(dexFile, DexType_Class.parse("LTestClass;", cache), null, null, null, null, null, null, true);
+    val cls = new DexClass(dexFile, DexClassType.parse("LTestClass;", cache), null, null, null, null, null, null, true);
     classes.add(cls);
 
     execAddClassesToTree(root, classes);
@@ -120,19 +120,19 @@ public class MainWindow_Test {
     val root = new DefaultMutableTreeNode("root");
     val classes = new LinkedList<DexClass>();
 
-    DexType_Register typeInt = DexType_Register.parse("I", null);
+    DexRegisterType typeInt = DexRegisterType.parse("I", null);
 
     val cache = new DexTypeCache();
     val dexFile = new Dex();
 
-    val cls = new DexClass(dexFile, DexType_Class.parse("LTestClass;", cache), null, null, null, null, null, null, true);
+    val cls = new DexClass(dexFile, DexClassType.parse("LTestClass;", cache), null, null, null, null, null, null, true);
 
     val staticField1 = new DexField(null, "a", typeInt, EnumSet.of(AccessFlags.STATIC), null);
     val staticField2 = new DexField(null, "c", typeInt, EnumSet.of(AccessFlags.STATIC), null);
     val instanceField1 = new DexField(null, "d", typeInt, null, null);
     val instanceField2 = new DexField(null, "b", typeInt, null, null);
 
-    val method1 = new DexDirectMethod(cls, "a", null, new DexPrototype(typeInt, Arrays.asList(new DexType_Register[] { typeInt, typeInt })), new DexCode(), null, null);
+    val method1 = new DexDirectMethod(cls, "a", null, new DexPrototype(typeInt, Arrays.asList(new DexRegisterType[] { typeInt, typeInt })), new DexCode(), null, null);
 
     cls.addField(staticField1);
     cls.addField(staticField2);

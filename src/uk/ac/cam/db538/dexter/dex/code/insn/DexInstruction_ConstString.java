@@ -15,7 +15,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexInstruction_ConstString extends DexInstruction {
 
@@ -73,7 +73,7 @@ public class DexInstruction_ConstString extends DexInstruction {
   }
   
   @Override
-  protected DexType_Class[] throwsExceptions() {
+  protected DexClassType[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error;
   }
   

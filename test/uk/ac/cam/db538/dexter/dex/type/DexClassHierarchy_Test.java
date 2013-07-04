@@ -18,8 +18,8 @@ public class DexClassHierarchy_Test {
   public void testAddClass_Multiple() {
     val cache = new DexTypeCache();
 
-    val typeObject = DexType_Class.parse("Ljava/lang/Object;", cache);
-    val typeClassA = DexType_Class.parse("Lcom/test/MyClassA;", cache);
+    val typeObject = DexClassType.parse("Ljava/lang/Object;", cache);
+    val typeClassA = DexClassType.parse("Lcom/test/MyClassA;", cache);
 
     val hierarchy = new DexClassHierarchy(typeObject);
     hierarchy.addClass(typeObject, typeObject);
@@ -31,13 +31,13 @@ public class DexClassHierarchy_Test {
   public void testCheckConsistency_Valid() {
     val cache = new DexTypeCache();
 
-    val typeObject = DexType_Class.parse("Ljava/lang/Object;", cache);
-    val typeClassA = DexType_Class.parse("Lcom/test/MyClassA;", cache);
-    val typeClassB = DexType_Class.parse("Lcom/test/MyClassB;", cache);
-    val typeClassC = DexType_Class.parse("Lcom/test/MyClassC;", cache);
-    val typeInterface1 = DexType_Class.parse("Lcom/test/MyInterface1;", cache);
+    val typeObject = DexClassType.parse("Ljava/lang/Object;", cache);
+    val typeClassA = DexClassType.parse("Lcom/test/MyClassA;", cache);
+    val typeClassB = DexClassType.parse("Lcom/test/MyClassB;", cache);
+    val typeClassC = DexClassType.parse("Lcom/test/MyClassC;", cache);
+    val typeInterface1 = DexClassType.parse("Lcom/test/MyInterface1;", cache);
 
-    val interfaces = new HashSet<DexType_Class>();
+    val interfaces = new HashSet<DexClassType>();
     interfaces.add(typeInterface1);
 
     val hierarchy = new DexClassHierarchy(typeObject);
@@ -54,10 +54,10 @@ public class DexClassHierarchy_Test {
   public void testCheckConsistency_Invalid_MissingLinks() {
     val cache = new DexTypeCache();
 
-    val typeObject = DexType_Class.parse("Ljava/lang/Object;", cache);
-    val typeClassA = DexType_Class.parse("Lcom/test/MyClassA;", cache);
-    val typeClassB = DexType_Class.parse("Lcom/test/MyClassB;", cache);
-    val typeClassC = DexType_Class.parse("Lcom/test/MyClassC;", cache);
+    val typeObject = DexClassType.parse("Ljava/lang/Object;", cache);
+    val typeClassA = DexClassType.parse("Lcom/test/MyClassA;", cache);
+    val typeClassB = DexClassType.parse("Lcom/test/MyClassB;", cache);
+    val typeClassC = DexClassType.parse("Lcom/test/MyClassC;", cache);
 
     val hierarchy = new DexClassHierarchy(typeObject);
     hierarchy.addClass(typeObject, typeObject);
@@ -72,8 +72,8 @@ public class DexClassHierarchy_Test {
   public void testCheckConsistency_Invalid_RootInterface() {
     val cache = new DexTypeCache();
 
-    val typeObject1 = DexType_Class.parse("Ljava/lang/Object1;", cache);
-    val typeObject2 = DexType_Class.parse("Ljava/lang/Object2;", cache);
+    val typeObject1 = DexClassType.parse("Ljava/lang/Object1;", cache);
+    val typeObject2 = DexClassType.parse("Ljava/lang/Object2;", cache);
 
     val hierarchy = new DexClassHierarchy(typeObject1);
     hierarchy.addInterface(typeObject1);
@@ -86,9 +86,9 @@ public class DexClassHierarchy_Test {
   public void testCheckConsistency_Invalid_InterfaceNotExtendingRoot() {
     val cache = new DexTypeCache();
 
-    val typeObject = DexType_Class.parse("Ljava/lang/Object;", cache);
-    val typeClassA = DexType_Class.parse("Lcom/test/MyClassA;", cache);
-    val typeInterface1 = DexType_Class.parse("Lcom/test/MyInterface1;", cache);
+    val typeObject = DexClassType.parse("Ljava/lang/Object;", cache);
+    val typeClassA = DexClassType.parse("Lcom/test/MyClassA;", cache);
+    val typeInterface1 = DexClassType.parse("Lcom/test/MyInterface1;", cache);
 
     val hierarchy = new DexClassHierarchy(typeObject);
     hierarchy.addClass(typeObject, typeObject);
@@ -102,11 +102,11 @@ public class DexClassHierarchy_Test {
   public void testCheckConsistency_Invalid_ClassMissingInterface() {
     val cache = new DexTypeCache();
 
-    val typeObject = DexType_Class.parse("Ljava/lang/Object;", cache);
-    val typeClassA = DexType_Class.parse("Lcom/test/MyClassA;", cache);
-    val typeInterface1 = DexType_Class.parse("Lcom/test/MyInterface1;", cache);
+    val typeObject = DexClassType.parse("Ljava/lang/Object;", cache);
+    val typeClassA = DexClassType.parse("Lcom/test/MyClassA;", cache);
+    val typeInterface1 = DexClassType.parse("Lcom/test/MyInterface1;", cache);
 
-    val interfaces = new HashSet<DexType_Class>();
+    val interfaces = new HashSet<DexClassType>();
     interfaces.add(typeInterface1);
 
     val hierarchy = new DexClassHierarchy(typeObject);
@@ -120,11 +120,11 @@ public class DexClassHierarchy_Test {
   public void testCheckConsistency_Invalid_ClassImplementingClass() {
     val cache = new DexTypeCache();
 
-    val typeObject = DexType_Class.parse("Ljava/lang/Object;", cache);
-    val typeClassA = DexType_Class.parse("Lcom/test/MyClassA;", cache);
-    val typeClassB = DexType_Class.parse("Lcom/test/MyClassB;", cache);
+    val typeObject = DexClassType.parse("Ljava/lang/Object;", cache);
+    val typeClassA = DexClassType.parse("Lcom/test/MyClassA;", cache);
+    val typeClassB = DexClassType.parse("Lcom/test/MyClassB;", cache);
 
-    val interfaces = new HashSet<DexType_Class>();
+    val interfaces = new HashSet<DexClassType>();
     interfaces.add(typeClassB);
 
     val hierarchy = new DexClassHierarchy(typeObject);
@@ -139,10 +139,10 @@ public class DexClassHierarchy_Test {
   public void testAddMember_Loop_MultipleElement() {
     val cache = new DexTypeCache();
 
-    val typeObject = DexType_Class.parse("Ljava/lang/Object;", cache);
-    val typeClassA = DexType_Class.parse("Lcom/test/MyClassA;", cache);
-    val typeClassB = DexType_Class.parse("Lcom/test/MyClassB;", cache);
-    val typeClassC = DexType_Class.parse("Lcom/test/MyClassC;", cache);
+    val typeObject = DexClassType.parse("Ljava/lang/Object;", cache);
+    val typeClassA = DexClassType.parse("Lcom/test/MyClassA;", cache);
+    val typeClassB = DexClassType.parse("Lcom/test/MyClassB;", cache);
+    val typeClassC = DexClassType.parse("Lcom/test/MyClassC;", cache);
 
     val hierarchy = new DexClassHierarchy(typeObject);
     hierarchy.addClass(typeObject, typeObject);
@@ -156,8 +156,8 @@ public class DexClassHierarchy_Test {
   public void testAddMember_Loop_SingleElement() {
     val cache = new DexTypeCache();
 
-    val typeObject1 = DexType_Class.parse("Ljava/lang/Object1;", cache);
-    val typeObject2 = DexType_Class.parse("Ljava/lang/Object2;", cache);
+    val typeObject1 = DexClassType.parse("Ljava/lang/Object1;", cache);
+    val typeObject2 = DexClassType.parse("Ljava/lang/Object2;", cache);
 
     val hierarchy = new DexClassHierarchy(typeObject1);
     hierarchy.addClass(typeObject1, typeObject1);
@@ -168,10 +168,10 @@ public class DexClassHierarchy_Test {
   public void testIsAncestor() {
     val cache = new DexTypeCache();
 
-    val typeObject = DexType_Class.parse("Ljava/lang/Object;", cache);
-    val typeClassA = DexType_Class.parse("Lcom/test/MyClassA;", cache);
-    val typeClassB = DexType_Class.parse("Lcom/test/MyClassB;", cache);
-    val typeClassC = DexType_Class.parse("Lcom/test/MyClassC;", cache);
+    val typeObject = DexClassType.parse("Ljava/lang/Object;", cache);
+    val typeClassA = DexClassType.parse("Lcom/test/MyClassA;", cache);
+    val typeClassB = DexClassType.parse("Lcom/test/MyClassB;", cache);
+    val typeClassC = DexClassType.parse("Lcom/test/MyClassC;", cache);
 
     val hierarchy = new DexClassHierarchy(typeObject);
     hierarchy.addClass(typeObject, typeObject);

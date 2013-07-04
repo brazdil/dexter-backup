@@ -26,8 +26,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Primitive;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Reference;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -68,7 +68,7 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
       for (val paramType : methodPrototype.getParameterTypes()) {
         if (!excludeFromTaintAcquirement.contains(paramIndex)) {
           DexRegister regArgTaint;
-          if (paramType instanceof DexType_Primitive)
+          if (paramType instanceof DexPrimitiveType)
             regArgTaint = state.getTaintRegister(methodParameterRegs.get(paramRegIndex));
           else {
             codePreExternalCall.add(new DexMacro_GetObjectTaint(methodCode, regObjectArgTaint, methodParameterRegs.get(paramRegIndex)));
@@ -90,7 +90,7 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
       paramIndex = paramRegIndex;
       for (val paramType : methodPrototype.getParameterTypes()) {
         if (!excludeFromTaintAssignment.contains(paramIndex))
-          if (paramType instanceof DexType_Reference && !((DexType_Reference) paramType).isImmutable())
+          if (paramType instanceof DexReferenceType && !((DexReferenceType) paramType).isImmutable())
             codePreExternalCall.add(new DexMacro_SetObjectTaint(methodCode, methodParameterRegs.get(paramRegIndex), regCombinedTaint));
 
         paramRegIndex += paramType.getRegisters();
@@ -129,7 +129,7 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     codePostExternalCall.add(new DexTryBlockEnd(methodCode, tryBlockStart));
 
     if (insn.movesResult()) {
-      if (methodPrototype.getReturnType() instanceof DexType_Primitive) {
+      if (methodPrototype.getReturnType() instanceof DexPrimitiveType) {
         DexRegister regResult;
         if (instructionMoveResult instanceof DexInstruction_MoveResult)
           regResult = ((DexInstruction_MoveResult) instructionMoveResult).getRegTo();

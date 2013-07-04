@@ -4,14 +4,14 @@ import lombok.Getter;
 
 import org.jf.dexlib.Code.Opcode;
 
-import uk.ac.cam.db538.dexter.dex.type.DexType_Boolean;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Byte;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Char;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Float;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Integer;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Reference;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Short;
+import uk.ac.cam.db538.dexter.dex.type.DexBoolean;
+import uk.ac.cam.db538.dexter.dex.type.DexByte;
+import uk.ac.cam.db538.dexter.dex.type.DexChar;
+import uk.ac.cam.db538.dexter.dex.type.DexFloat;
+import uk.ac.cam.db538.dexter.dex.type.DexInteger;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexShort;
 
 public enum Opcode_GetPut {
   Object("object"),
@@ -255,26 +255,26 @@ public enum Opcode_GetPut {
     }
   }
 
-  public static void checkTypeAgainstOpcode(DexType_Register type, Opcode_GetPut opcode) {
+  public static void checkTypeAgainstOpcode(DexRegisterType type, Opcode_GetPut opcode) {
     boolean typeOK;
     switch(opcode) {
     case Object:
-      typeOK = type instanceof DexType_Reference;
+      typeOK = type instanceof DexReferenceType;
       break;
     case IntFloat:
-      typeOK = (type instanceof DexType_Integer) || (type instanceof DexType_Float);
+      typeOK = (type instanceof DexInteger) || (type instanceof DexFloat);
       break;
     case Boolean:
-      typeOK = type instanceof DexType_Boolean;
+      typeOK = type instanceof DexBoolean;
       break;
     case Byte:
-      typeOK = type instanceof DexType_Byte;
+      typeOK = type instanceof DexByte;
       break;
     case Char:
-      typeOK = type instanceof DexType_Char;
+      typeOK = type instanceof DexChar;
       break;
     case Short:
-      typeOK = type instanceof DexType_Short;
+      typeOK = type instanceof DexShort;
       break;
     default:
       typeOK = false;
@@ -284,18 +284,18 @@ public enum Opcode_GetPut {
       throw new InstructionArgumentException("Source/target type doesn't match the instruction's opcode");
   }
 
-  public static Opcode_GetPut getOpcodeFromType(DexType_Register type) {
-    if (type instanceof DexType_Reference)
+  public static Opcode_GetPut getOpcodeFromType(DexRegisterType type) {
+    if (type instanceof DexReferenceType)
       return Object;
-    else if (type instanceof DexType_Integer || type instanceof DexType_Float)
+    else if (type instanceof DexInteger || type instanceof DexFloat)
       return IntFloat;
-    else if (type instanceof DexType_Boolean)
+    else if (type instanceof DexBoolean)
       return Boolean;
-    else if (type instanceof DexType_Byte)
+    else if (type instanceof DexByte)
       return Byte;
-    else if (type instanceof DexType_Char)
+    else if (type instanceof DexChar)
       return Char;
-    else if (type instanceof DexType_Short)
+    else if (type instanceof DexShort)
       return Short;
     else
       throw new InstructionArgumentException("Type given to instruction is not supported");

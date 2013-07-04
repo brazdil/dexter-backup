@@ -12,7 +12,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetServiceTaint;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -35,7 +35,7 @@ public class Source_SystemService extends FallbackInstrumentor {
       return false;
 
     if (!classHierarchy.isAncestor(insnInvoke.getClassType(),
-                                   DexType_Class.parse("Landroid/content/Context;", parsingCache)))
+                                   DexClassType.parse("Landroid/content/Context;", parsingCache)))
       return false;
 
     val methodParamTypes = insnInvoke.getMethodPrototype().getParameterTypes();

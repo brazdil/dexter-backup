@@ -17,9 +17,9 @@ import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Reference;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Triple;
 
@@ -27,11 +27,11 @@ public class DexAssemblingCache {
 
   @Getter private final DexTypeCache parsingCache;
   private final Cache<DexType, TypeIdItem> types;
-  private final Cache<List<DexType_Register>, TypeListItem> typeLists;
+  private final Cache<List<DexRegisterType>, TypeListItem> typeLists;
   private final Cache<String, StringIdItem> stringConstants;
   private final Cache<DexPrototype, ProtoIdItem> prototypes;
-  private final Cache<Triple<DexType_Class, DexType_Register, String>, FieldIdItem> fields;
-  private final Cache<Triple<DexType_Reference, DexPrototype, String>, MethodIdItem> methods;
+  private final Cache<Triple<DexClassType, DexRegisterType, String>, FieldIdItem> fields;
+  private final Cache<Triple<DexReferenceType, DexPrototype, String>, MethodIdItem> methods;
 
   public DexAssemblingCache(final DexFile outFile, DexTypeCache parsingCache) {
     this.parsingCache = parsingCache;
@@ -57,7 +57,7 @@ public class DexAssemblingCache {
     return types.getCachedEntry(key);
   }
 
-  public TypeListItem getTypeList(List<DexType_Register> key) {
+  public TypeListItem getTypeList(List<DexRegisterType> key) {
 	// According to http://source.android.com/tech/dalvik/dex-format.html
 	// empty type_list should be null, not a 0-length list
 	if (key.size() == 0)
@@ -74,11 +74,11 @@ public class DexAssemblingCache {
     return prototypes.getCachedEntry(prototype);
   }
 
-  public FieldIdItem getField(DexType_Class classType, DexType_Register fieldType, String name) {
-    return fields.getCachedEntry(new Triple<DexType_Class, DexType_Register, String>(classType, fieldType, name));
+  public FieldIdItem getField(DexClassType classType, DexRegisterType fieldType, String name) {
+    return fields.getCachedEntry(new Triple<DexClassType, DexRegisterType, String>(classType, fieldType, name));
   }
 
-  public MethodIdItem getMethod(DexType_Reference classType, DexPrototype methodPrototype, String name) {
-    return methods.getCachedEntry(new Triple<DexType_Reference, DexPrototype, String>(classType, methodPrototype, name));
+  public MethodIdItem getMethod(DexReferenceType classType, DexPrototype methodPrototype, String name) {
+    return methods.getCachedEntry(new Triple<DexReferenceType, DexPrototype, String>(classType, methodPrototype, name));
   }
 }

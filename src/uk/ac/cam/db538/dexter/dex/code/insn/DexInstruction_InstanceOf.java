@@ -16,19 +16,19 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Reference;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_InstanceOf extends DexInstruction {
 
   @Getter private final DexRegister regTo;
   @Getter private final DexRegister regObject;
-  @Getter private final DexType_Reference value;
+  @Getter private final DexReferenceType value;
 
   // CAREFUL: likely to throw exception
 
-  public DexInstruction_InstanceOf(DexCode methodCode, DexRegister to, DexRegister object, DexType_Reference value) {
+  public DexInstruction_InstanceOf(DexCode methodCode, DexRegister to, DexRegister object, DexReferenceType value) {
     super(methodCode);
 
     this.regTo = to;
@@ -44,7 +44,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
       val insnInstanceOf = (Instruction22c) insn;
       regTo = parsingState.getRegister(insnInstanceOf.getRegisterA());
       regObject = parsingState.getRegister(insnInstanceOf.getRegisterB());
-      value = DexType_Reference.parse(
+      value = DexReferenceType.parse(
                 ((TypeIdItem) insnInstanceOf.getReferencedItem()).getTypeDescriptor(),
                 parsingState.getCache());
 
@@ -85,7 +85,7 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   }
   
   @Override
-  protected DexType_Class[] throwsExceptions() {
+  protected DexClassType[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error;
   }
   
