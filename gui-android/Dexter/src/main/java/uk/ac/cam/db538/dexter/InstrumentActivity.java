@@ -81,6 +81,13 @@ public class InstrumentActivity extends Activity {
                 // TODO: show error message
                 throw new RuntimeException(ex);
             }
+
+            InstrumentActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    textTerminal.append("DONE !!!");
+                }
+            });
         }
     };
 
