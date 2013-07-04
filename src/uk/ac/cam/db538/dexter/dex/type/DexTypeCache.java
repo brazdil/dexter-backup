@@ -1,16 +1,21 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
 
 
 import lombok.Getter;
+import lombok.val;
 
 public class DexTypeCache {
 
   private final Map<String, DexClassType> cachedTypes_Class;
   private final Map<String, DexArrayType> cachedTypes_Array;
-  private final Map<String, DexPrototype> cachedPrototypes;
+  private final Map<DexPrototype, DexPrototype> cachedPrototypes;
+  private final Map<DexMethodId, DexMethodId> cachedMethodIds;
 
   // private final Map<String, String> descriptorReplacements;
   
@@ -45,9 +50,11 @@ public class DexTypeCache {
   public final DexClassType[] LIST_Error_Null_IllegalMonitorStateException;
 
   public DexTypeCache() {
+	// TODO: figure out good initial values
     cachedTypes_Class = new HashMap<String, DexClassType>();
     cachedTypes_Array = new HashMap<String, DexArrayType>();
-    cachedPrototypes = new HashMap<String, DexPrototype>();
+    cachedPrototypes = new HashMap<DexPrototype, DexPrototype>();
+    cachedMethodIds = new HashMap<DexMethodId, DexMethodId>();
     
     // descriptorReplacements = new HashMap<String, String>();
     
@@ -95,27 +102,21 @@ public class DexTypeCache {
 	  cachedTypes_Array.put(desc, type);
   }
 
-  DexPrototype getCachedPrototype(String desc) {
-	  return cachedPrototypes.get(desc);
+  DexPrototype getCachedPrototype(DexPrototype proto) {
+	  DexPrototype cached = cachedPrototypes.get(proto);
+	  if (cached == null) {
+		  cachedPrototypes.put(proto, proto);
+		  return proto;
+	  } else
+		  return cached;
   }
 
-  void putCachedPrototype(String desc, DexPrototype type) {
-	  cachedPrototypes.put(desc, type);
+  DexMethodId getCachedMethodId(DexMethodId mid) {
+	  DexMethodId cached = cachedMethodIds.get(mid);
+	  if (cached == null) {
+		  cachedMethodIds.put(mid, mid);
+		  return mid;
+	  } else
+		  return cached;
   }
-
-  //  public void setDescriptorReplacement(String descOld, String descNew) {
-//    descriptorReplacements.put(descOld, descNew);
-//  }
-//
-//  public void removeDescriptorReplacement(String descOld) {
-//    descriptorReplacements.remove(descOld);
-//  }
-//
-//  private String getDesc(String descOld) {
-//    val descNew = descriptorReplacements.get(descOld);
-//    if (descNew == null)
-//      return descOld;
-//    else
-//      return descNew;
-//  }
 }
