@@ -18,12 +18,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
-
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
 
 /**
  * A fragment representing a single Package detail screen.
@@ -121,16 +117,6 @@ public class PackageDetailFragment extends Fragment {
                     detailIntent.putExtra(InstrumentActivity.PACKAGE_NAME,
                             PackageDetailFragment.this.packageInfo.packageName);
                     startActivity(detailIntent);
-
-//                    DexTypeCache typeCache = new DexTypeCache();
-//                    HierarchyBuilder hierarchyBuilder = new HierarchyBuilder(typeCache);
-//                    try {
-//                        hierarchyBuilder.scanDex(packageFile);
-//                        hierarchyBuilder.scanDexFolder(new File("/system/framework/"));
-//                    } catch (IOException ex) {
-//                        // TODO: show error message
-//                        throw new RuntimeException(ex);
-//                    }
                 }
             });
         }
