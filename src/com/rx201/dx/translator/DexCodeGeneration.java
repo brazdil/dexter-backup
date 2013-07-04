@@ -152,6 +152,7 @@ public class DexCodeGeneration {
 		
 	}
 	public CodeItem generateCodeItem(DexFile dexFile) {
+		long time = System.currentTimeMillis();
 		
 		DalvCodeBridge translatedCode = new DalvCodeBridge(processMethod(method.getCode()), method);
 		
@@ -213,6 +214,9 @@ public class DexCodeGeneration {
 		
 		
 		int registerCount = translatedCode.getRegisterCount(); 
+
+		time = System.currentTimeMillis() - time;
+	    System.out.println("Translation time: " + time);
 		
 		return CodeItem.internCodeItem(dexFile, registerCount, inWords, outWords, /* debugInfo */ null, instructions, newTries, newCatchHandlers);
 		
