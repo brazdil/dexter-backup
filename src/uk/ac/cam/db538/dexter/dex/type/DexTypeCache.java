@@ -3,12 +3,15 @@ package uk.ac.cam.db538.dexter.dex.type;
 import java.util.HashMap;
 import java.util.Map;
 
+
 import lombok.Getter;
 
 public class DexTypeCache {
 
   private final Map<String, DexClassType> cachedTypes_Class;
   private final Map<String, DexArrayType> cachedTypes_Array;
+  private final Map<String, DexPrototype> cachedPrototypes;
+
   // private final Map<String, String> descriptorReplacements;
   
   @Getter private final DexBoolean cachedType_Boolean = new DexBoolean();
@@ -19,7 +22,7 @@ public class DexTypeCache {
   @Getter private final DexInteger cachedType_Integer = new DexInteger();
   @Getter private final DexLong cachedType_Long = new DexLong();
   @Getter private final DexShort cachedType_Short = new DexShort();
-
+  
   // From com.android.dx.rop.code.Exceptions
   public final DexClassType TYPE_Throwable;
   public final DexClassType TYPE_ArithmeticException;
@@ -44,6 +47,8 @@ public class DexTypeCache {
   public DexTypeCache() {
     cachedTypes_Class = new HashMap<String, DexClassType>();
     cachedTypes_Array = new HashMap<String, DexArrayType>();
+    cachedPrototypes = new HashMap<String, DexPrototype>();
+    
     // descriptorReplacements = new HashMap<String, String>();
     
     TYPE_ArithmeticException = DexClassType.parse("Ljava/lang/ArithmeticException;", this);
@@ -90,7 +95,15 @@ public class DexTypeCache {
 	  cachedTypes_Array.put(desc, type);
   }
 
-//  public void setDescriptorReplacement(String descOld, String descNew) {
+  DexPrototype getCachedPrototype(String desc) {
+	  return cachedPrototypes.get(desc);
+  }
+
+  void putCachedPrototype(String desc, DexPrototype type) {
+	  cachedPrototypes.put(desc, type);
+  }
+
+  //  public void setDescriptorReplacement(String descOld, String descNew) {
 //    descriptorReplacements.put(descOld, descNew);
 //  }
 //

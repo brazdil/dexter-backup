@@ -10,18 +10,18 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
-public class InterfaceInfo extends BaseClassInfo {
+public class InterfaceDefinition extends BaseClassDefinition {
 
-	final Set<BaseClassInfo> _implementers;
-	@Getter private final Set<BaseClassInfo> implementers;
+	final Set<BaseClassDefinition> _implementers;
+	@Getter private final Set<BaseClassDefinition> implementers;
 
-	public InterfaceInfo(DexClassType classType, int accessFlags) {
+	public InterfaceDefinition(DexClassType classType, int accessFlags) {
 		super(classType, accessFlags);
 		
 		if (!getAccessFlags().contains(AccessFlags.INTERFACE))
 			throw new HierarchyException("Class is not an interface");
 
-		this._implementers = new HashSet<BaseClassInfo>();
+		this._implementers = new HashSet<BaseClassDefinition>();
 		this.implementers = Collections.unmodifiableSet(this._implementers);
 	}
 	
