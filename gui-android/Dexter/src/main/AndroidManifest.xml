@@ -32,7 +32,7 @@
                 android:value=".PackageListActivity" />
         </activity>
         <activity
-            android:name="uk.ac.cam.db538.dexter.InstrumentActivity"
+            android:name=".InstrumentActivity"
             android:label="@string/title_activity_instrument"
             android:parentActivityName="PackageListActivity" >
             <meta-data
