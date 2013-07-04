@@ -96,6 +96,7 @@ public class MainConsole {
     val hierarchyBuilder = new HierarchyBuilder(typeCache);
     hierarchyBuilder.scanDex(apkFile, null);
     hierarchyBuilder.scanDexFolder(frameworkDir, null);
+    hierarchyBuilder.build();
     
     System.out.println("DONE");
   }
