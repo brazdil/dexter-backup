@@ -14,8 +14,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 public class DexMacro_GetInternalClassAnnotation extends DexMacro {
 
@@ -37,9 +37,9 @@ public class DexMacro_GetInternalClassAnnotation extends DexMacro {
     val parsingCache = dex.getParsingCache();
 
     val typeInternalClassAnnotation = dex.getInternalClassAnnotation_Type();
-    val typeClass = DexType_Class.parse("Ljava/lang/Class;", parsingCache);
-    val typeString = DexType_Class.parse("Ljava/lang/String;", parsingCache);
-    val typeAnnotation = DexType_Class.parse("Ljava/lang/annotation/Annotation;", parsingCache);
+    val typeClass = DexClassType.parse("Ljava/lang/Class;", parsingCache);
+    val typeString = DexClassType.parse("Ljava/lang/String;", parsingCache);
+    val typeAnnotation = DexClassType.parse("Ljava/lang/annotation/Annotation;", parsingCache);
 
     val regInspectedClass = new DexRegister();
     val regAnnotationClass = new DexRegister();
@@ -50,7 +50,7 @@ public class DexMacro_GetInternalClassAnnotation extends DexMacro {
                              code,
                              typeClass,
                              "forName",
-                             new DexPrototype(typeClass, createList((DexType_Register) typeString)),
+                             new DexPrototype(typeClass, createList((DexRegisterType) typeString)),
                              createList(regClassName),
                              Opcode_Invoke.Static),
                            new DexInstruction_MoveResult(
@@ -67,7 +67,7 @@ public class DexMacro_GetInternalClassAnnotation extends DexMacro {
                              code,
                              typeClass,
                              "getAnnotation",
-                             new DexPrototype(typeAnnotation, createList((DexType_Register) typeClass)),
+                             new DexPrototype(typeAnnotation, createList((DexRegisterType) typeClass)),
                              createList(regInspectedClass, regAnnotationClass),
                              Opcode_Invoke.Virtual),
                            new DexInstruction_MoveResult(

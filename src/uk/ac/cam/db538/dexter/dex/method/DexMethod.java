@@ -28,7 +28,7 @@ import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Reference;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Triple;
 
@@ -123,10 +123,10 @@ public abstract class DexMethod {
     return new EncodedMethod(methodItem, DexUtils.assembleAccessFlags(accessFlagSet), code);
   }
 
-  public static Cache<Triple<DexType_Reference, DexPrototype, String>, MethodIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
-    return new Cache<Triple<DexType_Reference, DexPrototype, String>, MethodIdItem>() {
+  public static Cache<Triple<DexReferenceType, DexPrototype, String>, MethodIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
+    return new Cache<Triple<DexReferenceType, DexPrototype, String>, MethodIdItem>() {
       @Override
-      protected MethodIdItem createNewEntry(Triple<DexType_Reference, DexPrototype, String> key) {
+      protected MethodIdItem createNewEntry(Triple<DexReferenceType, DexPrototype, String> key) {
         return MethodIdItem.internMethodIdItem(
                  outFile,
                  cache.getType(key.getValA()),

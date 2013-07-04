@@ -124,10 +124,10 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Array;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Reference;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
+import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 
@@ -253,10 +253,10 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		DexCode code = curInst.getInstruction().getMethodCode();
 		val classHierarchy = code.getParentFile().getClassHierarchy();
 		
-		ArrayList<DexType_Class> thrownExceptions = new ArrayList<DexType_Class>();
+		ArrayList<DexClassType> thrownExceptions = new ArrayList<DexClassType>();
 		TypeList exceptions = opcode.getExceptions();
 		for(int i=0; i<exceptions.size(); i++)
-			thrownExceptions.add(DexType_Class.parse(exceptions.getType(i).getDescriptor(), code.getParentFile().getParsingCache()));
+			thrownExceptions.add(DexClassType.parse(exceptions.getType(i).getDescriptor(), code.getParentFile().getParsingCache()));
 		
 		// Order of catch matters, so we need to preserve that, which means
 		// we cannot just iterate through the successors ( which is unordered)
@@ -269,7 +269,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	            for (val catchBlock : tryBlockStart.getCatchHandlers()) {
 	            	
-					DexType_Class catchException = catchBlock.getExceptionType();
+					DexClassType catchException = catchBlock.getExceptionType();
 					
 					boolean canCatch = false;
 					// Check if the exception thrown by the given Rop can potentially 
@@ -277,7 +277,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				    // which is either the catch block catches the given exception type or its ancestor (a guaranteed catch)
 			        // or if the catch is the subclass of the thrown exception (a potential catch)
  					// **Logic duplicated from DexInstruction.throwingInsn_CatchHandlers
-					for(DexType_Class thrown : thrownExceptions)
+					for(DexClassType thrown : thrownExceptions)
 						if (classHierarchy.isAncestor(thrown, catchException) || 
 							classHierarchy.isAncestor(catchException, thrown)) {
 							canCatch = true;
@@ -329,7 +329,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		return new CstString(stringConstant);
 	}
 
-	private CstType makeCstType(DexType_Reference value) {
+	private CstType makeCstType(DexReferenceType value) {
 		return new CstType(Type.intern(value.getDescriptor()));
 	}
 
@@ -337,14 +337,14 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		return new CstNat(makeCstString(name), makeCstString(type));
 	}
 	
-	private CstFieldRef makeFieldRef(DexType_Class fieldClass, DexType_Register fieldType, String fieldName) {
+	private CstFieldRef makeFieldRef(DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
 		return new CstFieldRef(
 				makeCstType(fieldClass),
 				makeCstNat(fieldName, fieldType.getDescriptor())
 				);
 	}
 	
-	private CstBaseMethodRef makeMethodRef(DexType_Reference classType, String methodName, DexPrototype methodPrototype) {
+	private CstBaseMethodRef makeMethodRef(DexReferenceType classType, String methodName, DexPrototype methodPrototype) {
 		CstType clazz = makeCstType(classType);
 		CstNat method = makeCstNat(methodName, methodPrototype.getDescriptor());
 		return new CstMethodRef(clazz, method);
@@ -631,7 +631,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	@Override
 	public void visit(DexInstruction_NewArray instruction) {
-		DexType_Array arrayType = instruction.getValue();
+		DexArrayType arrayType = instruction.getValue();
 		doThrowingCstInsn(Rops.opNewArray(Type.intern(arrayType.getDescriptor())), 
 				makeCstType(arrayType), instruction.getRegSize());
 		domacroMoveResult(instruction.getRegTo());
@@ -640,7 +640,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	@Override
 	public void visit(DexInstruction_FilledNewArray instruction) {
-		DexType_Array arrayType = instruction.getArrayType();
+		DexArrayType arrayType = instruction.getArrayType();
 		assert arrayType.getDescriptor().equals("[I");
 		
 		int arrayLen = instruction.getArgumentRegisters().size();
@@ -951,7 +951,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		doAput(instruction.getRegFrom1(), instruction.getRegArray(), instruction.getRegIndex());
 	}
 
-	private void doIget(DexRegister to, DexRegister object, DexType_Class fieldClass, DexType_Register fieldType, String fieldName) {
+	private void doIget(DexRegister to, DexRegister object, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
 		RegisterSpec dst = getDestRegSpec(to);
 		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
 		doThrowingCstInsn(Rops.opGetField(dst), fieldRef, object);
@@ -972,7 +972,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	}
 
 
-	private void doIput(DexRegister from, DexRegister object, DexType_Class fieldClass, DexType_Register fieldType, String fieldName) {
+	private void doIput(DexRegister from, DexRegister object, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
 		RegisterSpec src = getSourceRegSpec(from);
 		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
 		doThrowingCstInsn(Rops.opPutField(src), fieldRef, from, object);
@@ -991,7 +991,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	}
 
 
-	private void doSget(DexRegister to,  DexType_Class fieldClass, DexType_Register fieldType, String fieldName) {
+	private void doSget(DexRegister to,  DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
 		RegisterSpec dst = getDestRegSpec(to);
 		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
 		doThrowingCstInsn(Rops.opGetStatic(dst), fieldRef);
@@ -1011,7 +1011,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	}
 
 	
-	private void doSput(DexRegister from, DexType_Class fieldClass, DexType_Register fieldType, String fieldName) {
+	private void doSput(DexRegister from, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
 		RegisterSpec src = getSourceRegSpec(from);
 		Constant fieldRef = makeFieldRef(fieldClass, fieldType, fieldName);
 		doThrowingCstInsn(Rops.opPutStatic(src), fieldRef, from);
@@ -1036,7 +1036,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		ArrayList<DexRegister> operands_list = new ArrayList<DexRegister>();
 		
 		List<DexRegister> arguments = instruction.getArgumentRegisters();
-		List<DexType_Register> parameterTypes = instruction.getMethodPrototype().getParameterTypes();
+		List<DexRegisterType> parameterTypes = instruction.getMethodPrototype().getParameterTypes();
 		
 		int regIndex = 0;
 		if (!instruction.isStaticCall()) {
@@ -1044,7 +1044,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		}
 		// Filter out high reg for long/double type
 		for(int i=0 ;i<parameterTypes.size(); i++) {
-			DexType_Register paramType = parameterTypes.get(i);
+			DexRegisterType paramType = parameterTypes.get(i);
 			operands_list.add(arguments.get(regIndex));
 			regIndex += paramType.getRegisters();
 		}

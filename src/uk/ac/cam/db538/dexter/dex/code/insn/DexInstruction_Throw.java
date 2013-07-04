@@ -15,7 +15,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexInstruction_Throw extends DexInstruction {
 
@@ -62,8 +62,8 @@ public class DexInstruction_Throw extends DexInstruction {
   }
 
   @Override
-  protected DexType_Class[] throwsExceptions() {
-    return new DexType_Class[] { DexType_Class.parse("Ljava/lang/Throwable;", getParentFile().getParsingCache()) };
+  protected DexClassType[] throwsExceptions() {
+    return new DexClassType[] { DexClassType.parse("Ljava/lang/Throwable;", getParentFile().getParsingCache()) };
   }
 
   @Override

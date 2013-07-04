@@ -13,16 +13,16 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.DexFile.NoClassesDexException;
 
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class HierarchyBuilder {
 
 	private final DexTypeCache typeCache;
-	private final Set<DexType_Class> definedClasses;
+	private final Set<DexClassType> definedClasses;
 	
 	public HierarchyBuilder(DexTypeCache cache) {
 		typeCache = cache;
-		definedClasses = new HashSet<DexType_Class>();
+		definedClasses = new HashSet<DexClassType>();
 	}
 
 	public void scanDexFolder(File dir, HierarchyScanCallback callback) throws IOException {
@@ -61,7 +61,7 @@ public class HierarchyBuilder {
 	}
 	
 	private void scanClass(ClassDefItem cls) {
-		val clsType = DexType_Class.parse(cls.getClassType().getTypeDescriptor(), typeCache);
+		val clsType = DexClassType.parse(cls.getClassType().getTypeDescriptor(), typeCache);
 		
 		// add class to the list of defined classes
 		if (definedClasses.contains(clsType))

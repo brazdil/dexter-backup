@@ -12,7 +12,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -33,7 +33,7 @@ public class Sink_IPC extends FallbackInstrumentor {
     val insnInvoke = insn.getInstructionInvoke();
 
     return (insnInvoke.getCallType() == Opcode_Invoke.Virtual) &&
-           classHierarchy.isAncestor(insnInvoke.getClassType(), DexType_Class.parse("Landroid/content/Context;", parsingCache)) &&
+           classHierarchy.isAncestor(insnInvoke.getClassType(), DexClassType.parse("Landroid/content/Context;", parsingCache)) &&
            hasIntentParam(insnInvoke.getMethodPrototype());
   }
 
