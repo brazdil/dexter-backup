@@ -1,14 +1,9 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-
-
 
 import lombok.Getter;
-import lombok.val;
 
 public class DexTypeCache {
 
@@ -50,11 +45,11 @@ public class DexTypeCache {
   public final DexClassType[] LIST_Error_Null_IllegalMonitorStateException;
 
   public DexTypeCache() {
-	// TODO: figure out good initial values
-    cachedTypes_Class = new HashMap<String, DexClassType>();
-    cachedTypes_Array = new HashMap<String, DexArrayType>();
-    cachedPrototypes = new HashMap<DexPrototype, DexPrototype>();
-    cachedMethodIds = new HashMap<DexMethodId, DexMethodId>();
+	// reasonable initial values, determined experimentally
+    cachedTypes_Class = new HashMap<String, DexClassType>(20000);
+    cachedTypes_Array = new HashMap<String, DexArrayType>(1024);
+    cachedPrototypes = new HashMap<DexPrototype, DexPrototype>(32384);
+    cachedMethodIds = new HashMap<DexMethodId, DexMethodId>(100000);
     
     // descriptorReplacements = new HashMap<String, String>();
     

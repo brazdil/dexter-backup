@@ -97,7 +97,7 @@ public class MainConsole {
     hierarchyBuilder.scanDex(apkFile, null);
     hierarchyBuilder.scanDexFolder(frameworkDir, null);
     hierarchyBuilder.build();
-    
+
     System.out.println("DONE");
   }
 }
