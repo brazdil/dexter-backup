@@ -3,7 +3,11 @@ package uk.ac.cam.db538.dexter.hierarchy;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.val;
@@ -11,18 +15,24 @@ import lombok.val;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.DexFile.NoClassesDexException;
+import org.jf.dexlib.Util.AccessFlags;
 
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
 public class HierarchyBuilder {
 
+	private boolean foundRoot = false;
 	private final DexTypeCache typeCache;
-	private final Set<DexClassType> definedClasses;
+	private final Map<DexClassType, BaseClassInfo> definedClasses;
+	private final Map<BaseClassInfo, DexClassType> superclasses;
+	private final Map<ClassInfo, Set<DexClassType>> interfaces;
 	
 	public HierarchyBuilder(DexTypeCache cache) {
 		typeCache = cache;
-		definedClasses = new HashSet<DexClassType>();
+		definedClasses = new HashMap<DexClassType, BaseClassInfo>();
+		superclasses = new HashMap<BaseClassInfo, DexClassType>();
+		interfaces = new HashMap<ClassInfo, Set<DexClassType>>();
 	}
 
 	public void scanDexFolder(File dir, HierarchyScanCallback callback) throws IOException {
@@ -63,12 +73,83 @@ public class HierarchyBuilder {
 	private void scanClass(ClassDefItem cls) {
 		val clsType = DexClassType.parse(cls.getClassType().getTypeDescriptor(), typeCache);
 		
-		// add class to the list of defined classes
-		if (definedClasses.contains(clsType))
+		// check that class has not been defined before
+		if (definedClasses.containsKey(clsType))
 			throw new HierarchyException("Multiple definition of class " + clsType.getPrettyName());
-		definedClasses.add(clsType);
-	}
+		
+		// acquire superclass info
+		DexClassType superclsType = null;
+		boolean isRoot = false;
+		val superclsTypeItem = cls.getSuperclass();
+		if (superclsTypeItem == null)
+			isRoot = true;
+		else
+			superclsType = DexClassType.parse(superclsTypeItem.getTypeDescriptor(), typeCache);
 
+		// check only one root exists
+		if (isRoot) {
+			if (foundRoot)
+				throw new HierarchyException("More than one hierarchy root found");
+			else
+				foundRoot = true;
+		}
+		
+		// examine access flags
+		int iFlags = cls.getAccessFlags();
+		List<AccessFlags> listFlags = Arrays.asList(AccessFlags.getAccessFlagsForClass(cls.getAccessFlags()));
+		
+		// create ClassInfo instance and store
+		BaseClassInfo clsInfo;
+		if (listFlags.contains(AccessFlags.INTERFACE))
+			clsInfo = new InterfaceInfo(clsType, iFlags);
+		else {
+			clsInfo = new ClassInfo(clsType, cls.getAccessFlags(), isRoot);
+
+			// parse interfaces
+			if (cls.getInterfaces() != null) {
+				val ifaces = new HashSet<DexClassType>();
+				for (val ifaceTypeItem : cls.getInterfaces().getTypes())
+					ifaces.add(DexClassType.parse(ifaceTypeItem.getTypeDescriptor(), typeCache));
+				interfaces.put((ClassInfo) clsInfo, ifaces);
+			}
+		}
+		
+		// store data
+		definedClasses.put(clsType, clsInfo);
+		superclasses.put(clsInfo, superclsType);
+	}
+	
+	public RuntimeHierarchy build() {
+		for (val cls : definedClasses.values()) {
+
+			// connect to parent and vice versa
+			val sclsType = superclasses.get(cls);
+			if (sclsType != null) {
+				val sclsInfo = definedClasses.get(sclsType);
+				if (sclsInfo == null)
+					throw new HierarchyException("Class " + cls.getClassType().getPrettyName() + " is missing its parent " + sclsType.getPrettyName());
+				else
+					cls.setSuperclassLink(sclsInfo);
+			}
+
+			// connect to interfaces
+			if (cls instanceof ClassInfo) {
+				val clsInfo = (ClassInfo) cls;
+				val ifaces = interfaces.get(clsInfo);
+				if (ifaces != null)
+					for (val ifaceType : ifaces) {
+						val ifaceInfo = definedClasses.get(ifaceType);
+						if (ifaceInfo == null || !(ifaceInfo instanceof InterfaceInfo))
+							throw new HierarchyException("Class " + cls.getClassType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
+						else
+							clsInfo.setImplementsInterface((InterfaceInfo) ifaceInfo);
+					}
+			}
+		}
+		
+		return new RuntimeHierarchy(definedClasses);
+	}
+	
 	private static final FilenameFilter FILTER_DEX_ODEX = new FilenameFilter() {
 		@Override
 		public boolean accept(File dir, String name) {
