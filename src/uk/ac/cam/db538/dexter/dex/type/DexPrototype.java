@@ -25,25 +25,24 @@ public class DexPrototype {
   @Getter private final DexType returnType;
   private final List<DexRegisterType> _parameterTypes;
   @Getter private final List<DexRegisterType> parameterTypes;
+  
+  private final int hashcode;
 
   public DexPrototype(DexType returnType, List<DexRegisterType> argTypes) {
     this.returnType = returnType;
     this._parameterTypes = (argTypes == null) ? new LinkedList<DexRegisterType>() : argTypes;
     this.parameterTypes = Collections.unmodifiableList(_parameterTypes);
+    
+    // precompute hashcode
+    int result = 31 + _parameterTypes.hashCode();
+    result = 31 * result + returnType.hashCode();
+    this.hashcode = result;
   }
 
   public static DexPrototype parse(ProtoIdItem protoItem, DexTypeCache cache) {
-	  String desc = protoItem.getPrototypeString();
-	  System.out.println(desc);
-	  
-	  DexPrototype result = cache.getCachedPrototype(desc);
-	  if (result == null) {
-		  result = new DexPrototype(parseReturnType(protoItem.getReturnType(), cache),
-				  					parseArgumentTypes(protoItem.getParameters(), cache));
-		  cache.putCachedPrototype(desc, result);
-	  }
-	  
-	  return result;
+	  val proto = new DexPrototype(parseReturnType(protoItem.getReturnType(), cache),
+			                       parseArgumentTypes(protoItem.getParameters(), cache));
+	  return cache.getCachedPrototype(proto); // will return 'proto' if not cached
   }
 
   private static DexType parseReturnType(TypeIdItem item, DexTypeCache cache) {
@@ -148,35 +147,21 @@ public class DexPrototype {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result
-             + ((_parameterTypes == null) ? 0 : _parameterTypes.hashCode());
-    result = prime * result
-             + ((returnType == null) ? 0 : returnType.hashCode());
-    return result;
+	  return hashcode;
   }
 
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
       return true;
-    if (obj == null)
-      return false;
+
     if (!(obj instanceof DexPrototype))
       return false;
     DexPrototype other = (DexPrototype) obj;
-    if (_parameterTypes == null) {
-      if (other._parameterTypes != null)
-        return false;
-    } else if (!_parameterTypes.equals(other._parameterTypes))
-      return false;
-    if (returnType == null) {
-      if (other.returnType != null)
-        return false;
-    } else if (!returnType.equals(other.returnType))
-      return false;
-    return true;
+
+    return 
+    	this.returnType.equals(other.returnType) &&
+    	this._parameterTypes.equals(other._parameterTypes); 
   }
   
   public String getDescriptor() {

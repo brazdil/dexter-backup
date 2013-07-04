@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.hierarchy;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,14 +11,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.AllArgsConstructor;
 import lombok.val;
 
+import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.DexFile.NoClassesDexException;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
 public class HierarchyBuilder {
@@ -27,17 +31,18 @@ public class HierarchyBuilder {
 	private final Map<DexClassType, BaseClassDefinition> definedClasses;
 	private final Map<BaseClassDefinition, DexClassType> superclasses;
 	private final Map<ClassDefinition, Set<DexClassType>> interfaces;
-	
+	private final Map<BaseClassDefinition, Set<MethodData>> methods;
 	
 	public HierarchyBuilder(DexTypeCache cache) {
 		typeCache = cache;
 		definedClasses = new HashMap<DexClassType, BaseClassDefinition>();
 		superclasses = new HashMap<BaseClassDefinition, DexClassType>();
 		interfaces = new HashMap<ClassDefinition, Set<DexClassType>>();
+		methods = new HashMap<BaseClassDefinition, Set<MethodData>>();
 	}
 
 	public void scanDexFolder(File dir, HierarchyScanCallback callback) throws IOException {
-		String[] files = dir.list(FILTER_DEX_ODEX);
+		String[] files = dir.list(FILTER_DEX_ODEX_JAR);
 		
 		if (callback != null) callback.onFolderScanStarted(dir, files.length);
 		
@@ -72,11 +77,16 @@ public class HierarchyBuilder {
 	}
 	
 	private void scanClass(ClassDefItem cls) {
+		val clsData = cls.getClassData();
 		val clsType = DexClassType.parse(cls.getClassType().getTypeDescriptor(), typeCache);
 		
 		// check that class has not been defined before
 		if (definedClasses.containsKey(clsType))
 			throw new HierarchyException("Multiple definition of class " + clsType.getPrettyName());
+		
+		// examine access flags
+		int iFlags = cls.getAccessFlags();
+		List<AccessFlags> listFlags = Arrays.asList(AccessFlags.getAccessFlagsForClass(cls.getAccessFlags()));
 		
 		// acquire superclass info
 		DexClassType superclsType = null;
@@ -95,32 +105,39 @@ public class HierarchyBuilder {
 				foundRoot = true;
 		}
 		
-		// examine access flags
-		int iFlags = cls.getAccessFlags();
-		List<AccessFlags> listFlags = Arrays.asList(AccessFlags.getAccessFlagsForClass(cls.getAccessFlags()));
-		
 		// create ClassInfo instance and store
 		BaseClassDefinition clsInfo;
 		if (listFlags.contains(AccessFlags.INTERFACE))
 			clsInfo = new InterfaceDefinition(clsType, iFlags);
-		else {
+		else
 			clsInfo = new ClassDefinition(clsType, cls.getAccessFlags(), isRoot);
-
-			// parse interfaces
-			if (cls.getInterfaces() != null) {
-				val ifaces = new HashSet<DexClassType>();
-				for (val ifaceTypeItem : cls.getInterfaces().getTypes())
-					ifaces.add(DexClassType.parse(ifaceTypeItem.getTypeDescriptor(), typeCache));
-				interfaces.put((ClassDefinition) clsInfo, ifaces);
-			}
-		}
 		
 		// examine methods
+		Set<MethodData> clsMethods = new HashSet<MethodData>();
+		if (clsData != null) {
+			val methodItems = new ArrayList<EncodedMethod>(clsData.getDirectMethodCount() + clsData.getVirtualMethodCount());
+			methodItems.addAll(clsData.getDirectMethods());
+			methodItems.addAll(clsData.getVirtualMethods());
+			for (val methodItem : methodItems) {
+				val mId = DexMethodId.parseMethodId(methodItem.method, typeCache);
+				clsMethods.add(new MethodData(mId, methodItem.accessFlags));
+			}
+		}
+		methods.put(clsInfo, clsMethods);
 		
+		// examine interfaces
+		if (clsInfo instanceof ClassDefinition && cls.getInterfaces() != null) {
+			val clsInterfaces = new HashSet<DexClassType>();
+			for (val ifaceTypeItem : cls.getInterfaces().getTypes())
+				clsInterfaces.add(DexClassType.parse(ifaceTypeItem.getTypeDescriptor(), typeCache));
+			interfaces.put((ClassDefinition) clsInfo, clsInterfaces);
+		}
+
 		// store data
-		definedClasses.put(clsType, clsInfo);
 		superclasses.put(clsInfo, superclsType);
+		definedClasses.put(clsType, clsInfo);
 	}
+	
 	
 	public RuntimeHierarchy build() {
 		for (val cls : definedClasses.values()) {
@@ -153,10 +170,16 @@ public class HierarchyBuilder {
 		return new RuntimeHierarchy(definedClasses);
 	}
 	
-	private static final FilenameFilter FILTER_DEX_ODEX = new FilenameFilter() {
+	private static final FilenameFilter FILTER_DEX_ODEX_JAR = new FilenameFilter() {
 		@Override
 		public boolean accept(File dir, String name) {
-			return name.endsWith(".dex") || name.endsWith(".odex"); 
+			return name.endsWith(".dex") || name.endsWith(".odex") || name.endsWith(".jar"); 
 		}
 	};
+	
+	@AllArgsConstructor
+	private static class MethodData {
+		DexMethodId methodId;
+		int accessFlags;
+	}
 }
