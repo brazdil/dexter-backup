@@ -35,7 +35,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 import com.android.dx.dex.DexOptions;
 import com.android.dx.dex.code.DalvCode;
@@ -323,7 +323,7 @@ public class DexCodeGeneration {
         		List<DexRegister> parameterMapping = method.getParameterMappedRegisters();
         		int regOffset = 0;
         		for(int i = 0; i < prototype.getParameterCount(isStatic); i++) {
-        			DexType_Register param = prototype.getParameterType(i, isStatic, method.getParentClass());
+        			DexRegisterType param = prototype.getParameterType(i, isStatic, method.getParentClass());
         			int paramRegId = DexRegisterHelper.normalize(parameterMapping.get(regOffset));
 	                Type one = Type.intern(param.getDescriptor());
 	                Insn insn = new PlainCstInsn(Rops.opMoveParam(one), SourcePosition.NO_INFO, RegisterSpec.make(paramRegId, one),

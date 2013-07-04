@@ -20,11 +20,11 @@ protected DexType() { }
 	public abstract String getPrettyName();
   
 	public static DexType parse(String typeDescriptor, DexTypeCache cache) throws UnknownTypeException {
-		val res = DexType_Void.parse(typeDescriptor);
+		val res = DexVoid.parse(typeDescriptor);
 	    if (res != null)
 	    	return res;
 	    else
-	    	return DexType_Register.parse(typeDescriptor, cache);
+	    	return DexRegisterType.parse(typeDescriptor, cache);
 	}
 
 	public static Cache<DexType, TypeIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
@@ -37,10 +37,10 @@ protected DexType() { }
 		};
 	}
 	  
-	public static Cache<List<DexType_Register>, TypeListItem> createAssemblingCacheForLists(final DexAssemblingCache cache, final DexFile outFile) {
-		return new Cache<List<DexType_Register>, TypeListItem>() {
+	public static Cache<List<DexRegisterType>, TypeListItem> createAssemblingCacheForLists(final DexAssemblingCache cache, final DexFile outFile) {
+		return new Cache<List<DexRegisterType>, TypeListItem>() {
 			@Override
-			protected TypeListItem createNewEntry(List<DexType_Register> typeList) {
+			protected TypeListItem createNewEntry(List<DexRegisterType> typeList) {
 				val dexTypeList = new ArrayList<TypeIdItem>(typeList.size());
 				for (val type : typeList)
 					dexTypeList.add(cache.getType(type));

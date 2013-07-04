@@ -13,7 +13,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexMacro_GetQueryTaint extends DexMacro {
 
@@ -32,7 +32,7 @@ public class DexMacro_GetQueryTaint extends DexMacro {
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
 
-    val typeString = DexType_Class.parse("Ljava/lang/String;", parsingCache);
+    val typeString = DexClassType.parse("Ljava/lang/String;", parsingCache);
     val methodQueryTaint = dex.getTaintConstants_QueryTaint();
 
     val regStrQuery = new DexRegister();
@@ -40,7 +40,7 @@ public class DexMacro_GetQueryTaint extends DexMacro {
     return Arrays.asList(new DexCodeElement[] {
                            // regStrQuery = regUriQuery.toString()
                            new DexInstruction_Invoke(code,
-                               DexType_Class.parse("Landroid/net/Uri;", parsingCache),
+                               DexClassType.parse("Landroid/net/Uri;", parsingCache),
                                "toString",
                                new DexPrototype(typeString, null),
                                Arrays.asList(new DexRegister[] { regUriQuery }),

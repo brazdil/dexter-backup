@@ -11,7 +11,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -25,7 +25,7 @@ public class Sink_HttpClient extends FallbackInstrumentor {
     val insnInvoke = insn.getInstructionInvoke();
     val callType = insnInvoke.getCallType();
     val invokedClass = insnInvoke.getClassType();
-    val typeHttpClient = DexType_Class.parse("Lorg/apache/http/client/HttpClient;", parsingCache);
+    val typeHttpClient = DexClassType.parse("Lorg/apache/http/client/HttpClient;", parsingCache);
 
     return insnInvoke.getMethodName().equals("execute") &&
            (

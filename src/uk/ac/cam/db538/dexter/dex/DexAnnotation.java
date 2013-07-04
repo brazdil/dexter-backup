@@ -19,16 +19,16 @@ import org.jf.dexlib.EncodedValue.AnnotationEncodedSubValue;
 import org.jf.dexlib.EncodedValue.EncodedValue;
 
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexAnnotation {
 
-  @Getter private final DexType_Class type;
+  @Getter private final DexClassType type;
   @Getter private final AnnotationVisibility visibility;
   private final List<String> paramNames;
   private final List<EncodedValue> paramValues;
 
-  public DexAnnotation(DexType_Class type, AnnotationVisibility visibility) {
+  public DexAnnotation(DexClassType type, AnnotationVisibility visibility) {
     this.type = type;
     this.visibility = visibility;
     // Order of parameters matter, so it can't be stored in a hash table.
@@ -37,7 +37,7 @@ public class DexAnnotation {
   }
 
   public DexAnnotation(AnnotationItem anno, DexTypeCache cache) {
-    this(DexType_Class.parse(anno.getEncodedAnnotation().annotationType.getTypeDescriptor(), cache),
+    this(DexClassType.parse(anno.getEncodedAnnotation().annotationType.getTypeDescriptor(), cache),
          anno.getVisibility());
 
     val encAnno = anno.getEncodedAnnotation();
