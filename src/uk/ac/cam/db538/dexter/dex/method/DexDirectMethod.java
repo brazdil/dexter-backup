@@ -12,6 +12,7 @@ import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 
 public class DexDirectMethod extends DexMethodWithCode {
 
