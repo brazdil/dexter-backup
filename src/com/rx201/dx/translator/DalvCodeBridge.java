@@ -1,5 +1,6 @@
 package com.rx201.dx.translator;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -142,17 +143,12 @@ class DalvCodeBridge {
 		OutputStreamWriter humanOut = null; //new OutputStreamWriter(System.out);
 		try {
 			byte[] outArray = outputDex.toDex(humanOut, true);
-			File tmpFile = File.createTempFile("dalvcode", ".dex");
-			FileOutputStream fileOut = new FileOutputStream(tmpFile);
-			fileOut.write(outArray);
-			fileOut.close();
-			
-			org.jf.dexlib.DexFile tmpDexFile = new org.jf.dexlib.DexFile(tmpFile);
+			ByteArrayInputStream dexStream = new ByteArrayInputStream(outArray);
+			org.jf.dexlib.DexFile tmpDexFile = new org.jf.dexlib.DexFile(dexStream, outArray.length);
 		
 			List<CodeItem> codeItems = tmpDexFile.CodeItemsSection.getItems();
 			assert codeItems.size() == 1;
 			codeItem = codeItems.get(0);
-
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
