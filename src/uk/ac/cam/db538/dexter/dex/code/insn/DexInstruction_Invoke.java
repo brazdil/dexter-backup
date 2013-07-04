@@ -19,18 +19,18 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Reference;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 
 public class DexInstruction_Invoke extends DexInstruction {
 
-  @Getter private final DexType_Reference classType;
+  @Getter private final DexReferenceType classType;
   @Getter private final String methodName;
   @Getter private final DexPrototype methodPrototype;
   private final List<DexRegister> argumentRegisters;
   @Getter private final Opcode_Invoke callType;
 
-  public DexInstruction_Invoke(DexCode methodCode, DexType_Reference classType, String methodName, DexPrototype prototype, List<DexRegister> argumentRegisters, Opcode_Invoke callType) {
+  public DexInstruction_Invoke(DexCode methodCode, DexReferenceType classType, String methodName, DexPrototype prototype, List<DexRegister> argumentRegisters, Opcode_Invoke callType) {
     super(methodCode);
 
     this.classType = classType;
@@ -93,7 +93,7 @@ public class DexInstruction_Invoke extends DexInstruction {
     } else
       throw FORMAT_EXCEPTION;
 
-    classType = DexType_Reference.parse(methodInfo.getContainingClass().getTypeDescriptor(), parsingState.getCache());
+    classType = DexReferenceType.parse(methodInfo.getContainingClass().getTypeDescriptor(), parsingState.getCache());
 
     methodName = methodInfo.getMethodName().getStringValue();
     methodPrototype = new DexPrototype(methodInfo.getPrototype(), cache);
@@ -195,7 +195,7 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
   
   @Override
-  protected DexType_Class[] throwsExceptions() {
+  protected DexClassType[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Throwable;
   }
 }

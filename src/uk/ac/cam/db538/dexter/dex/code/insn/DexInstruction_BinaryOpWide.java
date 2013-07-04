@@ -15,7 +15,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexInstruction_BinaryOpWide extends DexInstruction {
 
@@ -119,7 +119,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   }
   
   @Override
-  protected DexType_Class[] throwsExceptions() {
+  protected DexClassType[] throwsExceptions() {
 	if (insnOpcode == Opcode_BinaryOpWide.DivLong || insnOpcode == Opcode_BinaryOpWide.RemLong) {
 		return getParentFile().getParsingCache().LIST_Error_ArithmeticException;
 	} else

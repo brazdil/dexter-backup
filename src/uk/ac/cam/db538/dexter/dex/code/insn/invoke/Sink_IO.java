@@ -15,7 +15,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -32,8 +32,8 @@ public class Sink_IO extends FallbackInstrumentor {
     if ((insnInvoke.getCallType() != Opcode_Invoke.Virtual) && (insnInvoke.getCallType() != Opcode_Invoke.Interface))
       return false;
 
-    if (!classHierarchy.isAncestor(invokedClass, DexType_Class.parse("Ljava/io/Writer;", parsingCache)) &&
-        !classHierarchy.isAncestor(invokedClass, DexType_Class.parse("Ljava/io/OutputStream;", parsingCache)))
+    if (!classHierarchy.isAncestor(invokedClass, DexClassType.parse("Ljava/io/Writer;", parsingCache)) &&
+        !classHierarchy.isAncestor(invokedClass, DexClassType.parse("Ljava/io/OutputStream;", parsingCache)))
       return false;
 
     if (insnInvoke.getMethodPrototype().getParameterCount(false) < 2)

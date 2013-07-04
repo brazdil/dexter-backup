@@ -17,20 +17,20 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Primitive;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_StaticGetWide extends DexInstruction {
 
   @Getter private final DexRegister regTo1;
   @Getter private final DexRegister regTo2;
-  @Getter private final DexType_Class fieldClass;
-  @Getter private final DexType_Register fieldType;
+  @Getter private final DexClassType fieldClass;
+  @Getter private final DexRegisterType fieldType;
   @Getter private final String fieldName;
 
-  public DexInstruction_StaticGetWide(DexCode methodCode, DexRegister to1, DexRegister to2, DexType_Class fieldClass, DexType_Register fieldType, String fieldName) {
+  public DexInstruction_StaticGetWide(DexCode methodCode, DexRegister to1, DexRegister to2, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
     super(methodCode);
 
     this.regTo1 = to1;
@@ -66,10 +66,10 @@ public class DexInstruction_StaticGetWide extends DexInstruction {
       val refItem = (FieldIdItem) insnStaticGet.getReferencedItem();
       regTo1 = parsingState.getRegister(insnStaticGet.getRegisterA());
       regTo2 = parsingState.getRegister(insnStaticGet.getRegisterA() + 1);
-      fieldClass = DexType_Class.parse(
+      fieldClass = DexClassType.parse(
                      refItem.getContainingClass().getTypeDescriptor(),
                      parsingState.getCache());
-      fieldType = DexType_Register.parse(
+      fieldType = DexRegisterType.parse(
                     refItem.getFieldType().getTypeDescriptor(),
                     parsingState.getCache());
       fieldName = refItem.getFieldName().getStringValue();
@@ -127,7 +127,7 @@ public class DexInstruction_StaticGetWide extends DexInstruction {
   }
   
   @Override
-  protected DexType_Class[] throwsExceptions() {
+  protected DexClassType[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error;
   }
   

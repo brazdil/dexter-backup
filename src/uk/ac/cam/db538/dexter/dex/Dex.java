@@ -27,8 +27,8 @@ import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Void;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
@@ -38,20 +38,20 @@ public class Dex {
 
   private final List<DexClass> classes;
 
-  @Getter private DexType_Class objectTaintStorage_Type;
+  @Getter private DexClassType objectTaintStorage_Type;
   @Getter private DexDirectMethod objectTaintStorage_Get;
   @Getter private DexDirectMethod objectTaintStorage_Set;
 
-  @Getter private DexType_Class methodCallHelper_Type;
+  @Getter private DexClassType methodCallHelper_Type;
   @Getter private DexField methodCallHelper_Arg;
   @Getter private DexField methodCallHelper_Res;
   @Getter private DexField methodCallHelper_SArg;
   @Getter private DexField methodCallHelper_SRes;
 
-  @Getter private DexType_Class internalClassAnnotation_Type;
-  @Getter private DexType_Class internalMethodAnnotation_Type;
+  @Getter private DexClassType internalClassAnnotation_Type;
+  @Getter private DexClassType internalMethodAnnotation_Type;
 
-  @Getter private DexType_Class taintConstants_Type;
+  @Getter private DexClassType taintConstants_Type;
   @Getter private DexDirectMethod taintConstants_QueryTaint;
   @Getter private DexDirectMethod taintConstants_ServiceTaint;
   @Getter private DexDirectMethod taintConstants_HasSourceAndSinkTaint;
@@ -118,7 +118,7 @@ public class Dex {
   /*
    * Needs to generate a short, but unique class name
    */
-  private DexType_Class generateClassType() {
+  private DexClassType generateClassType() {
 //    val parsingCache = getParsingCache();
 //    String desc;
 //    long suffix = 0L;
@@ -220,7 +220,7 @@ public class Dex {
     externalStaticFieldTaint_Class = new DexClass(
       this,
       generateClassType(),
-      DexType_Class.parse("Ljava/lang/Object;", parsingCache),
+      DexClassType.parse("Ljava/lang/Object;", parsingCache),
       EnumSet.of(AccessFlags.PUBLIC),
       null,
       null,
@@ -235,7 +235,7 @@ public class Dex {
       externalStaticFieldTaint_Class,
       "<clinit>",
       EnumSet.of(AccessFlags.STATIC, AccessFlags.CONSTRUCTOR),
-      new DexPrototype(DexType_Void.parse("V", parsingCache), null),
+      new DexPrototype(DexVoid.parse("V", parsingCache), null),
       clinitCode,
       null, null);
     externalStaticFieldTaint_Class.addMethod(externalStaticFieldTaint_Clinit);

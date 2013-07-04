@@ -18,8 +18,8 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class DexInstruction_InstancePutWide extends DexInstruction {
@@ -27,11 +27,11 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
   @Getter private final DexRegister regFrom1;
   @Getter private final DexRegister regFrom2;
   @Getter private final DexRegister regObject;
-  @Getter private final DexType_Class fieldClass;
-  @Getter private final DexType_Register fieldType;
+  @Getter private final DexClassType fieldClass;
+  @Getter private final DexRegisterType fieldType;
   @Getter private final String fieldName;
 
-  public DexInstruction_InstancePutWide(DexCode methodCode, DexRegister from1, DexRegister from2, DexRegister obj, DexType_Class fieldClass, DexType_Register fieldType, String fieldName) {
+  public DexInstruction_InstancePutWide(DexCode methodCode, DexRegister from1, DexRegister from2, DexRegister obj, DexClassType fieldClass, DexRegisterType fieldType, String fieldName) {
     super(methodCode);
 
     this.regFrom1 = from1;
@@ -70,10 +70,10 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
       regFrom1 = parsingState.getRegister(insnStaticPut.getRegisterA());
       regFrom2 = parsingState.getRegister(insnStaticPut.getRegisterA() + 1);
       regObject = parsingState.getRegister(insnStaticPut.getRegisterB());
-      fieldClass = DexType_Class.parse(
+      fieldClass = DexClassType.parse(
                      refItem.getContainingClass().getTypeDescriptor(),
                      parsingState.getCache());
-      fieldType = DexType_Register.parse(
+      fieldType = DexRegisterType.parse(
                     refItem.getFieldType().getTypeDescriptor(),
                     parsingState.getCache());
       fieldName = refItem.getFieldName().getStringValue();
@@ -127,7 +127,7 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
   }
 
   @Override
-  protected DexType_Class[] throwsExceptions() {
+  protected DexClassType[] throwsExceptions() {
 	return getParentFile().getParsingCache().LIST_Error_NullPointerException;
   }
   

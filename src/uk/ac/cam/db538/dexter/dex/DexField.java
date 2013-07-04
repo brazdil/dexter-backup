@@ -18,9 +18,9 @@ import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.Util.AccessFlags;
 
-import uk.ac.cam.db538.dexter.dex.type.DexType_Class;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Primitive;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Triple;
 
@@ -28,11 +28,11 @@ public class DexField {
 
   @Getter @Setter private DexClass parentClass;
   @Getter private final String name;
-  @Getter private final DexType_Register type;
+  @Getter private final DexRegisterType type;
   private final Set<AccessFlags> accessFlagSet;
   private final Set<DexAnnotation> annotations;
 
-  public DexField(DexClass parent, String name, DexType_Register type, Set<AccessFlags> accessFlags, Set<DexAnnotation> annotations) {
+  public DexField(DexClass parent, String name, DexRegisterType type, Set<AccessFlags> accessFlags, Set<DexAnnotation> annotations) {
     this.parentClass = parent;
     this.name = name;
     this.type = type;
@@ -50,7 +50,7 @@ public class DexField {
   public DexField(DexClass parent, EncodedField fieldInfo, AnnotationSetItem encodedAnnotations) {
     this(parent,
          StringIdItem.getStringValue(fieldInfo.field.getFieldName()),
-         DexType_Register.parse(fieldInfo.field.getFieldType().getTypeDescriptor(), parent.getParentFile().getParsingCache()),
+         DexRegisterType.parse(fieldInfo.field.getFieldType().getTypeDescriptor(), parent.getParentFile().getParsingCache()),
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForField(fieldInfo.accessFlags)),
          DexAnnotation.parseAll(encodedAnnotations, parent.getParentFile().getParsingCache()));
   }
@@ -82,10 +82,10 @@ public class DexField {
     return new EncodedField(fieldItem, accessFlags);
   }
 
-  public static Cache<Triple<DexType_Class, DexType_Register, String>, FieldIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
-    return new Cache<Triple<DexType_Class, DexType_Register, String>, FieldIdItem>() {
+  public static Cache<Triple<DexClassType, DexRegisterType, String>, FieldIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
+    return new Cache<Triple<DexClassType, DexRegisterType, String>, FieldIdItem>() {
       @Override
-      protected FieldIdItem createNewEntry(Triple<DexType_Class, DexType_Register, String> key) {
+      protected FieldIdItem createNewEntry(Triple<DexClassType, DexRegisterType, String> key) {
         return FieldIdItem.internFieldIdItem(
                  outFile,
                  cache.getType(key.getValA()),
@@ -118,9 +118,9 @@ public class DexField {
   }
 
   public DexField instrument() {
-    if (type instanceof DexType_Primitive) {
+    if (type instanceof DexPrimitiveType) {
       val newName = generateTaintFieldName();
-      val newType = DexType_Primitive.parse("I", parentClass.getParentFile().getParsingCache());
+      val newType = DexPrimitiveType.parse("I", parentClass.getParentFile().getParsingCache());
 
       val newField = new DexField(parentClass, newName, newType, accessFlagSet, annotations);
       parentClass.addField(newField);

@@ -26,7 +26,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
-import uk.ac.cam.db538.dexter.dex.type.DexType_Reference;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 import com.rx201.dx.translator.DexCodeGeneration;
@@ -100,7 +100,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     val regIndex = this.getPrototype().getFirstParameterRegisterIndex(paramIndex, isStatic());
     val paramReg = parameterRegisters.get(regIndex);
 
-    val moveInsn = new DexInstruction_Move(code, codeReg, paramReg, paramType instanceof DexType_Reference);
+    val moveInsn = new DexInstruction_Move(code, codeReg, paramReg, paramType instanceof DexReferenceType);
     moveInsn.setAuxiliaryElement(true);
     code.insertBefore(moveInsn, code.getStartingLabel());
 
