@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="uk.ac.cam.db538.dexter"
+    android:largeHeap="true"
     android:versionCode="1"
-    android:versionName="1.0"
-    android:largeHeap="true">
+    android:versionName="1.0" >
 
     <uses-sdk
         android:minSdkVersion="11"
@@ -30,6 +30,14 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".PackageListActivity" />
+        </activity>
+        <activity
+            android:name="uk.ac.cam.db538.dexter.InstrumentActivity"
+            android:label="@string/title_activity_instrument"
+            android:parentActivityName="PackageListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="PackageListActivity" />
         </activity>
     </application>
 
