@@ -15,6 +15,7 @@ import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 
 public class DexAbstractMethod extends DexMethod {
 

@@ -7,22 +7,22 @@ import java.util.Set;
 import lombok.Getter;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
-public class ClassInfo extends BaseClassInfo {
+public class ClassDefinition extends BaseClassDefinition {
 
 	@Getter private boolean root;
 
-	private final Set<InterfaceInfo> _interfaces;
-	@Getter private final Set<InterfaceInfo> interfaces;
+	private final Set<InterfaceDefinition> _interfaces;
+	@Getter private final Set<InterfaceDefinition> interfaces;
 
-	ClassInfo(DexClassType classType, int accessFlags, boolean isRoot) {
+	ClassDefinition(DexClassType classType, int accessFlags, boolean isRoot) {
 		super(classType, accessFlags);
 		this.root = isRoot;
 		
-		this._interfaces = new HashSet<InterfaceInfo>();
+		this._interfaces = new HashSet<InterfaceDefinition>();
 		this.interfaces = Collections.unmodifiableSet(this._interfaces);
 	}
 	
-	void setImplementsInterface(InterfaceInfo iface) {
+	void setImplementsInterface(InterfaceDefinition iface) {
 		this._interfaces.add(iface);
 		iface._implementers.add(this);
 	}

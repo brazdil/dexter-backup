@@ -2,7 +2,6 @@ package uk.ac.cam.db538.dexter.dex;
 
 import lombok.val;
 
-import org.jf.dexlib.DexFile;
 import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.EncodedValue.AnnotationEncodedValue;
 import org.jf.dexlib.EncodedValue.ArrayEncodedSubValue;
@@ -14,8 +13,8 @@ import org.jf.dexlib.EncodedValue.MethodEncodedValue;
 import org.jf.dexlib.EncodedValue.StringEncodedValue;
 import org.jf.dexlib.EncodedValue.TypeEncodedValue;
 
-import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 
@@ -71,7 +70,7 @@ public class DexEncodedValue {
 	      return new MethodEncodedValue(
 	               asmCache.getMethod(
 	                 DexClassType.parse(methodValue.value.getContainingClass().getTypeDescriptor(), parsingCache),
-	                 new DexPrototype(methodValue.value.getPrototype(), parsingCache),
+	                 DexPrototype.parse(methodValue.value.getPrototype(), parsingCache),
 	                 methodValue.value.getMethodName().getStringValue()));
 	
 	    case VALUE_STRING:
