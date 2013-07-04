@@ -23,11 +23,13 @@ import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 public class DexPrototype {
 
   @Getter private final DexType returnType;
-  private final List<DexRegisterType> parameterTypes;
+  private final List<DexRegisterType> _parameterTypes;
+  @Getter private final List<DexRegisterType> parameterTypes;
 
   public DexPrototype(DexType returnType, List<DexRegisterType> argTypes) {
     this.returnType = returnType;
-    this.parameterTypes = (argTypes == null) ? new LinkedList<DexRegisterType>() : argTypes;
+    this._parameterTypes = (argTypes == null) ? new LinkedList<DexRegisterType>() : argTypes;
+    this.parameterTypes = Collections.unmodifiableList(_parameterTypes);
   }
 
   public static DexPrototype parse(ProtoIdItem protoItem, DexTypeCache cache) {
@@ -42,10 +44,6 @@ public class DexPrototype {
 	  }
 	  
 	  return result;
-  }
-
-  public List<DexRegisterType> getParameterTypes() {
-    return Collections.unmodifiableList(parameterTypes);
   }
 
   private static DexType parseReturnType(TypeIdItem item, DexTypeCache cache) {
@@ -65,13 +63,13 @@ public class DexPrototype {
     int totalWords = 0;
     if (!isStatic)
       totalWords += DexClassType.TypeSize.getRegisterCount();
-    for (val param : parameterTypes)
+    for (val param : _parameterTypes)
       totalWords += param.getRegisters();
     return totalWords;
   }
 
   public int getParameterCount(boolean isStatic) {
-    return parameterTypes.size() + (isStatic ? 0 : 1);
+    return _parameterTypes.size() + (isStatic ? 0 : 1);
   }
 
   public int getParameterRegisterId(int paramId, int registerCount, boolean isStatic) {
@@ -90,7 +88,7 @@ public class DexPrototype {
     }
 
     for (int i = 0; i < paramId; ++i)
-      regId += parameterTypes.get(i).getRegisters();
+      regId += _parameterTypes.get(i).getRegisters();
 
     return regId;
   }
@@ -102,7 +100,7 @@ public class DexPrototype {
       else
         paramId--;
     }
-    return parameterTypes.get(paramId);
+    return _parameterTypes.get(paramId);
   }
 
   public NoDuplicatesList<DexRegister> generateParameterRegisters(boolean isStatic) {
@@ -119,7 +117,7 @@ public class DexPrototype {
     val argStoreRegs = new LinkedList<DexRegister>();
 
     int i = isStatic ? 0 : 1;
-    for (val paramType : parameterTypes) {
+    for (val paramType : _parameterTypes) {
       if (paramType instanceof DexPrimitiveType)
         for (int j = 0; j < paramType.getRegisters(); ++j)
           argStoreRegs.add(state.getTaintRegister(argumentRegisters.get(i + j)));
@@ -142,7 +140,7 @@ public class DexPrototype {
   }
 
   public boolean hasPrimitiveArgument() {
-    for (val paramType : parameterTypes)
+    for (val paramType : _parameterTypes)
       if (paramType instanceof DexPrimitiveType)
         return true;
     return false;
@@ -153,7 +151,7 @@ public class DexPrototype {
     final int prime = 31;
     int result = 1;
     result = prime * result
-             + ((parameterTypes == null) ? 0 : parameterTypes.hashCode());
+             + ((_parameterTypes == null) ? 0 : _parameterTypes.hashCode());
     result = prime * result
              + ((returnType == null) ? 0 : returnType.hashCode());
     return result;
@@ -168,10 +166,10 @@ public class DexPrototype {
     if (!(obj instanceof DexPrototype))
       return false;
     DexPrototype other = (DexPrototype) obj;
-    if (parameterTypes == null) {
-      if (other.parameterTypes != null)
+    if (_parameterTypes == null) {
+      if (other._parameterTypes != null)
         return false;
-    } else if (!parameterTypes.equals(other.parameterTypes))
+    } else if (!_parameterTypes.equals(other._parameterTypes))
       return false;
     if (returnType == null) {
       if (other.returnType != null)
@@ -184,7 +182,7 @@ public class DexPrototype {
   public String getDescriptor() {
 	  StringBuilder sb = new StringBuilder();
 	  sb.append("(");
-	  for(val parameter : parameterTypes) {
+	  for(val parameter : _parameterTypes) {
 		  sb.append(parameter.getDescriptor());
 	  }
 	  sb.append(")");
