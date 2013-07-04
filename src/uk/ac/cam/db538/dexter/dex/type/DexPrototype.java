@@ -1,7 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 import lombok.Getter;
@@ -30,7 +30,10 @@ public class DexPrototype {
 
   public DexPrototype(DexType returnType, List<DexRegisterType> argTypes) {
     this.returnType = returnType;
-    this._parameterTypes = (argTypes == null) ? new LinkedList<DexRegisterType>() : argTypes;
+    if (argTypes == null)
+    	this._parameterTypes = Collections.emptyList();
+    else
+    	this._parameterTypes = argTypes;
     this.parameterTypes = Collections.unmodifiableList(_parameterTypes);
     
     // precompute hashcode
@@ -50,12 +53,13 @@ public class DexPrototype {
   }
 
   private static List<DexRegisterType> parseArgumentTypes(TypeListItem params, DexTypeCache cache) {
-    val list = new LinkedList<DexRegisterType>();
     if (params != null) {
+      val list = new ArrayList<DexRegisterType>(params.getTypeCount());
       for (val type : params.getTypes())
         list.add(DexRegisterType.parse(type.getTypeDescriptor(), cache));
+      return list;
     }
-    return list;
+    return Collections.emptyList();
   }
 
   public int countParamWords(boolean isStatic) {
@@ -113,7 +117,7 @@ public class DexPrototype {
   }
 
   public List<DexRegister> generateArgumentTaintStoringRegisters(List<DexRegister> argumentRegisters, boolean isStatic, DexCode_InstrumentationState state) {
-    val argStoreRegs = new LinkedList<DexRegister>();
+    val argStoreRegs = new ArrayList<DexRegister>();
 
     int i = isStatic ? 0 : 1;
     for (val paramType : _parameterTypes) {
