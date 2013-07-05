@@ -257,6 +257,37 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	private List<AnalyzedDexInstruction> getCatchers(Rop opcode) {
 		ArrayList<AnalyzedDexInstruction> result = new ArrayList<AnalyzedDexInstruction>();
 		DexCode code = curInst.getInstruction().getMethodCode();
+		
+		boolean canThrow = opcode.getExceptions().size() > 0;
+		
+		// Order of catch matters, so we need to preserve that, which means
+		// we cannot just iterate through the successors ( which is unordered)
+	    for (val tryBlockEnd : code.getTryBlocks()) {
+	        val tryBlockStart = tryBlockEnd.getBlockStart();
+
+	        // check that the instruction is in this try block
+	        if (code.isBetween(tryBlockStart, tryBlockEnd, curInst.getInstruction())) {
+
+	            for (val catchBlock : tryBlockStart.getCatchHandlers()) {
+	            	
+	            	// Assume all catchers may catch every throwing instruction
+					if (canThrow)
+						result.add(analyzer.reverseLookup(catchBlock));
+	            }
+				// if the block has CatchAll handler, it can jump to it
+				val catchAllHandler = tryBlockStart.getCatchAllHandler();
+				if (catchAllHandler != null)
+					result.add(analyzer.reverseLookup(catchAllHandler));
+	        }
+		}
+		return result;
+	}
+	
+	// Even though this is more precise, it is not consistent with what dx is doing
+	// See DexInstruction.cfgGetExceptionSuccessors()
+	private List<AnalyzedDexInstruction> getCatchers_precise(Rop opcode) {
+		ArrayList<AnalyzedDexInstruction> result = new ArrayList<AnalyzedDexInstruction>();
+		DexCode code = curInst.getInstruction().getMethodCode();
 		val classHierarchy = code.getParentFile().getClassHierarchy();
 		
 		ArrayList<DexClassType> thrownExceptions = new ArrayList<DexClassType>();
