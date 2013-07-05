@@ -14,16 +14,29 @@ public class ClassDefinition extends BaseClassDefinition {
 	private final Set<InterfaceDefinition> _interfaces;
 	@Getter private final Set<InterfaceDefinition> interfaces;
 
+	private final Set<InstanceFieldDefinition> _instanceFields;
+	@Getter private final Set<InstanceFieldDefinition> instanceFields;
+
 	ClassDefinition(DexClassType classType, int accessFlags, boolean isRoot) {
 		super(classType, accessFlags);
 		this.root = isRoot;
 		
 		this._interfaces = new HashSet<InterfaceDefinition>();
 		this.interfaces = Collections.unmodifiableSet(this._interfaces);
+
+		this._instanceFields = new HashSet<InstanceFieldDefinition>();
+		this.instanceFields = Collections.unmodifiableSet(this._instanceFields);
 	}
 	
-	void setImplementsInterface(InterfaceDefinition iface) {
+	void addImplementedInterface(InterfaceDefinition iface) {
 		this._interfaces.add(iface);
 		iface._implementers.add(this);
+	}
+
+	void addDeclaredInstanceField(InstanceFieldDefinition field) {
+		assert !field.isStatic();
+		assert field.getParentClass() == this;
+		
+		this._instanceFields.add(field);
 	}
 }
