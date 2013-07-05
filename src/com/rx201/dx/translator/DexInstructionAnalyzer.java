@@ -78,6 +78,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintString;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.type.DexLong;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 import com.rx201.dx.translator.TypeSolver.CascadeType;
@@ -190,7 +191,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	
 	@Override
 	public void visit(DexInstruction_ReturnWide instruction) {
-		if (instruction.getParentMethod().getPrototype().getReturnType().getDescriptor().equals("J")) {
+		if (instruction.getParentMethod().getPrototype().getReturnType() instanceof DexLong) {
 			useFreezedRegister(instruction.getRegFrom1(), RopType.LongLo);
 			useFreezedRegister(instruction.getRegFrom2(), RopType.LongHi);
 		} else {
