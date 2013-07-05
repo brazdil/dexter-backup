@@ -21,6 +21,7 @@ import org.jf.dexlib.DexFile.NoClassesDexException;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
@@ -28,17 +29,27 @@ public class HierarchyBuilder {
 
 	private boolean foundRoot = false;
 	private final DexTypeCache typeCache;
+	
 	private final Map<DexClassType, BaseClassDefinition> definedClasses;
+	
 	private final Map<BaseClassDefinition, DexClassType> superclasses;
-	private final Map<ClassDefinition, Set<DexClassType>> interfaces;
 	private final Map<BaseClassDefinition, Set<MethodData>> methods;
+	private final Map<BaseClassDefinition, Set<FieldData>> staticFields;
+
+	private final Map<ClassDefinition, Set<DexClassType>> interfaces;
+	private final Map<ClassDefinition, Set<FieldData>> instanceFields;
 	
 	public HierarchyBuilder(DexTypeCache cache) {
 		typeCache = cache;
+		
 		definedClasses = new HashMap<DexClassType, BaseClassDefinition>();
+		
 		superclasses = new HashMap<BaseClassDefinition, DexClassType>();
-		interfaces = new HashMap<ClassDefinition, Set<DexClassType>>();
 		methods = new HashMap<BaseClassDefinition, Set<MethodData>>();
+		staticFields = new HashMap<BaseClassDefinition, Set<FieldData>>();
+
+		interfaces = new HashMap<ClassDefinition, Set<DexClassType>>();
+		instanceFields = new HashMap<ClassDefinition, Set<FieldData>>();
 	}
 
 	public void scanDexFolder(File dir, HierarchyScanCallback callback) throws IOException {
@@ -125,12 +136,32 @@ public class HierarchyBuilder {
 		}
 		methods.put(clsInfo, clsMethods);
 		
-		// examine interfaces
+		// examine static fields
+		if (clsData != null) {
+			val clsStaticFields = new HashSet<FieldData>();
+			for (val fieldItem : clsData.getStaticFields())
+				clsStaticFields.add(new FieldData(
+						DexFieldId.parseFieldId(fieldItem.field, typeCache),
+						fieldItem.accessFlags));
+			staticFields.put(clsInfo, clsStaticFields);
+		}
+		
+		// examine interfaces (proper classes only)
 		if (clsInfo instanceof ClassDefinition && cls.getInterfaces() != null) {
 			val clsInterfaces = new HashSet<DexClassType>();
 			for (val ifaceTypeItem : cls.getInterfaces().getTypes())
 				clsInterfaces.add(DexClassType.parse(ifaceTypeItem.getTypeDescriptor(), typeCache));
 			interfaces.put((ClassDefinition) clsInfo, clsInterfaces);
+		}
+		
+		// examine instance fields (proper classes only)
+		if (clsInfo instanceof ClassDefinition && clsData != null) {
+			val clsInstanceFields = new HashSet<FieldData>();
+			for (val fieldItem : clsData.getInstanceFields())
+				clsInstanceFields.add(new FieldData(
+						DexFieldId.parseFieldId(fieldItem.field, typeCache),
+						fieldItem.accessFlags));
+			instanceFields.put((ClassDefinition) clsInfo, clsInstanceFields);
 		}
 
 		// store data
@@ -140,36 +171,57 @@ public class HierarchyBuilder {
 	
 	
 	public RuntimeHierarchy build() {
-		for (val cls : definedClasses.values()) {
+		for (val baseCls : definedClasses.values()) {
 
 			// connect to parent and vice versa
-			val sclsType = superclasses.get(cls);
+			val sclsType = superclasses.get(baseCls);
 			if (sclsType != null) {
 				val sclsInfo = definedClasses.get(sclsType);
 				if (sclsInfo == null)
-					throw new HierarchyException("Class " + cls.getClassType().getPrettyName() + " is missing its parent " + sclsType.getPrettyName());
+					throw new HierarchyException("Class " + baseCls.getClassType().getPrettyName() + " is missing its parent " + sclsType.getPrettyName());
 				else
-					cls.setSuperclassLink(sclsInfo);
+					baseCls.setSuperclassLink(sclsInfo);
 			}
 
-			// connect to interfaces
-			if (cls instanceof ClassDefinition) {
-				val clsInfo = (ClassDefinition) cls;
-				val ifaces = interfaces.get(clsInfo);
-				if (ifaces != null)
+			// build methods and connect to the class
+			for (val method : methods.get(baseCls)) {
+				val methodInfo = new MethodDefinition(baseCls, method.methodId, method.accessFlags);
+				baseCls.addDeclaredMethod(methodInfo);
+			}
+			
+			// build static fields
+			val sfields = staticFields.get(baseCls);
+			if (sfields != null) {
+				for (val sfield : sfields) {
+					val sfieldInfo = new StaticFieldDefinition(baseCls, sfield.fieldId, sfield.accessFlags);
+					baseCls.addDeclaredStaticField(sfieldInfo);
+				}
+			}
+
+			// proper classes only (not interfaces)
+			if (baseCls instanceof ClassDefinition) {
+				val properCls = (ClassDefinition) baseCls;
+				
+				// connect to interfaces
+				val ifaces = interfaces.get(properCls);
+				if (ifaces != null) {
 					for (val ifaceType : ifaces) {
 						val ifaceInfo = definedClasses.get(ifaceType);
 						if (ifaceInfo == null || !(ifaceInfo instanceof InterfaceDefinition))
-							throw new HierarchyException("Class " + cls.getClassType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
+							throw new HierarchyException("Class " + baseCls.getClassType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
 						else
-							clsInfo.setImplementsInterface((InterfaceDefinition) ifaceInfo);
+							properCls.addImplementedInterface((InterfaceDefinition) ifaceInfo);
 					}
-			}
-			
-			// build methods and connect to the class
-			for (val method : methods.get(cls)) {
-				val methodInfo = new MethodDefinition(cls, method.methodId, method.accessFlags);
-				cls.addDefinedMethod(methodInfo);
+				}
+				
+				// build instance fields
+				val ifields = instanceFields.get(properCls);
+				if (ifields != null) {
+					for (val ifield : ifields) {
+						val ifieldInfo = new InstanceFieldDefinition(properCls, ifield.fieldId, ifield.accessFlags);
+						properCls.addDeclaredInstanceField(ifieldInfo);
+					}
+				}
 			}
 		}
 		
@@ -186,6 +238,12 @@ public class HierarchyBuilder {
 	@AllArgsConstructor
 	private static class MethodData {
 		DexMethodId methodId;
+		int accessFlags;
+	}
+
+	@AllArgsConstructor
+	private static class FieldData {
+		DexFieldId fieldId;
 		int accessFlags;
 	}
 }

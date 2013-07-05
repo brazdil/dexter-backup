@@ -23,6 +23,9 @@ public abstract class BaseClassDefinition {
 	private final Set<MethodDefinition> _methods;
 	@Getter private final Set<MethodDefinition> methods;
 
+	private final Set<StaticFieldDefinition> _staticFields;
+	@Getter private final Set<StaticFieldDefinition> staticFields;
+
 	BaseClassDefinition(DexClassType classType, int accessFlags) {
 		this.classType = classType;
 		this.accessFlags = accessFlags;
@@ -33,6 +36,9 @@ public abstract class BaseClassDefinition {
 
 		this._methods = new HashSet<MethodDefinition>();
 		this.methods = Collections.unmodifiableSet(this._methods);
+
+		this._staticFields = new HashSet<StaticFieldDefinition>();
+		this.staticFields = Collections.unmodifiableSet(this._staticFields);
 	}
 	
 	// only to be called by HierarchyBuilder
@@ -41,17 +47,28 @@ public abstract class BaseClassDefinition {
 		this.superclass._children.add(this);
 	}
 	
-	void addDefinedMethod(MethodDefinition method) {
+	void addDeclaredMethod(MethodDefinition method) {
 		assert method.getParentClass() == this;
 		
 		this._methods.add(method);
 	}
 	
+	void addDeclaredStaticField(StaticFieldDefinition field) {
+		assert field.isStatic(); 
+		assert field.getParentClass() == this;
+		
+		this._staticFields.add(field);
+	}
+
 	public EnumSet<AccessFlags> getAccessFlags() {
 		AccessFlags[] flags = AccessFlags.getAccessFlagsForClass(accessFlags);
 		if (flags.length == 0)
 			return EnumSet.noneOf(AccessFlags.class);
 		else
 			return EnumSet.of(flags[0], flags);
+	}
+	
+	public boolean isAbstract() {
+		return getAccessFlags().contains(AccessFlags.ABSTRACT);
 	}
 }
