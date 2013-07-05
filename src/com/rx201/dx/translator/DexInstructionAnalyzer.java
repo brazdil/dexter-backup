@@ -119,7 +119,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	
 	@Override
 	public void visit(DexInstruction_Move instruction) {
-		moveRegister(instruction.getRegFrom(), instruction.getRegTo(), instruction.isObjectMoving()? RopType.Reference : RopType.Primitive);
+		moveRegister(instruction.getRegFrom(), instruction.getRegTo(), instruction.isObjectMoving()? RopType.WildcardReference : RopType.Primitive);
 	}
 	@Override
 	public void visit(DexInstruction_MoveWide instruction) {
@@ -233,7 +233,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	}
 	@Override
 	public void visit(DexInstruction_Monitor instruction) {
-		useRegister(instruction.getRegMonitor(), RopType.Reference);
+		useRegister(instruction.getRegMonitor(), RopType.WildcardReference);
 	}
 	@Override
 	public void visit(DexInstruction_CheckCast instruction) {
@@ -283,7 +283,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	
 	@Override
 	public void visit(DexInstruction_Throw instruction) {
-		useRegister(instruction.getRegFrom(), RopType.Reference);
+		useRegister(instruction.getRegFrom(), RopType.WildcardReference);
 	}
 	
 	@Override
@@ -346,7 +346,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		analyzedInst.addRegisterConstraint(inst.getRegTo(), inst.getRegArray(), CascadeType.ArrayToElement);
 		
     	if (inst.getOpcode() == Opcode_GetPut.Object) {
-    		defineRegister(inst.getRegTo(), RopType.Reference);
+    		defineRegister(inst.getRegTo(), RopType.WildcardReference);
     	} else {
 	    	switch (inst.getOpcode()) {
 			case Boolean:
@@ -399,7 +399,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 			useRegister(instruction.getRegFrom(), RopType.IntFloat);
 			break;
 		case Object:
-			useRegister(instruction.getRegFrom(), RopType.Reference);
+			useRegister(instruction.getRegFrom(), RopType.WildcardReference);
 			break;
 		case Short:
 			useFreezedRegister(instruction.getRegFrom(), RopType.Short);

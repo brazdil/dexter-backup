@@ -216,7 +216,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
         case Char:
             return Type.intern("C");
         case Null:
-            System.err.println("Warning: Ambiguous null value.");
+            System.out.println("Warning: Ambiguous null value.");
         case Integer:
             return Type.intern("I");
         case Float:
@@ -227,7 +227,13 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
         case DoubleLo:
         case DoubleHi:
             return Type.intern("D");
-
+        case WildcardRef: {
+        	StringBuilder sb = new StringBuilder();
+        	for(int i=0;i<t.arrayDepth; i++)
+        		sb.append('[');
+        	sb.append("Ljava/lang/Object;");
+        	return Type.intern(sb.toString());
+        }
         case Reference:
             return Type.intern(t.type.getClassType());
         
@@ -554,6 +560,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		switch (type.category) {
 			case LongLo:
 			case LongHi:
+			case Wide:
 				constant = CstLong.make(value);
 				break;
 			case DoubleLo:
@@ -563,7 +570,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			default:
 				throw new RuntimeException("Unknown constant type.");
 		}
-		RegisterSpec dst = getDestRegSpec(to);
+		RegisterSpec dst = RegisterSpec.make(DexRegisterHelper.normalize(to), constant.getType());
 		doPlainCstInsn(Rops.opConst(dst), dst, constant);
 	}
 	
