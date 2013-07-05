@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -87,21 +88,8 @@ public class Dex {
     return parentApk.getParsingCache();
   }
 
-  private static File getMergeFile() throws IOException {
-    val tempFile = File.createTempFile("dexter", "merge");
-
-    val tempFile_Out = new BufferedOutputStream(new FileOutputStream(tempFile));
-    val mergeResource_In = ClassLoader.getSystemResourceAsStream("merge-classes.dex");
-
-    val buffer = new byte[1024];
-    int written;
-    while ((written = mergeResource_In.read(buffer)) >= 0)
-      tempFile_Out.write(buffer, 0, written);
-
-    tempFile_Out.close();
-    mergeResource_In.close();
-
-    return tempFile;
+  private static InputStream getMergeDexData() {
+    return ClassLoader.getSystemResourceAsStream("merge-classes.dex");
   }
 
   private List<DexClass> parseAllClasses(DexFile file, boolean isInternal) {
@@ -151,7 +139,7 @@ public class Dex {
     // open the merge DEX file
     DexFile mergeDex;
     try {
-      mergeDex = new DexFile(getMergeFile());
+      mergeDex = new DexFile(getMergeDexData());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
