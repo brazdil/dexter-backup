@@ -1,11 +1,15 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import java.io.Serializable;
+
 import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.FieldIdItem;
 
-public class DexFieldId {
+public class DexFieldId implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 	
 	@Getter private final String name;
 	@Getter private final DexRegisterType type;

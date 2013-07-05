@@ -94,8 +94,17 @@ public class MainConsole {
     
     // build runtime class hierarchy
     val hierarchyBuilder = new HierarchyBuilder(typeCache);
-    hierarchyBuilder.scanDex(apkFile, null);
+    
+    System.out.println("Scanning framework");
     hierarchyBuilder.scanDexFolder(frameworkDir, null);
+    
+    System.out.println("Storing hierarchy");
+    hierarchyBuilder.serialize(new File("hierarchy.dump"));
+    
+    System.out.println("Scanning APK");
+    hierarchyBuilder.scanDex(apkFile, null);
+    
+    System.out.println("Building hierarchy");
     hierarchyBuilder.build();
 
     System.out.println("DONE");

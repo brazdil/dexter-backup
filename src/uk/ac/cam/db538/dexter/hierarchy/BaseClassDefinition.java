@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.hierarchy;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -11,8 +12,10 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
-public abstract class BaseClassDefinition {
+public abstract class BaseClassDefinition implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	@Getter private final DexClassType classType;
 	private final int accessFlags;
 
