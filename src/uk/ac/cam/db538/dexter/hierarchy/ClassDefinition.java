@@ -9,6 +9,8 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class ClassDefinition extends BaseClassDefinition {
 
+	private static final long serialVersionUID = 1L;
+	
 	@Getter private boolean root;
 
 	private final Set<InterfaceDefinition> _interfaces;
