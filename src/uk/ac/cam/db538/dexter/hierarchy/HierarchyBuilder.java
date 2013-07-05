@@ -46,6 +46,8 @@ public class HierarchyBuilder implements Serializable {
 	private final Map<ClassDefinition, Set<DexClassType>> interfaces;
 	private final Map<ClassDefinition, Set<FieldData>> instanceFields;
 	
+	private final List<BaseClassDefinition> applicationClasses;
+	
 	public HierarchyBuilder(DexTypeCache cache) {
 		typeCache = cache;
 		
@@ -57,16 +59,18 @@ public class HierarchyBuilder implements Serializable {
 
 		interfaces = new HashMap<ClassDefinition, Set<DexClassType>>();
 		instanceFields = new HashMap<ClassDefinition, Set<FieldData>>();
+		
+		applicationClasses = new ArrayList<BaseClassDefinition>();
 	}
 
-	public void scanDexFolder(File dir) throws IOException {
+	public void importDexFolder(File dir) throws IOException {
 		String[] files = dir.list(FILTER_DEX_ODEX_JAR);
 		
 		for (String filename : files)
-			scanDex(new File(dir, filename));
+			importDex(new File(dir, filename), false);
 	}
 	
-	public void scanDex(File file) throws IOException {
+	public void importDex(File file, boolean isApplication) throws IOException {
 		// parse the file
 		DexFile dex;
 		try {
@@ -76,20 +80,20 @@ public class HierarchyBuilder implements Serializable {
 			return;
 		}
 
-		scanDex(dex);
+		importDex(dex, isApplication);
 		
 		// explicitly dispose of the object
 		dex = null;
 		System.gc();
 	}
 	
-	public void scanDex(DexFile dex) {
+	public void importDex(DexFile dex, boolean isApplication) {
 		// recursively scan classes
 		for (val cls : dex.ClassDefsSection.getItems())
-			scanClass(cls);
+			scanClass(cls, isApplication);
 	}
 	
-	private void scanClass(ClassDefItem cls) {
+	private void scanClass(ClassDefItem cls, boolean isApplication) {
 		val clsData = cls.getClassData();
 		val clsType = DexClassType.parse(cls.getClassType().getTypeDescriptor(), typeCache);
 		
@@ -169,9 +173,12 @@ public class HierarchyBuilder implements Serializable {
 		// store data
 		superclasses.put(clsInfo, superclsType);
 		definedClasses.put(clsType, clsInfo);
+		
+		// add it to special list of application classes if belongs to the app
+		if (isApplication)
+			applicationClasses.add(clsInfo);
 	}
-	
-	
+		
 	public RuntimeHierarchy build() {
 		for (val baseCls : definedClasses.values()) {
 
@@ -230,6 +237,21 @@ public class HierarchyBuilder implements Serializable {
 		return new RuntimeHierarchy(definedClasses);
 	}
 	
+	public void removeApplicationClasses() {
+		for (val cls : applicationClasses) {
+			definedClasses.remove(cls.getClassType());
+			
+			superclasses.remove(cls);
+			methods.remove(cls);
+			staticFields.remove(cls);
+
+			interfaces.remove(cls);
+			instanceFields.remove(cls);
+		}
+		
+		applicationClasses.clear();
+	}
+	
 	private static final FilenameFilter FILTER_DEX_ODEX_JAR = new FilenameFilter() {
 		@Override
 		public boolean accept(File dir, String name) {
@@ -258,7 +280,7 @@ public class HierarchyBuilder implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public void serialize(File outputFile) throws IOException {
-		typeCache.clear();
+		typeCache.clear(); // can be removed
 		
 		val fos = new FileOutputStream(outputFile);
 		try {
