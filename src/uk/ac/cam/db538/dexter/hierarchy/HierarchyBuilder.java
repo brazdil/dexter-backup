@@ -59,39 +59,34 @@ public class HierarchyBuilder implements Serializable {
 		instanceFields = new HashMap<ClassDefinition, Set<FieldData>>();
 	}
 
-	public void scanDexFolder(File dir, HierarchyScanCallback callback) throws IOException {
+	public void scanDexFolder(File dir) throws IOException {
 		String[] files = dir.list(FILTER_DEX_ODEX_JAR);
 		
-		if (callback != null) callback.onFolderScanStarted(dir, files.length);
-		
 		for (String filename : files)
-			scanDex(new File(dir, filename), callback);
-		
-		if (callback != null) callback.onFolderScanFinished(dir, files.length);
+			scanDex(new File(dir, filename));
 	}
 	
-	public void scanDex(File file, HierarchyScanCallback callback) throws IOException {
-		if (callback != null) callback.onFileScanStarted(file);
-		
+	public void scanDex(File file) throws IOException {
 		// parse the file
 		DexFile dex;
 		try {
 			dex = new DexFile(file, false, true);
 		} catch (NoClassesDexException e) {
 			// file does not contain classes.dex
-			if (callback != null) callback.onFileScanFinished(file);
 			return;
 		}
 
-		// recursively scan classes
-		for (val cls : dex.ClassDefsSection.getItems())
-			scanClass(cls);
+		scanDex(dex);
 		
 		// explicitly dispose of the object
 		dex = null;
 		System.gc();
-
-		if (callback != null) callback.onFileScanFinished(file);
+	}
+	
+	public void scanDex(DexFile dex) {
+		// recursively scan classes
+		for (val cls : dex.ClassDefsSection.getItems())
+			scanClass(cls);
 	}
 	
 	private void scanClass(ClassDefItem cls) {
@@ -263,6 +258,8 @@ public class HierarchyBuilder implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public void serialize(File outputFile) throws IOException {
+		typeCache.clear();
+		
 		val fos = new FileOutputStream(outputFile);
 		try {
 			val oos = new ObjectOutputStream(new BufferedOutputStream(fos));
