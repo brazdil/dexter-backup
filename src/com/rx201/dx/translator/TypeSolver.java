@@ -38,11 +38,9 @@ public class TypeSolver {
 	public void unify(TypeSolver other) {
 		if (other.info == this.info)
 			return;
-		for(Entry<TypeSolver, CascadeType> dep : other.info.depends.entrySet()) {
-			if (this.info.depends.containsKey(dep.getKey()))
-				assert this.info.depends.get(dep.getKey()) == dep.getValue();
-			this.info.depends.put(dep.getKey(), dep.getValue());
-		}
+		assert this.info.depends.isEmpty();
+		assert other.info.depends.isEmpty();
+
 		this.info.definedSites.addAll(other.info.definedSites);
 		other.info = this.info;
 	}
