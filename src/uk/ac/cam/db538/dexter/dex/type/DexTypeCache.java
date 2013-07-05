@@ -128,4 +128,12 @@ public class DexTypeCache implements Serializable {
 	  } else
 		  return cached;
   }
+  
+  public void clear() {
+	  cachedTypes_Class.clear();
+	  cachedTypes_Array.clear();
+	  cachedPrototypes.clear();
+	  cachedMethodIds.clear();
+	  cachedFieldIds.clear();	  
+  }
 }
