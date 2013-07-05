@@ -23,8 +23,8 @@ public class RopType {
 	public static final RopType LongHi = getRopType(Category.LongHi);
 	public static final RopType DoubleLo = getRopType(Category.DoubleLo);
 	public static final RopType DoubleHi = getRopType(Category.DoubleHi);
-	public static final RopType Reference = getRopType("Ljava/lang/Object;");
-	public static final RopType Array = Reference;
+	public static final RopType WildcardReference = getRopType(0);
+	public static final RopType Array = getRopType(0);
 	
 	public static enum Category {
         Unknown,
@@ -45,42 +45,46 @@ public class RopType {
         IntFloat,
         Wide,
         Reference,
+        WildcardRef,
         Conflicted;
 	
     protected static Category[][] mergeTable  =
         {
-                /*              Unknown     Null        Zero,       One,        Boolean     Byte        Short       Char        Integer,    Float,      LongLo      LongHi      DoubleLo    DoubleHi    Primitive,  IntFloat,   Wide,       Reference   Conflicted*/
-                /*Unknown*/    {Unknown,    Null,       Zero,       One,        Boolean,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   Primitive,  IntFloat,   Wide,       Reference,  Conflicted},
-                /*Null*/       {Null,       Null,       Null,       Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Reference,  Conflicted},
-                /*Zero*/       {Zero,       Null,       Zero,       Boolean,    Boolean,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   Integer,    Integer,    Wide,       Reference,  Conflicted},
-                /*One*/        {One,        Conflicted, Boolean,    One,        Boolean,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   One,        One,        One,        Conflicted, Conflicted},
-                /*Boolean*/    {Boolean,    Conflicted, Boolean,    Boolean,    Boolean,    Byte,       Short,      Char,       Integer,    Float,      Conflicted, Conflicted, Conflicted, Conflicted, Boolean,    Integer,    Conflicted, Conflicted, Conflicted},
-                /*Byte*/       {Byte,       Conflicted, Byte,       Byte,       Byte,       Byte,       Short,      Integer,    Byte,       Float,      Conflicted, Conflicted, Conflicted, Conflicted, Byte,       Integer,    Conflicted, Conflicted, Conflicted},
-                /*Short*/      {Short,      Conflicted, Short,      Short,      Short,      Short,      Short,      Integer,    Short,      Float,      Conflicted, Conflicted, Conflicted, Conflicted, Short,      Integer,    Conflicted, Conflicted, Conflicted},
-                /*Char*/       {Char,       Conflicted, Char,       Char,       Char,       Integer,    Integer,    Char,       Char,       Float,      Conflicted, Conflicted, Conflicted, Conflicted, Char,       Integer,    Conflicted, Conflicted, Conflicted},
-                /*Integer*/    {Integer,    Conflicted, Integer,    Integer,    Integer,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   Integer,    Integer,    Conflicted, Conflicted, Conflicted},
-                /*Float*/      {Float,      Conflicted, Float,      Float,      Float,      Float,      Float,      Float,      Float,      Float,      Conflicted, Conflicted, Conflicted, Conflicted, Float,      Float,      Conflicted, Conflicted, Conflicted},
-                /*LongLo*/     {LongLo,     Conflicted, LongLo,     LongLo,     Conflicted, Conflicted, Conflicted, Conflicted, LongLo,     Conflicted, LongLo,     Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, LongLo,     Conflicted, Conflicted},
-                /*LongHi*/     {LongHi,     Conflicted, LongHi,     LongHi,     Conflicted, Conflicted, Conflicted, Conflicted, LongHi,     Conflicted, Conflicted, LongLo,     Conflicted, Conflicted, Conflicted, Conflicted, LongHi,     Conflicted, Conflicted},
-                /*DoubleLo*/   {DoubleLo,   Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, DoubleLo,   Conflicted, Conflicted, Conflicted, DoubleLo,   Conflicted, Conflicted, Conflicted, DoubleLo,   Conflicted, Conflicted},
-                /*DoubleHi*/   {DoubleHi,   Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, DoubleHi,   Conflicted, Conflicted, Conflicted, Conflicted, DoubleHi,   Conflicted, Conflicted, DoubleHi,   Conflicted, Conflicted},
-                /*Primitive*/  {Primitive,  Conflicted, Zero,       One,        Boolean,    Byte,       Short,      Char,       Integer,    Float,      Conflicted, Conflicted, Conflicted, Conflicted, Primitive,  IntFloat,   Conflicted, Conflicted, Conflicted},
-                /*IntFloat*/   {IntFloat,   Conflicted, Zero,       One,        Integer,    Integer,    Integer,    Integer,    Integer,    Float,      Conflicted, Conflicted, Conflicted, Conflicted, IntFloat,   IntFloat,   Conflicted, Conflicted, Conflicted},
-                /*Wide*/       {Wide,       Conflicted, Wide,       Wide,       Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, LongLo,     LongHi,     DoubleLo,   DoubleHi,   Conflicted, Conflicted, Wide,       Conflicted, Conflicted},
-                /*Reference*/  {Reference,  Reference,  Reference,  Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Reference,  Conflicted, Conflicted, Reference,  Conflicted},
-                /*Conflicted*/ {Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted}
+                /*              Unknown     Null        Zero,       One,        Boolean     Byte        Short       Char        Integer,    Float,      LongLo      LongHi      DoubleLo    DoubleHi    Primitive,  IntFloat,   Wide,       Reference   WildcardRef, Conflicted*/
+                /*Unknown*/    {Unknown,    Null,       Zero,       One,        Boolean,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   Primitive,  IntFloat,   Wide,       Reference,  WildcardRef, Conflicted},
+                /*Null*/       {Null,       Null,       Null,       Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Reference,  Null,        Conflicted},
+                /*Zero*/       {Zero,       Null,       Zero,       Boolean,    Boolean,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   Integer,    Integer,    Wide,       Reference,  Null,        Conflicted},
+                /*One*/        {One,        Conflicted, Boolean,    One,        Boolean,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   One,        One,        One,        Conflicted, Conflicted,  Conflicted},
+                /*Boolean*/    {Boolean,    Conflicted, Boolean,    Boolean,    Boolean,    Byte,       Short,      Char,       Integer,    Float,      Conflicted, Conflicted, Conflicted, Conflicted, Boolean,    Integer,    Conflicted, Conflicted, Conflicted,  Conflicted},
+                /*Byte*/       {Byte,       Conflicted, Byte,       Byte,       Byte,       Byte,       Short,      Integer,    Byte,       Float,      Conflicted, Conflicted, Conflicted, Conflicted, Byte,       Integer,    Conflicted, Conflicted, Conflicted,  Conflicted},
+                /*Short*/      {Short,      Conflicted, Short,      Short,      Short,      Short,      Short,      Integer,    Short,      Float,      Conflicted, Conflicted, Conflicted, Conflicted, Short,      Integer,    Conflicted, Conflicted, Conflicted,  Conflicted},
+                /*Char*/       {Char,       Conflicted, Char,       Char,       Char,       Integer,    Integer,    Char,       Char,       Float,      Conflicted, Conflicted, Conflicted, Conflicted, Char,       Integer,    Conflicted, Conflicted, Conflicted,  Conflicted},
+                /*Integer*/    {Integer,    Conflicted, Integer,    Integer,    Integer,    Byte,       Short,      Char,       Integer,    Float,      LongLo,     LongHi,     DoubleLo,   DoubleHi,   Integer,    Integer,    Conflicted, Conflicted, Conflicted,  Conflicted},
+                /*Float*/      {Float,      Conflicted, Float,      Float,      Float,      Float,      Float,      Float,      Float,      Float,      Conflicted, Conflicted, Conflicted, Conflicted, Float,      Float,      Conflicted, Conflicted, Conflicted,  Conflicted},
+                /*LongLo*/     {LongLo,     Conflicted, LongLo,     LongLo,     Conflicted, Conflicted, Conflicted, Conflicted, LongLo,     Conflicted, LongLo,     Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, LongLo,     Conflicted, Conflicted,  Conflicted},
+                /*LongHi*/     {LongHi,     Conflicted, LongHi,     LongHi,     Conflicted, Conflicted, Conflicted, Conflicted, LongHi,     Conflicted, Conflicted, LongLo,     Conflicted, Conflicted, Conflicted, Conflicted, LongHi,     Conflicted, Conflicted,  Conflicted},
+                /*DoubleLo*/   {DoubleLo,   Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, DoubleLo,   Conflicted, Conflicted, Conflicted, DoubleLo,   Conflicted, Conflicted, Conflicted, DoubleLo,   Conflicted, Conflicted,  Conflicted},
+                /*DoubleHi*/   {DoubleHi,   Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, DoubleHi,   Conflicted, Conflicted, Conflicted, Conflicted, DoubleHi,   Conflicted, Conflicted, DoubleHi,   Conflicted, Conflicted,  Conflicted},
+                /*Primitive*/  {Primitive,  Conflicted, Zero,       One,        Boolean,    Byte,       Short,      Char,       Integer,    Float,      Conflicted, Conflicted, Conflicted, Conflicted, Primitive,  IntFloat,   Conflicted, Conflicted, Conflicted,  Conflicted},
+                /*IntFloat*/   {IntFloat,   Conflicted, Zero,       One,        Integer,    Integer,    Integer,    Integer,    Integer,    Float,      Conflicted, Conflicted, Conflicted, Conflicted, IntFloat,   IntFloat,   Conflicted, Conflicted, Conflicted,  Conflicted},
+                /*Wide*/       {Wide,       Conflicted, Wide,       Wide,       Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, LongLo,     LongHi,     DoubleLo,   DoubleHi,   Conflicted, Conflicted, Wide,       Conflicted, Conflicted,  Conflicted},
+                /*Reference*/  {Reference,  Reference,  Reference,  Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Reference,  Conflicted, Conflicted, Reference,  Reference,   Conflicted},
+                /*WildcardRef*/{WildcardRef,Null,       Null,       Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Reference,  Conflicted, Conflicted, Reference,  WildcardRef, Conflicted},
+                /*Conflicted*/ {Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted, Conflicted,  Conflicted}
         };
 	}
 	
     public final Category category;
     public final ClassDef type;
+	public final int arrayDepth; // Only applicable to WildReference
 	
-    private RopType(Category category, ClassDef type) {
+    private RopType(Category category, ClassDef type, int arrayDepth) {
     	this.category = category;
     	this.type = type;
+    	this.arrayDepth = arrayDepth;
     }
     
-    private static String toDescriptor(Category category, ClassDef type) {
+    private static String toDescriptor(Category category, ClassDef type, int arrayDepth) {
     	switch (category) {
 		case Null:
 			return "*Null";
@@ -116,6 +120,12 @@ public class RopType {
 			return "*Wide";
 		case Reference:
 			return type.getClassType();
+		case WildcardRef: {
+			if (arrayDepth == 0)
+				return "*obj";
+			else
+				return "*[" + java.lang.Integer.toString(arrayDepth);
+		}
 		case Unknown:
 			return "*?";
 		case Conflicted:
@@ -126,69 +136,83 @@ public class RopType {
     }
 
     private static HashMap<String, RopType> cachedRefTypes;
-    private static RopType getRopType(Category category, ClassDef type) {
-    	String desc = toDescriptor(category, type);
+    private static RopType getRopType(Category category, ClassDef type, int arrayDepth) {
+    	String desc = toDescriptor(category, type, arrayDepth);
     	if (cachedRefTypes == null)
     		cachedRefTypes = new HashMap<String, RopType>();
     	if (!cachedRefTypes.containsKey(desc))
     		cachedRefTypes.put(desc, 
-    				new RopType(category, type));
+    				new RopType(category, type, arrayDepth));
     	
     	return cachedRefTypes.get(desc);
     }
     
     public static RopType getRopType(Category category) {
-    	return getRopType(category, null);
+    	return getRopType(category, null, 0);
+    }
+    
+    public static RopType getRopType(ClassDef type) {
+    	return getRopType(Category.Reference, type, 0);
+    }
+    
+    private static RopType getRopType(int arrayDepth) {
+    	return getRopType(Category.WildcardRef, null, arrayDepth);
     }
     
     public static RopType getRopType(String descriptor) {
         switch (descriptor.charAt(0)) {
         case 'Z':
-            return getRopType(Category.Boolean, null);
+            return getRopType(Category.Boolean);
         case 'B':
-            return getRopType(Category.Byte, null);
+            return getRopType(Category.Byte);
         case 'S':
-            return getRopType(Category.Short, null);
+            return getRopType(Category.Short);
         case 'C':
-            return getRopType(Category.Char, null);
+            return getRopType(Category.Char);
         case 'I':
-            return getRopType(Category.Integer, null);
+            return getRopType(Category.Integer);
         case 'F':
-            return getRopType(Category.Float, null);
+            return getRopType(Category.Float);
         case 'J':
-            return getRopType(Category.LongLo, null);
+            return getRopType(Category.LongLo);
         case 'D':
-            return getRopType(Category.DoubleLo, null);
+            return getRopType(Category.DoubleLo);
         case 'L':
         case '[':
-            return getRopType(Category.Reference, ClassPath.getClassDef(descriptor));
+            return getRopType(ClassPath.getClassDef(descriptor));
         default:
             throw new RuntimeException("Invalid type: " + descriptor);
         }   
     }
     
-    public RopType merge(RopType type) {
-        if (type == null || type == this) {
+    public RopType merge(RopType other) {
+        if (other == null || other == this) {
             return this;
         }
 
-        Category mergedCategory = Category.mergeTable[this.category.ordinal()][type.category.ordinal()];
+        Category mergedCategory = Category.mergeTable[this.category.ordinal()][other.category.ordinal()];
 
         ClassDef mergedType = null;
+        
         if (mergedCategory == Category.Reference) {
-            if (this.type instanceof ClassPath.UnresolvedClassDef ||
-                type.type instanceof ClassPath.UnresolvedClassDef) {
-                mergedType = ClassPath.getUnresolvedObjectClassDef();
-            } else if (this == Reference && (type != Unknown && type != Zero)) {
-            	return type;
-            } else if (type == Reference && (this != Unknown && this != Zero)) {
-            	return this;
-            } else {
-                mergedType = ClassPath.getCommonSuperclass(this.type, type.type);
-            }
-        } 
+        	if (this.category == Category.WildcardRef) {
+        		return other;
+        	} else if (other.category == Category.WildcardRef) {
+        		return this;
+        	} 
         	
-        return getRopType(mergedCategory, mergedType);
+        	if (this.type instanceof ClassPath.UnresolvedClassDef ||
+                other.type instanceof ClassPath.UnresolvedClassDef) {
+                mergedType = ClassPath.getUnresolvedObjectClassDef();
+            } else {
+            	mergedType = ClassPath.getCommonSuperclass(this.type, other.type);
+            }
+            return getRopType(mergedCategory, mergedType, 0);
+        } else {
+            int mergedArrayDepth = this.arrayDepth > other.arrayDepth ? this.arrayDepth : other.arrayDepth;
+            return getRopType(mergedCategory, mergedType, mergedArrayDepth);
+        }
+        	
     	
     }
     
@@ -210,28 +234,47 @@ public class RopType {
     }
     
     public boolean isArray() {
-    	return this.category == Category.Reference && this.type.getClassType().charAt(0) == '[';
+    	if (this.category == Category.Reference && this.type.getClassType().charAt(0) == '[')
+    		return true;
+    	else if (this.category == Category.WildcardRef)
+    		return true;
+    	else
+    		return false;
     }
     
     public RopType getArrayElement() {
-    	if (isArray())
-    		return getRopType(this.type.getClassType().substring(1));
+    	if (isArray()) {
+    		if (this.category == Category.Reference)
+    			return getRopType(this.type.getClassType().substring(1));
+    		else /* WildcardRef */ {
+    			if (arrayDepth > 1) //TODO: Lose information here because otherwise: Zero -toArray->> *[1 --toElement-->> becomes WildcardRef
+    				return getRopType(arrayDepth - 1);
+    			else
+    				return Unknown;
+    		}
+    	}
     	else
     		return Unknown;
     }
     
     public RopType toArrayType() {
     	if (this == Zero) {
-    			return Reference;
+    			return getRopType(1);
     	} else {
     		assert !isPolymorphic();
-    		return getRopType("[" + toDescriptor(this.category, this.type));
+    		if (this.category == Category.WildcardRef)
+    			return getRopType(arrayDepth + 1);
+    		else if (this == Null)
+    			return getRopType(1);
+    		else
+    			return getRopType("[" + toDescriptor(this.category, this.type, this.arrayDepth));
+    		 
     	}
     }
     
     @Override
     public String toString() {
-    	return toDescriptor(this.category, this.type);
+    	return toDescriptor(this.category, this.type, this.arrayDepth);
     }
 //    
 //    public boolean isCompatibleWith(RopType other) {
