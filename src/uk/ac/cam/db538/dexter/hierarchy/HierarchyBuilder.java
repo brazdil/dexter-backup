@@ -165,6 +165,12 @@ public class HierarchyBuilder {
 							clsInfo.setImplementsInterface((InterfaceDefinition) ifaceInfo);
 					}
 			}
+			
+			// build methods and connect to the class
+			for (val method : methods.get(cls)) {
+				val methodInfo = new MethodDefinition(cls, method.methodId, method.accessFlags);
+				cls.addDefinedMethod(methodInfo);
+			}
 		}
 		
 		return new RuntimeHierarchy(definedClasses);

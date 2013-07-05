@@ -2,20 +2,21 @@ package uk.ac.cam.db538.dexter.hierarchy;
 
 import java.util.EnumSet;
 
-import org.jf.dexlib.Util.AccessFlags;
-
-import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import lombok.Getter;
 
-public class MethodInfo {
+import org.jf.dexlib.Util.AccessFlags;
 
-	@Getter private final String name;
-	@Getter private final DexPrototype signature;
+import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
+
+public class MethodDefinition {
+
+	@Getter private final BaseClassDefinition parentClass;
+	@Getter private final DexMethodId methodId;
 	private final int accessFlags;
 	
-	MethodInfo(String name, DexPrototype signature, int accessFlags) {
-		this.name = name;
-		this.signature = signature;
+	MethodDefinition(BaseClassDefinition parentClass, DexMethodId methodId, int accessFlags) {
+		this.parentClass = parentClass;
+		this.methodId = methodId;
 		this.accessFlags = accessFlags;
 	}
 
