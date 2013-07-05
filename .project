@@ -24,11 +24,4 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>baksmali-src</name>
-			<type>2</type>
-			<location>C:/Users/rx201/Projects/TaintAPK/smali/baksmali/src/main/java</location>
-		</link>
-	</linkedResources>
 </projectDescription>
