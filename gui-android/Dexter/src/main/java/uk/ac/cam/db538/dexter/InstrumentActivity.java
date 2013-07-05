@@ -59,11 +59,6 @@ public class InstrumentActivity extends Activity {
             // TODO: show error message
             throw new RuntimeException();
         }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
 
         // initiate the instrumentation
         new Thread(workerInstrumentation).start();
@@ -73,10 +68,30 @@ public class InstrumentActivity extends Activity {
         @Override
         public void run() {
             DexTypeCache typeCache = new DexTypeCache();
-            HierarchyBuilder hierarchyBuilder = new HierarchyBuilder(typeCache);
+            File frameworkCache = new File(InstrumentActivity.this.getFilesDir(), "framework.cache");
+            HierarchyBuilder hierarchyBuilder;
             try {
+                if (frameworkCache.exists()) {
+                    InstrumentActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            textTerminal.append("found previous framework dump... ");
+                        }
+                    });
+                    hierarchyBuilder = HierarchyBuilder.deserialize(frameworkCache);
+                } else {
+                    hierarchyBuilder = new HierarchyBuilder(typeCache);
+                    hierarchyBuilder.scanDexFolder(new File("/system/framework/"), callbackStage1);
+                    InstrumentActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            textTerminal.append("storing framework dump... ");
+                        }
+                    });
+                    hierarchyBuilder.serialize(frameworkCache);
+                }
+
                 hierarchyBuilder.scanDex(packageFile, callbackStage1);
-                hierarchyBuilder.scanDexFolder(new File("/system/framework/"), callbackStage1);
             } catch (IOException ex) {
                 // TODO: show error message
                 throw new RuntimeException(ex);
