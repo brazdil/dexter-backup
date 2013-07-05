@@ -20,6 +20,9 @@ public abstract class BaseClassDefinition {
 	private final Set<BaseClassDefinition> _children;
 	@Getter private final Set<BaseClassDefinition> children;
 
+	private final Set<MethodDefinition> _methods;
+	@Getter private final Set<MethodDefinition> methods;
+
 	BaseClassDefinition(DexClassType classType, int accessFlags) {
 		this.classType = classType;
 		this.accessFlags = accessFlags;
@@ -27,12 +30,21 @@ public abstract class BaseClassDefinition {
 		this.superclass = null;
 		this._children = new HashSet<BaseClassDefinition>();
 		this.children = Collections.unmodifiableSet(this._children);
+
+		this._methods = new HashSet<MethodDefinition>();
+		this.methods = Collections.unmodifiableSet(this._methods);
 	}
 	
 	// only to be called by HierarchyBuilder
 	void setSuperclassLink(BaseClassDefinition superclass) {
 		this.superclass = superclass;
 		this.superclass._children.add(this);
+	}
+	
+	void addDefinedMethod(MethodDefinition method) {
+		assert method.getParentClass() == this;
+		
+		this._methods.add(method);
 	}
 	
 	public EnumSet<AccessFlags> getAccessFlags() {
