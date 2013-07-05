@@ -96,13 +96,15 @@ public class MainConsole {
     val hierarchyBuilder = new HierarchyBuilder(typeCache);
     
     System.out.println("Scanning framework");
-    hierarchyBuilder.scanDexFolder(frameworkDir);
+    hierarchyBuilder.importDexFolder(frameworkDir);
     
     System.out.println("Storing hierarchy");
     hierarchyBuilder.serialize(new File("hierarchy.dump"));
     
     System.out.println("Scanning APK");
-    hierarchyBuilder.scanDex(apkFile);
+    hierarchyBuilder.importDex(apkFile, true);
+    hierarchyBuilder.removeApplicationClasses();
+    hierarchyBuilder.importDex(apkFile, true);
     
     System.out.println("Building hierarchy");
     hierarchyBuilder.build();
