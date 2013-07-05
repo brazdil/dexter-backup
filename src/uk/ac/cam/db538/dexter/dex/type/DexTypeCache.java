@@ -11,6 +11,7 @@ public class DexTypeCache {
   private final Map<String, DexArrayType> cachedTypes_Array;
   private final Map<DexPrototype, DexPrototype> cachedPrototypes;
   private final Map<DexMethodId, DexMethodId> cachedMethodIds;
+  private final Map<DexFieldId, DexFieldId> cachedFieldIds;
 
   // private final Map<String, String> descriptorReplacements;
   
@@ -50,6 +51,7 @@ public class DexTypeCache {
     cachedTypes_Array = new HashMap<String, DexArrayType>(1024);
     cachedPrototypes = new HashMap<DexPrototype, DexPrototype>(32384);
     cachedMethodIds = new HashMap<DexMethodId, DexMethodId>(100000);
+    cachedFieldIds = new HashMap<DexFieldId, DexFieldId>();
     
     // descriptorReplacements = new HashMap<String, String>();
     
@@ -111,6 +113,15 @@ public class DexTypeCache {
 	  if (cached == null) {
 		  cachedMethodIds.put(mid, mid);
 		  return mid;
+	  } else
+		  return cached;
+  }
+
+  DexFieldId getCachedFieldId(DexFieldId fid) {
+	  DexFieldId cached = cachedFieldIds.get(fid);
+	  if (cached == null) {
+		  cachedFieldIds.put(fid, fid);
+		  return fid;
 	  } else
 		  return cached;
   }
