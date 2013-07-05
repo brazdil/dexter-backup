@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.hierarchy;
 
+import java.io.Serializable;
 import java.util.EnumSet;
 
 import lombok.Getter;
@@ -8,8 +9,10 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 
-public class MethodDefinition {
+public class MethodDefinition implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	@Getter private final BaseClassDefinition parentClass;
 	@Getter private final DexMethodId methodId;
 	private final int accessFlags;

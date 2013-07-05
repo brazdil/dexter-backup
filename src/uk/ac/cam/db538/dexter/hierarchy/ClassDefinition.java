@@ -11,17 +11,14 @@ public class ClassDefinition extends BaseClassDefinition {
 
 	private static final long serialVersionUID = 1L;
 	
-	@Getter private boolean root;
-
 	private final Set<InterfaceDefinition> _interfaces;
 	@Getter private final Set<InterfaceDefinition> interfaces;
 
 	private final Set<InstanceFieldDefinition> _instanceFields;
 	@Getter private final Set<InstanceFieldDefinition> instanceFields;
 
-	ClassDefinition(DexClassType classType, int accessFlags, boolean isRoot) {
-		super(classType, accessFlags);
-		this.root = isRoot;
+	ClassDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
+		super(classType, accessFlags, isInternal);
 		
 		this._interfaces = new HashSet<InterfaceDefinition>();
 		this.interfaces = Collections.unmodifiableSet(this._interfaces);
@@ -40,5 +37,9 @@ public class ClassDefinition extends BaseClassDefinition {
 		assert field.getParentClass() == this;
 		
 		this._instanceFields.add(field);
+	}
+	
+	public boolean isRoot() {
+		return this.getSuperclass() == null;
 	}
 }
