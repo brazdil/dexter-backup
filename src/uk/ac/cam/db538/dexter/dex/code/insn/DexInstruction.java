@@ -182,8 +182,22 @@ public abstract class DexInstruction extends DexCodeElement {
 	  
 	  DexClassType[] exceptions = throwsExceptions();
 	  if (exceptions != null) {
-		  for(DexClassType exception : exceptions)
-			  set.addAll(throwingInsn_CatchHandlers(exception));
+		  
+		  //for(DexClassType exception : exceptions)
+		  //  set.addAll(throwingInsn_CatchHandlers(exception));
+		  // Instead of finding out precisely which catch handlers may 
+		  // catch the thrown exceptions by the instruction, we assume 
+		  // that it is possible for every catch handlers to catch all 
+		  // throwing instructions. This is consistent with what dx is doing.
+		  // Also, as an example, the following is VALID generated dalvik code, 
+		  // but would not be handled correctly (*sigh*) if we track the 
+		  // exception catchers more precisely 
+		  // try {
+		  //     const-string xxx (will only throw java.lang.Error)
+		  // } catch (java.lang.Exception) {
+		  //    // Dead code if we analyze it precisely 
+		  // }
+		  set.addAll(throwingInsn_CatchHandlers(null));
 	  }
 	  
 	  return set;
