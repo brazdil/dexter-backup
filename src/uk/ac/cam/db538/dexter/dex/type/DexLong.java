@@ -3,7 +3,10 @@ package uk.ac.cam.db538.dexter.dex.type;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexLong extends DexPrimitiveType {
-    DexLong() { }
+
+	private static final long serialVersionUID = 1L;
+
+	DexLong() { }
 
     @Override
 	public DexRegisterTypeSize getTypeSize() {

@@ -1,12 +1,15 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import lombok.Getter;
 
-public class DexTypeCache {
+public class DexTypeCache implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
   private final Map<String, DexClassType> cachedTypes_Class;
   private final Map<String, DexArrayType> cachedTypes_Array;
   private final Map<DexPrototype, DexPrototype> cachedPrototypes;

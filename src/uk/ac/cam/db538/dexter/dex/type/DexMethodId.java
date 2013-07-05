@@ -1,11 +1,15 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import java.io.Serializable;
+
 import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.MethodIdItem;
 
-public class DexMethodId {
+public class DexMethodId implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 	
 	@Getter private final String name;
 	@Getter private final DexPrototype prototype;

@@ -3,44 +3,46 @@ package uk.ac.cam.db538.dexter.dex.type;
 
 public abstract class DexRegisterType extends DexType {
 
-  public static enum DexRegisterTypeSize {
-    SINGLE,
-    WIDE;
+	private static final long serialVersionUID = 1L;
 
-    public int getRegisterCount() {
-      switch (this) {
-      case SINGLE:
-        return 1;
-      case WIDE:
-        return 2;
-      }
-      throw new RuntimeException("Unknown register size");
-    }
-  }
+	public static enum DexRegisterTypeSize {
+		SINGLE,
+		WIDE;
+
+		public int getRegisterCount() {
+			switch (this) {
+			case SINGLE:
+				return 1;
+			case WIDE:
+				return 2;
+			}
+			throw new RuntimeException("Unknown register size");
+		}
+	}
   
-  protected DexRegisterType() { }
+	protected DexRegisterType() { }
 
-  public static DexRegisterType parse(String typeDescriptor, DexTypeCache cache) throws UnknownTypeException {
-    try {
-      return DexPrimitiveType.parse(typeDescriptor, cache);
-    } catch (UnknownTypeException e) {
-    }
+	public static DexRegisterType parse(String typeDescriptor, DexTypeCache cache) throws UnknownTypeException {
+		try {
+			return DexPrimitiveType.parse(typeDescriptor, cache);
+		} catch (UnknownTypeException e) {
+		}
 
-    try {
-      return DexReferenceType.parse(typeDescriptor, cache);
-    } catch (UnknownTypeException e) {
-    }
+		try {
+			return DexReferenceType.parse(typeDescriptor, cache);
+		} catch (UnknownTypeException e) {
+		}
 
-    throw new UnknownTypeException(typeDescriptor);
-  }
+		throw new UnknownTypeException(typeDescriptor);
+	}
   
-  public abstract DexRegisterTypeSize getTypeSize();
+	public abstract DexRegisterTypeSize getTypeSize();
 
-  public boolean isWide() {
-    return getTypeSize() == DexRegisterTypeSize.WIDE;
-  }
+	public boolean isWide() {
+		return getTypeSize() == DexRegisterTypeSize.WIDE;
+	}
 
-  public int getRegisters() {
-    return getTypeSize().getRegisterCount();
-  }
+	public int getRegisters() {
+		return getTypeSize().getRegisterCount();
+	}
 }
