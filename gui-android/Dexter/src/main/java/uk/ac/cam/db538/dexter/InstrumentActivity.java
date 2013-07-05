@@ -81,7 +81,7 @@ public class InstrumentActivity extends Activity {
                     hierarchyBuilder = HierarchyBuilder.deserialize(frameworkCache);
                 } else {
                     hierarchyBuilder = new HierarchyBuilder(typeCache);
-                    hierarchyBuilder.scanDexFolder(new File("/system/framework/"), callbackStage1);
+                    hierarchyBuilder.importDexFolder(new File("/system/framework/"));
                     InstrumentActivity.this.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -91,7 +91,7 @@ public class InstrumentActivity extends Activity {
                     hierarchyBuilder.serialize(frameworkCache);
                 }
 
-                hierarchyBuilder.scanDex(packageFile, callbackStage1);
+                hierarchyBuilder.importDex(packageFile, true);
             } catch (IOException ex) {
                 // TODO: show error message
                 throw new RuntimeException(ex);
@@ -106,37 +106,37 @@ public class InstrumentActivity extends Activity {
         }
     };
 
-    private HierarchyScanCallback callbackStage1 = new HierarchyScanCallback() {
-        @Override
-        public void onFileScanStarted(final File file) {
-            InstrumentActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    textTerminal.append("scanning " + file.getName() + "... ");
-                }
-            });
-        }
-
-        @Override
-        public void onFileScanFinished(File file) {
-            InstrumentActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    textTerminal.append("ok\n");
-                }
-            });
-        }
-
-        @Override
-        public void onFolderScanStarted(File file, int i) {
-
-        }
-
-        @Override
-        public void onFolderScanFinished(File file, int i) {
-
-        }
-    };
+//    private HierarchyScanCallback callbackStage1 = new HierarchyScanCallback() {
+//        @Override
+//        public void onFileScanStarted(final File file) {
+//            InstrumentActivity.this.runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    textTerminal.append("scanning " + file.getName() + "... ");
+//                }
+//            });
+//        }
+//
+//        @Override
+//        public void onFileScanFinished(File file) {
+//            InstrumentActivity.this.runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    textTerminal.append("ok\n");
+//                }
+//            });
+//        }
+//
+//        @Override
+//        public void onFolderScanStarted(File file, int i) {
+//
+//        }
+//
+//        @Override
+//        public void onFolderScanFinished(File file, int i) {
+//
+//        }
+//    };
 
     public static final String PACKAGE_NAME = "package_name";
 }

@@ -103,7 +103,7 @@ public class MainConsole {
     
     System.out.println("Scanning APK");
     hierarchyBuilder.importDex(apkFile, true);
-    hierarchyBuilder.removeApplicationClasses();
+    hierarchyBuilder.removeInternalClasses();
     hierarchyBuilder.importDex(apkFile, true);
     
     System.out.println("Building hierarchy");
