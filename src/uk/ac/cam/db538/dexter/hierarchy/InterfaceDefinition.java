@@ -12,6 +12,8 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class InterfaceDefinition extends BaseClassDefinition {
 
+	private static final long serialVersionUID = 1L;
+	
 	final Set<BaseClassDefinition> _implementers;
 	@Getter private final Set<BaseClassDefinition> implementers;
 

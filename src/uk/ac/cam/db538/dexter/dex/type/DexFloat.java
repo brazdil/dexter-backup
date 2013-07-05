@@ -3,7 +3,9 @@ package uk.ac.cam.db538.dexter.dex.type;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexFloat extends DexPrimitiveType {
-    DexFloat() { }
+	private static final long serialVersionUID = 1L;
+
+	DexFloat() { }
 
     @Override
 	public DexRegisterTypeSize getTypeSize() {

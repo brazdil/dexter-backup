@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,9 +13,11 @@ import org.jf.dexlib.TypeListItem;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.utils.Cache;
 
-public abstract class DexType {
+public abstract class DexType implements Serializable {
 
-protected DexType() { }
+	private static final long serialVersionUID = 1L;
+
+	protected DexType() { }
 
 	public abstract String getDescriptor();
 	public abstract String getPrettyName();

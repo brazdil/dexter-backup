@@ -4,6 +4,8 @@ import lombok.Getter;
 
 public class DexArrayType extends DexReferenceType {
 
+	private static final long serialVersionUID = 1L;
+	
 	@Getter private final DexRegisterType elementType;
 
 	private DexArrayType(DexRegisterType elementType) {

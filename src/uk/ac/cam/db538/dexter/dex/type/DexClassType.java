@@ -4,6 +4,8 @@ import lombok.val;
 
 public class DexClassType extends DexReferenceType {
 
+	private static final long serialVersionUID = 1L;
+
 	private final String descriptor;
   
 	private DexClassType(String descriptor) {

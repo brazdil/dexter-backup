@@ -1,8 +1,11 @@
 package uk.ac.cam.db538.dexter.hierarchy;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,7 +28,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
-public class HierarchyBuilder {
+public class HierarchyBuilder implements Serializable {
 
 	private boolean foundRoot = false;
 	private final DexTypeCache typeCache;
@@ -236,14 +239,30 @@ public class HierarchyBuilder {
 	};
 	
 	@AllArgsConstructor
-	private static class MethodData {
+	private static class MethodData implements Serializable {
+		private static final long serialVersionUID = 1L;
+
 		DexMethodId methodId;
 		int accessFlags;
 	}
 
 	@AllArgsConstructor
-	private static class FieldData {
+	private static class FieldData implements Serializable {
+		private static final long serialVersionUID = 1L;
+
 		DexFieldId fieldId;
 		int accessFlags;
+	}
+	
+	// SERIALIZATION
+	
+	private static final long serialVersionUID = 1L;
+
+	public void serialize(File outputFile) throws IOException {
+		val fos = new FileOutputStream(outputFile);
+		val oos = new ObjectOutputStream(fos);
+		oos.writeObject(this);
+		oos.close();
+		fos.close();
 	}
 }
