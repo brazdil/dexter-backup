@@ -144,7 +144,7 @@ class DalvCodeBridge {
 		try {
 			byte[] outArray = outputDex.toDex(humanOut, true);
 			ByteArrayInputStream dexStream = new ByteArrayInputStream(outArray);
-			org.jf.dexlib.DexFile tmpDexFile = new org.jf.dexlib.DexFile(dexStream, outArray.length);
+			org.jf.dexlib.DexFile tmpDexFile = new org.jf.dexlib.DexFile(dexStream);
 		
 			List<CodeItem> codeItems = tmpDexFile.CodeItemsSection.getItems();
 			assert codeItems.size() == 1;
