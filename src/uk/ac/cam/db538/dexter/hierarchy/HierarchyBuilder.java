@@ -1,9 +1,13 @@
 package uk.ac.cam.db538.dexter.hierarchy;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -260,9 +264,39 @@ public class HierarchyBuilder implements Serializable {
 
 	public void serialize(File outputFile) throws IOException {
 		val fos = new FileOutputStream(outputFile);
-		val oos = new ObjectOutputStream(fos);
-		oos.writeObject(this);
-		oos.close();
-		fos.close();
+		try {
+			val oos = new ObjectOutputStream(new BufferedOutputStream(fos));
+			try {
+				oos.writeObject(this);
+			} finally {
+				oos.close();
+			}
+		} finally {
+			fos.close();
+		}
+	}
+	
+	public static HierarchyBuilder deserialize(File inputFile) throws IOException {
+		val fis = new FileInputStream(inputFile);
+		try {
+			val ois = new ObjectInputStream(new BufferedInputStream(fis));
+			try {
+				Object hierarchy;
+				try {
+					hierarchy = ois.readObject();
+				} catch (ClassNotFoundException ex) {
+					throw new HierarchyException(ex);
+				}
+				
+				if (hierarchy instanceof HierarchyBuilder)
+					return (HierarchyBuilder) hierarchy;
+				else
+					throw new HierarchyException("Input file does not contain an instance of HierarchyBuilder");
+			} finally {
+				ois.close();
+			}
+		} finally {
+			fis.close();
+		}
 	}
 }
