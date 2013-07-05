@@ -17,8 +17,8 @@ public class InterfaceDefinition extends BaseClassDefinition {
 	final Set<BaseClassDefinition> _implementers;
 	@Getter private final Set<BaseClassDefinition> implementers;
 
-	public InterfaceDefinition(DexClassType classType, int accessFlags) {
-		super(classType, accessFlags);
+	public InterfaceDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
+		super(classType, accessFlags, isInternal);
 		
 		if (!getAccessFlags().contains(AccessFlags.INTERFACE))
 			throw new HierarchyException("Class is not an interface");

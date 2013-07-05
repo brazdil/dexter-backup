@@ -1,10 +1,14 @@
 package uk.ac.cam.db538.dexter.utils;
 
+import java.io.Serializable;
+
 import lombok.Getter;
 import lombok.NonNull;
 
-public class Pair<A, B> {
+public class Pair<A, B> implements Serializable {
 
+  private static final long serialVersionUID = 1L;
+  
   @Getter @NonNull private final A valA;
   @Getter @NonNull private final B valB;
 

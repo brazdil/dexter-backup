@@ -18,6 +18,7 @@ public abstract class BaseClassDefinition implements Serializable {
 	
 	@Getter private final DexClassType classType;
 	private final int accessFlags;
+	@Getter private final boolean internal;
 
 	@Getter private BaseClassDefinition superclass;
 	private final Set<BaseClassDefinition> _children;
@@ -29,9 +30,10 @@ public abstract class BaseClassDefinition implements Serializable {
 	private final Set<StaticFieldDefinition> _staticFields;
 	@Getter private final Set<StaticFieldDefinition> staticFields;
 
-	BaseClassDefinition(DexClassType classType, int accessFlags) {
+	BaseClassDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
 		this.classType = classType;
 		this.accessFlags = accessFlags;
+		this.internal = isInternal;
 		
 		this.superclass = null;
 		this._children = new HashSet<BaseClassDefinition>();
