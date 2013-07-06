@@ -8,12 +8,15 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.EditText;
 
+import org.jf.dexlib.DexFile;
+
 import java.io.File;
 import java.io.IOException;
 
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.hierarchy.HierarchyScanCallback;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class InstrumentActivity extends Activity {
 
@@ -67,42 +70,40 @@ public class InstrumentActivity extends Activity {
     private Runnable workerInstrumentation = new Runnable() {
         @Override
         public void run() {
-            DexTypeCache typeCache = new DexTypeCache();
-            File frameworkCache = new File(InstrumentActivity.this.getFilesDir(), "framework.cache");
-            HierarchyBuilder hierarchyBuilder;
             try {
-                if (frameworkCache.exists()) {
-                    InstrumentActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            textTerminal.append("found previous framework dump... ");
-                        }
-                    });
-                    hierarchyBuilder = HierarchyBuilder.deserialize(frameworkCache);
-                } else {
-                    hierarchyBuilder = new HierarchyBuilder(typeCache);
-                    hierarchyBuilder.importDexFolder(new File("/system/framework/"));
-                    InstrumentActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            textTerminal.append("storing framework dump... ");
-                        }
-                    });
-                    hierarchyBuilder.serialize(frameworkCache);
-                }
+                DexterApplication thisApp = (DexterApplication) getApplication();
 
-                hierarchyBuilder.importDex(packageFile, true);
+                terminalMessage("Analyzing operating system");
+                thisApp.waitForHierarchy();
+                terminalDone();
+
+                terminalMessage("Loading application");
+                DexFile apk = new DexFile(packageFile);
+                terminalDone();
+
+                terminalMessage("Analyzing application");
+                RuntimeHierarchy hierarchy = thisApp.getRuntimeHierarchy(apk);
+                terminalDone();
             } catch (IOException ex) {
-                // TODO: show error message
                 throw new RuntimeException(ex);
             }
+        }
 
+        private void appendToTerminal(final String text) {
             InstrumentActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    textTerminal.append("DONE !!!");
+                    textTerminal.append(text);
                 }
             });
+        }
+
+        private void terminalMessage(String msg) {
+            appendToTerminal(msg + "...");
+        }
+
+        private void terminalDone() {
+            appendToTerminal(" DONE\n");
         }
     };
 

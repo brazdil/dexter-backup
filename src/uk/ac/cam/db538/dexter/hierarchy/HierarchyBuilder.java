@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.ClassDataItem;
@@ -35,22 +36,15 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 public class HierarchyBuilder implements Serializable {
 
 	private boolean foundRoot = false;
-	private final DexTypeCache typeCache;
+	@Getter private final DexTypeCache typeCache;
 	
 	private final Map<DexClassType, Pair<BaseClassDefinition, ClassData>> definedClasses;
 	
-	public HierarchyBuilder(DexTypeCache cache) {
-		typeCache = cache;
+	public HierarchyBuilder() {
+		typeCache = new DexTypeCache();
 		definedClasses = new HashMap<DexClassType, Pair<BaseClassDefinition, ClassData>>();
 	}
 
-	public void importDexFolder(File dir) throws IOException {
-		String[] files = dir.list(FILTER_DEX_ODEX_JAR);
-		
-		for (String filename : files)
-			importDex(new File(dir, filename), false);
-	}
-	
 	public void importDex(File file, boolean isInternal) throws IOException {
 		// parse the file
 		DexFile dex;
@@ -273,5 +267,21 @@ public class HierarchyBuilder implements Serializable {
 		} finally {
 			fis.close();
 		}
+	}
+	
+	// USEFUL SHORTCUTS
+	
+	public void importFrameworkFolder(File dir) throws IOException {
+		String[] files = dir.list(FILTER_DEX_ODEX_JAR);
+		
+		for (String filename : files)
+			importDex(new File(dir, filename), false);
+	}
+
+	public RuntimeHierarchy buildAgainstApp(DexFile dex) {
+		importDex(dex, true);
+		val hierarchy = build();
+		removeInternalClasses();
+		return hierarchy;
 	}
 }

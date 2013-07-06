@@ -90,13 +90,11 @@ public class MainConsole {
 //    APK.writeToFile(apkFile_new);
 ////    APK.getDexFile().countInstructions();
     
-    val typeCache = new DexTypeCache();
-    
     // build runtime class hierarchy
-    val hierarchyBuilder = new HierarchyBuilder(typeCache);
+    val hierarchyBuilder = new HierarchyBuilder();
     
     System.out.println("Scanning framework");
-    hierarchyBuilder.importDexFolder(frameworkDir);
+    hierarchyBuilder.importFrameworkFolder(frameworkDir);
     
     System.out.println("Storing hierarchy");
     hierarchyBuilder.serialize(new File("hierarchy.dump"));
