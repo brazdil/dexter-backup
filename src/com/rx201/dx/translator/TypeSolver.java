@@ -79,6 +79,7 @@ public class TypeSolver {
 		if (freeze) {
 			assert !constraint.isPolymorphic();
 			info.freezed = true;
+			newType = constraint;
 		}
 		if (newType != info.type) {
 			info.type = newType;

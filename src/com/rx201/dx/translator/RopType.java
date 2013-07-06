@@ -261,10 +261,9 @@ public class RopType {
     	if (this == Zero) {
     			return getRopType(1);
     	} else {
-    		assert !isPolymorphic();
     		if (this.category == Category.WildcardRef)
     			return getRopType(arrayDepth + 1);
-    		else if (this == Null)
+    		else if (this == Null || (isPolymorphic()))
     			return getRopType(1);
     		else
     			return getRopType("[" + toDescriptor(this.category, this.type, this.arrayDepth));
