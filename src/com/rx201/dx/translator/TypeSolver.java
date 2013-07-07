@@ -108,9 +108,6 @@ public class TypeSolver {
 	}
 
 	public RopType getType() {
-		if (info.type.isPolymorphic() && info.constraints.size() > 1) {
-			int x = 0;
-		}
 		if (info.type == RopType.One)
 			return RopType.Integer;
 		else if (info.type == RopType.Zero)

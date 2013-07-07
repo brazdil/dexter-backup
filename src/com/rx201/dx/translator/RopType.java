@@ -258,7 +258,7 @@ public class RopType {
     }
     
     public RopType toArrayType() {
-    	if (this == Zero) {
+    	if (this == Zero || this == One) {
     			return getRopType(1);
     	} else {
     		if (this.category == Category.WildcardRef)
