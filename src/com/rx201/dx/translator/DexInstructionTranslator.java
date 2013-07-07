@@ -223,6 +223,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
             return Type.intern("F");
         case LongLo:
         case LongHi:
+        case Wide:
             return Type.intern("J");
         case DoubleLo:
         case DoubleHi:
