@@ -142,6 +142,11 @@ public class AnalyzedDexInstruction {
 	    	usedRegisterMap.put(registerNumber, definition);
 	    }
 
+	    public TypeSolver getUsedRegisterTypeSolver(DexRegister usedReg) {
+	    	int registerNumber = DexRegisterHelper.normalize(usedReg);
+	    	return usedRegisterMap.get(registerNumber);
+	    }
+
 	    public RopType getDefinedRegisterType(int reg) {
 	    	return definedRegisterMap.get(reg).getType();
 	    }
