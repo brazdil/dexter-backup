@@ -162,8 +162,17 @@ public class DexCodeAnalyzer {
 			if (definer != null && (!isExceptionPath)) {
 				result.add(definer);
 			} else {
-				for(AnalyzedDexInstruction pred : head.getPredecessors() )
-					stack.add(new Pair<AnalyzedDexInstruction, Boolean>(pred, head.isExceptionPredecessor(pred)));
+				// If this register is also accessed here in the current path
+				// and we've obtained its definer, we can reuse the result.
+				// This would be most efficient if we perform liveness analysis
+				// from top to bottom.
+				definer = head.getUsedRegisterTypeSolver(reg);
+				if (definer != null) {
+					result.add(definer);
+				} else {
+					for(AnalyzedDexInstruction pred : head.getPredecessors() )
+						stack.add(new Pair<AnalyzedDexInstruction, Boolean>(pred, head.isExceptionPredecessor(pred)));
+				}
 			}
 		}
 		return result;
