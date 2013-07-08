@@ -7,6 +7,7 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 
 public class ClassDefinition extends BaseClassDefinition {
 
@@ -56,4 +57,31 @@ public class ClassDefinition extends BaseClassDefinition {
 				inspected = inspected.getSuperclass();
 		}  
 	}
+	
+	public InstanceFieldDefinition getInstanceField(DexFieldId fieldId) {
+		for (val fieldDef : this.instanceFields)
+			if (fieldDef.getFieldId().equals(fieldId))
+				return fieldDef;
+		return null;
+	}
+	
+	public InstanceFieldDefinition getAccessedInstanceField(DexFieldId fieldId) {
+		// Application can access an instance field on class X, but
+		// the field might actually be defined in one of X's parents
+		// This method will return the definition of the field 
+		// in itself or the closest parent
+		
+		return iterateThroughParents(fieldId, extractorInstanceField, acceptorAlwaysTrue, false);
+	}
+	
+	private static final Extractor<DexFieldId, InstanceFieldDefinition> extractorInstanceField = new Extractor<DexFieldId, InstanceFieldDefinition>() {
+		@Override
+		public InstanceFieldDefinition extract(BaseClassDefinition clazz, DexFieldId fieldId) {
+			if (clazz instanceof ClassDefinition) {
+				val fieldDef = ((ClassDefinition) clazz).getInstanceField(fieldId);
+				return fieldDef;
+			} else
+				return null;
+		}
+	};
 }
