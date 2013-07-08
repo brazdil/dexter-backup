@@ -360,6 +360,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 			case IntFloat:
 				//??
 		    	defineRegister(inst.getRegTo(), RopType.IntFloat);
+		    	break;
 			case Short:
 		    	defineFreezedRegister(inst.getRegTo(), RopType.Short);
 				break;
