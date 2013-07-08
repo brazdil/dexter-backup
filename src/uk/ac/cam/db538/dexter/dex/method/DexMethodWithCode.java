@@ -56,13 +56,13 @@ public abstract class DexMethodWithCode extends DexMethod {
       this.code.setParentMethod(this);
   }
 
-  public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, AnnotationSetRefList paramAnnotations, boolean parseInstructions) {
+  public DexMethodWithCode(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, AnnotationSetRefList paramAnnotations) {
     super(parent, methodInfo, encodedAnnotations, paramAnnotations);
     this.direct = methodInfo.isDirect();
     this.parameterRegisters = this.getPrototype().generateParameterRegisters(this.isStatic());
     this.parameterRegistersMappings = new HashMap<DexRegister, DexRegister>();
 
-    if (parseInstructions && methodInfo.codeItem != null) {
+    if (methodInfo.codeItem != null) {
       this.code = new DexCode(methodInfo.codeItem, this, parent.getParentFile().getParsingCache());
       this.registerCount = methodInfo.codeItem.getRegisterCount();
       

@@ -55,14 +55,13 @@ public class DexClass {
   public DexClass(Dex parent, DexClassType type, DexClassType superType,
                   Set<AccessFlags> accessFlags, Set<DexField> fields,
                   Set<DexClassType> interfaces,
-                  Set<DexAnnotation> annotations, String sourceFile,
-                  boolean isInternal) {
+                  Set<DexAnnotation> annotations, String sourceFile) {
     this.parentFile = parent;
     this.type = type;
     this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
     this.fields = (fields == null) ? new HashSet<DexField>() : fields;
     this.methods = new HashSet<DexMethod>();
-    this.annotations = (annotations == null) ? new HashSet<DexAnnotation>() : annotations;
+    this.annotations = (annotations == null) ? new HashSet<DexAnnotation>() : new HashSet<DexAnnotation>(annotations);
     this.sourceFile = sourceFile;
     this.staticInitializer = new HashMap<DexField, EncodedValue>();
   }
@@ -81,7 +80,7 @@ public class DexClass {
       return superclassType.getTypeDescriptor();
   }
 
-  public DexClass(Dex parent, ClassDefItem clsInfo, boolean isInternal) {
+  public DexClass(Dex parent, ClassDefItem clsInfo) {
     this(parent,
          DexClassType.parse(clsInfo.getClassType().getTypeDescriptor(), parent.getParsingCache()),
          DexClassType.parse(getSuperclassTypeDesc(clsInfo.getClassType(), clsInfo.getSuperclass()), parent.getParsingCache()),
@@ -89,8 +88,7 @@ public class DexClass {
          null,
          parseTypeList(clsInfo.getInterfaces(), parent.getParsingCache()),
          parseAnnotations(clsInfo.getAnnotations(), parent.getParsingCache()),
-         (clsInfo.getSourceFile() == null) ? null : clsInfo.getSourceFile().getStringValue(),
-         isInternal);
+         (clsInfo.getSourceFile() == null) ? null : clsInfo.getSourceFile().getStringValue());
 
     List<MethodAnnotation> methodAnnotations = null;
     if (clsInfo.getAnnotations() != null)
@@ -125,14 +123,14 @@ public class DexClass {
 
       for (val directMethodInfo : clsData.getDirectMethods())
         methods.add(new DexDirectMethod(this, directMethodInfo, findMethodAnnotation(directMethodInfo, methodAnnotations), 
-        		findParameterAnnotation(directMethodInfo, paramAnnotations), isInternal));
+        		findParameterAnnotation(directMethodInfo, paramAnnotations)));
       for (val virtualMethodInfo : clsData.getVirtualMethods()) {
         if (isMethodAbstract(virtualMethodInfo.accessFlags))
           methods.add(new DexAbstractMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations),
         		  findParameterAnnotation(virtualMethodInfo, paramAnnotations)));
         else
           methods.add(new DexVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations),
-        		  findParameterAnnotation(virtualMethodInfo, paramAnnotations), isInternal));
+        		  findParameterAnnotation(virtualMethodInfo, paramAnnotations)));
       }
       
     }

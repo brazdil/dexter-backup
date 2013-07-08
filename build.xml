@@ -34,7 +34,7 @@
 
 	<target name="compile" depends="compile-examples,compile-merges">
 		<mkdir dir="${classes.dir}"/>
-		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="yes" includeantruntime="false"  target="1.6" source="1.6"/>
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" listfiles="yes" classpathref="classpath" debug="yes" includeantruntime="false"  target="1.6" source="1.6"/>
 
 		<copy todir="${classes.dir}">
 			<fileset dir="${src.dir}" excludes="**/*.java" />

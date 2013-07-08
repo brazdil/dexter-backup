@@ -236,8 +236,6 @@ public class HierarchyBuilder implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public void serialize(File outputFile) throws IOException {
-		typeCache.clear(); // can be removed
-		
 		val fos = new FileOutputStream(outputFile);
 		try {
 			val oos = new ObjectOutputStream(new BufferedOutputStream(fos));

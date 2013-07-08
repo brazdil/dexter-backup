@@ -23,9 +23,13 @@ public class RuntimeHierarchy {
 	}
 	
 	public BaseClassDefinition getBaseClassDefinition(DexReferenceType refType) {
-		if (refType instanceof DexClassType)
-			return definedClasses.get((DexClassType) refType);
-		else if (refType instanceof DexArrayType)
+		if (refType instanceof DexClassType) {
+			val result = definedClasses.get((DexClassType) refType);
+			if (result == null)
+				throw new NoClassDefFoundError();
+			else
+				return result;
+		} else if (refType instanceof DexArrayType)
 			return root;
 		else
 			throw new Error();
