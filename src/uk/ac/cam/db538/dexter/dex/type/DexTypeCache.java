@@ -27,6 +27,9 @@ public class DexTypeCache implements Serializable {
   @Getter private final DexLong cachedType_Long = new DexLong();
   @Getter private final DexShort cachedType_Short = new DexShort();
   
+  // class renamer
+  @Getter private final ClassRenamer classRenamer;
+  
   // From com.android.dx.rop.code.Exceptions
   public final DexClassType TYPE_Throwable;
   public final DexClassType TYPE_ArithmeticException;
@@ -56,7 +59,7 @@ public class DexTypeCache implements Serializable {
     cachedMethodIds = new HashMap<DexMethodId, DexMethodId>(100000);
     cachedFieldIds = new HashMap<DexFieldId, DexFieldId>();
     
-    // descriptorReplacements = new HashMap<String, String>();
+    classRenamer = new ClassRenamer();
     
     TYPE_ArithmeticException = DexClassType.parse("Ljava/lang/ArithmeticException;", this);
     TYPE_ArrayIndexOutOfBoundsException = DexClassType.parse("Ljava/lang/ArrayIndexOutOfBoundsException;", this);
@@ -129,11 +132,7 @@ public class DexTypeCache implements Serializable {
 		  return cached;
   }
   
-  public void clear() {
-	  cachedTypes_Class.clear();
-	  cachedTypes_Array.clear();
-	  cachedPrototypes.clear();
-	  cachedMethodIds.clear();
-	  cachedFieldIds.clear();	  
+  public boolean encounteredClassType(String desc) {
+	  return (cachedTypes_Class.get(desc) != null);
   }
 }

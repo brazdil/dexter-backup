@@ -98,8 +98,8 @@ public class MainConsole {
     System.out.println("Scanning framework");
     hierarchyBuilder.importFrameworkFolder(frameworkDir);
     
-    System.out.println("Storing hierarchy");
-    hierarchyBuilder.serialize(new File("hierarchy.dump"));
+//    System.out.println("Storing hierarchy");
+//    hierarchyBuilder.serialize(new File("hierarchy.dump"));
     
 //    System.out.println("Loading framework from dump");
 //    HierarchyBuilder hierarchyBuilder = HierarchyBuilder.deserialize(new File("hierarchy.dump"));
@@ -110,8 +110,11 @@ public class MainConsole {
     System.out.println("Building hierarchy");
     RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(dexFile);
     
-//    System.out.println("Parsing application");
-//    Dex dex = new Dex(dexFile, true, null);
+    System.out.println("Parsing application");
+    Dex dex = new Dex(dexFile, hierarchy);
+    
+    System.out.println("Instrumenting application");
+    dex.instrument(false);
     
     System.out.println("DONE");
   }

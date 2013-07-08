@@ -11,10 +11,16 @@ public class DexClassType extends DexReferenceType {
 	private DexClassType(String descriptor) {
 		this.descriptor = descriptor;
 	}
-  
+
+	public static boolean isClassDescriptor(String typeDescriptor) {
+		return typeDescriptor.startsWith("L") && typeDescriptor.endsWith(";");
+	}
+	
 	public static DexClassType parse(String typeDescriptor, DexTypeCache cache) {
-		if (!typeDescriptor.startsWith("L") || !typeDescriptor.endsWith(";"))
+		if (!isClassDescriptor(typeDescriptor))
 			throw new UnknownTypeException(typeDescriptor);
+		
+		typeDescriptor = cache.getClassRenamer().applyRules(typeDescriptor);
 		
 		DexClassType type = cache.getCachedType_Class(typeDescriptor);
 		if (type == null) {

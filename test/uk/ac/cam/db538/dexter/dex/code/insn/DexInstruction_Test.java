@@ -45,7 +45,7 @@ public class DexInstruction_Test {
     val clazz = new DexClass(dex,
                              DexClassType.parse("Lcom/example/Clazz;", dex.getParsingCache()),
                              DexClassType.parse("Ljava/lang/Object;", dex.getParsingCache()),
-                             null, null, null, null, null, true);
+                             null, null, null, null, null);
 
     val code = new DexCode();
 
