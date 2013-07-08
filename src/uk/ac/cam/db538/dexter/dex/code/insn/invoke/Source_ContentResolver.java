@@ -41,10 +41,12 @@ public class Source_ContentResolver extends FallbackInstrumentor {
 
   @Override
   public boolean canBeApplied(DexPseudoinstruction_Invoke insn) {
-    val classHierarchy = insn.getParentFile().getClassHierarchy();
+    val classHierarchy = insn.getParentFile().getHierarchy();
     val parsingCache = insn.getParentFile().getParsingCache();
 
     val insnInvoke = insn.getInstructionInvoke();
+    val defInvokedClass = classHierarchy.getBaseClassDefinition(insnInvoke.getClassType());
+    val defContentResolver = classHierarchy.getBaseClassDefinition(DexClassType.parse("Landroid/content/ContentResolver;", parsingCache));
 
     if (insnInvoke.getCallType() != Opcode_Invoke.Virtual)
       return false;
@@ -55,8 +57,7 @@ public class Source_ContentResolver extends FallbackInstrumentor {
     if (!insn.movesResult()) // only care about assigning taint to the result
       return false;
 
-    if (!classHierarchy.isAncestor(insnInvoke.getClassType(),
-                                   DexClassType.parse("Landroid/content/ContentResolver;", parsingCache)))
+    if (!defInvokedClass.isChildOf(defContentResolver))
       return false;
 
     if (!fitsAPI1(insnInvoke.getMethodPrototype()) && !fitsAPI16(insnInvoke.getMethodPrototype()))

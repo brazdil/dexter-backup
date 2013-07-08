@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import lombok.Getter;
+import lombok.val;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class ClassDefinition extends BaseClassDefinition {
@@ -29,7 +30,7 @@ public class ClassDefinition extends BaseClassDefinition {
 	
 	void addImplementedInterface(InterfaceDefinition iface) {
 		this._interfaces.add(iface);
-		iface._implementers.add(this);
+		iface._implementors.add(this);
 	}
 
 	void addDeclaredInstanceField(InstanceFieldDefinition field) {
@@ -39,7 +40,20 @@ public class ClassDefinition extends BaseClassDefinition {
 		this._instanceFields.add(field);
 	}
 	
-	public boolean isRoot() {
-		return this.getSuperclass() == null;
+	public boolean implementsInterface(InterfaceDefinition iface) {
+		BaseClassDefinition inspected = this;
+		
+		while (true) {
+			if (inspected instanceof ClassDefinition) {
+				for (val ifaceDef : ((ClassDefinition) inspected).getInterfaces()) 
+					if (ifaceDef.equals(iface))
+						return true;
+			}
+			
+			if (inspected.isRoot())
+				return false;
+			else
+				inspected = inspected.getSuperclass();
+		}  
 	}
 }

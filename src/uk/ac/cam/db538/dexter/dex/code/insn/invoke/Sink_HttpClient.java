@@ -9,9 +9,10 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -19,22 +20,26 @@ public class Sink_HttpClient extends FallbackInstrumentor {
 
   @Override
   public boolean canBeApplied(DexPseudoinstruction_Invoke insn) {
-    val classHierarchy = insn.getParentFile().getClassHierarchy();
+    val classHierarchy = insn.getParentFile().getHierarchy();
     val parsingCache = insn.getParentFile().getParsingCache();
 
     val insnInvoke = insn.getInstructionInvoke();
     val callType = insnInvoke.getCallType();
     val invokedClass = insnInvoke.getClassType();
     val typeHttpClient = DexClassType.parse("Lorg/apache/http/client/HttpClient;", parsingCache);
+    
+    val defInvokedClass = classHierarchy.getBaseClassDefinition(invokedClass);
+    val defHttpClient = classHierarchy.getInterfaceDefinition(typeHttpClient); 
 
     return insnInvoke.getMethodName().equals("execute") &&
            (
              (
                callType == Opcode_Invoke.Virtual &&
-               classHierarchy.implementsInterface(invokedClass, typeHttpClient)
+               defInvokedClass instanceof ClassDefinition &&
+               ((ClassDefinition) defInvokedClass).implementsInterface(defHttpClient)
              ) || (
                (callType == Opcode_Invoke.Virtual || callType == Opcode_Invoke.Super) &&
-               invokedClass.equals(typeHttpClient)
+               defInvokedClass.equals(defHttpClient)
              )
            );
   }

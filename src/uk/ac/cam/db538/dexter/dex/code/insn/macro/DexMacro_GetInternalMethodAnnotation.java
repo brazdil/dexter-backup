@@ -27,6 +27,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
@@ -58,7 +59,7 @@ public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
     val methodCode = getMethodCode();
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
-    val classHierarchy = dex.getClassHierarchy();
+    val classHierarchy = dex.getHierarchy();
 
     val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
 
@@ -124,7 +125,9 @@ public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
                       DexClassType.parse("Ljava/lang/String;", parsingCache),
                       DexArrayType.parse("[Ljava/lang/Class;", parsingCache)
                     }));
-    if (classHierarchy.isMethodPublic(invokedClass, invokedMethodName, invokedMethodPrototype)) {
+    val defInvokedClass = classHierarchy.getBaseClassDefinition(invokedClass);
+    val defInvokedMethod = defInvokedClass.getMethod(new DexMethodId(invokedMethodName, invokedMethodPrototype));
+    if (defInvokedMethod.isPublic()) {
       val getMethodParams = Arrays.asList(new DexRegister[] { regDestObjectClass, regMethodName, regMethodArgumentsArray } );
       instrumentedCode.add(new DexInstruction_Invoke(methodCode, classType, "getMethod", getMethodPrototype, getMethodParams, Opcode_Invoke.Virtual));
       instrumentedCode.add(new DexInstruction_MoveResult(methodCode, regMethodObject, true));
