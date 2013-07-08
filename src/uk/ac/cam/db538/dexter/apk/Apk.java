@@ -19,21 +19,17 @@ import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
 import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
 
 public class Apk {
 
   @Getter private final Dex dexFile;
   @Getter private final File temporaryFilename;
 
-  @Getter private final DexClassHierarchy classHierarchy;
   @Getter private final DexTypeCache parsingCache;
 
   public Apk(File filename, File frameworkDir) throws IOException {
     this.parsingCache = new DexTypeCache();
-    this.classHierarchy = new DexClassHierarchy(DexClassType.parse("Ljava/lang/Object;", parsingCache));
     this.dexFile = null;
 
     this.temporaryFilename = File.createTempFile("dexter-", ".apk");
