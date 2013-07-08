@@ -94,7 +94,7 @@ public class DexCodeAnalyzer {
         livenessAnalysis();
         
         // Add constraints from uses and defs to TypeSolver
-        typeConstaintAnalysis();
+        typeConstraintAnalysis();
         
         analyzerState = ANALYZED;
     }
@@ -178,8 +178,8 @@ public class DexCodeAnalyzer {
 		return result;
 	}
 	
-	private void typeConstaintAnalysis() {
-		// Firt add all definition constraints,
+	private void typeConstraintAnalysis() {
+		// First add all definition constraints,
 		// then refine it with usage constraints
 		startOfMethod.initDefinitionConstraints();
 		for (AnalyzedDexInstruction inst : instructions) {
