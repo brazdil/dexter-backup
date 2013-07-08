@@ -32,13 +32,13 @@ import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.EncodedValue.EncodedValue;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.method.DexAbstractMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
-import uk.ac.cam.db538.dexter.dex.method.DexAbstractMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
 
 public class DexClass {
@@ -48,6 +48,7 @@ public class DexClass {
   private final Set<AccessFlags> accessFlagSet;
   protected final Set<DexField> fields;
   protected final Set<DexMethod> methods;
+  protected final Set<DexAnnotation> annotations;
   @Getter private final String sourceFile;
   private final Map<DexField, EncodedValue> staticInitializer;
   
@@ -61,10 +62,11 @@ public class DexClass {
     this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
     this.fields = (fields == null) ? new HashSet<DexField>() : fields;
     this.methods = new HashSet<DexMethod>();
+    this.annotations = (annotations == null) ? new HashSet<DexAnnotation>() : annotations;
     this.sourceFile = sourceFile;
     this.staticInitializer = new HashMap<DexField, EncodedValue>();
   }
-
+  
   private boolean isMethodAbstract(int accessFlags) {
     for (val flag : AccessFlags.getAccessFlagsForMethod(accessFlags))
       if (flag == AccessFlags.ABSTRACT)
@@ -209,11 +211,11 @@ public class DexClass {
   }
 
   public Set<DexAnnotation> getAnnotations() {
-    return parentFile.getClassHierarchy().getAnnotations(type);
+    return Collections.unmodifiableSet(annotations);
   }
 
   public void addAnnotation(DexAnnotation anno) {
-    parentFile.getClassHierarchy().addClassAnnotation(type, anno);
+	  annotations.add(anno);
   }
 
   public boolean isAbstract() {
