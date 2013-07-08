@@ -166,7 +166,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		// or the closest parent that implements it
 		// They can be applied on any kind of class
 	
-		val methodDef = iterateThroughParents(methodId, acceptorStaticCalls, false); // start iterating with this class
+		val methodDef = iterateThroughParents(methodId, extractorMethod, acceptorStaticCalls, false); // start iterating with this class
 		if (methodDef != null)
 			return Arrays.asList(methodDef);
 		else
@@ -178,7 +178,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		// in the closest parent that implements it
 		// They can be applied on any kind of class
 	
-		val methodDef = iterateThroughParents(methodId, acceptorVirtualCall, true); // start iterating with the parent of this class
+		val methodDef = iterateThroughParents(methodId, extractorMethod, acceptorVirtualCall, true); // start iterating with the parent of this class
 		if (methodDef != null)
 			return Arrays.asList(methodDef);
 		else
@@ -190,8 +190,8 @@ public abstract class BaseClassDefinition implements Serializable {
 		// in the class itself, in the closest parent or in any of the children
 
 		if (this instanceof ClassDefinition) {
-			val fromChildren = iterateThroughChildren(methodId, acceptorVirtualCall);
-			val fromParents = iterateThroughParents(methodId, acceptorVirtualCall, true); // no need to scan this class twice
+			val fromChildren = iterateThroughChildren(methodId, extractorMethod, acceptorVirtualCall);
+			val fromParents = iterateThroughParents(methodId, extractorMethod, acceptorVirtualCall, true); // no need to scan this class twice
 
 			if (fromParents != null)
 				fromChildren.add(fromParents);
@@ -209,20 +209,20 @@ public abstract class BaseClassDefinition implements Serializable {
 		if (this instanceof InterfaceDefinition) {
 			val list = new ArrayList<MethodDefinition>();
 			for (val implementor : ((InterfaceDefinition) this).getImplementors())
-				list.addAll(implementor.iterateThroughChildren(methodId, acceptorVirtualCall));
+				list.addAll(implementor.iterateThroughChildren(methodId, extractorMethod, acceptorVirtualCall));
 			return list;
 		} else
 			throw new HierarchyException("Invalid method call (interface method call on non-class)");
 	}
 	
-	protected MethodDefinition iterateThroughParents(DexMethodId methodId, MethodImplementationAcceptor acceptor, boolean skipFirst) {
+	protected <Id, T> T iterateThroughParents(Id id, Extractor<Id, T> extractor, Acceptor<T> acceptor, boolean skipFirst) {
 		BaseClassDefinition inspectedClass = skipFirst ? this.getSuperclass() : this;
 		
 		while (true) {
-			val methodDef = inspectedClass.getMethod(methodId);
-			if (methodDef != null && !methodDef.isAbstract()) {
-				if (acceptor.accept(methodDef))
-					return methodDef;
+			val def = extractor.extract(inspectedClass, id);
+			if (def != null) {
+				if (acceptor.accept(def))
+					return def;
 			}
 			
 			if (inspectedClass.isRoot())
@@ -232,33 +232,48 @@ public abstract class BaseClassDefinition implements Serializable {
 		}
 	}
 	
-	protected List<MethodDefinition> iterateThroughChildren(DexMethodId methodId, MethodImplementationAcceptor acceptor) {
-		val list = new ArrayList<MethodDefinition>();
+	protected <Id, T> List<T> iterateThroughChildren(Id id, Extractor<Id, T> extractor, Acceptor<T> acceptor) {
+		val list = new ArrayList<T>();
 
-		val methodDef = this.getMethod(methodId);
-		if (methodDef != null && !methodDef.isAbstract()) {
-			if (acceptor.accept(methodDef))
-				list.add(methodDef);
+		val def = extractor.extract(this, id);
+		if (def != null) {
+			if (acceptor.accept(def))
+				list.add(def);
 		}
 		
 		for (val child : getChildren())
-			list.addAll(child.iterateThroughChildren(methodId, acceptor));
+			list.addAll(child.iterateThroughChildren(id, extractor, acceptor));
 		
 		return list;
 	}
 
-	private static interface MethodImplementationAcceptor {
-		public boolean accept(MethodDefinition method);
+	protected static interface Acceptor<T> {
+		public boolean accept(T item);
 	}
 	
-	private static final MethodImplementationAcceptor acceptorStaticCalls = new MethodImplementationAcceptor() {
+	protected static interface Extractor<Id, T> {
+		public T extract(BaseClassDefinition clazz, Id id);
+	}
+	
+	private static final Extractor<DexMethodId, MethodDefinition> extractorMethod = new Extractor<DexMethodId, MethodDefinition>() {
+		@Override
+		public MethodDefinition extract(BaseClassDefinition clazz, DexMethodId methodId) {
+			val methodDef = clazz.getMethod(methodId);
+			if (methodDef != null && methodDef.isAbstract())
+				return null;
+			else
+				return methodDef;
+		}
+	};
+	
+	private static final Acceptor<MethodDefinition> acceptorStaticCalls = new Acceptor<MethodDefinition>() {
 		@Override
 		public boolean accept(MethodDefinition method) {
 			return method.isStatic();
 		}
 	};
 
-	private static final MethodImplementationAcceptor acceptorVirtualCall = new MethodImplementationAcceptor() {
+	private static final Acceptor<MethodDefinition> acceptorVirtualCall = new Acceptor<MethodDefinition>() {
 		@Override
 		public boolean accept(MethodDefinition method) {
 			return !method.isStatic() &&
