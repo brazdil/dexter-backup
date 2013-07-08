@@ -19,17 +19,15 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.AccessFlags;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
-import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache.InstrumentationWarning;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
-import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
