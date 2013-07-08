@@ -186,7 +186,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		// in the closest parent that implements it
 		// They can be applied on any kind of class
 	
-		val methodDef = iterateThroughParents(methodId, extractorMethod, acceptorVirtualCall, true); // start iterating with the parent of this class
+		val methodDef = iterateThroughParents(methodId, extractorMethod, acceptorVirtualCall, false); // this is the superclass already, so don't skip first
 		if (methodDef != null)
 			return Arrays.asList(methodDef);
 		else
