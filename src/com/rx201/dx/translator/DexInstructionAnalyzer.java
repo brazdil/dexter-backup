@@ -329,8 +329,9 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	}
 	@Override
 	public void visit(DexInstruction_IfTest instruction) {
-		useRegister(instruction.getRegA(), RopType.Primitive);
-		useRegister(instruction.getRegB(), RopType.Primitive);
+		useRegister(instruction.getRegA(), RopType.Unknown);
+		useRegister(instruction.getRegB(), RopType.Unknown);
+		analyzedInst.addRegisterConstraint(instruction.getRegA(), instruction.getRegB(), CascadeType.Equivalent);
 	}
 	
 	@Override
