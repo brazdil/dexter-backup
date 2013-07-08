@@ -78,8 +78,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintString;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
-import uk.ac.cam.db538.dexter.dex.type.DexLong;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType_Register;
 
 import com.rx201.dx.translator.TypeSolver.CascadeType;
 import com.rx201.dx.translator.util.DexRegisterHelper;
@@ -476,7 +475,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	@Override
 	public void visit(DexInstruction_Invoke instruction) {
 		List<DexRegister> arguments = instruction.getArgumentRegisters();
-		List<DexRegisterType> parameterTypes = instruction.getMethodPrototype().getParameterTypes();
+		List<DexType_Register> parameterTypes = instruction.getMethodPrototype().getParameterTypes();
 		
 		int regIndex = 0;
 		if (!instruction.isStaticCall()) {
@@ -484,7 +483,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		}
 		
 		for(int i=0 ;i<parameterTypes.size(); i++) {
-			DexRegisterType paramType = parameterTypes.get(i);
+			DexType_Register paramType = parameterTypes.get(i);
 			useFreezedRegister(arguments.get(regIndex), RopType.getRopType(paramType.getDescriptor()));
 			regIndex += paramType.getRegisters();
 		}
