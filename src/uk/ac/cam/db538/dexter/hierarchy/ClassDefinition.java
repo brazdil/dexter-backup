@@ -70,7 +70,7 @@ public class ClassDefinition extends BaseClassDefinition {
 		// the field might actually be defined in one of X's parents
 		// This method will return the definition of the field 
 		// in itself or the closest parent
-		
+
 		return iterateThroughParents(fieldId, extractorInstanceField, acceptorAlwaysTrue, false);
 	}
 	
@@ -78,8 +78,7 @@ public class ClassDefinition extends BaseClassDefinition {
 		@Override
 		public InstanceFieldDefinition extract(BaseClassDefinition clazz, DexFieldId fieldId) {
 			if (clazz instanceof ClassDefinition) {
-				val fieldDef = ((ClassDefinition) clazz).getInstanceField(fieldId);
-				return fieldDef;
+				return ((ClassDefinition) clazz).getInstanceField(fieldId);
 			} else
 				return null;
 		}
