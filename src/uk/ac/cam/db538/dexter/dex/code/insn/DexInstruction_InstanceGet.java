@@ -100,7 +100,7 @@ public class DexInstruction_InstanceGet extends DexInstruction {
   @Override
   public void instrument(DexCode_InstrumentationState state) {
 //    val code = getMethodCode();
-//    val classHierarchy = getParentFile().getClassHierarchy();
+//    val classHierarchy = getParentFile().getHierarchy();
 //
 //    if (opcode != Opcode_GetPut.Object) {
 //      val regValueTaint = state.getTaintRegister(regTo);
