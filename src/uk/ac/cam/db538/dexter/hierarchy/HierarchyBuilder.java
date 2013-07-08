@@ -35,12 +35,13 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class HierarchyBuilder implements Serializable {
 
-	private boolean foundRoot = false;
+	private ClassDefinition root;
 	@Getter private final DexTypeCache typeCache;
 	
 	private final Map<DexClassType, Pair<BaseClassDefinition, ClassData>> definedClasses;
 	
 	public HierarchyBuilder() {
+		root = null;
 		typeCache = new DexTypeCache();
 		definedClasses = new HashMap<DexClassType, Pair<BaseClassDefinition, ClassData>>();
 	}
@@ -107,12 +108,14 @@ public class HierarchyBuilder implements Serializable {
 			clsInfo_Data.superclass = DexClassType.parse(superclsTypeItem.getTypeDescriptor(), typeCache);
 		else {
 			// check only one root exists
-			if (foundRoot)
+			if (root != null)
 				throw new HierarchyException("More than one hierarchy root found");
 			else if (isInternal)
 				throw new HierarchyException("Hierarchy root cannot be internal");
+			else if (clsInfo instanceof ClassDefinition)
+				root = (ClassDefinition) clsInfo;
 			else
-				foundRoot = true;
+				throw new HierarchyException("Hierarchy root must be a proper class");
 		}
 		
 		// store data
@@ -186,19 +189,22 @@ public class HierarchyBuilder implements Serializable {
 				val ifaces = clsData.interfaces;
 				if (ifaces != null) {
 					for (val ifaceType : ifaces) {
-						val ifaceInfo = definedClasses.get(ifaceType).getValA();
-						if (ifaceInfo == null || !(ifaceInfo instanceof InterfaceDefinition))
+						val ifaceInfo_Pair = definedClasses.get(ifaceType);
+						if (ifaceInfo_Pair == null || !(ifaceInfo_Pair.getValA() instanceof InterfaceDefinition))
 							throw new HierarchyException("Class " + baseCls.getClassType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
 						else
-							properCls.addImplementedInterface((InterfaceDefinition) ifaceInfo);
+							properCls.addImplementedInterface((InterfaceDefinition) ifaceInfo_Pair.getValA());
 					}
 				}
 			}
 			
 			classList.put(baseCls.getClassType(), baseCls);
 		}
+		
+		if (root == null)
+			throw new HierarchyException("Hierarchy is missing a root");
 			
-		return new RuntimeHierarchy(classList);
+		return new RuntimeHierarchy(classList, root, typeCache);
 	}
 	
 	public void removeInternalClasses() {
