@@ -41,7 +41,6 @@ public abstract class DexMethod {
   @Getter private DexPrototype prototype;
   private final Set<DexAnnotation> annotations;
   private final List<Set<DexAnnotation>> paramAnnotations;
-  private EncodedMethod parentMethod;
   
   public DexMethod(DexClass parent, String name, Set<AccessFlags> accessFlags, DexPrototype prototype, Set<DexAnnotation> annotations, List<Set<DexAnnotation>> paramAnnotations) {
     this.parentClass = parent;
@@ -50,11 +49,6 @@ public abstract class DexMethod {
     this.prototype = prototype;
     this.annotations = (annotations == null) ? new HashSet<DexAnnotation>() : annotations;
     this.paramAnnotations = (paramAnnotations == null) ? new ArrayList<Set<DexAnnotation>>() : paramAnnotations;
-
-    if (!isAbstract())
-      this.parentClass.getParentFile().getClassHierarchy().addImplementedMethod(
-        parentClass.getType(), this.name, this.prototype, this.isPrivate(), this.isNative(), this.isPublic());
-    parentMethod = null;
   }
 
   public DexMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, AnnotationSetRefList paramAnnotations) {
@@ -64,7 +58,6 @@ public abstract class DexMethod {
          DexPrototype.parse(methodInfo.method.getPrototype(), parent.getParentFile().getParsingCache()),
          DexAnnotation.parseAll(encodedAnnotations, parent.getParentFile().getParsingCache()),
          DexAnnotation.parseAll(paramAnnotations, parent.getParentFile().getParsingCache()));
-    parentMethod = methodInfo;
   }
 
   public Set<AccessFlags> getAccessFlagSet() {

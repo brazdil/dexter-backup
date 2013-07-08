@@ -39,6 +39,22 @@ public class MethodDefinition implements Serializable {
 		return getAccessFlags().contains(AccessFlags.NATIVE);
 	}
 	
+	public boolean isStatic() {
+		return getAccessFlags().contains(AccessFlags.STATIC);
+	}
+
+	public boolean isPublic() {
+		return getAccessFlags().contains(AccessFlags.PUBLIC);
+	}
+	
+	public boolean isPrivate() {
+		return getAccessFlags().contains(AccessFlags.PRIVATE);
+	}
+	
+	public boolean isConstructor() {
+		return getAccessFlags().contains(AccessFlags.CONSTRUCTOR);
+	}
+
 	public boolean hasBytecode() {
 		return !isAbstract() && !isNative();
 	}

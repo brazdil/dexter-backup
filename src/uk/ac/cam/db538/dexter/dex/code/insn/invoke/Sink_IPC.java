@@ -27,13 +27,15 @@ public class Sink_IPC extends FallbackInstrumentor {
 
   @Override
   public boolean canBeApplied(DexPseudoinstruction_Invoke insn) {
-    val classHierarchy = insn.getParentFile().getClassHierarchy();
+    val classHierarchy = insn.getParentFile().getHierarchy();
     val parsingCache = insn.getParentFile().getParsingCache();
 
     val insnInvoke = insn.getInstructionInvoke();
+    val defInvokedClass = classHierarchy.getBaseClassDefinition(insnInvoke.getClassType());
+    val defContext = classHierarchy.getBaseClassDefinition(DexClassType.parse("Landroid/content/Context;", parsingCache));
 
     return (insnInvoke.getCallType() == Opcode_Invoke.Virtual) &&
-           classHierarchy.isAncestor(insnInvoke.getClassType(), DexClassType.parse("Landroid/content/Context;", parsingCache)) &&
+    	   defInvokedClass.isChildOf(defContext) &&
            hasIntentParam(insnInvoke.getMethodPrototype());
   }
 

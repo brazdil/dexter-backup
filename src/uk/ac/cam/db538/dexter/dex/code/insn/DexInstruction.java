@@ -16,6 +16,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 
 public abstract class DexInstruction extends DexCodeElement {
 
@@ -56,7 +57,9 @@ public abstract class DexInstruction extends DexCodeElement {
 
   protected final boolean throwingInsn_CanExitMethod(DexClassType thrownExceptionType) {
     val code = getMethodCode();
-    val classHierarchy = getParentFile().getClassHierarchy();
+    val classHierarchy = getParentFile().getHierarchy();
+    
+    val thrownExceptionClass = classHierarchy.getClassDefinition(thrownExceptionType);
 
     for (val tryBlockEnd : code.getTryBlocks()) {
       val tryBlockStart = tryBlockEnd.getBlockStart();
@@ -70,9 +73,11 @@ public abstract class DexInstruction extends DexCodeElement {
 
         // if there is a catch block catching the exception or its ancestor,
         // it can't exit the method either
-        for (val catchBlock : tryBlockStart.getCatchHandlers())
-          if (classHierarchy.isAncestor(thrownExceptionType, catchBlock.getExceptionType()))
+        for (val catchBlock : tryBlockStart.getCatchHandlers()) {
+          val caughtExceptionClass = classHierarchy.getClassDefinition(catchBlock.getExceptionType());
+          if (caughtExceptionClass.isChildOf(thrownExceptionClass) || thrownExceptionClass.isChildOf(caughtExceptionClass))
             return false;
+        }
       }
     }
 
@@ -83,7 +88,11 @@ public abstract class DexInstruction extends DexCodeElement {
     val set = new HashSet<DexCodeElement>();
 
     val code = getMethodCode();
-    val classHierarchy = getParentFile().getClassHierarchy();
+    val classHierarchy = getParentFile().getHierarchy();
+
+    BaseClassDefinition thrownExceptionClass = null; 
+    if (thrownExceptionType != null) 
+    	thrownExceptionClass = classHierarchy.getClassDefinition(thrownExceptionType);
 
     for (val tryBlockEnd : code.getTryBlocks()) {
       val tryBlockStart = tryBlockEnd.getBlockStart();
@@ -99,11 +108,13 @@ public abstract class DexInstruction extends DexCodeElement {
         // similarly, add all catch blocks as possible successors
         // if either they catch the given exception type or its ancestor (a guaranteed catch)
         // or if the catch is the subclass of the thrown exception (a potential catch)
-        for (val catchBlock : tryBlockStart.getCatchHandlers())
-          if (thrownExceptionType == null || 
-              classHierarchy.isAncestor(catchBlock.getExceptionType(), thrownExceptionType) ||
-        	  classHierarchy.isAncestor(thrownExceptionType, catchBlock.getExceptionType()))
+        for (val catchBlock : tryBlockStart.getCatchHandlers()) {
+          val caughtExceptionClass = classHierarchy.getClassDefinition(catchBlock.getExceptionType());
+          if (thrownExceptionClass == null || 
+              caughtExceptionClass.isChildOf(thrownExceptionClass) || 
+              thrownExceptionClass.isChildOf(caughtExceptionClass))
             set.add(catchBlock);
+        }
       }
     }
 
