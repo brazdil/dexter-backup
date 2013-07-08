@@ -174,7 +174,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		// or the closest parent that implements it
 		// They can be applied on any kind of class
 	
-		val methodDef = iterateThroughParents(methodId, extractorMethod, acceptorStaticCalls, false); // start iterating with this class
+		MethodDefinition methodDef = iterateThroughParents(methodId, extractorMethod, acceptorStaticCalls, false); // start iterating with this class
 		if (methodDef != null)
 			return Arrays.asList(methodDef);
 		else
@@ -186,7 +186,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		// in the closest parent that implements it
 		// They can be applied on any kind of class
 	
-		val methodDef = iterateThroughParents(methodId, extractorMethod, acceptorVirtualCall, false); // this is the superclass already, so don't skip first
+		MethodDefinition methodDef = iterateThroughParents(methodId, extractorMethod, acceptorVirtualCall, false); // this is the superclass already, so don't skip first
 		if (methodDef != null)
 			return Arrays.asList(methodDef);
 		else
@@ -198,8 +198,8 @@ public abstract class BaseClassDefinition implements Serializable {
 		// in the class itself, in the closest parent or in any of the children
 
 		if (this instanceof ClassDefinition) {
-			val fromChildren = iterateThroughChildren(methodId, extractorMethod, acceptorVirtualCall);
-			val fromParents = iterateThroughParents(methodId, extractorMethod, acceptorVirtualCall, true); // no need to scan this class twice
+			List<MethodDefinition> fromChildren = iterateThroughChildren(methodId, extractorMethod, acceptorVirtualCall);
+			MethodDefinition fromParents = iterateThroughParents(methodId, extractorMethod, acceptorVirtualCall, true); // no need to scan this class twice
 
 			if (fromParents != null)
 				fromChildren.add(fromParents);
@@ -228,7 +228,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		// the field might actually be defined in one of X's parents
 		// This method will return the definition of the field 
 		// in itself or the closest parent
-		
+
 		return iterateThroughParents(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
 	}
 	
@@ -236,7 +236,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		BaseClassDefinition inspectedClass = skipFirst ? this.getSuperclass() : this;
 		
 		while (true) {
-			val def = extractor.extract(inspectedClass, id);
+			T def = extractor.extract(inspectedClass, id);
 			if (def != null) {
 				if (acceptor.accept(def))
 					return def;
@@ -252,7 +252,7 @@ public abstract class BaseClassDefinition implements Serializable {
 	protected <Id, T> List<T> iterateThroughChildren(Id id, Extractor<Id, T> extractor, Acceptor<? super T> acceptor) {
 		val list = new ArrayList<T>();
 
-		val def = extractor.extract(this, id);
+		T def = extractor.extract(this, id);
 		if (def != null) {
 			if (acceptor.accept(def))
 				list.add(def);
@@ -275,7 +275,7 @@ public abstract class BaseClassDefinition implements Serializable {
 	private static final Extractor<DexMethodId, MethodDefinition> extractorMethod = new Extractor<DexMethodId, MethodDefinition>() {
 		@Override
 		public MethodDefinition extract(BaseClassDefinition clazz, DexMethodId methodId) {
-			val methodDef = clazz.getMethod(methodId);
+			MethodDefinition methodDef = clazz.getMethod(methodId);
 			if (methodDef != null && methodDef.isAbstract())
 				return null;
 			else
@@ -286,8 +286,7 @@ public abstract class BaseClassDefinition implements Serializable {
 	private static final Extractor<DexFieldId, StaticFieldDefinition> extractorStaticField = new Extractor<DexFieldId, StaticFieldDefinition>() {
 		@Override
 		public StaticFieldDefinition extract(BaseClassDefinition clazz, DexFieldId fieldId) {
-			val fieldDef = clazz.getStaticField(fieldId);
-			return fieldDef;
+			return clazz.getStaticField(fieldId);
 		}
 	};
 	
