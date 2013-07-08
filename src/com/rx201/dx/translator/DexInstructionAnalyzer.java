@@ -78,6 +78,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintString;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
+import uk.ac.cam.db538.dexter.dex.type.DexLong;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 import com.rx201.dx.translator.TypeSolver.CascadeType;
