@@ -9,8 +9,10 @@ import lombok.val;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
+import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class MainConsole {
 	private static void dumpAnnotation(File apkFile) {
@@ -57,9 +59,9 @@ public class MainConsole {
       System.err.println("<apk-file> is not a file");
       System.exit(1);
     }
-    dumpAnnotation(apkFile);
+    // dumpAnnotation(apkFile);
     
-    val apkFile_new = new File(apkFile.getAbsolutePath() + "_new.apk");
+    // val apkFile_new = new File(apkFile.getAbsolutePath() + "_new.apk");
 
     val frameworkDir = new File(args[0]);
     if (!frameworkDir.isDirectory()) {
@@ -99,14 +101,18 @@ public class MainConsole {
     System.out.println("Storing hierarchy");
     hierarchyBuilder.serialize(new File("hierarchy.dump"));
     
-    System.out.println("Scanning APK");
-    hierarchyBuilder.importDex(apkFile, true);
-    hierarchyBuilder.removeInternalClasses();
-    hierarchyBuilder.importDex(apkFile, true);
+//    System.out.println("Loading framework from dump");
+//    HierarchyBuilder hierarchyBuilder = HierarchyBuilder.deserialize(new File("hierarchy.dump"));
+    
+    System.out.println("Scanning application");
+    DexFile dexFile = new DexFile(apkFile);
     
     System.out.println("Building hierarchy");
-    hierarchyBuilder.build();
-
+    RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(dexFile);
+    
+//    System.out.println("Parsing application");
+//    Dex dex = new Dex(dexFile, true, null);
+    
     System.out.println("DONE");
   }
 }

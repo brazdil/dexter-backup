@@ -39,6 +39,7 @@ import uk.ac.cam.db538.dexter.dex.method.DexVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
 
 public class DexClass {
 
@@ -62,15 +63,6 @@ public class DexClass {
     this.methods = new HashSet<DexMethod>();
     this.sourceFile = sourceFile;
     this.staticInitializer = new HashMap<DexField, EncodedValue>();
-    
-    // this.type.setDefinedInternally(isInternal);
-    this.parentFile.getClassHierarchy().addMember(
-      this.type,
-      superType,
-      interfaces,
-      annotations,
-      isInterface()
-    );
   }
 
   private boolean isMethodAbstract(int accessFlags) {
@@ -198,11 +190,22 @@ public class DexClass {
   }
 
   public DexClassType getSuperclassType() {
-    return parentFile.getClassHierarchy().getSuperclassType(type);
+    return parentFile.getHierarchy().getBaseClassDefinition(type).getSuperclass().getClassType();
   }
 
   public Set<DexClassType> getInterfaces() {
-    return parentFile.getClassHierarchy().getInterfaces(type);
+	val clsDef = parentFile.getHierarchy().getBaseClassDefinition(type);
+	if (clsDef instanceof ClassDefinition) {
+		val ifaceDefs = ((ClassDefinition) clsDef).getInterfaces();
+		if (ifaceDefs.isEmpty())
+			return Collections.emptySet();
+
+		val set = new HashSet<DexClassType>();
+		for (val ifaceDef : ifaceDefs)
+			set.add(ifaceDef.getClassType());
+		return set;
+	} else
+		return Collections.emptySet();
   }
 
   public Set<DexAnnotation> getAnnotations() {

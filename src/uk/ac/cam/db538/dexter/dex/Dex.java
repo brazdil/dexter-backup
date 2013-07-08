@@ -30,11 +30,12 @@ import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class Dex {
 
-  @Getter final Apk parentApk;
+  @Getter final RuntimeHierarchy hierarchy;
 
   private final List<DexClass> classes;
 
@@ -59,33 +60,30 @@ public class Dex {
   @Getter private DexClass externalStaticFieldTaint_Class;
   @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
 
-  public Dex() {
-    this(null);
+  public Dex(RuntimeHierarchy hierarchy) {
+    this.classes = new NoDuplicatesList<DexClass>();
+    this.hierarchy = hierarchy;
   }
 
-  public Dex(Apk parent) {
-    classes = new NoDuplicatesList<DexClass>();
-    parentApk = parent;
+  public Dex(File filename, boolean isInternal, RuntimeHierarchy hierarchy) throws IOException {
+    this(new DexFile(filename), isInternal, hierarchy);
   }
-
-  public Dex(File filename, boolean isInternal, Apk parent) throws IOException {
-    this(parent);
-
-    System.out.println("Loading " + filename.getPath());
-
-    val originalFile = new DexFile(filename);
-    classes.addAll(parseAllClasses(originalFile, isInternal));
+  
+  public Dex(DexFile dex, boolean isInternal, RuntimeHierarchy hierarchy) {
+	this(hierarchy);
+	
+    classes.addAll(parseAllClasses(dex, isInternal));
 
     for (val clazz : classes)
       clazz.markMethodsOriginal();
   }
 
-  public DexClassHierarchy getClassHierarchy() {
-    return parentApk.getClassHierarchy();
+  public Dex() {
+	  this(null);
   }
 
-  public DexTypeCache getParsingCache() {
-    return parentApk.getParsingCache();
+public DexTypeCache getParsingCache() {
+    return hierarchy.getTypeCache();
   }
 
   private static File getMergeFile() throws IOException {
@@ -248,7 +246,7 @@ public class Dex {
   }
 
   public List<InstrumentationWarning> instrument(boolean debug) {
-    val classHierarchy = getClassHierarchy();
+    val classHierarchy = getHierarchy();
     val cache = new DexInstrumentationCache(this, debug);
 
     val extraClassesLinked = parseExtraClasses();
@@ -260,16 +258,12 @@ public class Dex {
     classes.addAll(extraClassesLinked);
     classes.addAll(extraClassesGenerated);
 
-    classHierarchy.checkConsistency();
-
     return cache.getWarnings();
   }
 
   public byte[] writeToFile() {
-    val classHierarchy = getClassHierarchy();
+    val classHierarchy = getHierarchy();
     val parsingCache = getParsingCache();
-
-    classHierarchy.checkConsistency();
 
     val outFile = new DexFile();
     val out = new ByteArrayAnnotatedOutput();
