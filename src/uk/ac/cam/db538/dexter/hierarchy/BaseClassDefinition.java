@@ -227,7 +227,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		// Application can access a static field on class X, but
 		// the field might actually be defined in one of X's parents
 		// This method will return the definition of the field 
-		// in the closest parent
+		// in itself or the closest parent
 		
 		return iterateThroughParents(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
 	}
@@ -291,7 +291,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		}
 	};
 	
-	private static final Acceptor<Object> acceptorAlwaysTrue = new Acceptor<Object>() {
+	protected static final Acceptor<Object> acceptorAlwaysTrue = new Acceptor<Object>() {
 		@Override
 		public boolean accept(Object item) {
 			return true;
