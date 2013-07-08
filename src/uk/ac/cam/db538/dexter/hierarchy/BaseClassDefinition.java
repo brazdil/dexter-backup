@@ -16,6 +16,7 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 
 public abstract class BaseClassDefinition implements Serializable {
@@ -105,7 +106,14 @@ public abstract class BaseClassDefinition implements Serializable {
 				return methodDef;
 		return null;
 	}
-	
+
+	public StaticFieldDefinition getStaticField(DexFieldId fieldId) {
+		for (val fieldDef : this.staticFields)
+			if (fieldDef.getFieldId().equals(fieldId))
+				return fieldDef;
+		return null;
+	}
+
 	public static enum CallDestinationType {
 		Internal,
 		External,
@@ -215,7 +223,16 @@ public abstract class BaseClassDefinition implements Serializable {
 			throw new HierarchyException("Invalid method call (interface method call on non-class)");
 	}
 	
-	protected <Id, T> T iterateThroughParents(Id id, Extractor<Id, T> extractor, Acceptor<T> acceptor, boolean skipFirst) {
+	public StaticFieldDefinition getAccessedStaticField(DexFieldId fieldId) {
+		// Application can access a static field on class X, but
+		// the field might actually be defined in one of X's parents
+		// This method will return the definition of the field 
+		// in the closest parent
+		
+		return iterateThroughParents(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
+	}
+	
+	protected <Id, T> T iterateThroughParents(Id id, Extractor<Id, T> extractor, Acceptor<? super T> acceptor, boolean skipFirst) {
 		BaseClassDefinition inspectedClass = skipFirst ? this.getSuperclass() : this;
 		
 		while (true) {
@@ -232,7 +249,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		}
 	}
 	
-	protected <Id, T> List<T> iterateThroughChildren(Id id, Extractor<Id, T> extractor, Acceptor<T> acceptor) {
+	protected <Id, T> List<T> iterateThroughChildren(Id id, Extractor<Id, T> extractor, Acceptor<? super T> acceptor) {
 		val list = new ArrayList<T>();
 
 		val def = extractor.extract(this, id);
@@ -266,6 +283,21 @@ public abstract class BaseClassDefinition implements Serializable {
 		}
 	};
 	
+	private static final Extractor<DexFieldId, StaticFieldDefinition> extractorStaticField = new Extractor<DexFieldId, StaticFieldDefinition>() {
+		@Override
+		public StaticFieldDefinition extract(BaseClassDefinition clazz, DexFieldId fieldId) {
+			val fieldDef = clazz.getStaticField(fieldId);
+			return fieldDef;
+		}
+	};
+	
+	private static final Acceptor<Object> acceptorAlwaysTrue = new Acceptor<Object>() {
+		@Override
+		public boolean accept(Object item) {
+			return true;
+		}
+	};
+
 	private static final Acceptor<MethodDefinition> acceptorStaticCalls = new Acceptor<MethodDefinition>() {
 		@Override
 		public boolean accept(MethodDefinition method) {
