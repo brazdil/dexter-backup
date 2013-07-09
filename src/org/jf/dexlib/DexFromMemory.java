@@ -1,5 +1,9 @@
 package org.jf.dexlib;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.commons.io.IOUtils;
 import org.jf.dexlib.Util.ByteArrayInput;
 import org.jf.dexlib.Util.Input;
 
@@ -54,5 +58,9 @@ public class DexFromMemory extends DexFile {
                 section.readFrom(sectionSize, in, readContext);
             }
         }
+	}
+	
+	public DexFromMemory(InputStream in) throws IOException {
+		this(IOUtils.toByteArray(in));
 	}
 }

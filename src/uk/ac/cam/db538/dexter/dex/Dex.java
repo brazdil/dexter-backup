@@ -1,9 +1,8 @@
 package uk.ac.cam.db538.dexter.dex;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,6 +15,7 @@ import lombok.val;
 
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.DexFromMemory;
 import org.jf.dexlib.Util.AccessFlags;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
@@ -35,6 +35,7 @@ import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 public class Dex {
 
   @Getter final RuntimeHierarchy hierarchy;
+  @Getter final InputStream resAuxiliaryDex;
 
   private final List<DexClass> classes;
 
@@ -59,17 +60,18 @@ public class Dex {
   @Getter private DexClass externalStaticFieldTaint_Class;
   @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
 
-  public Dex(RuntimeHierarchy hierarchy) {
+  public Dex(RuntimeHierarchy hierarchy, InputStream auxiliaryDex) {
     this.classes = new NoDuplicatesList<DexClass>();
     this.hierarchy = hierarchy;
+    this.resAuxiliaryDex = auxiliaryDex;
   }
 
-  public Dex(File filename, RuntimeHierarchy hierarchy) throws IOException {
-    this(new DexFile(filename), hierarchy);
+  public Dex(File filename, RuntimeHierarchy hierarchy, InputStream auxiliaryDex) throws IOException {
+    this(new DexFile(filename), hierarchy, auxiliaryDex);
   }
   
-  public Dex(DexFile dex, RuntimeHierarchy hierarchy) {
-	this(hierarchy);
+  public Dex(DexFile dex, RuntimeHierarchy hierarchy, InputStream auxiliaryDex) {
+	this(hierarchy, auxiliaryDex);
 	
     classes.addAll(parseAllClasses(dex));
 
@@ -78,28 +80,11 @@ public class Dex {
   }
 
   public Dex() {
-	  this(null);
+	  this(null, null);
   }
 
-public DexTypeCache getParsingCache() {
+  public DexTypeCache getParsingCache() {
     return hierarchy.getTypeCache();
-  }
-
-  private static File getMergeFile() throws IOException {
-    val tempFile = File.createTempFile("dexter", "merge");
-
-    val tempFile_Out = new BufferedOutputStream(new FileOutputStream(tempFile));
-    val mergeResource_In = ClassLoader.getSystemResourceAsStream("merge-classes.dex");
-
-    val buffer = new byte[1024];
-    int written;
-    while ((written = mergeResource_In.read(buffer)) >= 0)
-      tempFile_Out.write(buffer, 0, written);
-
-    tempFile_Out.close();
-    mergeResource_In.close();
-
-    return tempFile;
   }
 
   private List<DexClass> parseAllClasses(DexFile file) {
@@ -151,7 +136,7 @@ public DexTypeCache getParsingCache() {
     // open the merge DEX file
     DexFile mergeDex;
     try {
-      mergeDex = new DexFile(getMergeFile());
+      mergeDex = new DexFromMemory(resAuxiliaryDex);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
