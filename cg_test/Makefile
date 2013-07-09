@@ -11,7 +11,7 @@ else
     PROJECET_ROOT := $(shell realpath  $(TOP)/../)
 endif
 
-DEXTER := $(JAVA) -ea -classpath '$(PROJECET_ROOT)/bin/;$(PROJECET_ROOT)/lib/*' uk.ac.cam.db538.dexter.MainConsole $(PROJECET_ROOT)/framework-2.3-lite
+DEXTER := $(JAVA) -ea -classpath '$(PROJECET_ROOT)/bin/:$(PROJECET_ROOT)/lib/*' uk.ac.cam.db538.dexter.MainTest $(PROJECET_ROOT)/framework-2.3-lite
 #DXFLAGS := --no-optimize
 
 ## This is for home-made tests
