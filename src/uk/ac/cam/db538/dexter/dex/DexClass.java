@@ -32,12 +32,14 @@ import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.EncodedValue.EncodedValue;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.method.DexAbstractMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
-import uk.ac.cam.db538.dexter.dex.method.DexAbstractMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
 
 public class DexClass {
 
@@ -46,32 +48,24 @@ public class DexClass {
   private final Set<AccessFlags> accessFlagSet;
   protected final Set<DexField> fields;
   protected final Set<DexMethod> methods;
+  protected final Set<DexAnnotation> annotations;
   @Getter private final String sourceFile;
   private final Map<DexField, EncodedValue> staticInitializer;
   
   public DexClass(Dex parent, DexClassType type, DexClassType superType,
                   Set<AccessFlags> accessFlags, Set<DexField> fields,
                   Set<DexClassType> interfaces,
-                  Set<DexAnnotation> annotations, String sourceFile,
-                  boolean isInternal) {
+                  Set<DexAnnotation> annotations, String sourceFile) {
     this.parentFile = parent;
     this.type = type;
     this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
     this.fields = (fields == null) ? new HashSet<DexField>() : fields;
     this.methods = new HashSet<DexMethod>();
+    this.annotations = (annotations == null) ? new HashSet<DexAnnotation>() : new HashSet<DexAnnotation>(annotations);
     this.sourceFile = sourceFile;
     this.staticInitializer = new HashMap<DexField, EncodedValue>();
-    
-    this.type.setDefinedInternally(isInternal);
-    this.parentFile.getClassHierarchy().addMember(
-      this.type,
-      superType,
-      interfaces,
-      annotations,
-      isInterface()
-    );
   }
-
+  
   private boolean isMethodAbstract(int accessFlags) {
     for (val flag : AccessFlags.getAccessFlagsForMethod(accessFlags))
       if (flag == AccessFlags.ABSTRACT)
@@ -86,7 +80,7 @@ public class DexClass {
       return superclassType.getTypeDescriptor();
   }
 
-  public DexClass(Dex parent, ClassDefItem clsInfo, boolean isInternal) {
+  public DexClass(Dex parent, ClassDefItem clsInfo) {
     this(parent,
          DexClassType.parse(clsInfo.getClassType().getTypeDescriptor(), parent.getParsingCache()),
          DexClassType.parse(getSuperclassTypeDesc(clsInfo.getClassType(), clsInfo.getSuperclass()), parent.getParsingCache()),
@@ -94,8 +88,7 @@ public class DexClass {
          null,
          parseTypeList(clsInfo.getInterfaces(), parent.getParsingCache()),
          parseAnnotations(clsInfo.getAnnotations(), parent.getParsingCache()),
-         (clsInfo.getSourceFile() == null) ? null : clsInfo.getSourceFile().getStringValue(),
-         isInternal);
+         (clsInfo.getSourceFile() == null) ? null : clsInfo.getSourceFile().getStringValue());
 
     List<MethodAnnotation> methodAnnotations = null;
     if (clsInfo.getAnnotations() != null)
@@ -130,14 +123,14 @@ public class DexClass {
 
       for (val directMethodInfo : clsData.getDirectMethods())
         methods.add(new DexDirectMethod(this, directMethodInfo, findMethodAnnotation(directMethodInfo, methodAnnotations), 
-        		findParameterAnnotation(directMethodInfo, paramAnnotations), isInternal));
+        		findParameterAnnotation(directMethodInfo, paramAnnotations)));
       for (val virtualMethodInfo : clsData.getVirtualMethods()) {
         if (isMethodAbstract(virtualMethodInfo.accessFlags))
           methods.add(new DexAbstractMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations),
         		  findParameterAnnotation(virtualMethodInfo, paramAnnotations)));
         else
           methods.add(new DexVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations),
-        		  findParameterAnnotation(virtualMethodInfo, paramAnnotations), isInternal));
+        		  findParameterAnnotation(virtualMethodInfo, paramAnnotations)));
       }
       
     }
@@ -167,7 +160,7 @@ public class DexClass {
 	    return null;
 	  }
 
-  private static Set<DexClassType> parseTypeList(TypeListItem list, DexParsingCache cache) {
+  private static Set<DexClassType> parseTypeList(TypeListItem list, DexTypeCache cache) {
     val set = new HashSet<DexClassType>();
 
     if (list != null)
@@ -177,7 +170,7 @@ public class DexClass {
     return set;
   }
 
-  private static Set<DexAnnotation> parseAnnotations(AnnotationDirectoryItem annotations, DexParsingCache cache) {
+  private static Set<DexAnnotation> parseAnnotations(AnnotationDirectoryItem annotations, DexTypeCache cache) {
     if (annotations == null)
       return Collections.emptySet();
     else
@@ -197,19 +190,30 @@ public class DexClass {
   }
 
   public DexClassType getSuperclassType() {
-    return parentFile.getClassHierarchy().getSuperclassType(type);
+    return parentFile.getHierarchy().getBaseClassDefinition(type).getSuperclass().getClassType();
   }
 
   public Set<DexClassType> getInterfaces() {
-    return parentFile.getClassHierarchy().getInterfaces(type);
+	val clsDef = parentFile.getHierarchy().getBaseClassDefinition(type);
+	if (clsDef instanceof ClassDefinition) {
+		val ifaceDefs = ((ClassDefinition) clsDef).getInterfaces();
+		if (ifaceDefs.isEmpty())
+			return Collections.emptySet();
+
+		val set = new HashSet<DexClassType>();
+		for (val ifaceDef : ifaceDefs)
+			set.add(ifaceDef.getClassType());
+		return set;
+	} else
+		return Collections.emptySet();
   }
 
   public Set<DexAnnotation> getAnnotations() {
-    return parentFile.getClassHierarchy().getAnnotations(type);
+    return Collections.unmodifiableSet(annotations);
   }
 
   public void addAnnotation(DexAnnotation anno) {
-    parentFile.getClassHierarchy().addClassAnnotation(type, anno);
+	  annotations.add(anno);
   }
 
   public boolean isAbstract() {

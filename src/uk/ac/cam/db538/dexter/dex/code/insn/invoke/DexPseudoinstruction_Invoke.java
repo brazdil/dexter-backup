@@ -29,11 +29,13 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalMethodAnnotation;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
+import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class DexPseudoinstruction_Invoke extends DexMacro {
@@ -233,14 +235,15 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
   }
 
   private void instrumentDirectStatic(DexCode_InstrumentationState state) {
-    val destAnalysis = getParentFile().getClassHierarchy().decideMethodCallDestination(
-                         instructionInvoke.getCallType(),
-                         instructionInvoke.getClassType(),
-                         instructionInvoke.getMethodName(),
-                         instructionInvoke.getMethodPrototype());
-    if (destAnalysis.getValA())
+	val hierarchy = getParentFile().getHierarchy();
+	val defClass = hierarchy.getBaseClassDefinition(instructionInvoke.getClassType());
+	val opcode = instructionInvoke.getCallType();
+	val methodId = new DexMethodId(instructionInvoke.getMethodName(), instructionInvoke.getMethodPrototype());
+	
+    val destAnalysis = defClass.getMethodDestinationType(methodId, opcode);
+    if (destAnalysis == CallDestinationType.Internal)
       instrumentDirectInternal(state);
-    else if (destAnalysis.getValB())
+    else if (destAnalysis == CallDestinationType.External)
       instrumentDirectExternal(state);
   }
 
@@ -261,14 +264,15 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
   private void instrumentVirtual(DexCode_InstrumentationState state) {
     val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
     val methodCode = getMethodCode();
+    
+	val hierarchy = getParentFile().getHierarchy();
+	val defClass = hierarchy.getBaseClassDefinition(instructionInvoke.getClassType());
+	val opcode = instructionInvoke.getCallType();
+	val methodId = new DexMethodId(instructionInvoke.getMethodName(), instructionInvoke.getMethodPrototype());
 
-    val destAnalysis = getParentFile().getClassHierarchy().decideMethodCallDestination(
-                         instructionInvoke.getCallType(),
-                         instructionInvoke.getClassType(),
-                         instructionInvoke.getMethodName(),
-                         instructionInvoke.getMethodPrototype());
-    boolean canBeInternalCall = destAnalysis.getValA();
-    boolean canBeExternalCall = destAnalysis.getValB();
+	val destAnalysis = defClass.getMethodDestinationType(methodId, opcode);
+	boolean canBeInternalCall = (destAnalysis == CallDestinationType.Internal) || (destAnalysis == CallDestinationType.Undecidable); 
+	boolean canBeExternalCall = (destAnalysis == CallDestinationType.External) || (destAnalysis == CallDestinationType.Undecidable);
     boolean canBeAnyCall = canBeInternalCall && canBeExternalCall;
     boolean canBeNeitherCall = !canBeInternalCall && !canBeExternalCall;
 

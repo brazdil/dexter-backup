@@ -20,7 +20,6 @@ import org.jf.dexlib.Code.Format.Instruction10t;
 import org.jf.dexlib.Code.Format.Instruction10x;
 import org.junit.Test;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
@@ -28,6 +27,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Nop;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
 public class DexCode_Test {
 
@@ -155,7 +155,7 @@ public class DexCode_Test {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
 
     val codeItem = CodeItem.internCodeItem(new DexFile(), 1, 0, 0, null, insns, tries, handlers);
-    val dexCode = new DexCode(codeItem, new DexParsingCache());
+    val dexCode = new DexCode(codeItem, new DexTypeCache());
 
     assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryBlockStart);
     assertTrue(dexCode.getInstructionList().get(2) instanceof DexInstruction_Nop);
@@ -173,7 +173,7 @@ public class DexCode_Test {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
 
     val codeItem = CodeItem.internCodeItem(new DexFile(), 1, 0, 0, null, insns, tries, handlers);
-    val dexCode = new DexCode(codeItem, new DexParsingCache());
+    val dexCode = new DexCode(codeItem, new DexTypeCache());
 
     assertTrue(dexCode.getInstructionList().get(1) instanceof DexInstruction_Nop);
     assertTrue(dexCode.getInstructionList().get(2) instanceof DexTryBlockStart);
@@ -191,7 +191,7 @@ public class DexCode_Test {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
 
     val codeItem = CodeItem.internCodeItem(new DexFile(), 1, 0, 0, null, insns, tries, handlers);
-    new DexCode(codeItem, new DexParsingCache());
+    new DexCode(codeItem, new DexTypeCache());
   }
 
   @Test(expected=InstructionParsingException.class)
@@ -204,7 +204,7 @@ public class DexCode_Test {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
 
     val codeItem = CodeItem.internCodeItem(new DexFile(), 1, 0, 0, null, insns, tries, handlers);
-    new DexCode(codeItem, new DexParsingCache());
+    new DexCode(codeItem, new DexTypeCache());
   }
 
   @Test
@@ -221,7 +221,7 @@ public class DexCode_Test {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
 
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
-    val dexCode = new DexCode(codeItem, new DexParsingCache());
+    val dexCode = new DexCode(codeItem, new DexTypeCache());
 
     assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryBlockStart);
     assertTrue(dexCode.getInstructionList().get(2) instanceof DexInstruction_Nop);
@@ -254,7 +254,7 @@ public class DexCode_Test {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1, handler2 });
 
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
-    val dexCode = new DexCode(codeItem, new DexParsingCache());
+    val dexCode = new DexCode(codeItem, new DexTypeCache());
 
     assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryBlockStart);
     assertTrue(dexCode.getInstructionList().get(2) instanceof DexInstruction_Nop);
@@ -278,7 +278,7 @@ public class DexCode_Test {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
 
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
-    new DexCode(codeItem, new DexParsingCache());
+    new DexCode(codeItem, new DexTypeCache());
   }
 
   @Test(expected=InstructionParsingException.class)
@@ -295,7 +295,7 @@ public class DexCode_Test {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { });
 
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
-    new DexCode(codeItem, new DexParsingCache());
+    new DexCode(codeItem, new DexTypeCache());
   }
 
   @Test
@@ -310,7 +310,7 @@ public class DexCode_Test {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
 
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
-    val dexCode = new DexCode(codeItem, new DexParsingCache());
+    val dexCode = new DexCode(codeItem, new DexTypeCache());
 
     assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryBlockStart);
     assertTrue(dexCode.getInstructionList().get(2) instanceof DexInstruction_Nop);
@@ -338,7 +338,7 @@ public class DexCode_Test {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1, handler2 });
 
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
-    val dexCode = new DexCode(codeItem, new DexParsingCache());
+    val dexCode = new DexCode(codeItem, new DexTypeCache());
 
     assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryBlockStart);
     assertTrue(dexCode.getInstructionList().get(2) instanceof DexInstruction_Nop);
@@ -360,7 +360,7 @@ public class DexCode_Test {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { handler1 });
 
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
-    new DexCode(codeItem, new DexParsingCache());
+    new DexCode(codeItem, new DexTypeCache());
   }
 
   @Test(expected=InstructionParsingException.class)
@@ -375,6 +375,6 @@ public class DexCode_Test {
     val handlers = Arrays.asList(new EncodedCatchHandler[] { });
 
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
-    new DexCode(codeItem, new DexParsingCache());
+    new DexCode(codeItem, new DexTypeCache());
   }
 }

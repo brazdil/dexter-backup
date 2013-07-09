@@ -18,6 +18,7 @@ import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.EncodedValue.AnnotationEncodedSubValue;
 import org.jf.dexlib.EncodedValue.EncodedValue;
 
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
 public class DexAnnotation {
@@ -35,7 +36,7 @@ public class DexAnnotation {
     this.paramValues = new ArrayList<EncodedValue>();
   }
 
-  public DexAnnotation(AnnotationItem anno, DexParsingCache cache) {
+  public DexAnnotation(AnnotationItem anno, DexTypeCache cache) {
     this(DexClassType.parse(anno.getEncodedAnnotation().annotationType.getTypeDescriptor(), cache),
          anno.getVisibility());
 
@@ -66,43 +67,43 @@ public class DexAnnotation {
 	return Collections.unmodifiableList(paramValues);
   }
 
-  public static Set<DexAnnotation> parseAll(AnnotationSetItem annotations, DexParsingCache cache) {
-	    if (annotations == null)
-	      return new HashSet<DexAnnotation>();
+  public static Set<DexAnnotation> parseAll(AnnotationSetItem annotations, DexTypeCache cache) {
+    if (annotations == null)
+      return new HashSet<DexAnnotation>();
 
-	    val items = annotations.getAnnotations();
-	    val list = new HashSet<DexAnnotation>(items.length);
+    val items = annotations.getAnnotations();
+    val list = new HashSet<DexAnnotation>(items.length);
 
-	    for (val anno : items)
-	      list.add(new DexAnnotation(anno, cache));
+    for (val anno : items)
+      list.add(new DexAnnotation(anno, cache));
 
-	    return list;
-	  }
+    return list;
+  }
 
-  public static List<Set<DexAnnotation>> parseAll(AnnotationSetRefList annotations, DexParsingCache cache) {
-	    if (annotations == null)
-	      return new ArrayList<Set<DexAnnotation>>();
+  public static List<Set<DexAnnotation>> parseAll(AnnotationSetRefList annotations, DexTypeCache cache) {
+    if (annotations == null)
+      return new ArrayList<Set<DexAnnotation>>();
 
-	    val list = new ArrayList<Set<DexAnnotation>>();
+    val list = new ArrayList<Set<DexAnnotation>>();
 
-	    for (val anno : annotations.getAnnotationSets())
-	      list.add(parseAll(anno, cache));
+    for (val anno : annotations.getAnnotationSets())
+      list.add(parseAll(anno, cache));
 
-	    return list;
-	  }
+    return list;
+  }
 
   public AnnotationItem writeToFile(DexFile outFile, DexAssemblingCache cache) {
-    int paramCount = paramNames.size();
-    int paramIndex = 0;
-    val paramNames = new StringIdItem[paramCount];
-    val paramValues = new EncodedValue[paramCount];
-    for (int i = 0; i < paramCount; i++) {
-      paramNames[paramIndex] = cache.getStringConstant(this.paramNames.get(i));
-      paramValues[paramIndex] = DexEncodedValue.cloneEncodedValue(this.paramValues.get(i), cache);
-      paramIndex++;
-    }
-
-    val subValue = new AnnotationEncodedSubValue(cache.getType(type), paramNames, paramValues);
-    return AnnotationItem.internAnnotationItem(outFile, visibility, subValue);
+	int paramCount = paramNames.size();
+	int paramIndex = 0;
+	val paramNames = new StringIdItem[paramCount];
+	val paramValues = new EncodedValue[paramCount];
+	for (int i = 0; i < paramCount; i++) {
+		paramNames[paramIndex] = cache.getStringConstant(this.paramNames.get(i));
+		paramValues[paramIndex] = DexEncodedValue.cloneEncodedValue(this.paramValues.get(i), cache);
+		paramIndex++;
+	}
+	   
+	val subValue = new AnnotationEncodedSubValue(cache.getType(type), paramNames, paramValues);
+	return AnnotationItem.internAnnotationItem(outFile, visibility, subValue);
   }
 }

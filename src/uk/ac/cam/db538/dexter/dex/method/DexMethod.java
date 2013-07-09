@@ -15,8 +15,8 @@ import org.jf.dexlib.AnnotationDirectoryItem.MethodAnnotation;
 import org.jf.dexlib.AnnotationDirectoryItem.ParameterAnnotation;
 import org.jf.dexlib.AnnotationItem;
 import org.jf.dexlib.AnnotationSetItem;
-import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.AnnotationSetRefList;
+import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
@@ -28,6 +28,7 @@ import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Triple;
@@ -40,7 +41,6 @@ public abstract class DexMethod {
   @Getter private DexPrototype prototype;
   private final Set<DexAnnotation> annotations;
   private final List<Set<DexAnnotation>> paramAnnotations;
-  private EncodedMethod parentMethod;
   
   public DexMethod(DexClass parent, String name, Set<AccessFlags> accessFlags, DexPrototype prototype, Set<DexAnnotation> annotations, List<Set<DexAnnotation>> paramAnnotations) {
     this.parentClass = parent;
@@ -49,21 +49,15 @@ public abstract class DexMethod {
     this.prototype = prototype;
     this.annotations = (annotations == null) ? new HashSet<DexAnnotation>() : annotations;
     this.paramAnnotations = (paramAnnotations == null) ? new ArrayList<Set<DexAnnotation>>() : paramAnnotations;
-
-    if (!isAbstract())
-      this.parentClass.getParentFile().getClassHierarchy().addImplementedMethod(
-        parentClass.getType(), this.name, this.prototype, this.isPrivate(), this.isNative(), this.isPublic());
-    parentMethod = null;
   }
 
   public DexMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, AnnotationSetRefList paramAnnotations) {
     this(parent,
          methodInfo.method.getMethodName().getStringValue(),
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForMethod(methodInfo.accessFlags)),
-         new DexPrototype(methodInfo.method.getPrototype(), parent.getParentFile().getParsingCache()),
+         DexPrototype.parse(methodInfo.method.getPrototype(), parent.getParentFile().getParsingCache()),
          DexAnnotation.parseAll(encodedAnnotations, parent.getParentFile().getParsingCache()),
          DexAnnotation.parseAll(paramAnnotations, parent.getParentFile().getParsingCache()));
-    parentMethod = methodInfo;
   }
 
   public Set<AccessFlags> getAccessFlagSet() {

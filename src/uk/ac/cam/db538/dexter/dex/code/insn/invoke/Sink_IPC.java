@@ -11,8 +11,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
-import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -27,13 +27,15 @@ public class Sink_IPC extends FallbackInstrumentor {
 
   @Override
   public boolean canBeApplied(DexPseudoinstruction_Invoke insn) {
-    val classHierarchy = insn.getParentFile().getClassHierarchy();
+    val classHierarchy = insn.getParentFile().getHierarchy();
     val parsingCache = insn.getParentFile().getParsingCache();
 
     val insnInvoke = insn.getInstructionInvoke();
+    val defInvokedClass = classHierarchy.getBaseClassDefinition(insnInvoke.getClassType());
+    val defContext = classHierarchy.getBaseClassDefinition(DexClassType.parse("Landroid/content/Context;", parsingCache));
 
     return (insnInvoke.getCallType() == Opcode_Invoke.Virtual) &&
-           classHierarchy.isAncestor(insnInvoke.getClassType(), DexClassType.parse("Landroid/content/Context;", parsingCache)) &&
+    	   defInvokedClass.isChildOf(defContext) &&
            hasIntentParam(insnInvoke.getMethodPrototype());
   }
 

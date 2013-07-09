@@ -62,7 +62,7 @@ public class PackageListActivity extends FragmentActivity implements PackageList
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(PackageDetailFragment.ARG_ITEM_ID, pkg.packageName);
+            arguments.putString(PackageDetailFragment.PACKAGE_NAME, pkg.packageName);
             PackageDetailFragment fragment = new PackageDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
@@ -72,7 +72,7 @@ public class PackageListActivity extends FragmentActivity implements PackageList
         } else {
             // In single-pane mode, simply start the detail activity for the selected item ID.
             Intent detailIntent = new Intent(this, PackageDetailActivity.class);
-            detailIntent.putExtra(PackageDetailFragment.ARG_ITEM_ID, pkg.packageName);
+            detailIntent.putExtra(PackageDetailFragment.PACKAGE_NAME, pkg.packageName);
             startActivity(detailIntent);
         }
     }

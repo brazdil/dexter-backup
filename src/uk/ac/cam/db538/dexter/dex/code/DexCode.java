@@ -23,7 +23,6 @@ import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.InstrumentationException;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeStart;
@@ -99,10 +98,11 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
-import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -130,19 +130,19 @@ public class DexCode {
     instructionList.add(startingLabel);
   }
 
-  public DexCode(CodeItem methodInfo, DexMethodWithCode parentMethod, DexParsingCache cache) {
+  public DexCode(CodeItem methodInfo, DexMethodWithCode parentMethod, DexTypeCache cache) {
     this(parentMethod);
     parsingInfo = new DexCode_ParsingState(cache, this);
     parseInstructions(methodInfo.getInstructions(), methodInfo.getHandlers(), methodInfo.getTries(), parsingInfo);
   }
 
-  public DexCode(CodeItem methodInfo, DexParsingCache cache) {
+  public DexCode(CodeItem methodInfo, DexTypeCache cache) {
     this(methodInfo, null, cache);
   }
 
   // called internally and from tests
   // should not be called directly in real life
-  DexCode(Instruction[] instructions, DexParsingCache cache) {
+  DexCode(Instruction[] instructions, DexTypeCache cache) {
     this();
     parsingInfo = new DexCode_ParsingState(cache, this);
     parseInstructions(instructions, null, null, parsingInfo);

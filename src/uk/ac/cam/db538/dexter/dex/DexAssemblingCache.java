@@ -14,17 +14,18 @@ import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.TypeListItem;
 
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
-import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Triple;
 
 public class DexAssemblingCache {
 
-  @Getter private final DexParsingCache parsingCache;
+  @Getter private final DexTypeCache parsingCache;
   private final Cache<DexType, TypeIdItem> types;
   private final Cache<List<DexRegisterType>, TypeListItem> typeLists;
   private final Cache<String, StringIdItem> stringConstants;
@@ -32,7 +33,7 @@ public class DexAssemblingCache {
   private final Cache<Triple<DexClassType, DexRegisterType, String>, FieldIdItem> fields;
   private final Cache<Triple<DexReferenceType, DexPrototype, String>, MethodIdItem> methods;
 
-  public DexAssemblingCache(final DexFile outFile, DexParsingCache parsingCache) {
+  public DexAssemblingCache(final DexFile outFile, DexTypeCache parsingCache) {
     this.parsingCache = parsingCache;
 
     val cache = this;

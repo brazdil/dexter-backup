@@ -10,44 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import lombok.val;
-
-import com.android.dx.rop.code.FillArrayDataInsn;
-import com.android.dx.rop.code.Insn;
-import com.android.dx.rop.code.PlainCstInsn;
-import com.android.dx.rop.code.PlainInsn;
-import com.android.dx.rop.code.RegOps;
-import com.android.dx.rop.code.RegisterSpec;
-import com.android.dx.rop.code.RegisterSpecList;
-import com.android.dx.rop.code.Rop;
-import com.android.dx.rop.code.Rops;
-import com.android.dx.rop.code.SourcePosition;
-import com.android.dx.rop.code.SwitchInsn;
-import com.android.dx.rop.code.ThrowingCstInsn;
-import com.android.dx.rop.code.ThrowingInsn;
-import com.android.dx.rop.cst.Constant;
-import com.android.dx.rop.cst.CstBaseMethodRef;
-import com.android.dx.rop.cst.CstBoolean;
-import com.android.dx.rop.cst.CstByte;
-import com.android.dx.rop.cst.CstChar;
-import com.android.dx.rop.cst.CstDouble;
-import com.android.dx.rop.cst.CstFloat;
-import com.android.dx.rop.cst.CstInteger;
-import com.android.dx.rop.cst.CstKnownNull;
-import com.android.dx.rop.cst.CstLong;
-import com.android.dx.rop.cst.CstMethodRef;
-import com.android.dx.rop.cst.CstShort;
-import com.android.dx.rop.cst.CstString;
-import com.android.dx.rop.cst.CstType;
-import com.android.dx.rop.cst.CstFieldRef;
-import com.android.dx.rop.cst.CstNat;
-import com.android.dx.rop.cst.TypedConstant;
-import com.android.dx.rop.type.StdTypeList;
-import com.android.dx.rop.type.Type;
-import com.android.dx.rop.type.TypeBearer;
-import com.android.dx.rop.type.TypeList;
-import com.android.dx.util.IntList;
-import com.rx201.dx.translator.util.DexRegisterHelper;
-
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
@@ -110,6 +72,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
+import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalClassAnnotation;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalMethodAnnotation;
@@ -122,13 +85,49 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintIntegerConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintString;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
-import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.utils.Pair;
+
+import com.android.dx.rop.code.FillArrayDataInsn;
+import com.android.dx.rop.code.Insn;
+import com.android.dx.rop.code.PlainCstInsn;
+import com.android.dx.rop.code.PlainInsn;
+import com.android.dx.rop.code.RegOps;
+import com.android.dx.rop.code.RegisterSpec;
+import com.android.dx.rop.code.RegisterSpecList;
+import com.android.dx.rop.code.Rop;
+import com.android.dx.rop.code.Rops;
+import com.android.dx.rop.code.SourcePosition;
+import com.android.dx.rop.code.SwitchInsn;
+import com.android.dx.rop.code.ThrowingCstInsn;
+import com.android.dx.rop.code.ThrowingInsn;
+import com.android.dx.rop.cst.Constant;
+import com.android.dx.rop.cst.CstBaseMethodRef;
+import com.android.dx.rop.cst.CstBoolean;
+import com.android.dx.rop.cst.CstByte;
+import com.android.dx.rop.cst.CstChar;
+import com.android.dx.rop.cst.CstDouble;
+import com.android.dx.rop.cst.CstFieldRef;
+import com.android.dx.rop.cst.CstFloat;
+import com.android.dx.rop.cst.CstInteger;
+import com.android.dx.rop.cst.CstKnownNull;
+import com.android.dx.rop.cst.CstLong;
+import com.android.dx.rop.cst.CstMethodRef;
+import com.android.dx.rop.cst.CstNat;
+import com.android.dx.rop.cst.CstShort;
+import com.android.dx.rop.cst.CstString;
+import com.android.dx.rop.cst.CstType;
+import com.android.dx.rop.cst.TypedConstant;
+import com.android.dx.rop.type.StdTypeList;
+import com.android.dx.rop.type.Type;
+import com.android.dx.rop.type.TypeBearer;
+import com.android.dx.rop.type.TypeList;
+import com.android.dx.util.IntList;
+import com.rx201.dx.translator.util.DexRegisterHelper;
 
 
 class DexConvertedResult {
@@ -289,7 +288,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	private List<AnalyzedDexInstruction> getCatchers_precise(Rop opcode) {
 		ArrayList<AnalyzedDexInstruction> result = new ArrayList<AnalyzedDexInstruction>();
 		DexCode code = curInst.getInstruction().getMethodCode();
-		val classHierarchy = code.getParentFile().getClassHierarchy();
+		val classHierarchy = code.getParentFile().getHierarchy();
 		
 		ArrayList<DexClassType> thrownExceptions = new ArrayList<DexClassType>();
 		TypeList exceptions = opcode.getExceptions();
@@ -307,7 +306,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	            for (val catchBlock : tryBlockStart.getCatchHandlers()) {
 	            	
-					DexClassType catchException = catchBlock.getExceptionType();
+					val catchException = classHierarchy.getClassDefinition(catchBlock.getExceptionType());
 					
 					boolean canCatch = false;
 					// Check if the exception thrown by the given Rop can potentially 
@@ -315,12 +314,14 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 				    // which is either the catch block catches the given exception type or its ancestor (a guaranteed catch)
 			        // or if the catch is the subclass of the thrown exception (a potential catch)
  					// **Logic duplicated from DexInstruction.throwingInsn_CatchHandlers
-					for(DexClassType thrown : thrownExceptions)
-						if (classHierarchy.isAncestor(thrown, catchException) || 
-							classHierarchy.isAncestor(catchException, thrown)) {
+					for(DexClassType thrown : thrownExceptions) {
+						val thrownException = classHierarchy.getClassDefinition(thrown);
+						if (thrownException.isChildOf(catchException) || 
+							catchException.isChildOf(thrownException)) {
 							canCatch = true;
 							break;
 						}
+					}
 					if (canCatch)
 						result.add(analyzer.reverseLookup(catchBlock));
 	            }

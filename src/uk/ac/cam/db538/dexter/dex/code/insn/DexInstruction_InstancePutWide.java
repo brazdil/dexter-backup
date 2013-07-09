@@ -19,6 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -98,13 +99,19 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
   public void instrument(DexCode_InstrumentationState state) {
     // essentially same as original InstancePut, just need to combine the taint of the two input registers before assignment
     val code = getMethodCode();
-    val classHierarchy = getParentFile().getClassHierarchy();
+    val classHierarchy = getParentFile().getHierarchy();
 
-    val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, false);
-    if (fieldDeclaringClass.isDefinedInternally()) {
+    val defClass = classHierarchy.getClassDefinition(fieldClass);
+    val defField = defClass.getAccessedInstanceField(new DexFieldId(fieldName, fieldType));
+
+    if (defField == null)
+      System.err.println("warning: cannot find accessed instance field " + fieldClass.getPrettyName() + "." + fieldName);
+
+    val fieldDeclaringClass = defField.getParentClass();
+    if (fieldDeclaringClass.isInternal()) {
       // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
       // store the taint to the taint field
-      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
+      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass.getClassType(), fieldName, fieldType);
       code.replace(this,
                    new DexCodeElement[] {
                      this,

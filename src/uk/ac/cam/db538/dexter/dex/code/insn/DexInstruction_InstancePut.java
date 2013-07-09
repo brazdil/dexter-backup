@@ -19,6 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
@@ -95,17 +96,23 @@ public class DexInstruction_InstancePut extends DexInstruction {
   @Override
   public void instrument(DexCode_InstrumentationState state) {
     val code = getMethodCode();
-    val classHierarchy = getParentFile().getClassHierarchy();
+    val classHierarchy = getParentFile().getHierarchy();
 
-    val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, false);
+    val defClass = classHierarchy.getClassDefinition(fieldClass);
+    val defField = defClass.getAccessedInstanceField(new DexFieldId(fieldName, fieldType));
+
+    if (defField == null)
+      System.err.println("warning: cannot find accessed instance field " + fieldClass.getPrettyName() + "." + fieldName);
+
+    val fieldDeclaringClass = defField.getParentClass();
 
     if (opcode != Opcode_GetPut.Object) {
       val regValueTaint = state.getTaintRegister(regFrom);
 
-      if (fieldDeclaringClass.isDefinedInternally()) {
+      if (fieldDeclaringClass.isInternal()) {
         // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
         // store the taint to the taint field
-        val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
+        val field = DexUtils.getField(getParentFile(), fieldDeclaringClass.getClassType(), fieldName, fieldType);
         code.replace(this,
                      new DexCodeElement[] {
                        this,
@@ -122,7 +129,7 @@ public class DexInstruction_InstancePut extends DexInstruction {
                      });
 
     } else {
-      if (!fieldDeclaringClass.isDefinedInternally()) {
+      if (!fieldDeclaringClass.isInternal()) {
         // FIELD OF REFERENCE TYPE DEFINED EXTERNALLY
         // need to copy the taint of the field value to the containing object
         val regValueTaint = new DexRegister();

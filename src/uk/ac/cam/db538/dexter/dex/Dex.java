@@ -1,8 +1,6 @@
 package uk.ac.cam.db538.dexter.dex;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -17,24 +15,27 @@ import lombok.val;
 
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.DexFromMemory;
 import org.jf.dexlib.Util.AccessFlags;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
-import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache.InstrumentationWarning;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
-import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
-import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class Dex {
 
-  @Getter final Apk parentApk;
+  @Getter final RuntimeHierarchy hierarchy;
+  @Getter final InputStream resAuxiliaryDex;
 
   private final List<DexClass> classes;
 
@@ -59,45 +60,39 @@ public class Dex {
   @Getter private DexClass externalStaticFieldTaint_Class;
   @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
 
-  public Dex() {
-    this(null);
+  public Dex(RuntimeHierarchy hierarchy, InputStream auxiliaryDex) {
+    this.classes = new NoDuplicatesList<DexClass>();
+    this.hierarchy = hierarchy;
+    this.resAuxiliaryDex = auxiliaryDex;
   }
 
-  public Dex(Apk parent) {
-    classes = new NoDuplicatesList<DexClass>();
-    parentApk = parent;
+  public Dex(File filename, RuntimeHierarchy hierarchy, InputStream auxiliaryDex) throws IOException {
+    this(new DexFile(filename), hierarchy, auxiliaryDex);
   }
-
-  public Dex(File filename, boolean isInternal, Apk parent) throws IOException {
-    this(parent);
-
-    System.out.println("Loading " + filename.getPath());
-
-    val originalFile = new DexFile(filename);
-    classes.addAll(parseAllClasses(originalFile, isInternal));
+  
+  public Dex(DexFile dex, RuntimeHierarchy hierarchy, InputStream auxiliaryDex) {
+	this(hierarchy, auxiliaryDex);
+	
+    classes.addAll(parseAllClasses(dex));
 
     for (val clazz : classes)
       clazz.markMethodsOriginal();
   }
 
-  public DexClassHierarchy getClassHierarchy() {
-    return parentApk.getClassHierarchy();
+  public Dex() {
+	  this(null, null);
   }
 
-  public DexParsingCache getParsingCache() {
-    return parentApk.getParsingCache();
+  public DexTypeCache getParsingCache() {
+    return hierarchy.getTypeCache();
   }
 
-  private static InputStream getMergeDexData() {
-    return ClassLoader.getSystemResourceAsStream("merge-classes.dex");
-  }
-
-  private List<DexClass> parseAllClasses(DexFile file, boolean isInternal) {
+  private List<DexClass> parseAllClasses(DexFile file) {
     val dexClsInfos = file.ClassDefsSection.getItems();
     val classList = new ArrayList<DexClass>(dexClsInfos.size());
 
     for (val dexClsInfo : dexClsInfos)
-      classList.add(new DexClass(this, dexClsInfo, isInternal));
+      classList.add(new DexClass(this, dexClsInfo));
 
     return classList;
   }
@@ -106,21 +101,22 @@ public class Dex {
    * Needs to generate a short, but unique class name
    */
   private DexClassType generateClassType() {
-    val parsingCache = getParsingCache();
+	val typeCache = getParsingCache();
+	
     String desc;
     long suffix = 0L;
     do {
       desc = "L$" + suffix + ";";
       suffix++;
-    } while (parsingCache.classTypeExists(desc));
+    } while (typeCache.encounteredClassType(desc));
 
-    return DexClassType.parse(desc, parsingCache);
+    return DexClassType.parse(desc, typeCache);
   }
 
   private List<DexClass> parseExtraClasses() {
     val parsingCache = getParsingCache();
 
-    // generate names
+    // generate types
     val clsTaintConstants = generateClassType();
     val clsInternalClassAnnotation = generateClassType();
     val clsInternalMethodAnnotation = generateClassType();
@@ -129,31 +125,32 @@ public class Dex {
     val clsMethodCallHelper = generateClassType();
 
     // set descriptor replacements
-    parsingCache.setDescriptorReplacement(CLASS_TAINTCONSTANTS, clsTaintConstants.getDescriptor());
-    parsingCache.setDescriptorReplacement(CLASS_INTERNALCLASS, clsInternalClassAnnotation.getDescriptor());
-    parsingCache.setDescriptorReplacement(CLASS_INTERNALMETHOD, clsInternalMethodAnnotation.getDescriptor());
-    parsingCache.setDescriptorReplacement(CLASS_OBJTAINT, clsObjTaint.getDescriptor());
-    parsingCache.setDescriptorReplacement(CLASS_OBJTAINTENTRY, clsObjTaintEntry.getDescriptor());
-    parsingCache.setDescriptorReplacement(CLASS_METHODCALLHELPER, clsMethodCallHelper.getDescriptor());
+    ClassRenamer renamer = parsingCache.getClassRenamer();
+    renamer.addRule(CLASS_TAINTCONSTANTS, clsTaintConstants.getDescriptor());
+    renamer.addRule(CLASS_INTERNALCLASS, clsInternalClassAnnotation.getDescriptor());
+    renamer.addRule(CLASS_INTERNALMETHOD, clsInternalMethodAnnotation.getDescriptor());
+    renamer.addRule(CLASS_OBJTAINT, clsObjTaint.getDescriptor());
+    renamer.addRule(CLASS_OBJTAINTENTRY, clsObjTaintEntry.getDescriptor());
+    renamer.addRule(CLASS_METHODCALLHELPER, clsMethodCallHelper.getDescriptor());
 
     // open the merge DEX file
     DexFile mergeDex;
     try {
-      mergeDex = new DexFile(getMergeDexData());
+      mergeDex = new DexFromMemory(resAuxiliaryDex);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
 
     // parse the classes
-    val extraClasses = parseAllClasses(mergeDex, true);
-
-    // remove descriptor replacements
-    parsingCache.removeDescriptorReplacement(CLASS_TAINTCONSTANTS);
-    parsingCache.removeDescriptorReplacement(CLASS_INTERNALCLASS);
-    parsingCache.removeDescriptorReplacement(CLASS_INTERNALMETHOD);
-    parsingCache.removeDescriptorReplacement(CLASS_OBJTAINT);
-    parsingCache.removeDescriptorReplacement(CLASS_OBJTAINTENTRY);
-    parsingCache.removeDescriptorReplacement(CLASS_METHODCALLHELPER);
+    val extraClasses = parseAllClasses(mergeDex);
+    
+    // remove renamer rules
+    renamer.removeRule(CLASS_TAINTCONSTANTS);
+    renamer.removeRule(CLASS_INTERNALCLASS);
+    renamer.removeRule(CLASS_INTERNALMETHOD);
+    renamer.removeRule(CLASS_OBJTAINT);
+    renamer.removeRule(CLASS_OBJTAINTENTRY);
+    renamer.removeRule(CLASS_METHODCALLHELPER);
 
     // store Object Taint Storage class type and method references
     // store MethodCallHelper class type & method and field references
@@ -210,8 +207,7 @@ public class Dex {
       null,
       null,
       null,
-      null,
-      true);
+      null);
 
     val clinitCode = new DexCode();
     clinitCode.add(new DexInstruction_ReturnVoid(clinitCode));
@@ -233,7 +229,6 @@ public class Dex {
   }
 
   public List<InstrumentationWarning> instrument(boolean debug) {
-    val classHierarchy = getClassHierarchy();
     val cache = new DexInstrumentationCache(this, debug);
 
     val extraClassesLinked = parseExtraClasses();
@@ -245,16 +240,11 @@ public class Dex {
     classes.addAll(extraClassesLinked);
     classes.addAll(extraClassesGenerated);
 
-    classHierarchy.checkConsistency();
-
     return cache.getWarnings();
   }
 
   public byte[] writeToFile() {
-    val classHierarchy = getClassHierarchy();
     val parsingCache = getParsingCache();
-
-    classHierarchy.checkConsistency();
 
     val outFile = new DexFile();
     val out = new ByteArrayAnnotatedOutput();
