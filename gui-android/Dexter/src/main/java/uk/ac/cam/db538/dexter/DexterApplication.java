@@ -124,7 +124,7 @@ public class DexterApplication extends Application {
     public RuntimeHierarchy getRuntimeHierarchy(DexFile file) {
         waitForHierarchy();
         synchronized (hierarchyBuilder) {
-            return hierarchyBuilder.buildAgainstApp(file, false);
+            return hierarchyBuilder.buildAgainstApp(file);
         }
     }
 
