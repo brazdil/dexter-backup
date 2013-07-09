@@ -6,11 +6,12 @@ import java.io.IOException;
 
 import lombok.val;
 
+import org.apache.commons.io.IOUtils;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
@@ -106,13 +107,14 @@ public class MainConsole {
 //    HierarchyBuilder hierarchyBuilder = HierarchyBuilder.deserialize(new File("hierarchy.dump"));
     
     System.out.println("Scanning application");
-    DexFile dexFile = new DexFile(apkFile);
+    val dexFile = new DexFile(apkFile);
     
     System.out.println("Building hierarchy");
     RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(dexFile);
     
     System.out.println("Parsing application");
-    Dex dex = new Dex(dexFile, hierarchy);
+    val dexAux = ClassLoader.getSystemResourceAsStream("merge-classes.dex");
+    Dex dex = new Dex(dexFile, hierarchy, dexAux);
     
     System.out.println("Instrumenting application");
     dex.instrument(false);

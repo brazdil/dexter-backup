@@ -151,8 +151,6 @@ class DalvCodeBridge {
 			e.printStackTrace();
 			codeItem = null;
 		}
-
-		
 	}
 
 	public Instruction[] getInstructions() {

@@ -12,10 +12,11 @@ import org.jf.dexlib.DexFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
+import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
-import uk.ac.cam.db538.dexter.hierarchy.HierarchyScanCallback;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class InstrumentActivity extends Activity {
@@ -81,8 +82,18 @@ public class InstrumentActivity extends Activity {
                 DexFile apk = new DexFile(packageFile);
                 terminalDone();
 
-                terminalMessage("Analyzing application");
+                terminalMessage("Building runtime hierarchy");
                 RuntimeHierarchy hierarchy = thisApp.getRuntimeHierarchy(apk);
+                terminalDone();
+
+                InputStream auxiliaryDex = InstrumentActivity.this.getResources().openRawResource(R.raw.aux);
+
+                terminalMessage("Parsing application");
+                Dex dex = new Dex(apk, hierarchy, auxiliaryDex);
+                terminalDone();
+
+                terminalMessage("Instrumenting application");
+                dex.instrument(false);
                 terminalDone();
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
@@ -106,38 +117,6 @@ public class InstrumentActivity extends Activity {
             appendToTerminal(" DONE\n");
         }
     };
-
-//    private HierarchyScanCallback callbackStage1 = new HierarchyScanCallback() {
-//        @Override
-//        public void onFileScanStarted(final File file) {
-//            InstrumentActivity.this.runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    textTerminal.append("scanning " + file.getName() + "... ");
-//                }
-//            });
-//        }
-//
-//        @Override
-//        public void onFileScanFinished(File file) {
-//            InstrumentActivity.this.runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    textTerminal.append("ok\n");
-//                }
-//            });
-//        }
-//
-//        @Override
-//        public void onFolderScanStarted(File file, int i) {
-//
-//        }
-//
-//        @Override
-//        public void onFolderScanFinished(File file, int i) {
-//
-//        }
-//    };
 
     public static final String PACKAGE_NAME = "package_name";
 }
