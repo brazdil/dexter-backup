@@ -16,11 +16,15 @@ public abstract class DexReferenceType extends DexRegisterType {
 	      return DexClassType.parse(typeDescriptor, cache);
 	    } catch (UnknownTypeException e) { }
 	
+        return DexArrayType.parse(typeDescriptor, cache);
+	}
+
+	public static String jvm2dalvik(String jvmName) throws UnknownTypeException {
 	    try {
-	      return DexArrayType.parse(typeDescriptor, cache);
+	        return DexArrayType.jvm2dalvik(jvmName);
 	    } catch (UnknownTypeException e) { }
-	
-	    throw new UnknownTypeException(typeDescriptor);
+
+        return DexClassType.jvm2dalvik(jvmName);
 	}
 
 	@Override

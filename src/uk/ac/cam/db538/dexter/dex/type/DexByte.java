@@ -6,6 +6,9 @@ public class DexByte extends DexPrimitiveType {
     
 	private static final long serialVersionUID = 1L;
 
+	private static String DESCRIPTOR = "B";
+	private static String NAME = "byte";
+	
 	DexByte() { }
     
     @Override
@@ -15,12 +18,12 @@ public class DexByte extends DexPrimitiveType {
 
 	@Override
 	public String getDescriptor() {
-		return "B";
+		return DESCRIPTOR;
 	}
 
 	@Override
 	public String getPrettyName() {
-		return "byte";
+		return NAME;
 	}
 
 	@Override
@@ -29,9 +32,16 @@ public class DexByte extends DexPrimitiveType {
     }
 
     public static DexByte parse(String typeDescriptor, DexTypeCache cache) {
-    	if (!typeDescriptor.equals("B"))
+    	if (!typeDescriptor.equals(DESCRIPTOR))
     		throw new UnknownTypeException(typeDescriptor);
     	else
     		return cache.getCachedType_Byte();
     }
+    
+	public static String jvm2dalvik(String javaName) {
+		if (javaName.equals(NAME))
+			return DESCRIPTOR;
+		else
+			throw new UnknownTypeException(javaName);
+	}
 }

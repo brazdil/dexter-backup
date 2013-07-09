@@ -25,17 +25,19 @@ public abstract class DexRegisterType extends DexType {
 	public static DexRegisterType parse(String typeDescriptor, DexTypeCache cache) throws UnknownTypeException {
 		try {
 			return DexPrimitiveType.parse(typeDescriptor, cache);
-		} catch (UnknownTypeException e) {
-		}
+		} catch (UnknownTypeException e) { }
 
-		try {
-			return DexReferenceType.parse(typeDescriptor, cache);
-		} catch (UnknownTypeException e) {
-		}
-
-		throw new UnknownTypeException(typeDescriptor);
+		return DexReferenceType.parse(typeDescriptor, cache);
 	}
   
+	public static String jvm2dalvik(String jvmName) throws UnknownTypeException {
+		try {
+			return DexPrimitiveType.jvm2dalvik(jvmName);
+		} catch (UnknownTypeException e) { }
+
+		return DexReferenceType.jvm2dalvik(jvmName);
+	}
+
 	public abstract DexRegisterTypeSize getTypeSize();
 
 	public boolean isWide() {

@@ -6,6 +6,9 @@ public class DexShort extends DexPrimitiveType {
 
 	private static final long serialVersionUID = 1L;
 
+	private static String DESCRIPTOR = "S";
+	private static String NAME = "short";
+
 	DexShort() { }
 
     @Override
@@ -15,12 +18,12 @@ public class DexShort extends DexPrimitiveType {
 
 	@Override
 	public String getDescriptor() {
-		return "S";
+		return DESCRIPTOR;
 	}
 
 	@Override
 	public String getPrettyName() {
-		return "short";
+		return NAME;
 	}
     
     @Override
@@ -29,9 +32,16 @@ public class DexShort extends DexPrimitiveType {
     }
 
     public static DexShort parse(String typeDescriptor, DexTypeCache cache) {
-    	if (!typeDescriptor.equals("S"))
+    	if (!typeDescriptor.equals(DESCRIPTOR))
     		throw new UnknownTypeException(typeDescriptor);
     	else
     		return cache.getCachedType_Short();
     }
+    
+	public static String jvm2dalvik(String javaName) {
+		if (javaName.equals(NAME))
+			return DESCRIPTOR;
+		else
+			throw new UnknownTypeException(javaName);
+	}
 }

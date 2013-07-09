@@ -37,6 +37,14 @@ public abstract class DexType implements Serializable {
 		
 		return DexRegisterType.parse(typeDescriptor, cache);
 	}
+	
+	public static String jvm2dalvik(String jvmName) throws UnknownTypeException {
+		try {
+			return DexVoid.jvm2dalvik(jvmName);
+		} catch (UnknownTypeException ex) { }
+		
+		return DexRegisterType.jvm2dalvik(jvmName);
+	}
 
 	public static Cache<DexType, TypeIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
 		return new Cache<DexType, TypeIdItem>() {

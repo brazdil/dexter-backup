@@ -24,7 +24,7 @@ public class DexArrayType extends DexReferenceType {
 		
 		return type;
 	}
-
+	
 	@Override
 	public String getDescriptor() {
 		return "[" + elementType.getDescriptor();
@@ -42,5 +42,26 @@ public class DexArrayType extends DexReferenceType {
 		else
 			return "[" + elementType.getDescriptor();
 		
+	}
+	
+	public static String jvm2dalvik(String jvmName) {
+		if (jvmName.startsWith("[")) {
+			String element = jvmName.substring(1);
+
+			// try to parse the element as a Dalvik primitive (descriptors match)
+			// dirty hack: primitive will throw NullPointerException
+			// if it tries to access type cache (in which case it parsed the name)
+			try {
+				DexPrimitiveType.parse(element, null);
+				throw new Error("The previous command should have thrown an exception");
+			} catch (NullPointerException ex) {
+				// primitive
+				return jvmName;
+			} catch (UnknownTypeException ex) {
+				// not primitive
+				return "[" + DexReferenceType.jvm2dalvik(element);				
+			}
+		} else
+			throw new UnknownTypeException(jvmName);
 	}
 }
