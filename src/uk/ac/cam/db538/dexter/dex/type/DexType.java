@@ -21,6 +21,14 @@ public abstract class DexType implements Serializable {
 
 	public abstract String getDescriptor();
 	public abstract String getPrettyName();
+	
+	/*
+	 * Returns the name of the class as recognized by Java (not Dalvik).
+	 * Overriden by DexArrayType
+	 */
+	public String getJavaDescriptor() {
+		return getPrettyName();
+	}
   
 	public static DexType parse(String typeDescriptor, DexTypeCache cache) throws UnknownTypeException {
 		val res = DexVoid.parse(typeDescriptor);

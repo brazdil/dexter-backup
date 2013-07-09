@@ -34,4 +34,13 @@ public class DexArrayType extends DexReferenceType {
 	public String getPrettyName() {
 		return elementType.getPrettyName() + "[]";
 	}
+
+	@Override
+	public String getJavaDescriptor() {
+		if (elementType instanceof DexClassType)
+			return "[L" + elementType.getPrettyName() + ";";
+		else
+			return "[" + elementType.getDescriptor();
+		
+	}
 }

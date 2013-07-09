@@ -92,7 +92,7 @@ public class MainConsole {
 ////    APK.getDexFile().countInstructions();
 //    APK.writeToFile(apkFile_new);
 ////    APK.getDexFile().countInstructions();
-    
+
     // build runtime class hierarchy
     val hierarchyBuilder = new HierarchyBuilder();
     
