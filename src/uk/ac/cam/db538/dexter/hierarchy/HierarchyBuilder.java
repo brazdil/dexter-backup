@@ -316,9 +316,11 @@ public class HierarchyBuilder implements Serializable {
 	}
 
 	public RuntimeHierarchy buildAgainstApp(DexFile dex) {
-		importDex(dex, true);
-		val hierarchy = build();
-		removeInternalClasses();
-		return hierarchy;
+		try {
+			importDex(dex, true);
+			return build();
+		} finally {
+			removeInternalClasses();
+		}
 	}
 }
