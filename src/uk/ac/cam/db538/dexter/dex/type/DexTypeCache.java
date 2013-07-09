@@ -18,6 +18,7 @@ public class DexTypeCache implements Serializable {
 
   // private final Map<String, String> descriptorReplacements;
   
+  @Getter private final DexVoid cachedType_Void = new DexVoid();
   @Getter private final DexBoolean cachedType_Boolean = new DexBoolean();
   @Getter private final DexByte cachedType_Byte = new DexByte();
   @Getter private final DexChar cachedType_Char = new DexChar();
