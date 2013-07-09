@@ -69,6 +69,32 @@ public class HierarchyBuilder implements Serializable {
 			scanClass(cls, isInternal);
 	}
 	
+	@SuppressWarnings("rawtypes")
+	private void importDependencies() {
+		boolean somethingChanged;
+		do {
+			somethingChanged = false;
+			for (val clsPair : definedClasses.values()) {
+				val supercls = clsPair.getValB().superclass;
+				if (supercls != null && definedClasses.get(supercls) == null) {
+					// superclass is missing in the hierarchy
+					
+					// try to find it in the running VM
+					Class vmClass;
+					try {
+						vmClass = Class.forName(supercls.getJavaDescriptor());
+					} catch (ClassNotFoundException e) {
+						throw new HierarchyException("Class " + clsPair.getValA().getClassType().getPrettyName() + " is missing its parent " + supercls.getPrettyName());
+					}
+					
+					// import it
+					scanClass(vmClass, false);
+					somethingChanged = true;
+				}
+			}
+		} while (somethingChanged);
+	}
+	
 	private void scanClass(ClassDefItem cls, boolean isInternal) {
 		val clsData = cls.getClassData();
 		val clsType = DexClassType.parse(cls.getClassType().getTypeDescriptor(), typeCache);
@@ -122,6 +148,13 @@ public class HierarchyBuilder implements Serializable {
 		definedClasses.put(clsType, new Pair<BaseClassDefinition, ClassData>(clsInfo, clsInfo_Data));
 	}
 	
+	@SuppressWarnings("rawtypes")
+	private void scanClass(Class cls, boolean isInternal) {
+		val clsInfo_Data = new ClassData();
+		val scls = cls.getSuperclass();
+		// val sclsType = DexClassType.parse(, cache) 
+	}
+	
 	private void scanMethods(ClassDataItem clsData, BaseClassDefinition clsDef) {
 		if (clsData == null)
 			return;
@@ -164,7 +197,7 @@ public class HierarchyBuilder implements Serializable {
 					DexFieldId.parseFieldId(fieldItem.field, typeCache),
 					fieldItem.accessFlags));
 	}
-		
+	
 	public RuntimeHierarchy build() {
 		val classList = new HashMap<DexClassType, BaseClassDefinition>();
 		for (val classDefPair : definedClasses.values()) {

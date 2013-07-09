@@ -30,7 +30,7 @@ public class DexClassType extends DexReferenceType {
 		
 		return type;
 	}
-
+	
 	@Override
 	public String getDescriptor() {
 		return descriptor;
