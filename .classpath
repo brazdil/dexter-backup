@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="main/java/|test/java/" kind="src" path="src"/>
+	<classpathentry kind="src" path="merges"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="lib" path="lib/lombok.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.11.jar"/>

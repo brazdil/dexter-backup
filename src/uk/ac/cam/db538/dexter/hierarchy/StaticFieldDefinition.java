@@ -17,7 +17,7 @@ public class StaticFieldDefinition implements Serializable {
 	@Getter private final DexFieldId fieldId;
 	private final int accessFlags;
 	
-	StaticFieldDefinition(BaseClassDefinition cls, DexFieldId fieldId, int accessFlags) {
+	public StaticFieldDefinition(BaseClassDefinition cls, DexFieldId fieldId, int accessFlags) {
 		this.parentClass = cls;
 		this.fieldId = fieldId;
 		this.accessFlags = accessFlags;

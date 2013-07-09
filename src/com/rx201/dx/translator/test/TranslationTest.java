@@ -12,19 +12,15 @@ import java.util.Comparator;
 import lombok.val;
 
 import org.jf.dexlib.DexFile;
-import org.jf.dexlib.Code.Analysis.ClassPath;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.rx201.dx.translator.DexCodeGeneration;
-
-import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 
 @RunWith(Parameterized.class)
 public class TranslationTest {
@@ -84,7 +80,7 @@ public class TranslationTest {
 	    val dexFile = new DexFile(file);
 	    
 	    System.out.println("Building hierarchy");
-	    RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(dexFile);
+	    RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(dexFile, false);
 	    
 	    System.out.println("Parsing application");
 	    Dex dex = new Dex(dexFile, hierarchy, dexAux);

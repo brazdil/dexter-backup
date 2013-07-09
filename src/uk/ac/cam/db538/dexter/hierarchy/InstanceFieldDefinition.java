@@ -17,7 +17,7 @@ public class InstanceFieldDefinition implements Serializable {
 	@Getter private final DexFieldId fieldId;
 	private final int accessFlags;
 	
-	InstanceFieldDefinition(ClassDefinition cls, DexFieldId fieldId, int accessFlags) {
+	public InstanceFieldDefinition(ClassDefinition cls, DexFieldId fieldId, int accessFlags) {
 		this.parentClass = cls;
 		this.fieldId = fieldId;
 		this.accessFlags = accessFlags;
