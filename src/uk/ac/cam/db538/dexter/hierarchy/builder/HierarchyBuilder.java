@@ -69,7 +69,6 @@ public class HierarchyBuilder implements Serializable {
 			scanClass(new DexClassScanner(cls, typeCache), isInternal);
 	}
 	
-	@SuppressWarnings("rawtypes")
 	private void importDependencies() {
 		boolean somethingChanged;
 		do {
@@ -78,25 +77,40 @@ public class HierarchyBuilder implements Serializable {
 			// need to make a copy of the class list
 			// because we will modify it inside the loop
 			val currentClassSet = new ArrayList<Pair<BaseClassDefinition, ClassData>>(definedClasses.values());
+			
 			for (val clsPair : currentClassSet) {
+				
+				// check superclass presence
 				val supercls = clsPair.getValB().superclass;
 				if (supercls != null && definedClasses.get(supercls) == null) {
-					// superclass is missing in the hierarchy
-					
-					// try to find it in the running VM
-					Class vmClass;
-					try {
-						vmClass = Class.forName(supercls.getJavaDescriptor());
-					} catch (ClassNotFoundException e) {
-						throw new HierarchyException("Class " + clsPair.getValA().getClassType().getPrettyName() + " is missing its parent " + supercls.getPrettyName());
-					}
-					
-					// import it
-					scanClass(new VmClassScanner(vmClass, typeCache), false);
+					needVMClass(supercls);
 					somethingChanged = true;
 				}
+				
+				// check presence of all interfaces
+				val interfaces = clsPair.getValB().interfaces;
+				if (interfaces != null)
+					for (val ifacecls : interfaces)
+						if (definedClasses.get(ifacecls) == null) {
+							needVMClass(ifacecls);
+							somethingChanged = true;
+						}
 			}
 		} while (somethingChanged);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private void needVMClass(DexClassType clsType) {
+		// try to find it in the running VM
+		Class vmClass;
+		try {
+			vmClass = Class.forName(clsType.getJavaDescriptor());
+		} catch (ClassNotFoundException e) {
+			throw new HierarchyException("Class " + clsType.getPrettyName() + " not present in VM");
+		}
+		
+		// import it
+		scanClass(new VmClassScanner(vmClass, typeCache), false);
 	}
 	
 	private void scanClass(IClassScanner clsScanner, boolean isInternal) {
@@ -123,33 +137,6 @@ public class HierarchyBuilder implements Serializable {
 		// store data
 		definedClasses.put(clsType, new Pair<BaseClassDefinition, ClassData>(baseclsDef, baseclsData));
 	}
-	
-//	@SuppressWarnings("rawtypes")
-//	private void scanClass(Class cls, boolean isInternal) {
-//		val clsType = checkClassType();
-//		
-//		BaseClassDefinition clsInfo;
-//		val clsInfo_Data = new ClassData();
-//		if (cls.isInterface())
-//			clsInfo = new InterfaceDefinition(clsType, cls.getModifiers(), isInternal);
-//		else {
-//			clsInfo = new ClassDefinition(clsType, cls.getModifiers(), isInternal);
-//		}
-//		
-//		System.out.println("scanning " + clsType.getDescriptor());
-//		
-//		// acquire superclass info
-//		val scls = cls.getSuperclass();
-//		if (scls != null) {
-//			clsInfo_Data.superclass = DexClassType.parse(DexClassType.jvm2dalvik(scls.getName()), typeCache);
-//			System.out.println("superclass: " + clsInfo_Data.superclass.getDescriptor());
-//		} else {
-////			foundRoot(clsInfo, isInternal);
-//		}
-//		
-//		// store data
-//		definedClasses.put(clsType, new Pair<BaseClassDefinition, ClassData>(clsInfo, clsInfo_Data));
-//	}
 	
 	private DexClassType checkClassType(IClassScanner clsScanner) {
 		val dalvikDescriptor = clsScanner.getClassDescriptor();
