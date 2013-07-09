@@ -2,8 +2,21 @@ package com.rx201.dx.translator;
 
 import java.util.HashMap;
 
-import org.jf.dexlib.Code.Analysis.ClassPath;
-import org.jf.dexlib.Code.Analysis.ClassPath.ClassDef;
+import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
+import uk.ac.cam.db538.dexter.dex.type.DexBoolean;
+import uk.ac.cam.db538.dexter.dex.type.DexByte;
+import uk.ac.cam.db538.dexter.dex.type.DexChar;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexDouble;
+import uk.ac.cam.db538.dexter.dex.type.DexFloat;
+import uk.ac.cam.db538.dexter.dex.type.DexInteger;
+import uk.ac.cam.db538.dexter.dex.type.DexLong;
+import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexShort;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class RopType {
 	public static final RopType Unknown = getRopType(Category.Unknown);
@@ -75,16 +88,16 @@ public class RopType {
 	}
 	
     public final Category category;
-    public final ClassDef type;
+    public final DexReferenceType type;
 	public final int arrayDepth; // Only applicable to WildReference
 	
-    private RopType(Category category, ClassDef type, int arrayDepth) {
+    private RopType(Category category, DexReferenceType type, int arrayDepth) {
     	this.category = category;
     	this.type = type;
     	this.arrayDepth = arrayDepth;
     }
     
-    private static String toDescriptor(Category category, ClassDef type, int arrayDepth) {
+    private static String toDescriptor(Category category, DexReferenceType type, int arrayDepth) {
     	switch (category) {
 		case Null:
 			return "*Null";
@@ -119,7 +132,7 @@ public class RopType {
 		case Wide:
 			return "*Wide";
 		case Reference:
-			return type.getClassType();
+			return type.getDescriptor();
 		case WildcardRef: {
 			if (arrayDepth == 0)
 				return "*obj";
@@ -136,7 +149,7 @@ public class RopType {
     }
 
     private static HashMap<String, RopType> cachedRefTypes;
-    private static RopType getRopType(Category category, ClassDef type, int arrayDepth) {
+    private static RopType getRopType(Category category, DexReferenceType type, int arrayDepth) {
     	String desc = toDescriptor(category, type, arrayDepth);
     	if (cachedRefTypes == null)
     		cachedRefTypes = new HashMap<String, RopType>();
@@ -151,7 +164,7 @@ public class RopType {
     	return getRopType(category, null, 0);
     }
     
-    public static RopType getRopType(ClassDef type) {
+    public static RopType getRopType(DexReferenceType type) {
     	return getRopType(Category.Reference, type, 0);
     }
     
@@ -159,40 +172,37 @@ public class RopType {
     	return getRopType(Category.WildcardRef, null, arrayDepth);
     }
     
-    public static RopType getRopType(String descriptor) {
-        switch (descriptor.charAt(0)) {
-        case 'Z':
+    public static RopType getRopType(DexRegisterType regType) {
+    	if (regType instanceof DexBoolean)
             return getRopType(Category.Boolean);
-        case 'B':
+    	else if (regType instanceof DexByte)
             return getRopType(Category.Byte);
-        case 'S':
+    	else if (regType instanceof DexShort)
             return getRopType(Category.Short);
-        case 'C':
+    	else if (regType instanceof DexChar)
             return getRopType(Category.Char);
-        case 'I':
+    	else if (regType instanceof DexInteger)
             return getRopType(Category.Integer);
-        case 'F':
+    	else if (regType instanceof DexFloat)
             return getRopType(Category.Float);
-        case 'J':
+    	else if (regType instanceof DexLong)
             return getRopType(Category.LongLo);
-        case 'D':
+    	else if (regType instanceof DexDouble)
             return getRopType(Category.DoubleLo);
-        case 'L':
-        case '[':
-            return getRopType(ClassPath.getClassDef(descriptor));
-        default:
-            throw new RuntimeException("Invalid type: " + descriptor);
-        }   
+    	else if (regType instanceof DexReferenceType)
+            return getRopType((DexReferenceType)regType);
+    	else
+            throw new RuntimeException("Invalid type: " + regType.getDescriptor());
     }
     
-    public RopType merge(RopType other) {
+    public RopType merge(RopType other, RuntimeHierarchy hierarchy) {
         if (other == null || other == this) {
             return this;
         }
 
         Category mergedCategory = Category.mergeTable[this.category.ordinal()][other.category.ordinal()];
 
-        ClassDef mergedType = null;
+        DexReferenceType mergedType = null;
         
         if (mergedCategory == Category.Reference) {
         	if (this.category == Category.WildcardRef) {
@@ -201,12 +211,8 @@ public class RopType {
         		return this;
         	} 
         	
-        	if (this.type instanceof ClassPath.UnresolvedClassDef ||
-                other.type instanceof ClassPath.UnresolvedClassDef) {
-                mergedType = ClassPath.getUnresolvedObjectClassDef();
-            } else {
-            	mergedType = ClassPath.getCommonSuperclass(this.type, other.type);
-            }
+        	mergedType = getCommonSuperclass(this.type, other.type, hierarchy);
+        	
             return getRopType(mergedCategory, mergedType, 0);
         } else {
             int mergedArrayDepth = this.arrayDepth > other.arrayDepth ? this.arrayDepth : other.arrayDepth;
@@ -216,7 +222,24 @@ public class RopType {
     	
     }
     
-    public RopType lowToHigh() {
+    private DexReferenceType getCommonSuperclass(DexReferenceType type0, DexReferenceType type1, 
+    		RuntimeHierarchy hierarchy) {
+    	if (type0 == null)
+    		return type1;
+    	else if (type1 == null)
+    		return type0;
+    	else if (type0 == type1)
+    		return type0;
+    	
+    	if (type0 instanceof DexClassType || type1 instanceof DexClassType) {
+    		BaseClassDefinition def0 = hierarchy.getBaseClassDefinition(type0);
+    		BaseClassDefinition def1 = hierarchy.getBaseClassDefinition(type1);
+    		return def0.getCommonParent(def1).getClassType();
+    	}
+		return DexClassType.parse("Ljava/lang/Object;", hierarchy.getTypeCache());
+	}
+
+	public RopType lowToHigh() {
     	if (category == Category.LongLo)
     		return getRopType(Category.LongHi);
     	else if (category == Category.DoubleLo)
@@ -234,7 +257,7 @@ public class RopType {
     }
     
     public boolean isArray() {
-    	if (this.category == Category.Reference && this.type.getClassType().charAt(0) == '[')
+    	if (this.category == Category.Reference && this.type instanceof DexArrayType)
     		return true;
     	else if (this.category == Category.WildcardRef)
     		return true;
@@ -244,9 +267,9 @@ public class RopType {
     
     public RopType getArrayElement() {
     	if (isArray()) {
-    		if (this.category == Category.Reference)
-    			return getRopType(this.type.getClassType().substring(1));
-    		else /* WildcardRef */ {
+    		if (this.category == Category.Reference) {
+    			return getRopType(  ((DexArrayType)this.type).getElementType());
+    		} else /* WildcardRef */ {
     			if (arrayDepth > 1) //TODO: Lose information here because otherwise: Zero -toArray->> *[1 --toElement-->> becomes WildcardRef
     				return getRopType(arrayDepth - 1);
     			else
@@ -257,7 +280,7 @@ public class RopType {
     		return Unknown;
     }
     
-    public RopType toArrayType() {
+    public RopType toArrayType(DexTypeCache cache) {
     	if (this == Zero || this == One) {
     			return getRopType(1);
     	} else {
@@ -266,18 +289,18 @@ public class RopType {
     		else if (this == Null || (isPolymorphic()))
     			return getRopType(1);
     		else
-    			return getRopType("[" + toDescriptor(this.category, this.type, this.arrayDepth));
-    		 
+    			return getRopType(DexArrayType.parse("[" + getDescriptor(), cache));
     	}
     }
     
-    @Override
-    public String toString() {
+    
+    private String getDescriptor() {
     	return toDescriptor(this.category, this.type, this.arrayDepth);
+	}
+
+	@Override
+    public String toString() {
+		return getDescriptor();
     }
-//    
-//    public boolean isCompatibleWith(RopType other) {
-//    	
-//    }
     
 }
