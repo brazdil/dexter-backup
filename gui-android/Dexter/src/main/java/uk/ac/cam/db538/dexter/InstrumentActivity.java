@@ -74,19 +74,22 @@ public class InstrumentActivity extends Activity {
             try {
                 DexterApplication thisApp = (DexterApplication) getApplication();
 
+                terminalMessage("Analyzing operating system");
+                thisApp.waitForHierarchy();
+                terminalDone();
+
                 terminalMessage("Loading application");
-                DexFile apk = new DexFile(packageFile);
+                DexFile dexFile = new DexFile(packageFile);
                 terminalDone();
 
                 terminalMessage("Building runtime hierarchy");
-                HierarchyBuilder hierarchyBuilder = new HierarchyBuilder();
-                RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(apk, true);
+                RuntimeHierarchy hierarchy = thisApp.getRuntimeHierarchy(dexFile);
                 terminalDone();
 
                 InputStream auxiliaryDex = InstrumentActivity.this.getResources().openRawResource(R.raw.aux);
 
                 terminalMessage("Parsing application");
-                Dex dex = new Dex(apk, hierarchy, auxiliaryDex);
+                Dex dex = new Dex(dexFile, hierarchy, auxiliaryDex);
                 terminalDone();
 
                 terminalMessage("Instrumenting application");
