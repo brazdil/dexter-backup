@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.concurrent.Semaphore;
 
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
+import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class DexterApplication extends Application {
@@ -40,7 +40,7 @@ public class DexterApplication extends Application {
         }
 
         // start a background thread that will create the hierarchy builder
-        workerHierarchyLoader.start();
+        // workerHierarchyLoader.start();
     }
 
     private final Thread workerHierarchyLoader = new Thread() {
@@ -124,7 +124,7 @@ public class DexterApplication extends Application {
     public RuntimeHierarchy getRuntimeHierarchy(DexFile file) {
         waitForHierarchy();
         synchronized (hierarchyBuilder) {
-            return hierarchyBuilder.buildAgainstApp(file);
+            return hierarchyBuilder.buildAgainstApp(file, false);
         }
     }
 
