@@ -27,6 +27,15 @@ public class DexterApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
+
+        Class c1 = android.view.View.OnClickListener.class;
+        Class s1 = c1.getSuperclass();
+
+        Class c2 = java.util.List.class;
+        Class s2 = c2.getSuperclass();
+
+        Log.e(APP_NAME, c2.getName());
+
         // create file/dir constants
         frameworkCache = new File(this.getFilesDir(), "framework.cache");
         frameworkFolder = new File("/system/framework/");

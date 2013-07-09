@@ -79,19 +79,22 @@ public class HierarchyBuilder implements Serializable {
 			val currentClassSet = new ArrayList<Pair<BaseClassDefinition, ClassData>>(definedClasses.values());
 			
 			for (val clsPair : currentClassSet) {
+				val clsData = clsPair.getValB();
+				if (clsData == null)
+					continue;
 				
 				// check superclass presence
-				val supercls = clsPair.getValB().superclass;
-				if (supercls != null && definedClasses.get(supercls) == null) {
+				val supercls = clsData.superclass;
+				if (supercls != null && !definedClasses.containsKey(supercls)) {
 					needVMClass(supercls);
 					somethingChanged = true;
 				}
 				
 				// check presence of all interfaces
-				val interfaces = clsPair.getValB().interfaces;
+				val interfaces = clsData.interfaces;
 				if (interfaces != null)
 					for (val ifacecls : interfaces)
-						if (definedClasses.get(ifacecls) == null) {
+						if (!definedClasses.containsKey(ifacecls)) {
 							needVMClass(ifacecls);
 							somethingChanged = true;
 						}
@@ -101,6 +104,7 @@ public class HierarchyBuilder implements Serializable {
 	
 	@SuppressWarnings("rawtypes")
 	private void needVMClass(DexClassType clsType) {
+		System.out.println("loading dependency " + clsType.getPrettyName());
 		// try to find it in the running VM
 		Class vmClass;
 		try {
@@ -117,22 +121,24 @@ public class HierarchyBuilder implements Serializable {
 		val clsType = checkClassType(clsScanner);
 		
 		BaseClassDefinition baseclsDef;
-		ClassData baseclsData = new ClassData();
+		ClassData baseclsData = null;
 		
 		if (clsScanner.isInterface())
 			baseclsDef = new InterfaceDefinition(clsType, clsScanner.getAccessFlags(), isInternal);
 		else {
 			val clsDef = new ClassDefinition(clsType, clsScanner.getAccessFlags(), isInternal);
 			
-			scanInstanceFields(clsScanner, clsDef);
-
 			baseclsDef = clsDef;
+			baseclsData = new ClassData();
+			
+			scanInstanceFields(clsScanner, clsDef);
+			scanSuperclass(clsScanner, clsDef, baseclsData, isInternal);
+
 			baseclsData.interfaces = clsScanner.getInterfaces();
 		}
 		
 		scanMethods(clsScanner, baseclsDef);
 		scanStaticFields(clsScanner, baseclsDef);
-		scanSuperclass(clsScanner, baseclsDef, baseclsData, isInternal);
 		
 		// store data
 		definedClasses.put(clsType, new Pair<BaseClassDefinition, ClassData>(baseclsDef, baseclsData));
@@ -149,16 +155,14 @@ public class HierarchyBuilder implements Serializable {
 			return clsType;
 	}
 	
-	private void foundRoot(BaseClassDefinition clsInfo, boolean isInternal) {
+	private void foundRoot(ClassDefinition clsInfo, boolean isInternal) {
 		// check only one root exists
 		if (root != null)
-			throw new HierarchyException("More than one hierarchy root found");
+			throw new HierarchyException("More than one hierarchy root found (" + root.getClassType().getPrettyName() + " vs. " + clsInfo.getClassType().getPrettyName() + ")");
 		else if (isInternal)
 			throw new HierarchyException("Hierarchy root cannot be internal");
-		else if (clsInfo instanceof ClassDefinition)
-			root = (ClassDefinition) clsInfo;
 		else
-			throw new HierarchyException("Hierarchy root must be a proper class");
+			root = clsInfo;
 	}
 	
 	private void scanMethods(IClassScanner clsScanner, BaseClassDefinition baseclsDef) {
@@ -188,13 +192,13 @@ public class HierarchyBuilder implements Serializable {
 					fieldScanner.getAccessFlags()));
 	}
 	
-	private void scanSuperclass(IClassScanner clsScanner, BaseClassDefinition baseclsDef, ClassData baseclsData, boolean isInternal) {
+	private void scanSuperclass(IClassScanner clsScanner, ClassDefinition clsDef, ClassData baseclsData, boolean isInternal) {
 		// acquire superclass info
 		val typeDescriptor = clsScanner.getSuperclassDescriptor();
 		if (typeDescriptor != null)
 			baseclsData.superclass = DexClassType.parse(typeDescriptor, typeCache);
 		else
-			foundRoot(baseclsDef, isInternal);
+			foundRoot(clsDef, isInternal);
 	}
 	
 	public RuntimeHierarchy build() {
@@ -204,7 +208,7 @@ public class HierarchyBuilder implements Serializable {
 			val clsData = classDefPair.getValB();
 			
 			// connect to parent and vice versa
-			val sclsType = clsData.superclass;
+			val sclsType = (baseCls instanceof ClassDefinition) ? clsData.superclass : root.getClassType();
 			if (sclsType != null) {
 				val sclsInfo = definedClasses.get(sclsType);
 				if (sclsInfo == null)
