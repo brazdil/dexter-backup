@@ -1,13 +1,16 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import lombok.val;
 
 
-public class ClassRenamer {
+public class ClassRenamer implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	private final Map<String, String> rules;
 	
 	public ClassRenamer() {
