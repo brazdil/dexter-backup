@@ -6,6 +6,9 @@ public class DexChar extends DexPrimitiveType {
 	
 	private static final long serialVersionUID = 1L;
 
+	private static String DESCRIPTOR = "C";
+	private static String NAME = "char";
+	
 	DexChar() { }
 
     @Override
@@ -15,12 +18,12 @@ public class DexChar extends DexPrimitiveType {
 
 	@Override
 	public String getDescriptor() {
-		return "C";
+		return DESCRIPTOR;
 	}
 
 	@Override
 	public String getPrettyName() {
-		return "char";
+		return NAME;
 	}
 
     @Override
@@ -29,9 +32,16 @@ public class DexChar extends DexPrimitiveType {
     }
 
     public static DexChar parse(String typeDescriptor, DexTypeCache cache) {
-    	if (!typeDescriptor.equals("C"))
+    	if (!typeDescriptor.equals(DESCRIPTOR))
     		throw new UnknownTypeException(typeDescriptor);
     	else
     		return cache.getCachedType_Char();
     }
+
+	public static String jvm2dalvik(String javaName) {
+		if (javaName.equals(NAME))
+			return DESCRIPTOR;
+		else
+			throw new UnknownTypeException(javaName);
+	}
 }

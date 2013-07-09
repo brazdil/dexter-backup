@@ -58,4 +58,11 @@ public class DexClassType extends DexReferenceType {
 		else
 			return prettyName.substring(0, lastDot);
 	}
+	
+	public static String jvm2dalvik(String jvmName) {
+		if (jvmName.startsWith("L") && jvmName.endsWith(";"))
+			return jvmName.replace('.', '/');
+		else
+			return "L" + jvmName.replace('.', '/') + ";";
+	}
 }

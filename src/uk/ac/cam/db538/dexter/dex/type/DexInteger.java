@@ -6,6 +6,9 @@ public class DexInteger extends DexPrimitiveType {
 	
 	private static final long serialVersionUID = 1L;
 
+	private static String DESCRIPTOR = "I";
+	private static String NAME = "int";
+	
 	DexInteger() { }
 
     @Override
@@ -15,12 +18,12 @@ public class DexInteger extends DexPrimitiveType {
 
 	@Override
 	public String getDescriptor() {
-		return "I";
+		return DESCRIPTOR;
 	}
 
 	@Override
 	public String getPrettyName() {
-		return "int";
+		return NAME;
 	}
 
 	@Override
@@ -29,9 +32,16 @@ public class DexInteger extends DexPrimitiveType {
     }
 
     public static DexInteger parse(String typeDescriptor, DexTypeCache cache) {
-    	if (!typeDescriptor.equals("I"))
+    	if (!typeDescriptor.equals(DESCRIPTOR))
     		throw new UnknownTypeException(typeDescriptor);
     	else
     		return cache.getCachedType_Integer();
     }
+
+	public static String jvm2dalvik(String javaName) {
+		if (javaName.equals(NAME))
+			return DESCRIPTOR;
+		else
+			throw new UnknownTypeException(javaName);
+	}
 }

@@ -17,6 +17,8 @@ public class DexType_Test {
   public void testVoid() throws UnknownTypeException {
     val type = DexType.parse("V", new DexTypeCache());
     assertTrue(type instanceof DexVoid);
+    
+    assertEquals("V", DexType.jvm2dalvik("void"));
   }
 
   @Test
@@ -24,6 +26,8 @@ public class DexType_Test {
     val type = DexType.parse("B", new DexTypeCache());
     assertTrue(type instanceof DexByte);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
+    
+    assertEquals("B", DexType.jvm2dalvik("byte"));
   }
 
   @Test
@@ -31,6 +35,8 @@ public class DexType_Test {
     val type = DexType.parse("Z", new DexTypeCache());
     assertTrue(type instanceof DexBoolean);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
+    
+    assertEquals("Z", DexType.jvm2dalvik("boolean"));
   }
 
   @Test
@@ -38,6 +44,8 @@ public class DexType_Test {
     val type = DexType.parse("S", new DexTypeCache());
     assertTrue(type instanceof DexShort);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
+    
+    assertEquals("S", DexType.jvm2dalvik("short"));
   }
 
   @Test
@@ -45,35 +53,45 @@ public class DexType_Test {
     val type = DexType.parse("C", new DexTypeCache());
     assertTrue(type instanceof DexChar);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
-  }
+    
+    assertEquals("C", DexType.jvm2dalvik("char"));
+}
 
   @Test
   public void testInteger() throws UnknownTypeException {
     val type = DexType.parse("I", new DexTypeCache());
     assertTrue(type instanceof DexInteger);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
-  }
+    
+    assertEquals("I", DexType.jvm2dalvik("int"));
+}
 
   @Test
   public void testLong() throws UnknownTypeException {
     val type = DexType.parse("J", new DexTypeCache());
     assertTrue(type instanceof DexLong);
     assertEquals(2, ((DexRegisterType) type).getRegisters());
-  }
+    
+    assertEquals("J", DexType.jvm2dalvik("long"));
+}
 
   @Test
   public void testFloat() throws UnknownTypeException {
     val type = DexType.parse("F", new DexTypeCache());
     assertTrue(type instanceof DexFloat);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
-  }
+    
+    assertEquals("F", DexType.jvm2dalvik("float"));
+}
 
   @Test
   public void testDouble() throws UnknownTypeException {
     val type = DexType.parse("D", new DexTypeCache());
     assertTrue(type instanceof DexDouble);
     assertEquals(2, ((DexRegisterType) type).getRegisters());
-  }
+    
+    assertEquals("D", DexType.jvm2dalvik("double"));
+}
 
   @Test
   public void testClassType() throws UnknownTypeException {
@@ -85,6 +103,9 @@ public class DexType_Test {
     assertEquals("java.lang.String", classType.getPrettyName());
     assertEquals("java.lang", classType.getPackageName());
     assertEquals("String", classType.getShortName());
+    
+    assertEquals("Ljava/lang/String;", DexType.jvm2dalvik("Ljava.lang.String;"));
+    assertEquals("Ljava/lang/String;", DexType.jvm2dalvik("java.lang.String"));
   }
 
   @Test(expected=UnknownTypeException.class)
@@ -117,6 +138,10 @@ public class DexType_Test {
     assertTrue(type instanceof DexArrayType);
     assertTrue(((DexArrayType) type).getElementType() instanceof DexInteger);
     assertEquals(1, ((DexRegisterType) type).getRegisters());
+
+    assertEquals("[I", DexType.jvm2dalvik("[I"));
+    assertEquals("[[I", DexType.jvm2dalvik("[[I"));
+    assertEquals("[Ljava/lang/String;", DexType.jvm2dalvik("[Ljava.lang.String;"));
   }
 
   @Test

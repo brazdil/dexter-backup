@@ -6,6 +6,9 @@ public class DexBoolean extends DexPrimitiveType {
 	
 	private static final long serialVersionUID = 1L;
 
+	private static String DESCRIPTOR = "Z";
+	private static String NAME = "boolean";
+	
 	DexBoolean() { }
 
     @Override
@@ -15,12 +18,12 @@ public class DexBoolean extends DexPrimitiveType {
 
 	@Override
 	public String getDescriptor() {
-		return "Z";
+		return DESCRIPTOR;
 	}
 
 	@Override
 	public String getPrettyName() {
-		return "boolean";
+		return NAME;
 	}
     
     @Override
@@ -29,9 +32,16 @@ public class DexBoolean extends DexPrimitiveType {
     }
     
     public static DexBoolean parse(String typeDescriptor, DexTypeCache cache) {
-    	if (!typeDescriptor.equals("Z"))
-    		throw new UnknownTypeException(typeDescriptor);
-    	else
+    	if (typeDescriptor.equals(DESCRIPTOR))
     		return cache.getCachedType_Boolean();
+    	else
+    		throw new UnknownTypeException(typeDescriptor);
     }
-  }
+
+	public static String jvm2dalvik(String javaName) {
+		if (javaName.equals(NAME))
+			return DESCRIPTOR;
+		else
+			throw new UnknownTypeException(javaName);
+	}
+}

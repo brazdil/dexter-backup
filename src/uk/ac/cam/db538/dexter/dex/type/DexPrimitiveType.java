@@ -47,4 +47,42 @@ public abstract class DexPrimitiveType extends DexRegisterType {
 		
 		throw new UnknownTypeException(typeDescriptor);
 	}
+
+	public static String jvm2dalvik(String jvmName) {
+		// try parsing the descriptor as a primitive of each given type
+		  
+		try {
+		    return DexBoolean.jvm2dalvik(jvmName);
+		} catch (UnknownTypeException e) { }
+		
+		try {
+		    return DexByte.jvm2dalvik(jvmName);
+		} catch (UnknownTypeException e) { }
+		
+		try {
+		    return DexChar.jvm2dalvik(jvmName);
+		} catch (UnknownTypeException e) { }
+		
+		try {
+		    return DexDouble.jvm2dalvik(jvmName);
+		} catch (UnknownTypeException e) { }
+		
+		try {
+		    return DexFloat.jvm2dalvik(jvmName);
+		} catch (UnknownTypeException e) { }
+		
+		try {
+		    return DexInteger.jvm2dalvik(jvmName);
+		} catch (UnknownTypeException e) { }
+		
+		try {
+		    return DexLong.jvm2dalvik(jvmName);
+		} catch (UnknownTypeException e) { }
+		
+		try {
+		    return DexShort.jvm2dalvik(jvmName);
+		} catch (UnknownTypeException e) { }
+		
+		throw new UnknownTypeException(jvmName);
+	}
 }
