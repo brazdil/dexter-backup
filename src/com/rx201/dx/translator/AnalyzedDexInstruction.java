@@ -13,6 +13,7 @@ import com.rx201.dx.translator.util.DexRegisterHelper;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class AnalyzedDexInstruction {
@@ -54,6 +55,7 @@ public class AnalyzedDexInstruction {
 		protected HashMap<Integer, Pair<RopType, Boolean>> defSet;
 		// <regSource, regDestination>
 		protected HashMap<Integer, Integer> moveSet;
+		public static RuntimeHierarchy hierarchy;
 	    
 	    
 	    public AnalyzedDexInstruction(int index, DexInstruction instruction) {
@@ -109,7 +111,7 @@ public class AnalyzedDexInstruction {
 	    	return successors.get(0);
 	    }
 
-	    public DexInstruction getInstruction() {
+		public DexInstruction getInstruction() {
 	        return instruction;
 	    }
 
@@ -142,7 +144,16 @@ public class AnalyzedDexInstruction {
 	    	usedRegisterMap.put(registerNumber, definition);
 	    }
 
-	    public RopType getDefinedRegisterType(int reg) {
+	    public TypeSolver getUsedRegisterTypeSolver(DexRegister usedReg) {
+	    	int registerNumber = DexRegisterHelper.normalize(usedReg);
+	    	return usedRegisterMap.get(registerNumber);
+	    }
+
+		public Set<DexRegister> getDefinedRegisters() {
+			return definedRegisters;
+		}
+
+		public RopType getDefinedRegisterType(int reg) {
 	    	return definedRegisterMap.get(reg).getType();
 	    }
 
@@ -197,7 +208,7 @@ public class AnalyzedDexInstruction {
 				TypeSolver target = definedRegisterMap.get(constraint.getKey());
 				RopType type = constraint.getValue().getValA();
 				boolean freezed = constraint.getValue().getValB();
-				target.addConstraint(type, freezed);
+				target.addConstraint(type, freezed, hierarchy);
 			}
 		}
 
@@ -206,17 +217,18 @@ public class AnalyzedDexInstruction {
 				TypeSolver target = usedRegisterMap.get(constraint.getKey());
 				RopType type = constraint.getValue().getValA();
 				boolean freezed = constraint.getValue().getValB();
-				target.addConstraint(type, freezed);
+				target.addConstraint(type, freezed, hierarchy);
 			}
 		}
 
 		@Override
 		public String toString() {
 			if (auxillaryElement != null)
-				return auxillaryElement.toString();
+				return auxillaryElement.getOriginalAssembly();
 			else if (instruction != null)
-				return instruction.toString();
+				return instruction.getOriginalAssembly();
 			else
 				return "null:" + instructionIndex;
 		}
+
 }

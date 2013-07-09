@@ -21,12 +21,12 @@ import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
-
 public class DexCodeAnalyzer {
 	private DexCode code;
 
     private HashMap<DexCodeElement, AnalyzedDexInstruction> instructionMap;
     private ArrayList<AnalyzedDexInstruction> instructions;
+    private ArrayList<AnalyzedBasicBlock> basicBlocks;
 
     private static final int NOT_ANALYZED = 0;
     private static final int ANALYZED = 1;
@@ -41,10 +41,14 @@ public class DexCodeAnalyzer {
     //instruction, etc.
     private AnalyzedDexInstruction startOfMethod;
 
+    private AnalyzedBasicBlock startBasicBlock;
+    
     public DexCodeAnalyzer(DexCode code) {
         this.code = code;
+        basicBlocks = new ArrayList<AnalyzedBasicBlock>();
         maxInstructionIndex = 0;
         buildInstructionList();
+        AnalyzedDexInstruction.hierarchy = code.getParentFile().getHierarchy();
     }
 
     public boolean isAnalyzed() {
@@ -58,7 +62,7 @@ public class DexCodeAnalyzer {
     	
     	for(int i=0; i<prototype.getParameterCount(isStatic); i++) {
     		DexRegisterType dexRegType = prototype.getParameterType(i, isStatic, code.getParentClass());
-    		RopType regType = RopType.getRopType(dexRegType.getDescriptor());
+    		RopType regType = RopType.getRopType(dexRegType);
 			int paramRegIndex = prototype.getFirstParameterRegisterIndex(i, isStatic);
 			DexRegister paramReg = parameterMapping.get(paramRegIndex);
 			
@@ -94,14 +98,14 @@ public class DexCodeAnalyzer {
         livenessAnalysis();
         
         // Add constraints from uses and defs to TypeSolver
-        typeConstaintAnalysis();
+        typeConstraintAnalysis();
         
         analyzerState = ANALYZED;
     }
 
 
 	private void buildUseDefSets() {
-		DexInstructionAnalyzer analyzer = new DexInstructionAnalyzer(this);
+		DexInstructionAnalyzer analyzer = new DexInstructionAnalyzer(code.getParentFile().getParsingCache());
 		
 		// First collect use/def information
 		for (AnalyzedDexInstruction inst : instructions) {
@@ -110,14 +114,16 @@ public class DexCodeAnalyzer {
 				inst.instruction.accept(analyzer);
 			}
 		}
-		
-		
 	}
 
 	private void livenessAnalysis() {
-		for (AnalyzedDexInstruction inst : instructions) {
-			for(DexRegister usedReg : inst.getUsedRegisters()) {
-				Set<TypeSolver> definers = getDefinedSites(inst, usedReg);
+		for(AnalyzedBasicBlock basicBlock : basicBlocks) {
+			basicBlock.analyzeLiveness();
+		}
+		
+		for (AnalyzedBasicBlock basicBlock : basicBlocks) {
+			for(Integer usedReg : basicBlock.getUsedRegisters()) {
+				Set<TypeSolver> definers = getDefinedSites(basicBlock, usedReg);
 				TypeSolver master = null;
 				for(TypeSolver definer : definers) {
 					if (master == null)
@@ -126,7 +132,7 @@ public class DexCodeAnalyzer {
 						master.unify(definer);
 				}
 				assert master != null;
-				inst.associateDefinitionSite(usedReg, master);
+				basicBlock.associateDefinitionSite(usedReg, master);
 			}
 		}
 		
@@ -136,18 +142,18 @@ public class DexCodeAnalyzer {
 		}
 	}
 	
-	private Set<TypeSolver> getDefinedSites(AnalyzedDexInstruction location, DexRegister reg) {
+	private Set<TypeSolver> getDefinedSites(AnalyzedBasicBlock basicBlock, Integer usedReg) {
 		HashSet<TypeSolver> result = new HashSet<TypeSolver>();
 		
-		HashSet<AnalyzedDexInstruction> visitedNormal = new HashSet<AnalyzedDexInstruction>();
-		HashSet<AnalyzedDexInstruction> visitedException = new HashSet<AnalyzedDexInstruction>();
-		ArrayList<Pair<AnalyzedDexInstruction, Boolean>> stack = new ArrayList<Pair<AnalyzedDexInstruction, Boolean>>();
-		for(AnalyzedDexInstruction pred : location.getPredecessors() )
-			stack.add(new Pair<AnalyzedDexInstruction, Boolean>(pred, location.isExceptionPredecessor(pred)));
+		HashSet<AnalyzedBasicBlock> visitedNormal = new HashSet<AnalyzedBasicBlock>();
+		HashSet<AnalyzedBasicBlock> visitedException = new HashSet<AnalyzedBasicBlock>();
+		ArrayList<Pair<AnalyzedBasicBlock, Boolean>> stack = new ArrayList<Pair<AnalyzedBasicBlock, Boolean>>();
+		for(AnalyzedBasicBlock pred : basicBlock.predecessors )
+			stack.add(new Pair<AnalyzedBasicBlock, Boolean>(pred, basicBlock.isExceptionPredecessor(pred)));
 		
 		while(stack.size() > 0) {
-			Pair<AnalyzedDexInstruction, Boolean> headPair = stack.remove(stack.size() - 1);
-			AnalyzedDexInstruction head = headPair.getValA();
+			Pair<AnalyzedBasicBlock, Boolean> headPair = stack.remove(stack.size() - 1);
+			AnalyzedBasicBlock head = headPair.getValA();
 			Boolean isExceptionPath = headPair.getValB();
 			
 			if (isExceptionPath) {
@@ -158,19 +164,28 @@ public class DexCodeAnalyzer {
 				visitedNormal.add(head);
 			}
 			
-			TypeSolver definer = head.getDefinedRegisterSolver(reg);
+			TypeSolver definer = head.getDefinedRegisterSolver(usedReg);
 			if (definer != null && (!isExceptionPath)) {
 				result.add(definer);
 			} else {
-				for(AnalyzedDexInstruction pred : head.getPredecessors() )
-					stack.add(new Pair<AnalyzedDexInstruction, Boolean>(pred, head.isExceptionPredecessor(pred)));
+				// If this register is also accessed here in the current path
+				// and we've obtained its definer, we can reuse the result.
+				// This would be most efficient if we perform liveness analysis
+				// from top to bottom.
+//				definer = head.getUsedRegisterTypeSolver(usedReg);
+//				if (definer != null) {
+//					result.add(definer);
+//				} else {
+					for(AnalyzedBasicBlock pred : head.predecessors )
+						stack.add(new Pair<AnalyzedBasicBlock, Boolean>(pred, head.isExceptionPredecessor(pred)));
+//				}
 			}
 		}
 		return result;
 	}
 	
-	private void typeConstaintAnalysis() {
-		// Firt add all definition constraints,
+	private void typeConstraintAnalysis() {
+		// First add all definition constraints,
 		// then refine it with usage constraints
 		startOfMethod.initDefinitionConstraints();
 		for (AnalyzedDexInstruction inst : instructions) {
@@ -197,14 +212,18 @@ public class DexCodeAnalyzer {
     	}
 
     	ControlFlowGraph cfg = new ControlFlowGraph(code);
+    	HashMap<AnalyzedDexInstruction, AnalyzedBasicBlock> basicBlockMap = new HashMap<AnalyzedDexInstruction, AnalyzedBasicBlock>();
     	
     	for(CfgBasicBlock bb : cfg.getBasicBlocks()) {
         	AnalyzedDexInstruction prevA = null;
         	Set<DexCodeElement> prevExceptionSuccessors = null;
+        	AnalyzedBasicBlock analyzedBB = new AnalyzedBasicBlock();
         	
         	// Connect predecessor/successor within a basic block
     		for(DexCodeElement cur: bb.getInstructions()) {
     			AnalyzedDexInstruction curA = instructionMap.get(cur);
+    			analyzedBB.addInstruction(curA);
+    			
     			if (prevA != null) {
     				prevA.linkToSuccessor(curA, false);
     				// Cannot have exception path within a basic block
@@ -213,6 +232,10 @@ public class DexCodeAnalyzer {
     			prevA = curA;
     			prevExceptionSuccessors = prevA.getCodeElement().cfgGetExceptionSuccessors();
     		}
+    		
+    		basicBlockMap.put(analyzedBB.first, analyzedBB);
+    		basicBlocks.add(analyzedBB);
+    		
     		// Connect with successor basic block
     		for(CfgBlock nextBB : bb.getSuccessors()) {
     			if (nextBB instanceof CfgBasicBlock) {
@@ -223,14 +246,25 @@ public class DexCodeAnalyzer {
     		}
     	}
     	
+    	//Connect basic blocks together, we can only do this once the basicBlockMap is complete
+    	for(AnalyzedBasicBlock basicBlock : basicBlocks) {
+    		for(AnalyzedDexInstruction successor : basicBlock.last.getSuccesors()) {
+    			boolean exceptionPath = successor.isExceptionPredecessor(basicBlock.last);
+    			basicBlock.linkToSuccessor(basicBlockMap.get(successor), exceptionPath);
+    		}
+    	}
+    	
         //override AnalyzedInstruction and provide custom implementations of some of the methods, so that we don't
         //have to handle the case this special case of instruction being null, in the main class
         startOfMethod = new AnalyzedDexInstruction(-1, null);
+        startBasicBlock = new AnalyzedBasicBlock(startOfMethod);
+        basicBlocks.add(startBasicBlock);
         
         for (CfgBlock startBB: cfg.getStartBlock().getSuccessors()) {
         	if (startBB instanceof CfgBasicBlock) {
         		AnalyzedDexInstruction realHead = instructionMap.get(((CfgBasicBlock)startBB).getFirstInstruction());
         		startOfMethod.linkToSuccessor(realHead, false);
+        		startBasicBlock.linkToSuccessor(basicBlockMap.get(realHead), false);
         	}
         }
     }
