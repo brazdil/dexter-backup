@@ -1,6 +1,5 @@
 package com.rx201.dx.translator;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +13,7 @@ import com.rx201.dx.translator.util.DexRegisterHelper;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class AnalyzedDexInstruction {
@@ -55,6 +55,7 @@ public class AnalyzedDexInstruction {
 		protected HashMap<Integer, Pair<RopType, Boolean>> defSet;
 		// <regSource, regDestination>
 		protected HashMap<Integer, Integer> moveSet;
+		public static RuntimeHierarchy hierarchy;
 	    
 	    
 	    public AnalyzedDexInstruction(int index, DexInstruction instruction) {
@@ -207,7 +208,7 @@ public class AnalyzedDexInstruction {
 				TypeSolver target = definedRegisterMap.get(constraint.getKey());
 				RopType type = constraint.getValue().getValA();
 				boolean freezed = constraint.getValue().getValB();
-				target.addConstraint(type, freezed);
+				target.addConstraint(type, freezed, hierarchy);
 			}
 		}
 
@@ -216,7 +217,7 @@ public class AnalyzedDexInstruction {
 				TypeSolver target = usedRegisterMap.get(constraint.getKey());
 				RopType type = constraint.getValue().getValA();
 				boolean freezed = constraint.getValue().getValB();
-				target.addConstraint(type, freezed);
+				target.addConstraint(type, freezed, hierarchy);
 			}
 		}
 

@@ -48,6 +48,7 @@ public class DexCodeAnalyzer {
         basicBlocks = new ArrayList<AnalyzedBasicBlock>();
         maxInstructionIndex = 0;
         buildInstructionList();
+        AnalyzedDexInstruction.hierarchy = code.getParentFile().getHierarchy();
     }
 
     public boolean isAnalyzed() {
@@ -61,7 +62,7 @@ public class DexCodeAnalyzer {
     	
     	for(int i=0; i<prototype.getParameterCount(isStatic); i++) {
     		DexRegisterType dexRegType = prototype.getParameterType(i, isStatic, code.getParentClass());
-    		RopType regType = RopType.getRopType(dexRegType.getDescriptor());
+    		RopType regType = RopType.getRopType(dexRegType);
 			int paramRegIndex = prototype.getFirstParameterRegisterIndex(i, isStatic);
 			DexRegister paramReg = parameterMapping.get(paramRegIndex);
 			
@@ -104,7 +105,7 @@ public class DexCodeAnalyzer {
 
 
 	private void buildUseDefSets() {
-		DexInstructionAnalyzer analyzer = new DexInstructionAnalyzer(this);
+		DexInstructionAnalyzer analyzer = new DexInstructionAnalyzer(code.getParentFile().getParsingCache());
 		
 		// First collect use/def information
 		for (AnalyzedDexInstruction inst : instructions) {

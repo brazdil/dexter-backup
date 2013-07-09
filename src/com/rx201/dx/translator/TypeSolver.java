@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+
 import com.rx201.dx.translator.RopType.Category;
 
 
@@ -71,9 +74,9 @@ public class TypeSolver {
 		}
 	}
 	
-	public boolean addConstraint(RopType constraint, boolean freeze) {
+	public boolean addConstraint(RopType constraint, boolean freeze, RuntimeHierarchy hierarchy) {
 		if (info.freezed) {
-			RopType newType = info.type.merge(constraint);
+			RopType newType = info.type.merge(constraint, hierarchy);
 			assert newType.category != Category.Conflicted;
 			return false;
 		}
@@ -81,7 +84,7 @@ public class TypeSolver {
 			return false;
 		
 		info.constraints.add(constraint);
-		RopType newType = info.type.merge(constraint);
+		RopType newType = info.type.merge(constraint, hierarchy);
 		assert newType.category != Category.Conflicted;
 		if (freeze) {
 			assert !constraint.isPolymorphic();
@@ -90,23 +93,23 @@ public class TypeSolver {
 		}
 		if (newType != info.type) {
 			info.type = newType;
-			propagate();
+			propagate(hierarchy);
 			return true;
 		}
 		return false;
 	}
 
-	private void propagate() {
+	private void propagate(RuntimeHierarchy hierarchy) {
 		for(Entry<TypeSolver, CascadeType> dep : info.depends.entrySet()) {
 			switch(dep.getValue()){
 			case ArrayToElement:
-				dep.getKey().addConstraint(info.type.toArrayType(), info.freezed);
+				dep.getKey().addConstraint(info.type.toArrayType(hierarchy.getTypeCache()), info.freezed, hierarchy);
 				break;
 			case ElementToArray:
-				dep.getKey().addConstraint(info.type.getArrayElement(), info.freezed);
+				dep.getKey().addConstraint(info.type.getArrayElement(), info.freezed, hierarchy);
 				break;
 			case Equivalent:
-				dep.getKey().addConstraint(info.type, info.freezed);
+				dep.getKey().addConstraint(info.type, info.freezed, hierarchy);
 				break;
 			default:
 				throw new RuntimeException("Bad CascadeType");

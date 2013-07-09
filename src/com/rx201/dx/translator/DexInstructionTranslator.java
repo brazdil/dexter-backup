@@ -235,7 +235,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
         	return Type.intern(sb.toString());
         }
         case Reference:
-            return Type.intern(t.type.getClassType());
+            return Type.intern(t.type.getDescriptor());
         
         default:
             throw new UnsupportedOperationException("Unknown register type");
@@ -283,56 +283,56 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		return result;
 	}
 	
-	// Even though this is more precise, it is not consistent with what dx is doing
-	// See DexInstruction.cfgGetExceptionSuccessors()
-	private List<AnalyzedDexInstruction> getCatchers_precise(Rop opcode) {
-		ArrayList<AnalyzedDexInstruction> result = new ArrayList<AnalyzedDexInstruction>();
-		DexCode code = curInst.getInstruction().getMethodCode();
-		val classHierarchy = code.getParentFile().getHierarchy();
-		
-		ArrayList<DexClassType> thrownExceptions = new ArrayList<DexClassType>();
-		TypeList exceptions = opcode.getExceptions();
-		for(int i=0; i<exceptions.size(); i++)
-			thrownExceptions.add(DexClassType.parse(exceptions.getType(i).getDescriptor(), code.getParentFile().getParsingCache()));
-		
-		// Order of catch matters, so we need to preserve that, which means
-		// we cannot just iterate through the successors ( which is unordered)
-		// The following code is duplicated from DexInstruction, as we need the result to be ordered.
-	    for (val tryBlockEnd : code.getTryBlocks()) {
-	        val tryBlockStart = tryBlockEnd.getBlockStart();
-
-	        // check that the instruction is in this try block
-	        if (code.isBetween(tryBlockStart, tryBlockEnd, curInst.getInstruction())) {
-
-	            for (val catchBlock : tryBlockStart.getCatchHandlers()) {
-	            	
-					val catchException = classHierarchy.getClassDefinition(catchBlock.getExceptionType());
-					
-					boolean canCatch = false;
-					// Check if the exception thrown by the given Rop can potentially 
-					// be caught by the current catch block.
-				    // which is either the catch block catches the given exception type or its ancestor (a guaranteed catch)
-			        // or if the catch is the subclass of the thrown exception (a potential catch)
- 					// **Logic duplicated from DexInstruction.throwingInsn_CatchHandlers
-					for(DexClassType thrown : thrownExceptions) {
-						val thrownException = classHierarchy.getClassDefinition(thrown);
-						if (thrownException.isChildOf(catchException) || 
-							catchException.isChildOf(thrownException)) {
-							canCatch = true;
-							break;
-						}
-					}
-					if (canCatch)
-						result.add(analyzer.reverseLookup(catchBlock));
-	            }
-				// if the block has CatchAll handler, it can jump to it
-				val catchAllHandler = tryBlockStart.getCatchAllHandler();
-				if (catchAllHandler != null)
-					result.add(analyzer.reverseLookup(catchAllHandler));
-	        }
-		}
-		return result;
-	}
+//	// Even though this is more precise, it is not consistent with what dx is doing
+//	// See DexInstruction.cfgGetExceptionSuccessors()
+//	private List<AnalyzedDexInstruction> getCatchers_precise(Rop opcode) {
+//		ArrayList<AnalyzedDexInstruction> result = new ArrayList<AnalyzedDexInstruction>();
+//		DexCode code = curInst.getInstruction().getMethodCode();
+//		val classHierarchy = code.getParentFile().getHierarchy();
+//		
+//		ArrayList<DexClassType> thrownExceptions = new ArrayList<DexClassType>();
+//		TypeList exceptions = opcode.getExceptions();
+//		for(int i=0; i<exceptions.size(); i++)
+//			thrownExceptions.add(DexClassType.parse(exceptions.getType(i).getDescriptor(), code.getParentFile().getParsingCache()));
+//		
+//		// Order of catch matters, so we need to preserve that, which means
+//		// we cannot just iterate through the successors ( which is unordered)
+//		// The following code is duplicated from DexInstruction, as we need the result to be ordered.
+//	    for (val tryBlockEnd : code.getTryBlocks()) {
+//	        val tryBlockStart = tryBlockEnd.getBlockStart();
+//
+//	        // check that the instruction is in this try block
+//	        if (code.isBetween(tryBlockStart, tryBlockEnd, curInst.getInstruction())) {
+//
+//	            for (val catchBlock : tryBlockStart.getCatchHandlers()) {
+//	            	
+//					val catchException = classHierarchy.getClassDefinition(catchBlock.getExceptionType());
+//					
+//					boolean canCatch = false;
+//					// Check if the exception thrown by the given Rop can potentially 
+//					// be caught by the current catch block.
+//				    // which is either the catch block catches the given exception type or its ancestor (a guaranteed catch)
+//			        // or if the catch is the subclass of the thrown exception (a potential catch)
+// 					// **Logic duplicated from DexInstruction.throwingInsn_CatchHandlers
+//					for(DexClassType thrown : thrownExceptions) {
+//						val thrownException = classHierarchy.getClassDefinition(thrown);
+//						if (thrownException.isChildOf(catchException) || 
+//							catchException.isChildOf(thrownException)) {
+//							canCatch = true;
+//							break;
+//						}
+//					}
+//					if (canCatch)
+//						result.add(analyzer.reverseLookup(catchBlock));
+//	            }
+//				// if the block has CatchAll handler, it can jump to it
+//				val catchAllHandler = tryBlockStart.getCatchAllHandler();
+//				if (catchAllHandler != null)
+//					result.add(analyzer.reverseLookup(catchAllHandler));
+//	        }
+//		}
+//		return result;
+//	}
 	
 	private TypeList getCaughtExceptions(List<AnalyzedDexInstruction> catchers) {
 		TypeList result = StdTypeList.EMPTY;
