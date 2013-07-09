@@ -2,16 +2,24 @@ package uk.ac.cam.db538.dexter.dex.type;
 
 public class DexVoid extends DexType {
 
-  private DexVoid() {
-    super("V", "void");
-  }
+	private static final long serialVersionUID = 1L;
 
-  private static final DexVoid VOID_INSTANCE = new DexVoid();
+	DexVoid() { }
 
-  public static DexVoid parse(String typeDescriptor) {
-    if (typeDescriptor.equals(VOID_INSTANCE.getDescriptor()))
-      return VOID_INSTANCE;
-    else
-      return null;
-  }
+	public static DexVoid parse(String typeDescriptor, DexTypeCache typeCache) {
+		if (typeDescriptor.equals("V"))
+			return typeCache.getCachedType_Void();
+		else
+			throw new UnknownTypeException(typeDescriptor);
+	}
+
+	@Override
+	public String getDescriptor() {
+		return "V";
+	}
+	
+	@Override
+	public String getPrettyName() {
+		return "void";
+	}
 }

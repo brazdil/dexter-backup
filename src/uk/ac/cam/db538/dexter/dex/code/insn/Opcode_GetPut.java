@@ -4,14 +4,14 @@ import lombok.Getter;
 
 import org.jf.dexlib.Code.Opcode;
 
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexBoolean;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexByte;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexChar;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexFloat;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexInteger;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType.DexShort;
+import uk.ac.cam.db538.dexter.dex.type.DexBoolean;
+import uk.ac.cam.db538.dexter.dex.type.DexByte;
+import uk.ac.cam.db538.dexter.dex.type.DexChar;
+import uk.ac.cam.db538.dexter.dex.type.DexFloat;
+import uk.ac.cam.db538.dexter.dex.type.DexInteger;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexShort;
 
 public enum Opcode_GetPut {
   Object("object"),

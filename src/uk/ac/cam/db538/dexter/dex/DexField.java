@@ -38,13 +38,6 @@ public class DexField {
     this.type = type;
     this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
     this.annotations = (annotations == null) ? new HashSet<DexAnnotation>() : annotations;
-
-    parentClass.getParentFile().getClassHierarchy().addDeclaredField(
-      parentClass.getType(),
-      name,
-      type,
-      isStatic(),
-      isPrivate());
   }
 
   public DexField(DexClass parent, EncodedField fieldInfo, AnnotationSetItem encodedAnnotations) {

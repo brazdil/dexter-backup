@@ -18,6 +18,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -94,14 +95,20 @@ public class DexInstruction_StaticPutWide extends DexInstruction {
   @Override
   public void instrument(DexCode_InstrumentationState state) {
     val code = getMethodCode();
-    val classHierarchy = getParentFile().getClassHierarchy();
+    val classHierarchy = getParentFile().getHierarchy();
 
-    val fieldDeclaringClass = classHierarchy.getAccessedFieldDeclaringClass(fieldClass, fieldName, fieldType, true);
+    val defClass = classHierarchy.getBaseClassDefinition(fieldClass);
+    val defField = defClass.getAccessedStaticField(new DexFieldId(fieldName, fieldType));
 
-    if (fieldDeclaringClass.isDefinedInternally()) {
+    if (defField == null)
+      System.err.println("warning: cannot find accessed static field " + fieldClass.getPrettyName() + "." + fieldName);
+
+    val fieldDeclaringClass = defField.getParentClass();
+
+    if (fieldDeclaringClass.isInternal()) {
       // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
       // store the taint to the taint field
-      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass, fieldName, fieldType);
+      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass.getClassType(), fieldName, fieldType);
       code.replace(this,
                    new DexCodeElement[] {
                      this,

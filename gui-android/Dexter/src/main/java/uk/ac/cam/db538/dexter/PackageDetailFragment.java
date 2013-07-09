@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -16,14 +17,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.jf.dexlib.DexFile;
-
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
-
-import uk.ac.cam.db538.dexter.apk.Apk;
 
 /**
  * A fragment representing a single Package detail screen.
@@ -57,8 +53,8 @@ public class PackageDetailFragment extends Fragment {
         activityManager = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
         packageManager = activity.getPackageManager();
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-            String packageName = getArguments().getString(ARG_ITEM_ID);
+        if (getArguments().containsKey(PACKAGE_NAME)) {
+            String packageName = getArguments().getString(PACKAGE_NAME);
             try {
                 packageInfo = packageManager.getPackageInfo(packageName, 0);
                 packageFile = new File(packageInfo.applicationInfo.sourceDir);
@@ -116,16 +112,11 @@ public class PackageDetailFragment extends Fragment {
                     System.out.println("Large heap size: " +
                             PackageDetailFragment.this.activityManager.getLargeMemoryClass());
 
-                    Apk dexterApk;
-                    try {
-                        dexterApk = new Apk(PackageDetailFragment.this.packageFile,
-                                            new File("/system/framework/"));
-                    } catch (IOException ex) {
-                        // TODO: show error message
-                        throw new RuntimeException(ex);
-                    }
-
-                    dexterApk.getDexFile().instrument(false);
+                    Intent detailIntent = new Intent(PackageDetailFragment.this.getActivity(),
+                            InstrumentActivity.class);
+                    detailIntent.putExtra(InstrumentActivity.PACKAGE_NAME,
+                            PackageDetailFragment.this.packageInfo.packageName);
+                    startActivity(detailIntent);
                 }
             });
         }
@@ -133,6 +124,6 @@ public class PackageDetailFragment extends Fragment {
         return rootView;
     }
 
-    public static final String ARG_ITEM_ID = "package_name";
+    public static final String PACKAGE_NAME = "package_name";
 
 }

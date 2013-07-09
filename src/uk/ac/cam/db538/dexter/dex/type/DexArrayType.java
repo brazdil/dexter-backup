@@ -1,34 +1,46 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
 import lombok.Getter;
-import lombok.val;
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexArrayType extends DexReferenceType {
 
-  @Getter private final DexRegisterType elementType;
+	private static final long serialVersionUID = 1L;
+	
+	@Getter private final DexRegisterType elementType;
 
-  private DexArrayType(DexRegisterType elementType) {
-    super("[" + elementType.getDescriptor(),
-          elementType.getPrettyName() + "[]");
-    this.elementType = elementType;
-  }
+	private DexArrayType(DexRegisterType elementType) {
+		this.elementType = elementType;
+	}
 
-  public static DexArrayType parse(String typeDescriptor, DexParsingCache cache) {
-    return cache.getArrayType(typeDescriptor);
-  }
+	public static DexArrayType parse(String typeDescriptor, DexTypeCache cache) {
+		if (!typeDescriptor.startsWith("["))
+			throw new UnknownTypeException(typeDescriptor);
+		
+		DexArrayType type = cache.getCachedType_Array(typeDescriptor);
+		if (type == null) {
+			type = new DexArrayType(DexRegisterType.parse(typeDescriptor.substring(1), cache));
+			cache.putCachedType_Array(typeDescriptor, type);
+		}
+		
+		return type;
+	}
 
-  public static Cache<String, DexArrayType> createParsingCache(final DexParsingCache cache) {
-    return new Cache<String, DexArrayType>() {
-      @Override
-      protected DexArrayType createNewEntry(String typeDescriptor) {
-        if (!typeDescriptor.startsWith("["))
-          throw new UnknownTypeException(typeDescriptor);
+	@Override
+	public String getDescriptor() {
+		return "[" + elementType.getDescriptor();
+	}
+	
+	@Override
+	public String getPrettyName() {
+		return elementType.getPrettyName() + "[]";
+	}
 
-        val elementType = DexRegisterType.parse(typeDescriptor.substring(1), cache);
-        return new DexArrayType(elementType);
-      }
-    };
-  }
+	@Override
+	public String getJavaDescriptor() {
+		if (elementType instanceof DexClassType)
+			return "[L" + elementType.getPrettyName() + ";";
+		else
+			return "[" + elementType.getDescriptor();
+		
+	}
 }

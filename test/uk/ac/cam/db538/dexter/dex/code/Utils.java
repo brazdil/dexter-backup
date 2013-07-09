@@ -14,16 +14,15 @@ import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 
-import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
 
 public class Utils {
 
   public static DexCodeElement parseAndCompare(Instruction insn, String output) {
-    DexCode code = new DexCode(new Instruction[] { insn }, new DexParsingCache());
+    DexCode code = new DexCode(new Instruction[] { insn }, new DexTypeCache());
 
     val insnList = code.getInstructionList();
 
@@ -38,7 +37,7 @@ public class Utils {
   public static void parseAndCompare(Instruction[] insns, String[] output) {
     DexCode code;
     try {
-      code = new DexCode(insns, new DexParsingCache());
+      code = new DexCode(insns, new DexTypeCache());
     } catch (UnknownTypeException e) {
       fail(e.getClass().getName() + ": " + e.getMessage());
       return;
@@ -56,17 +55,6 @@ public class Utils {
     for (val reg : regs)
       regAlloc.put(reg, reg.getOriginalIndex());
     return regAlloc;
-  }
-
-  public static DexCode_AssemblingState genAsmState(DexCode code, Map<DexRegister, Integer> regAlloc) {
-    return new DexCode_AssemblingState(
-             code,
-             new DexAssemblingCache(new DexFile(), null),
-             regAlloc);
-  }
-
-  public static DexCode_AssemblingState genAsmState(Map<DexRegister, Integer> regAlloc) {
-    return genAsmState(null, regAlloc);
   }
 
   public static long numFitsInto_Signed(int bits) {

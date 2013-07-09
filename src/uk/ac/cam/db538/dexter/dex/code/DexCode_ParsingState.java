@@ -11,7 +11,6 @@ import lombok.val;
 import org.jf.dexlib.CodeItem.EncodedCatchHandler;
 import org.jf.dexlib.CodeItem.TryItem;
 
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
@@ -20,6 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
@@ -31,10 +31,10 @@ public class DexCode_ParsingState {
   private final Map<Long, DexInstruction> instructionOffsetMap;
   private final Map<Long, DexInstruction> instructionParents;
   private long currentOffset;
-  @Getter private final DexParsingCache cache;
+  @Getter private final DexTypeCache cache;
   @Getter private final DexCode code;
 
-  public DexCode_ParsingState(DexParsingCache cache, DexCode code) {
+  public DexCode_ParsingState(DexTypeCache cache, DexCode code) {
     this.registerIdCache = DexRegister.createCache();
     this.labelOffsetCache = DexLabel.createCache(code);
     this.catchAllOffsetCache = DexCatchAll.createCache(code);

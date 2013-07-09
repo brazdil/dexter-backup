@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
@@ -22,8 +21,9 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
-import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 
 public class DexInstruction_Test {
@@ -45,7 +45,7 @@ public class DexInstruction_Test {
     val clazz = new DexClass(dex,
                              DexClassType.parse("Lcom/example/Clazz;", dex.getParsingCache()),
                              DexClassType.parse("Ljava/lang/Object;", dex.getParsingCache()),
-                             null, null, null, null, null, true);
+                             null, null, null, null, null);
 
     val code = new DexCode();
 
@@ -246,7 +246,7 @@ public class DexInstruction_Test {
     val nop = new DexInstruction_Nop(code);
     val tryStart = new DexTryBlockStart(code);
     val tryEnd = new DexTryBlockEnd(code, tryStart);
-    val catchThrowable = new DexCatch(code, DexClassType.parse("Ljava/lang/Throwable;", new DexParsingCache()));
+    val catchThrowable = new DexCatch(code, DexClassType.parse("Ljava/lang/Throwable;", new DexTypeCache()));
 
     tryStart.addCatchHandler(catchThrowable);
 
@@ -266,7 +266,7 @@ public class DexInstruction_Test {
   public void testThrowingInsn_CatchHandlers_InsideTryBlockWithMultipleCatchHandlers() {
     // we pretend that NOP can throw an exception
 
-    val parseCache = new DexParsingCache();
+    val parseCache = new DexTypeCache();
 
     val code = createDexCode();
     val nop = new DexInstruction_Nop(code);

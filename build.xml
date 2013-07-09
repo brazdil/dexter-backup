@@ -34,7 +34,7 @@
 
 	<target name="compile" depends="compile-examples,compile-merges">
 		<mkdir dir="${classes.dir}"/>
-		<javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="yes" includeantruntime="false"  target="1.6" source="1.6"/>
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" listfiles="yes" classpathref="classpath" debug="yes" includeantruntime="false"  target="1.6" source="1.6"/>
 
 		<copy todir="${classes.dir}">
 			<fileset dir="${src.dir}" excludes="**/*.java" />
@@ -83,8 +83,9 @@
 		<jar destfile="${jar.dir}/${ant.project.name}-standalone.jar">
 		    <zipfileset src="${jar.file}" includes="**/*.class,**/*.dex"/>
 			<zipfileset src="${lib.dir}/dx.jar" includes="**/*.class"/>
-	    	<zipfileset src="${lib.dir}/smali.jar" includes="**/*.class"/>
+			<zipfileset src="${lib.dir}/smali.jar" includes="**/*.class"/>
 			<zipfileset src="${lib.dir}/zip4j.jar" includes="**/*.class"/>
+			<zipfileset src="${lib.dir}/commons-io.jar" includes="**/*.class"/>
 			
 			<manifest>
 				<attribute name="Main-Class" value="${main-class}"/>

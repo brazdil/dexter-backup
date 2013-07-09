@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.jar.JarFile;
 
 import lombok.Getter;
 import lombok.val;
@@ -20,37 +19,18 @@ import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
 import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.dex.DexParsingCache;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.hierarchy.DexClassHierarchy;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
 public class Apk {
 
   @Getter private final Dex dexFile;
   @Getter private final File temporaryFilename;
 
-  @Getter private final DexClassHierarchy classHierarchy;
-  @Getter private final DexParsingCache parsingCache;
+  @Getter private final DexTypeCache parsingCache;
 
   public Apk(File filename, File frameworkDir) throws IOException {
-    this.parsingCache = new DexParsingCache();
-    this.classHierarchy = new DexClassHierarchy(DexClassType.parse("Ljava/lang/Object;", parsingCache));
-
-    this.dexFile = new Dex(filename, true, this);
-    for (val file : frameworkDir.listFiles()) {
-      System.out.println("Framework file " + file.getPath());
-      if (file.isFile() && (file.getName().endsWith(".dex") || file.getName().endsWith(".odex")))
-        new Dex(file, false, this);
-      else if (file.isFile() && (file.getName().endsWith(".jar") || file.getName().endsWith(".apk"))) {
-        val jar = new JarFile(file);
-        if (jar.getJarEntry("classes.dex") != null)
-          new Dex(file, false, this);
-//        else
-//          classHierarchy.addAllClassesFromJAR(file, parsingCache);
-        jar.close();
-      }
-    }
-    classHierarchy.checkConsistency();
+    this.parsingCache = new DexTypeCache();
+    this.dexFile = null;
 
     this.temporaryFilename = File.createTempFile("dexter-", ".apk");
     copyFile(filename, this.temporaryFilename);

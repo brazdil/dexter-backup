@@ -1,21 +1,19 @@
 package com.rx201.dx.translator;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.List;
 
-import org.jf.dexlib.Util.AccessFlags;
-import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.TryItem;
+import org.jf.dexlib.DexFromMemory;
+import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
-import uk.ac.cam.db538.dexter.dex.method.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 
 import com.android.dx.dex.DexOptions;
 import com.android.dx.dex.code.DalvCode;
@@ -143,8 +141,7 @@ class DalvCodeBridge {
 		OutputStreamWriter humanOut = null; //new OutputStreamWriter(System.out);
 		try {
 			byte[] outArray = outputDex.toDex(humanOut, true);
-			ByteArrayInputStream dexStream = new ByteArrayInputStream(outArray);
-			org.jf.dexlib.DexFile tmpDexFile = new org.jf.dexlib.DexFile(dexStream);
+			DexFromMemory tmpDexFile = new DexFromMemory(outArray);
 		
 			List<CodeItem> codeItems = tmpDexFile.CodeItemsSection.getItems();
 			assert codeItems.size() == 1;
@@ -154,8 +151,6 @@ class DalvCodeBridge {
 			e.printStackTrace();
 			codeItem = null;
 		}
-
-		
 	}
 
 	public Instruction[] getInstructions() {
