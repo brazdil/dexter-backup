@@ -20,6 +20,7 @@ public class BaseClassDefinition_Test {
 	private ClassDefinition classObject;
 	private ClassDefinition classThrowable;
 	private ClassDefinition classException;
+	private ClassDefinition classError;
 	private InterfaceDefinition classList;
 	
 	@Before
@@ -36,6 +37,9 @@ public class BaseClassDefinition_Test {
 		val typeException = DexClassType.parse("Ljava/lang/Exception;", typeCache);
 		classException = hierarchy.getClassDefinition(typeException);
 
+		val typeError = DexClassType.parse("Ljava/lang/Error;", typeCache);
+		classError = hierarchy.getClassDefinition(typeError);
+		
 		val typeList = DexClassType.parse("Ljava/util/List;", typeCache);
 		classList = hierarchy.getInterfaceDefinition(typeList);
 	}
@@ -71,5 +75,17 @@ public class BaseClassDefinition_Test {
 		assertFalse(classThrowable.isChildOf(classException));
 		
 		assertTrue(classList.isChildOf(classObject));
+	}
+	
+	@Test
+	public void test_CommonParent() {
+		assertEquals(classThrowable, classException.getCommonParent(classError));
+		assertEquals(classThrowable, classError.getCommonParent(classException));
+		
+		assertEquals(classThrowable, classException.getCommonParent(classThrowable));
+		assertEquals(classThrowable, classThrowable.getCommonParent(classException));
+		
+		assertEquals(classObject, classException.getCommonParent(classList));
+		assertEquals(classObject, classList.getCommonParent(classException));
 	}
 }

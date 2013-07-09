@@ -232,6 +232,14 @@ public abstract class BaseClassDefinition implements Serializable {
 		return iterateThroughParents(fieldId, extractorStaticField, acceptorAlwaysTrue, false);
 	}
 	
+	public BaseClassDefinition getCommonParent(BaseClassDefinition otherClass) {
+		// Iterate through parents of this class (including itself) and return the first
+		// class that is the parent of the otherClass passed in as a parameter
+		// Note that the work is done in the extractor
+		
+		return iterateThroughParents(otherClass, extractorParentClass, acceptorAlwaysTrue, false);
+	}
+	
 	protected <Id, T> T iterateThroughParents(Id id, Extractor<Id, T> extractor, Acceptor<? super T> acceptor, boolean skipFirst) {
 		BaseClassDefinition inspectedClass = skipFirst ? this.getSuperclass() : this;
 		
@@ -272,6 +280,16 @@ public abstract class BaseClassDefinition implements Serializable {
 		public T extract(BaseClassDefinition clazz, Id id);
 	}
 	
+	private static final Extractor<BaseClassDefinition, BaseClassDefinition> extractorParentClass = new Extractor<BaseClassDefinition, BaseClassDefinition>() {
+		@Override
+		public BaseClassDefinition extract(BaseClassDefinition parentClass, BaseClassDefinition otherClass) {
+			if (otherClass.isChildOf(parentClass))
+				return parentClass;
+			else
+				return null;
+		}
+	};
+
 	private static final Extractor<DexMethodId, MethodDefinition> extractorMethod = new Extractor<DexMethodId, MethodDefinition>() {
 		@Override
 		public MethodDefinition extract(BaseClassDefinition clazz, DexMethodId methodId) {
