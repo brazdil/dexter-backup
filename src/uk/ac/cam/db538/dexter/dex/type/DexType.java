@@ -31,11 +31,11 @@ public abstract class DexType implements Serializable {
 	}
   
 	public static DexType parse(String typeDescriptor, DexTypeCache cache) throws UnknownTypeException {
-		val res = DexVoid.parse(typeDescriptor);
-	    if (res != null)
-	    	return res;
-	    else
-	    	return DexRegisterType.parse(typeDescriptor, cache);
+		try {
+			return DexVoid.parse(typeDescriptor, cache);
+		} catch (UnknownTypeException ex) { }
+		
+		return DexRegisterType.parse(typeDescriptor, cache);
 	}
 
 	public static Cache<DexType, TypeIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {

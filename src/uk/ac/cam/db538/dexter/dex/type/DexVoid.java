@@ -4,15 +4,13 @@ public class DexVoid extends DexType {
 
 	private static final long serialVersionUID = 1L;
 
-	private DexVoid() { }
+	DexVoid() { }
 
-	private static final DexVoid VOID_INSTANCE = new DexVoid();
-
-	public static DexVoid parse(String typeDescriptor) {
-		if (typeDescriptor.equals(VOID_INSTANCE.getDescriptor()))
-			return VOID_INSTANCE;
+	public static DexVoid parse(String typeDescriptor, DexTypeCache typeCache) {
+		if (typeDescriptor.equals("V"))
+			return typeCache.getCachedType_Void();
 		else
-			return null;
+			throw new UnknownTypeException(typeDescriptor);
 	}
 
 	@Override
