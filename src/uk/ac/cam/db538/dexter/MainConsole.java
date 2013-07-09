@@ -99,6 +99,7 @@ public class MainConsole {
     hierarchyBuilder.importFrameworkFolder(frameworkDir);
     
 //    System.out.println("Storing hierarchy");
+//    hierarchyBuilder.importDex(new File("framework-4.2/core.odex"), false);
 //    hierarchyBuilder.serialize(new File("hierarchy.dump"));
     
 //    System.out.println("Loading framework from dump");
