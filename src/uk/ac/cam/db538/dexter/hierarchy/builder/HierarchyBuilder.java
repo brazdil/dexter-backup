@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import lombok.Getter;
 import lombok.val;
@@ -31,19 +32,18 @@ import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
-import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class HierarchyBuilder implements Serializable {
 
 	private ClassDefinition root;
 	@Getter private final DexTypeCache typeCache;
 	
-	private final Map<DexClassType, Pair<BaseClassDefinition, ClassData>> definedClasses;
+	private final Map<DexClassType, ClassVariants> definedClasses;
 	
 	public HierarchyBuilder() {
 		root = null;
 		typeCache = new DexTypeCache();
-		definedClasses = new HashMap<DexClassType, Pair<BaseClassDefinition, ClassData>>();
+		definedClasses = new HashMap<DexClassType, ClassVariants>();
 	}
 
 	public void importDex(File file, boolean isInternal) throws IOException {
@@ -76,12 +76,10 @@ public class HierarchyBuilder implements Serializable {
 			
 			// need to make a copy of the class list
 			// because we will modify it inside the loop
-			val currentClassSet = new ArrayList<Pair<BaseClassDefinition, ClassData>>(definedClasses.values());
+			val currentClassSet = new ArrayList<ClassVariants>(definedClasses.values());
 			
 			for (val clsPair : currentClassSet) {
-				val clsData = clsPair.getValB();
-				if (clsData == null)
-					continue;
+				val clsData = clsPair.getClassData();
 				
 				// check superclass presence
 				val supercls = clsData.superclass;
@@ -117,18 +115,15 @@ public class HierarchyBuilder implements Serializable {
 	}
 	
 	private void scanClass(IClassScanner clsScanner, boolean isInternal) {
-		val clsType = checkClassType(clsScanner);
+		val clsType = DexClassType.parse(clsScanner.getClassDescriptor(), typeCache);
 		
-		BaseClassDefinition baseclsDef;
-		ClassData baseclsData = null;
+		val baseclsData = new ClassData();
 		
 		if (clsScanner.isInterface())
-			baseclsDef = new InterfaceDefinition(clsType, clsScanner.getAccessFlags(), isInternal);
+			baseclsData.classDef = new InterfaceDefinition(clsType, clsScanner.getAccessFlags(), isInternal);
 		else {
 			val clsDef = new ClassDefinition(clsType, clsScanner.getAccessFlags(), isInternal);
-			
-			baseclsDef = clsDef;
-			baseclsData = new ClassData();
+			baseclsData.classDef = clsDef;
 			
 			scanInstanceFields(clsScanner, clsDef);
 			scanSuperclass(clsScanner, clsDef, baseclsData, isInternal);
@@ -136,22 +131,16 @@ public class HierarchyBuilder implements Serializable {
 			baseclsData.interfaces = clsScanner.getInterfaces();
 		}
 		
-		scanMethods(clsScanner, baseclsDef);
-		scanStaticFields(clsScanner, baseclsDef);
+		scanMethods(clsScanner, baseclsData.classDef);
+		scanStaticFields(clsScanner, baseclsData.classDef);
 		
 		// store data
-		definedClasses.put(clsType, new Pair<BaseClassDefinition, ClassData>(baseclsDef, baseclsData));
-	}
-	
-	private DexClassType checkClassType(IClassScanner clsScanner) {
-		val dalvikDescriptor = clsScanner.getClassDescriptor();
-		val clsType = DexClassType.parse(dalvikDescriptor, typeCache);
-		
-		// check that class has not been defined before
-		if (definedClasses.containsKey(clsType))
-			throw new HierarchyException("Multiple definition of class " + clsType.getPrettyName());
-		else
-			return clsType;
+		ClassVariants clsVariants = definedClasses.get(clsType);
+		if (clsVariants == null) {
+			clsVariants = new ClassVariants();
+			definedClasses.put(clsType, clsVariants);
+		}
+		clsVariants.setVariant(baseclsData, isInternal);	
 	}
 	
 	private void foundRoot(ClassDefinition clsInfo, boolean isInternal) {
@@ -204,17 +193,17 @@ public class HierarchyBuilder implements Serializable {
 	public RuntimeHierarchy build() {
 		val classList = new HashMap<DexClassType, BaseClassDefinition>();
 		for (val classDefPair : definedClasses.values()) {
-			val baseCls = classDefPair.getValA();
-			val clsData = classDefPair.getValB();
+			val clsData = classDefPair.getClassData();
+			val baseCls = clsData.classDef;
 			
 			// connect to parent and vice versa
 			val sclsType = (baseCls instanceof ClassDefinition) ? clsData.superclass : root.getClassType();
 			if (sclsType != null) {
-				val sclsInfo = definedClasses.get(sclsType);
-				if (sclsInfo == null)
+				val sclsVariants = definedClasses.get(sclsType);
+				if (sclsVariants == null)
 					throw new HierarchyException("Class " + baseCls.getClassType().getPrettyName() + " is missing its parent " + sclsType.getPrettyName());
 				else
-					baseCls.setSuperclassLink(sclsInfo.getValA());
+					baseCls.setSuperclassLink(sclsVariants.getClassData().classDef);
 			}
 
 			// proper classes only (not interfaces)
@@ -226,10 +215,10 @@ public class HierarchyBuilder implements Serializable {
 				if (ifaces != null) {
 					for (val ifaceType : ifaces) {
 						val ifaceInfo_Pair = definedClasses.get(ifaceType);
-						if (ifaceInfo_Pair == null || !(ifaceInfo_Pair.getValA() instanceof InterfaceDefinition))
+						if (ifaceInfo_Pair == null || !(ifaceInfo_Pair.getClassData().classDef instanceof InterfaceDefinition))
 							throw new HierarchyException("Class " + baseCls.getClassType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
 						else
-							properCls.addImplementedInterface((InterfaceDefinition) ifaceInfo_Pair.getValA());
+							properCls.addImplementedInterface((InterfaceDefinition) ifaceInfo_Pair.getClassData().classDef);
 					}
 				}
 			}
@@ -244,12 +233,13 @@ public class HierarchyBuilder implements Serializable {
 	}
 	
 	public void removeInternalClasses() {
-		val classDefPairs = new ArrayList<Pair<BaseClassDefinition, ClassData>>(definedClasses.values());
+		val classEntries = new ArrayList<Entry<DexClassType, ClassVariants>>(definedClasses.entrySet());
 		
-		for (val defPair : classDefPairs) {
-			val cls = defPair.getValA();
-			if (cls.isInternal())
-				definedClasses.remove(cls.getClassType());
+		for (val classEntry : classEntries) {
+			val classPair = classEntry.getValue();
+			classPair.deleteInternal();
+			if (classPair.isEmpty())
+				definedClasses.remove(classEntry.getKey());
 		}
 	}
 	
@@ -260,8 +250,53 @@ public class HierarchyBuilder implements Serializable {
 		}
 	};
 	
+	private static class ClassVariants implements Serializable {
+		private static final long serialVersionUID = 1L;
+		
+		private ClassData internal;
+		private ClassData external;
+		
+		public ClassVariants() {
+			this.internal = this.external = null;
+		}
+		
+		public ClassData getClassData() {
+			// prefer internal
+			if (internal != null)
+				return internal;
+			else if (external != null)
+				return external;
+			else
+				throw new HierarchyException("No class data available");
+		}
+		
+		public void setVariant(ClassData cls, boolean isInternal) {
+			if (isInternal) {
+				if (this.internal != null)
+					throw new HierarchyException("Multiple definitions of internal class " + this.internal.classDef.getClassType().getPrettyName());
+				
+				this.internal = cls;
+			} else {
+				if (this.external != null)
+					throw new HierarchyException("Multiple definitions of external class " + this.external.classDef.getClassType().getPrettyName());
+				
+				this.external = cls;
+			}
+		}
+
+		public void deleteInternal() {
+			internal = null;
+		}
+		
+		public boolean isEmpty() {
+			return (external == null) && (internal == null); 
+		}
+	}
+	
 	private static class ClassData implements Serializable {
 		private static final long serialVersionUID = 1L;
+		
+		BaseClassDefinition classDef = null;
 
 		DexClassType superclass = null;
 		Collection<DexClassType> interfaces = null;
