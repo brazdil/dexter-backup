@@ -318,11 +318,9 @@ public class HierarchyBuilder implements Serializable {
 			importDex(new File(dir, filename), false);
 	}
 
-	public RuntimeHierarchy buildAgainstApp(DexFile dex, boolean fillDependencies) {
+	public RuntimeHierarchy buildAgainstApp(DexFile dex) {
 		try {
 			importDex(dex, true);
-			if (fillDependencies)
-				importDependencies();
 			return build();
 		} finally {
 			removeInternalClasses();

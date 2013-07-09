@@ -109,7 +109,7 @@ public class MainConsole {
     val dexFile = new DexFile(apkFile);
     
     System.out.println("Building hierarchy");
-    RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(dexFile, true);
+    RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(dexFile);
     
     System.out.println("Parsing application");
     val dexAux = ClassLoader.getSystemResourceAsStream("merge-classes.dex");
