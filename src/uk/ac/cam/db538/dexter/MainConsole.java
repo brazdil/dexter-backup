@@ -6,14 +6,12 @@ import java.io.IOException;
 
 import lombok.val;
 
-import org.apache.commons.io.IOUtils;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 
 public class MainConsole {
 	private static void dumpAnnotation(File apkFile) {
@@ -98,6 +96,7 @@ public class MainConsole {
     
     System.out.println("Scanning framework");
     hierarchyBuilder.importFrameworkFolder(frameworkDir);
+//    hierarchyBuilder.importDex(new File("framework-4.2/framework.odex"), false);
     
 //    System.out.println("Storing hierarchy");
 //    hierarchyBuilder.importDex(new File("framework-4.2/core.odex"), false);
@@ -110,7 +109,7 @@ public class MainConsole {
     val dexFile = new DexFile(apkFile);
     
     System.out.println("Building hierarchy");
-    RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(dexFile);
+    RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(dexFile, true);
     
     System.out.println("Parsing application");
     val dexAux = ClassLoader.getSystemResourceAsStream("merge-classes.dex");

@@ -5,8 +5,6 @@ import java.io.Serializable;
 import lombok.Getter;
 import lombok.val;
 
-import org.jf.dexlib.FieldIdItem;
-
 public class DexFieldId implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
@@ -26,10 +24,8 @@ public class DexFieldId implements Serializable {
 		this.hashcode = result;
 	}
 
-	public static DexFieldId parseFieldId(FieldIdItem item, DexTypeCache cache) {
-		val fid = new DexFieldId(item.getFieldName().getStringValue(), 
-                DexRegisterType.parse(item.getFieldType().getTypeDescriptor(), cache));
-
+	public static DexFieldId parseFieldId(String name, DexRegisterType type, DexTypeCache cache) {
+		val fid = new DexFieldId(name, type);
 		return cache.getCachedFieldId(fid); // will return 'fid' if not cached yet
 	}
 

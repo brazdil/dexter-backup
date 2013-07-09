@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 
 public class ClassDefinition_Test {
 

@@ -1,4 +1,4 @@
-package uk.ac.cam.db538.dexter.hierarchy;
+package uk.ac.cam.db538.dexter.hierarchy.builder;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -11,26 +11,26 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
 
-import org.jf.dexlib.ClassDataItem;
-import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.DexFile.NoClassesDexException;
-import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
-import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.HierarchyException;
+import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class HierarchyBuilder implements Serializable {
@@ -66,7 +66,7 @@ public class HierarchyBuilder implements Serializable {
 	public void importDex(DexFile dex, boolean isInternal) {
 		// recursively scan classes
 		for (val cls : dex.ClassDefsSection.getItems())
-			scanClass(cls, isInternal);
+			scanClass(new DexClassScanner(cls, typeCache), isInternal);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -74,7 +74,11 @@ public class HierarchyBuilder implements Serializable {
 		boolean somethingChanged;
 		do {
 			somethingChanged = false;
-			for (val clsPair : definedClasses.values()) {
+			
+			// need to make a copy of the class list
+			// because we will modify it inside the loop
+			val currentClassSet = new ArrayList<Pair<BaseClassDefinition, ClassData>>(definedClasses.values());
+			for (val clsPair : currentClassSet) {
 				val supercls = clsPair.getValB().superclass;
 				if (supercls != null && definedClasses.get(supercls) == null) {
 					// superclass is missing in the hierarchy
@@ -88,114 +92,122 @@ public class HierarchyBuilder implements Serializable {
 					}
 					
 					// import it
-					scanClass(vmClass, false);
+					scanClass(new VmClassScanner(vmClass, typeCache), false);
 					somethingChanged = true;
 				}
 			}
 		} while (somethingChanged);
 	}
 	
-	private void scanClass(ClassDefItem cls, boolean isInternal) {
-		val clsData = cls.getClassData();
-		val clsType = DexClassType.parse(cls.getClassType().getTypeDescriptor(), typeCache);
+	private void scanClass(IClassScanner clsScanner, boolean isInternal) {
+		val clsType = checkClassType(clsScanner);
+		
+		BaseClassDefinition baseclsDef;
+		ClassData baseclsData = new ClassData();
+		
+		if (clsScanner.isInterface())
+			baseclsDef = new InterfaceDefinition(clsType, clsScanner.getAccessFlags(), isInternal);
+		else {
+			val clsDef = new ClassDefinition(clsType, clsScanner.getAccessFlags(), isInternal);
+			
+			scanInstanceFields(clsScanner, clsDef);
+
+			baseclsDef = clsDef;
+			baseclsData.interfaces = clsScanner.getInterfaces();
+		}
+		
+		scanMethods(clsScanner, baseclsDef);
+		scanStaticFields(clsScanner, baseclsDef);
+		scanSuperclass(clsScanner, baseclsDef, baseclsData, isInternal);
+		
+		// store data
+		definedClasses.put(clsType, new Pair<BaseClassDefinition, ClassData>(baseclsDef, baseclsData));
+	}
+	
+//	@SuppressWarnings("rawtypes")
+//	private void scanClass(Class cls, boolean isInternal) {
+//		val clsType = checkClassType();
+//		
+//		BaseClassDefinition clsInfo;
+//		val clsInfo_Data = new ClassData();
+//		if (cls.isInterface())
+//			clsInfo = new InterfaceDefinition(clsType, cls.getModifiers(), isInternal);
+//		else {
+//			clsInfo = new ClassDefinition(clsType, cls.getModifiers(), isInternal);
+//		}
+//		
+//		System.out.println("scanning " + clsType.getDescriptor());
+//		
+//		// acquire superclass info
+//		val scls = cls.getSuperclass();
+//		if (scls != null) {
+//			clsInfo_Data.superclass = DexClassType.parse(DexClassType.jvm2dalvik(scls.getName()), typeCache);
+//			System.out.println("superclass: " + clsInfo_Data.superclass.getDescriptor());
+//		} else {
+////			foundRoot(clsInfo, isInternal);
+//		}
+//		
+//		// store data
+//		definedClasses.put(clsType, new Pair<BaseClassDefinition, ClassData>(clsInfo, clsInfo_Data));
+//	}
+	
+	private DexClassType checkClassType(IClassScanner clsScanner) {
+		val dalvikDescriptor = clsScanner.getClassDescriptor();
+		val clsType = DexClassType.parse(dalvikDescriptor, typeCache);
 		
 		// check that class has not been defined before
 		if (definedClasses.containsKey(clsType))
 			throw new HierarchyException("Multiple definition of class " + clsType.getPrettyName());
-		
-		// examine access flags
-		int iFlags = cls.getAccessFlags();
-		List<AccessFlags> listFlags = Arrays.asList(AccessFlags.getAccessFlagsForClass(cls.getAccessFlags()));
-		
-		// create class definition object instance
-		BaseClassDefinition clsInfo;
-		ClassData clsInfo_Data = new ClassData();
-		if (listFlags.contains(AccessFlags.INTERFACE))
-			clsInfo = new InterfaceDefinition(clsType, iFlags, isInternal);
-		else {
-			val classDef = new ClassDefinition(clsType, cls.getAccessFlags(), isInternal);
-			scanInstanceFields(clsData, classDef);
-			
-			if (cls.getInterfaces() != null) {
-				clsInfo_Data.interfaces = new HashSet<DexClassType>();
-				for (val ifaceTypeItem : cls.getInterfaces().getTypes())
-					clsInfo_Data.interfaces.add(DexClassType.parse(ifaceTypeItem.getTypeDescriptor(), typeCache));
-			}
-
-			clsInfo = classDef;
-		}
-		
-		scanMethods(clsData, clsInfo);
-		scanStaticFields(clsData, clsInfo);
-		
-		// acquire superclass info
-		val superclsTypeItem = cls.getSuperclass();
-		if (superclsTypeItem != null)
-			clsInfo_Data.superclass = DexClassType.parse(superclsTypeItem.getTypeDescriptor(), typeCache);
-		else {
-			// check only one root exists
-			if (root != null)
-				throw new HierarchyException("More than one hierarchy root found");
-			else if (isInternal)
-				throw new HierarchyException("Hierarchy root cannot be internal");
-			else if (clsInfo instanceof ClassDefinition)
-				root = (ClassDefinition) clsInfo;
-			else
-				throw new HierarchyException("Hierarchy root must be a proper class");
-		}
-		
-		// store data
-		definedClasses.put(clsType, new Pair<BaseClassDefinition, ClassData>(clsInfo, clsInfo_Data));
+		else
+			return clsType;
 	}
 	
-	@SuppressWarnings("rawtypes")
-	private void scanClass(Class cls, boolean isInternal) {
-		val clsInfo_Data = new ClassData();
-		val scls = cls.getSuperclass();
-		// val sclsType = DexClassType.parse(, cache) 
+	private void foundRoot(BaseClassDefinition clsInfo, boolean isInternal) {
+		// check only one root exists
+		if (root != null)
+			throw new HierarchyException("More than one hierarchy root found");
+		else if (isInternal)
+			throw new HierarchyException("Hierarchy root cannot be internal");
+		else if (clsInfo instanceof ClassDefinition)
+			root = (ClassDefinition) clsInfo;
+		else
+			throw new HierarchyException("Hierarchy root must be a proper class");
 	}
 	
-	private void scanMethods(ClassDataItem clsData, BaseClassDefinition clsDef) {
-		if (clsData == null)
-			return;
-
-		for (val methodItem : clsData.getDirectMethods())
-			clsDef.addDeclaredMethod(
+	private void scanMethods(IClassScanner clsScanner, BaseClassDefinition baseclsDef) {
+		for (val methodScanner : clsScanner.getMethodScanners())
+			baseclsDef.addDeclaredMethod(
 				new MethodDefinition(
-					clsDef,
-					DexMethodId.parseMethodId(methodItem.method, typeCache),
-					methodItem.accessFlags));
-
-		for (val methodItem : clsData.getVirtualMethods())
-			clsDef.addDeclaredMethod(
-				new MethodDefinition(
-					clsDef,
-					DexMethodId.parseMethodId(methodItem.method, typeCache),
-					methodItem.accessFlags));
+					baseclsDef,
+					methodScanner.getMethodId(),
+					methodScanner.getAccessFlags()));
 	}
 	
-	private void scanStaticFields(ClassDataItem clsData, BaseClassDefinition clsDef) {
-		if (clsData == null)
-			return;
-		
-		for (val fieldItem : clsData.getStaticFields())
-			clsDef.addDeclaredStaticField(
+	private void scanStaticFields(IClassScanner clsScanner, BaseClassDefinition baseclsDef) {
+		for (val fieldScanner : clsScanner.getStaticFieldScanners())
+			baseclsDef.addDeclaredStaticField(
 				new StaticFieldDefinition(
-					clsDef, 
-					DexFieldId.parseFieldId(fieldItem.field, typeCache),
-					fieldItem.accessFlags));
+					baseclsDef, 
+					fieldScanner.getFieldId(),
+					fieldScanner.getAccessFlags()));
 	}
 	
-	private void scanInstanceFields(ClassDataItem clsData, ClassDefinition clsDef) {
-		if (clsData == null)
-			return;
-
-		for (val fieldItem : clsData.getInstanceFields())
+	private void scanInstanceFields(IClassScanner clsScanner, ClassDefinition clsDef) {
+		for (val fieldScanner : clsScanner.getInstanceFieldScanners())
 			clsDef.addDeclaredInstanceField(
 				new InstanceFieldDefinition(
-					clsDef,
-					DexFieldId.parseFieldId(fieldItem.field, typeCache),
-					fieldItem.accessFlags));
+					clsDef, 
+					fieldScanner.getFieldId(),
+					fieldScanner.getAccessFlags()));
+	}
+	
+	private void scanSuperclass(IClassScanner clsScanner, BaseClassDefinition baseclsDef, ClassData baseclsData, boolean isInternal) {
+		// acquire superclass info
+		val typeDescriptor = clsScanner.getSuperclassDescriptor();
+		if (typeDescriptor != null)
+			baseclsData.superclass = DexClassType.parse(typeDescriptor, typeCache);
+		else
+			foundRoot(baseclsDef, isInternal);
 	}
 	
 	public RuntimeHierarchy build() {
@@ -261,7 +273,7 @@ public class HierarchyBuilder implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		DexClassType superclass = null;
-		Set<DexClassType> interfaces = null;
+		Collection<DexClassType> interfaces = null;
 	}
 
 	// SERIALIZATION
@@ -315,9 +327,11 @@ public class HierarchyBuilder implements Serializable {
 			importDex(new File(dir, filename), false);
 	}
 
-	public RuntimeHierarchy buildAgainstApp(DexFile dex) {
+	public RuntimeHierarchy buildAgainstApp(DexFile dex, boolean fillDependencies) {
 		try {
 			importDex(dex, true);
+			if (fillDependencies)
+				importDependencies();
 			return build();
 		} finally {
 			removeInternalClasses();
