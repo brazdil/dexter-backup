@@ -1,5 +1,6 @@
 package com.rx201.dx.translator;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -109,7 +110,7 @@ public class AnalyzedDexInstruction {
 	    	return successors.get(0);
 	    }
 
-	    public DexInstruction getInstruction() {
+		public DexInstruction getInstruction() {
 	        return instruction;
 	    }
 
@@ -147,7 +148,11 @@ public class AnalyzedDexInstruction {
 	    	return usedRegisterMap.get(registerNumber);
 	    }
 
-	    public RopType getDefinedRegisterType(int reg) {
+		public Set<DexRegister> getDefinedRegisters() {
+			return definedRegisters;
+		}
+
+		public RopType getDefinedRegisterType(int reg) {
 	    	return definedRegisterMap.get(reg).getType();
 	    }
 
@@ -224,4 +229,5 @@ public class AnalyzedDexInstruction {
 			else
 				return "null:" + instructionIndex;
 		}
+
 }
