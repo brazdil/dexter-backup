@@ -104,7 +104,6 @@ public class HierarchyBuilder implements Serializable {
 	
 	@SuppressWarnings("rawtypes")
 	private void needVMClass(DexClassType clsType) {
-		System.out.println("loading dependency " + clsType.getPrettyName());
 		// try to find it in the running VM
 		Class vmClass;
 		try {
@@ -166,12 +165,13 @@ public class HierarchyBuilder implements Serializable {
 	}
 	
 	private void scanMethods(IClassScanner clsScanner, BaseClassDefinition baseclsDef) {
-		for (val methodScanner : clsScanner.getMethodScanners())
+		for (val methodScanner : clsScanner.getMethodScanners()) {
 			baseclsDef.addDeclaredMethod(
 				new MethodDefinition(
 					baseclsDef,
 					methodScanner.getMethodId(),
 					methodScanner.getAccessFlags()));
+		}
 	}
 	
 	private void scanStaticFields(IClassScanner clsScanner, BaseClassDefinition baseclsDef) {

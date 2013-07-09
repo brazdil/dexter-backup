@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jf.dexlib.Util.AccessFlags;
+
 import lombok.val;
+import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
@@ -28,9 +31,7 @@ public class VmMethodScanner implements IMethodScanner {
 			typeCache);
 	}
 	
-	private List<DexRegisterType> parseArgumentTypes() {
-		val params = methodDef.getParameterTypes();
-		
+	static List<DexRegisterType> parseArgumentTypes(Class<?>[] params, DexTypeCache typeCache) {
 		if (params.length == 0)
 			return Collections.emptyList();
 
@@ -47,14 +48,22 @@ public class VmMethodScanner implements IMethodScanner {
 			methodDef.getName(),
 			DexPrototype.parse(
 				parseReturnType(),
-				parseArgumentTypes(),
+				parseArgumentTypes(methodDef.getParameterTypes(), typeCache),
 				typeCache),
 			typeCache);
 	}
 
 	@Override
 	public int getAccessFlags() {
-		return methodDef.getModifiers();
-	}
+		val flags = VmClassScanner.convertModifier(methodDef.getModifiers());
+		
+		if (methodDef.isBridge())
+			flags.add(AccessFlags.BRIDGE);
+		if (methodDef.isSynthetic())
+			flags.add(AccessFlags.SYNTHETIC);
+		if (methodDef.isVarArgs())
+			flags.add(AccessFlags.VARARGS);
 
+		return DexUtils.assembleAccessFlags(flags);
+	}
 }

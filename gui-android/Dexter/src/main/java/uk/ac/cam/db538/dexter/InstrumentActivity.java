@@ -74,10 +74,6 @@ public class InstrumentActivity extends Activity {
             try {
                 DexterApplication thisApp = (DexterApplication) getApplication();
 
-//                terminalMessage("Analyzing operating system");
-//                thisApp.waitForHierarchy();
-//                terminalDone();
-
                 terminalMessage("Loading application");
                 DexFile apk = new DexFile(packageFile);
                 terminalDone();
