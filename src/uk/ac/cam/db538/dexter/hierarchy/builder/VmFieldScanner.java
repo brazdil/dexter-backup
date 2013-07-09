@@ -2,6 +2,11 @@ package uk.ac.cam.db538.dexter.hierarchy.builder;
 
 import java.lang.reflect.Field;
 
+import lombok.val;
+
+import org.jf.dexlib.Util.AccessFlags;
+
+import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
@@ -26,6 +31,11 @@ public class VmFieldScanner implements IFieldScanner {
 
 	@Override
 	public int getAccessFlags() {
-		return fieldDef.getModifiers();
+		val flags = VmClassScanner.convertModifier(fieldDef.getModifiers());
+		
+		if (fieldDef.isSynthetic())
+			flags.add(AccessFlags.SYNTHETIC);
+
+		return DexUtils.assembleAccessFlags(flags);
 	}
 }
