@@ -7,7 +7,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
@@ -35,7 +37,9 @@ public class Dex {
   @Getter final RuntimeHierarchy hierarchy;
   @Getter final InputStream resAuxiliaryDex;
 
-  private final List<DexClass> classes;
+  private final Set<DexClass> _classes;
+  @Getter private final Set<DexClass> classes;
+  
 
   @Getter private DexClassType objectTaintStorage_Type;
   @Getter private DexDirectMethod objectTaintStorage_Get;
@@ -59,9 +63,11 @@ public class Dex {
   @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
 
   public Dex(RuntimeHierarchy hierarchy, InputStream auxiliaryDex) {
-    this.classes = new ArrayList<DexClass>();
     this.hierarchy = hierarchy;
     this.resAuxiliaryDex = auxiliaryDex;
+    
+    this._classes = new HashSet<DexClass>();
+    this.classes = Collections.unmodifiableSet(this._classes);
   }
 
   public Dex(DexFile dex, RuntimeHierarchy hierarchy, InputStream auxiliaryDex) {
@@ -218,10 +224,6 @@ public class Dex {
     return Arrays.asList(new DexClass[] { externalStaticFieldTaint_Class });
   }
 
-  public List<DexClass> getClasses() {
-    return Collections.unmodifiableList(classes);
-  }
-
   public List<InstrumentationWarning> instrument(boolean debug) {
     val cache = new DexInstrumentationCache(this, debug);
 
@@ -274,7 +276,7 @@ public class Dex {
   private static final String CLASS_TAINTCONSTANTS = "Luk/ac/cam/db538/dexter/merge/TaintConstants;";
 
   public void countInstructions() {
-    val count = new HashMap<Class, Integer>();
+    val count = new HashMap<Class<?>, Integer>();
     for (val clazz : classes)
       clazz.countInstructions(count);
     for (val entry : count.entrySet())

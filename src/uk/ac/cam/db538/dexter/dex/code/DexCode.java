@@ -978,7 +978,7 @@ public class DexCode {
     }
   }
 
-  public void countInstructions(HashMap<Class, Integer> count) {
+  public void countInstructions(HashMap<Class<?>, Integer> count) {
     for (val elem : instructionList)
       if (elem instanceof DexInstruction) {
         val clazz = elem.getClass();
