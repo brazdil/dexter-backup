@@ -1,9 +1,8 @@
-package uk.ac.cam.db538.dexter.dex;
+package uk.ac.cam.db538.dexter.dex.field;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import lombok.Getter;
 import lombok.val;
@@ -16,36 +15,45 @@ import org.jf.dexlib.ClassDataItem.EncodedField;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.FieldIdItem;
 
+import uk.ac.cam.db538.dexter.dex.Dex;
+import uk.ac.cam.db538.dexter.dex.DexAnnotation;
+import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
+import uk.ac.cam.db538.dexter.dex.DexClass;
+import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
 import uk.ac.cam.db538.dexter.utils.Cache;
 
-public class DexField {
+public abstract class DexField {
 
 	@Getter private final DexClass parentClass;
 	@Getter private final FieldDefinition fieldDef;
   
-	private final Set<DexAnnotation> _annotations;
-	@Getter private final Set<DexAnnotation> annotations;
+	private final List<DexAnnotation> _annotations;
+	@Getter private final List<DexAnnotation> annotations;
   
-	public DexField(DexClass parentClass, FieldDefinition fieldDef, Set<DexAnnotation> annotations) {
+	public DexField(DexClass parentClass, FieldDefinition fieldDef) {
 		this.parentClass = parentClass;
 		this.fieldDef = fieldDef;
 
-		this._annotations = new HashSet<DexAnnotation>();
-		this.annotations = Collections.unmodifiableSet(this._annotations);
+		this._annotations = new ArrayList<DexAnnotation>();
+		this.annotations = Collections.unmodifiableList(this._annotations);
 	}
 
 	public DexField(DexClass parentClass, FieldDefinition fieldDef, EncodedField fieldItem, AnnotationDirectoryItem annoDir) {
-		this(parentClass,
-		     fieldDef,
-		     init_ParseAnnotations(parentClass.getParentFile(), fieldItem, annoDir));
+		this(parentClass, fieldDef);
+		
+		this._annotations.addAll(init_ParseAnnotations(getParentFile(), fieldItem, annoDir));
 	}
 	
-	private static Set<DexAnnotation> init_ParseAnnotations(Dex dex, EncodedField fieldInfo, AnnotationDirectoryItem annoDir) {
+	private static List<DexAnnotation> init_ParseAnnotations(Dex dex, EncodedField fieldInfo, AnnotationDirectoryItem annoDir) {
 		if (annoDir == null)
-			return Collections.emptySet();
+			return Collections.emptyList();
 		else
 			return DexAnnotation.parseAll(annoDir.getFieldAnnotations(fieldInfo.field), dex.getTypeCache());
+	}
+	
+	public Dex getParentFile() {
+		return parentClass.getParentFile();
 	}
 	
 	public void addAnnotation(DexAnnotation anno) {
@@ -73,11 +81,11 @@ public class DexField {
 	}
 
 	public FieldAnnotation assembleAnnotations(DexFile outFile, DexAssemblingCache cache) {
-		if (annotations.size() == 0)
+		if (_annotations.size() == 0)
 			return null;
 		
-		val annoList = new ArrayList<AnnotationItem>(annotations.size());
-		for (val anno : annotations)
+		val annoList = new ArrayList<AnnotationItem>(_annotations.size());
+		for (val anno : _annotations)
 			annoList.add(anno.writeToFile(outFile, cache));
 
 		val annoSet = AnnotationSetItem.internAnnotationSetItem(outFile, annoList);

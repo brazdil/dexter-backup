@@ -58,8 +58,8 @@ public class DexCodeAnalyzer {
     }
 
     private void analyzeParameters() {
-    	boolean isStatic = code.getParentMethod().isStatic();
-    	DexPrototype prototype = code.getParentMethod().getPrototype();
+    	boolean isStatic = code.getParentMethod().getMethodDef().isStatic();
+    	DexPrototype prototype = code.getParentMethod().getMethodDef().getMethodId().getPrototype();
     	List<DexRegister> parameterMapping = code.getParentMethod().getParameterMappedRegisters();
     	
     	for(int i=0; i<prototype.getParameterCount(isStatic); i++) {

@@ -2,9 +2,7 @@ package uk.ac.cam.db538.dexter.dex;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
@@ -18,8 +16,8 @@ import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.EncodedValue.AnnotationEncodedSubValue;
 import org.jf.dexlib.EncodedValue.EncodedValue;
 
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
 public class DexAnnotation {
 
@@ -59,12 +57,12 @@ public class DexAnnotation {
 	return Collections.unmodifiableList(paramValues);
   }
 
-  public static Set<DexAnnotation> parseAll(AnnotationSetItem annotations, DexTypeCache cache) {
+  public static List<DexAnnotation> parseAll(AnnotationSetItem annotations, DexTypeCache cache) {
     if (annotations == null)
-      return Collections.emptySet();
+      return Collections.emptyList();
 
     val items = annotations.getAnnotations();
-    val list = new HashSet<DexAnnotation>(items.length);
+    val list = new ArrayList<DexAnnotation>(items.length);
 
     for (val anno : items)
       list.add(new DexAnnotation(anno, cache));
@@ -72,11 +70,11 @@ public class DexAnnotation {
     return list;
   }
 
-  public static List<Set<DexAnnotation>> parseAll(AnnotationSetRefList annotations, DexTypeCache cache) {
+  public static List<List<DexAnnotation>> parseAll(AnnotationSetRefList annotations, DexTypeCache cache) {
     if (annotations == null)
-      return new ArrayList<Set<DexAnnotation>>();
+      return new ArrayList<List<DexAnnotation>>();
 
-    val list = new ArrayList<Set<DexAnnotation>>();
+    val list = new ArrayList<List<DexAnnotation>>();
 
     for (val anno : annotations.getAnnotationSets())
       list.add(parseAll(anno, cache));

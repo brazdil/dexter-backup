@@ -188,13 +188,13 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	
 	@Override
 	public void visit(DexInstruction_Return instruction) {
-		DexRegisterType returnType = (DexRegisterType) instruction.getParentMethod().getPrototype().getReturnType();
+		DexRegisterType returnType = (DexRegisterType) instruction.getParentMethod().getMethodDef().getMethodId().getPrototype().getReturnType();
 		useFreezedRegister(instruction.getRegFrom(), RopType.getRopType(returnType));
 	}
 	
 	@Override
 	public void visit(DexInstruction_ReturnWide instruction) {
-		if (instruction.getParentMethod().getPrototype().getReturnType() instanceof DexLong) {
+		if (instruction.getParentMethod().getMethodDef().getMethodId().getPrototype().getReturnType() instanceof DexLong) {
 			useFreezedRegister(instruction.getRegFrom1(), RopType.LongLo);
 			useFreezedRegister(instruction.getRegFrom2(), RopType.LongHi);
 		} else {

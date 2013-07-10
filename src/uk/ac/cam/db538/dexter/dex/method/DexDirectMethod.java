@@ -16,9 +16,9 @@ import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 
 public class DexDirectMethod extends DexMethodWithCode {
 
-  public DexDirectMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, AnnotationSetRefList annotationSetRefList) {
-    super(parent, methodInfo, encodedAnnotations, annotationSetRefList);
-  }
+	public DexDirectMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, AnnotationSetRefList annotationSetRefList) {
+		super(parent, methodInfo, encodedAnnotations, annotationSetRefList);
+	}
 
   public DexDirectMethod(DexClass parent, String name,
                          Set<AccessFlags> accessFlags, DexPrototype prototype, DexCode code,

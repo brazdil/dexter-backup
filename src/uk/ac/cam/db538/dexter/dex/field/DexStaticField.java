@@ -1,6 +1,4 @@
-package uk.ac.cam.db538.dexter.dex;
-
-import java.util.Set;
+package uk.ac.cam.db538.dexter.dex.field;
 
 import lombok.Getter;
 import lombok.val;
@@ -10,16 +8,15 @@ import org.jf.dexlib.ClassDataItem.EncodedField;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.EncodedValue.EncodedValue;
 
+import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
-
-import com.android.dx.dex.file.EncodedArrayItem;
 
 public class DexStaticField extends DexField {
 
 	@Getter private final EncodedValue initialValue; 
 
-	public DexStaticField(DexClass parentClass, FieldDefinition fieldDef, Set<DexAnnotation> annotations, EncodedArrayItem staticInitializers, EncodedValue initialValue) {
-		super(parentClass, fieldDef, annotations);
+	public DexStaticField(DexClass parentClass, FieldDefinition fieldDef, EncodedValue initialValue) {
+		super(parentClass, fieldDef);
 		this.initialValue = initialValue;
 	}
 	

@@ -42,8 +42,8 @@ public class DexMacro_SetObjectTaint extends DexMacro {
             new DexInstruction_Invoke(
                code,
                classStorage,
-               methodSetTaint.getName(),
-               methodSetTaint.getPrototype(),
+               methodSetTaint.getMethodDef().getMethodId().getName(),
+               methodSetTaint.getMethodDef().getMethodId().getPrototype(),
                Arrays.asList(new DexRegister[] { regObject, regTaint }),
                Opcode_Invoke.Static),
             labelAfter);

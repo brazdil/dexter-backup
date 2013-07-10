@@ -4,23 +4,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
 
+import org.jf.dexlib.AnnotationDirectoryItem;
 import org.jf.dexlib.AnnotationDirectoryItem.MethodAnnotation;
 import org.jf.dexlib.AnnotationDirectoryItem.ParameterAnnotation;
 import org.jf.dexlib.AnnotationItem;
 import org.jf.dexlib.AnnotationSetItem;
-import org.jf.dexlib.AnnotationSetRefList;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
-import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
@@ -28,140 +25,114 @@ import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
-import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.utils.Cache;
-import uk.ac.cam.db538.dexter.utils.Triple;
 
 public abstract class DexMethod {
 
-  @Getter private DexClass parentClass;
-  @Getter private final String name;
-  private final Set<AccessFlags> accessFlagSet;
-  @Getter private DexPrototype prototype;
-  private final Set<DexAnnotation> annotations;
-  private final List<Set<DexAnnotation>> paramAnnotations;
+	@Getter private final DexClass parentClass;
+	@Getter private final MethodDefinition methodDef;
   
-  public DexMethod(DexClass parent, String name, Set<AccessFlags> accessFlags, DexPrototype prototype, Set<DexAnnotation> annotations, List<Set<DexAnnotation>> paramAnnotations) {
-    this.parentClass = parent;
-    this.name = name;
-    this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
-    this.prototype = prototype;
-    this.annotations = (annotations == null) ? new HashSet<DexAnnotation>() : annotations;
-    this.paramAnnotations = (paramAnnotations == null) ? new ArrayList<Set<DexAnnotation>>() : paramAnnotations;
-  }
+	private final List<DexAnnotation> _annotations;
+	@Getter private final List<DexAnnotation> annotations;
+	
+	// private final List<Set<DexAnnotation>> paramAnnotations;
+  
+	public DexMethod(DexClass parent, MethodDefinition methodDef) {
+		this.parentClass = parent;
+		this.methodDef = methodDef;
+    
+		this._annotations = new ArrayList<DexAnnotation>();
+		this.annotations = Collections.unmodifiableList(this._annotations);
+    
+		// this.paramAnnotations = (paramAnnotations == null) ? new ArrayList<Set<DexAnnotation>>() : paramAnnotations;
+	}
 
-  public DexMethod(DexClass parent, EncodedMethod methodInfo, AnnotationSetItem encodedAnnotations, AnnotationSetRefList paramAnnotations) {
-    this(parent,
-         methodInfo.method.getMethodName().getStringValue(),
-         DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForMethod(methodInfo.accessFlags)),
-         DexPrototype.parse(methodInfo.method.getPrototype(), parent.getParentFile().getTypeCache()),
-         DexAnnotation.parseAll(encodedAnnotations, parent.getParentFile().getTypeCache()),
-         DexAnnotation.parseAll(paramAnnotations, parent.getParentFile().getTypeCache()));
-  }
+	public DexMethod(DexClass parent, MethodDefinition methodDef, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {
+		this(parent, methodDef);
+		
+		this._annotations.addAll(init_ParseAnnotations(getParentFile(), methodInfo, annoDir));
+	}
 
-  public Set<AccessFlags> getAccessFlagSet() {
-    return Collections.unmodifiableSet(accessFlagSet);
-  }
+	private static List<DexAnnotation> init_ParseAnnotations(Dex dex, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {
+		if (annoDir == null)
+			return Collections.emptyList();
+		else
+			return DexAnnotation.parseAll(annoDir.getMethodAnnotations(methodInfo.method), dex.getTypeCache());
+	}
+	
+	public Dex getParentFile() {
+		return parentClass.getParentFile();
+	}
 
-  public Dex getParentFile() {
-    return parentClass.getParentFile();
-  }
+	public void addAnnotation(DexAnnotation anno) {
+		_annotations.add(anno);
+	}
 
-  public boolean isStatic() {
-    return accessFlagSet.contains(AccessFlags.STATIC);
-  }
+	public abstract boolean isVirtual();
 
-  public boolean isAbstract() {
-    return accessFlagSet.contains(AccessFlags.ABSTRACT);
-  }
+	public abstract void instrument(DexInstrumentationCache cache);
 
-  public boolean isPrivate() {
-    return accessFlagSet.contains(AccessFlags.PRIVATE);
-  }
+	protected abstract CodeItem generateCodeItem(DexFile outFile, DexAssemblingCache cache);
 
-  public boolean isNative() {
-    return accessFlagSet.contains(AccessFlags.NATIVE);
-  }
+	public EncodedMethod writeToFile(DexFile outFile, DexAssemblingCache cache) {
+		val classType = cache.getType(parentClass.getClassDef().getType());
+		val methodName = cache.getStringConstant(methodDef.getMethodId().getName());
+		val methodPrototype = cache.getPrototype(methodDef.getMethodId().getPrototype());
 
-  public boolean isPublic() {
-    return accessFlagSet.contains(AccessFlags.PUBLIC);
-  }
+		val methodItem = MethodIdItem.internMethodIdItem(outFile, classType, methodPrototype, methodName);
+		CodeItem code = generateCodeItem(outFile, cache);
 
-  public boolean isConstructor() {
-    return getAccessFlagSet().contains(AccessFlags.CONSTRUCTOR);
-  }
+		return new EncodedMethod(methodItem, DexUtils.assembleAccessFlags(methodDef.getAccessFlags()), code);
+	}
 
-  public Set<DexAnnotation> getAnnotations() {
-    return Collections.unmodifiableSet(annotations);
-  }
+	public static Cache<MethodDefinition, MethodIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
+		return new Cache<MethodDefinition, MethodIdItem>() {
+			@Override
+			protected MethodIdItem createNewEntry(MethodDefinition key) {
+				return MethodIdItem.internMethodIdItem(
+						outFile,
+						cache.getType(key.getParentClass().getType()),
+						cache.getPrototype(key.getMethodId().getPrototype()),
+						cache.getStringConstant(key.getMethodId().getName()));
+			}
+		};
+	}
 
-  public void addAnnotation(DexAnnotation anno) {
-    annotations.add(anno);
-  }
+	private AnnotationSetItem assembleAnnotationSetItem(DexFile outFile, DexAssemblingCache cache, Collection<DexAnnotation> annoCollections) {
+		val annoList = new ArrayList<AnnotationItem>(annoCollections.size());
+		for (val anno : annoCollections)
+			annoList.add(anno.writeToFile(outFile, cache));
 
-  public abstract boolean isVirtual();
+		return AnnotationSetItem.internAnnotationSetItem(outFile, annoList);
+	}
+	
+	public MethodAnnotation assembleAnnotations(DexFile outFile, DexAssemblingCache cache) {
+		if (annotations.size() == 0)
+			return null;
+		val annoSet = assembleAnnotationSetItem(outFile, cache, annotations);
+		val methodAnno = new MethodAnnotation(cache.getMethod(methodDef), annoSet);
 
-  public abstract void instrument(DexInstrumentationCache cache);
+		return methodAnno;
+	}
 
-  protected abstract CodeItem generateCodeItem(DexFile outFile, DexAssemblingCache cache);
+	public ParameterAnnotation assembleParameterAnnotations(DexFile outFile, DexAssemblingCache cache) {
+//		if (paramAnnotations.size() == 0)
+//			return null;
+//		
+//		List<AnnotationSetItem> annoList = new ArrayList<AnnotationSetItem>();
+//		for (val anno : paramAnnotations)
+//			annoList.add(assembleAnnotationSetItem(outFile, cache, anno));
+//		
+//	    val annoSetRefList = AnnotationSetRefList.internAnnotationSetRefList(outFile, annoList);
+//	    val paramAnno = new ParameterAnnotation(cache.getMethod(methodDef), annoSetRefList);
+//
+//	    return paramAnno;
+		// TODO: finish this
+		return null;
+	}
 
-  public EncodedMethod writeToFile(DexFile outFile, DexAssemblingCache cache) {
-    val classType = cache.getType(parentClass.getType());
-    val methodName = cache.getStringConstant(name);
-    val methodPrototype = cache.getPrototype(prototype);
+	public abstract void markMethodOriginal();
 
-    val methodItem = MethodIdItem.internMethodIdItem(outFile, classType, methodPrototype, methodName);
-    CodeItem code = generateCodeItem(outFile, cache);
-
-    return new EncodedMethod(methodItem, DexUtils.assembleAccessFlags(accessFlagSet), code);
-  }
-
-  public static Cache<MethodDefinition, MethodIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
-    return new Cache<MethodDefinition, MethodIdItem>() {
-      @Override
-      protected MethodIdItem createNewEntry(MethodDefinition key) {
-        return MethodIdItem.internMethodIdItem(
-                 outFile,
-                 cache.getType(key.getParentClass().getClassType()),
-                 cache.getPrototype(key.getMethodId().getPrototype()),
-                 cache.getStringConstant(key.getMethodId().getName()));
-      }
-    };
-  }
-
-  private AnnotationSetItem assembleAnnotationSetItem(DexFile outFile, DexAssemblingCache cache, Collection<DexAnnotation> annoCollections) {
-	    val annoList = new ArrayList<AnnotationItem>(annoCollections.size());
-	    for (val anno : annoCollections)
-	      annoList.add(anno.writeToFile(outFile, cache));
-
-	    return AnnotationSetItem.internAnnotationSetItem(outFile, annoList);
-	  
-  }
-  public MethodAnnotation assembleAnnotations(DexFile outFile, DexAssemblingCache cache) {
-	    if (annotations.size() == 0)
-		    return null;
-	    val annoSet = assembleAnnotationSetItem(outFile, cache, annotations);
-	    val methodAnno = new MethodAnnotation(cache.getMethod(parentClass.getType(), prototype, name), annoSet);
-
-	    return methodAnno;
-	  }
-
-  public ParameterAnnotation assembleParameterAnnotations(DexFile outFile, DexAssemblingCache cache) {
-	    if (paramAnnotations.size() == 0)
-	    	return null;
-	    List<AnnotationSetItem> annoList = new ArrayList<AnnotationSetItem>();
-		for (val anno : paramAnnotations) {
-	      annoList.add(assembleAnnotationSetItem(outFile, cache, anno));
-	    }
-	    val annoSetRefList = AnnotationSetRefList.internAnnotationSetRefList(outFile, annoList);
-	    val paramAnno = new ParameterAnnotation(cache.getMethod(parentClass.getType(), prototype, name), annoSetRefList);
-
-	    return paramAnno;
-	  }
-
-  public abstract void markMethodOriginal();
-
-  public abstract void countInstructions(HashMap<Class<?>, Integer> count);
+	public abstract void countInstructions(HashMap<Class<?>, Integer> count);
 }

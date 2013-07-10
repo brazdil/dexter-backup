@@ -14,6 +14,7 @@ import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
+import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 
 import com.android.dx.dex.DexOptions;
 import com.android.dx.dex.code.DalvCode;
@@ -49,8 +50,10 @@ class DalvCodeBridge {
 	}
 	
 	private void process(DexMethodWithCode dxMethod) {
-		String methodName = dxMethod.getName();
-		DexPrototype dexPrototype = dxMethod.getPrototype();
+		MethodDefinition methodDef = dxMethod.getMethodDef();
+		
+		String methodName = methodDef.getMethodId().getName();
+		DexPrototype dexPrototype = methodDef.getMethodId().getPrototype();
 		DexClass dexClass = dxMethod.getParentClass();
 		
 		CstType thisClass = toCstType(dexClass.getClassDef().getType().getDescriptor());
@@ -73,25 +76,21 @@ class DalvCodeBridge {
 		try {
 			CstMethodRef meth = new CstMethodRef(thisClass, toNat(methodName, dexPrototype));
 			int methodAccessFlags = 0;
-			for(AccessFlags flag : dxMethod.getAccessFlagSet()) 
+			for(AccessFlags flag : dxMethod.getMethodDef().getAccessFlags()) 
 				methodAccessFlags |= flag.getValue();
 					
-			boolean isStatic = dxMethod.isStatic();
-			boolean isPrivate = dxMethod.isPrivate();
-			boolean isNative = dxMethod.isNative();
-			boolean isAbstract = dxMethod.isAbstract();
-			boolean isConstructor = dxMethod.isConstructor();
+			boolean isStatic = methodDef.isStatic();
+			boolean isPrivate = methodDef.isPrivate();
+			boolean isNative = methodDef.isNative();
+			boolean isConstructor = methodDef.isConstructor();
 
-			if (isNative || isAbstract) {
-				// should not happen
-				assert false;
-			}
+			assert methodDef.hasBytecode();
 			
 			// Preserve the synchronized flag as its "declared" variant...
 			// It ought to use com.android.dx.rop.code.AccessFlags, not
 			// org.jf.dexlib.Util.AccessFlags, but their value should be the same
-			if (dxMethod.getAccessFlagSet().contains(AccessFlags.SYNCHRONIZED) ||
-				dxMethod.getAccessFlagSet().contains(AccessFlags.DECLARED_SYNCHRONIZED)) {
+			if (dxMethod.getMethodDef().getAccessFlags().contains(AccessFlags.SYNCHRONIZED) ||
+					dxMethod.getMethodDef().getAccessFlags().contains(AccessFlags.DECLARED_SYNCHRONIZED)) {
 				methodAccessFlags |= AccessFlags.DECLARED_SYNCHRONIZED.getValue(); 
 
 				/*

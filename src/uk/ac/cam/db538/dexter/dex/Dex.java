@@ -23,6 +23,7 @@ import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache.InstrumentationWarning;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
+import uk.ac.cam.db538.dexter.dex.field.DexField;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;

@@ -37,8 +37,8 @@ public class DexMacro_GetObjectTaint extends DexMacro {
              (DexCodeElement) new DexInstruction_Invoke(
                code,
                classStorage,
-               methodGetTaint.getName(),
-               methodGetTaint.getPrototype(),
+               methodGetTaint.getMethodDef().getMethodId().getName(),
+               methodGetTaint.getMethodDef().getMethodId().getPrototype(),
                Arrays.asList(new DexRegister[] { regObject }),
                Opcode_Invoke.Static),
              (DexCodeElement) new DexInstruction_MoveResult(

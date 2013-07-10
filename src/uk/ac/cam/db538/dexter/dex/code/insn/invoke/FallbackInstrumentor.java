@@ -99,7 +99,7 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     if (printDebug) {
       codePreExternalCall.add(new DexMacro_PrintStringConst(
                                 methodCode,
-                                "$ " + methodCode.getParentClass().getClassDef().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                "$ " + methodCode.getParentClass().getClassDef().getType().getShortName() + "->" + methodCode.getParentMethod().getMethodDef().getMethodId().getName() + ": " +
                                 "external call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
                                 " => T=",
                                 false));
