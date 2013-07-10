@@ -11,14 +11,14 @@ import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
+import uk.ac.cam.db538.dexter.utils.InstructionList;
 
 public class CfgBasicBlock extends CfgBlock {
 
-  private final NoDuplicatesList<DexCodeElement> instructions;
+  private final InstructionList instructions;
   @Getter private final int blockStartIndex, blockEndIndex;
 
-  public CfgBasicBlock(DexCode code, NoDuplicatesList<DexCodeElement> instructions) {
+  public CfgBasicBlock(DexCode code, InstructionList instructions) {
     if (instructions == null || instructions.isEmpty())
       throw new UnsupportedOperationException("BasicBlock must contain at least one instruction");
 

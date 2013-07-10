@@ -36,7 +36,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
-import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
+import uk.ac.cam.db538.dexter.utils.InstructionList;
 
 public class DexPseudoinstruction_Invoke extends DexMacro {
 
@@ -97,7 +97,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
 
     val hasPrimitiveArgument = callPrototype.hasPrimitiveArgument();
 
-    val codePreInternalCall = new NoDuplicatesList<DexCodeElement>();
+    val codePreInternalCall = new InstructionList();
 
     val regArgSemaphore = new DexRegister();
     val regArray = new DexRegister();
@@ -152,7 +152,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
     val dex = getParentFile();
     val callPrototype = instructionInvoke.getMethodPrototype();
 
-    val codePostInternalCall = new NoDuplicatesList<DexCodeElement>();
+    val codePostInternalCall = new InstructionList();
 
     if (callPrototype.getReturnType() instanceof DexPrimitiveType) {
       val regResSemaphore = new DexRegister();
@@ -226,7 +226,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
 
     val instrumentation = instrumentor.generateInstrumentation(this, state);
 
-    val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
+    val instrumentedCode = new InstructionList();
     instrumentedCode.addAll(instrumentation.getValA());
     instrumentedCode.add(this);
     instrumentedCode.addAll(instrumentation.getValB());
@@ -252,7 +252,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
   }
 
   private void instrumentDirectInternal(DexCode_InstrumentationState state) {
-    val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
+    val instrumentedCode = new InstructionList();
 
     instrumentedCode.addAll(generatePreInternalCallCode(state));
     instrumentedCode.add(this);
@@ -262,7 +262,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
   }
 
   private void instrumentVirtual(DexCode_InstrumentationState state) {
-    val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
+    val instrumentedCode = new InstructionList();
     val methodCode = getMethodCode();
     
 	val hierarchy = getParentFile().getHierarchy();

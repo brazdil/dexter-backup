@@ -1,17 +1,14 @@
 package uk.ac.cam.db538.dexter.dex.code.insn.invoke;
 
-import java.util.List;
-
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
-import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
+import uk.ac.cam.db538.dexter.utils.InstructionList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class Sink_Log extends FallbackInstrumentor {
@@ -40,12 +37,12 @@ public class Sink_Log extends FallbackInstrumentor {
   }
 
   @Override
-  public Pair<List<DexCodeElement>, List<DexCodeElement>> generateInstrumentation(DexPseudoinstruction_Invoke insn, DexCode_InstrumentationState state) {
+  public Pair<InstructionList, InstructionList> generateInstrumentation(DexPseudoinstruction_Invoke insn, DexCode_InstrumentationState state) {
     val fallback = super.generateInstrumentation(insn, state);
     val regCombinedTaint = this.regCombinedTaint;
 
     val methodCode = insn.getMethodCode();
-    val preCode = new NoDuplicatesList<DexCodeElement>(fallback.getValA().size() + 20);
+    val preCode = new InstructionList(fallback.getValA().size() + 20);
 
     val methodName = insn.getInstructionInvoke().getMethodName();
 
@@ -57,7 +54,7 @@ public class Sink_Log extends FallbackInstrumentor {
     preCode.add(new DexMacro_PrintInteger(methodCode, regCombinedTaint, true));
     preCode.add(labelAfter);
 
-    return new Pair<List<DexCodeElement>, List<DexCodeElement>>(preCode, fallback.getValB());
+    return new Pair<InstructionList, InstructionList>(preCode, fallback.getValB());
   }
 
 }

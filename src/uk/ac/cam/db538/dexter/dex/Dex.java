@@ -30,7 +30,6 @@ import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
-import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class Dex {
 
@@ -61,7 +60,7 @@ public class Dex {
   @Getter private DexMethodWithCode externalStaticFieldTaint_Clinit;
 
   public Dex(RuntimeHierarchy hierarchy, InputStream auxiliaryDex) {
-    this.classes = new NoDuplicatesList<DexClass>();
+    this.classes = new ArrayList<DexClass>();
     this.hierarchy = hierarchy;
     this.resAuxiliaryDex = auxiliaryDex;
   }

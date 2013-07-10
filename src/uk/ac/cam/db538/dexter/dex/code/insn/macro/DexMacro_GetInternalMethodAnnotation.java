@@ -32,7 +32,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
+import uk.ac.cam.db538.dexter.utils.InstructionList;
 
 public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
 
@@ -61,7 +61,7 @@ public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
     val parsingCache = dex.getParsingCache();
     val classHierarchy = dex.getHierarchy();
 
-    val instrumentedCode = new NoDuplicatesList<DexCodeElement>();
+    val instrumentedCode = new InstructionList();
 
     val regDestObjectClass = new DexRegister();
     val regMethodName = new DexRegister();

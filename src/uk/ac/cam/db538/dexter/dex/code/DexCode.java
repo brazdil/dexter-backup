@@ -103,12 +103,12 @@ import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
-import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
+import uk.ac.cam.db538.dexter.utils.InstructionList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexCode {
 
-  private final NoDuplicatesList<DexCodeElement> instructionList;
+  private final InstructionList instructionList;
   @Getter private final DexCodeStart startingLabel;
   @Getter @Setter private DexMethodWithCode parentMethod;
 
@@ -124,7 +124,7 @@ public class DexCode {
   }
 
   public DexCode(DexMethodWithCode parentMethod) {
-    this.instructionList = new NoDuplicatesList<DexCodeElement>();
+    this.instructionList = new InstructionList();
     this.parentMethod = parentMethod;
     this.startingLabel = new DexCodeStart(this);
     instructionList.add(startingLabel);
@@ -304,7 +304,7 @@ public class DexCode {
   private void generatePseudoinstructions() {
     val insns = instructionList;
     val codeLength = insns.size();
-    val newInsns = new NoDuplicatesList<DexCodeElement>(codeLength);
+    val newInsns = new InstructionList(codeLength);
 
     for (int i = 0; i < codeLength; i++) {
       val thisInsn = insns.get(i);
@@ -374,7 +374,7 @@ public class DexCode {
 
       val insns = instructionList;
       val codeLength = insns.size();
-      val newInsns = new NoDuplicatesList<DexCodeElement>(codeLength);
+      val newInsns = new InstructionList(codeLength);
 
       for (val insn : insns)
         if (insn instanceof DexMacro) {
@@ -461,7 +461,7 @@ public class DexCode {
   private void insertCallHandling(DexCode_InstrumentationState state) {
     val printDebug = state.getCache().isInsertDebugLogging();
 
-    val addedCode = new NoDuplicatesList<DexCodeElement>();
+    val addedCode = new InstructionList();
     val dex = getParentFile();
     val parsingCache = dex.getParsingCache();
     val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);

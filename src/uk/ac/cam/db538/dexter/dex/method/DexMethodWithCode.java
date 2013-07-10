@@ -28,7 +28,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
-import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 import com.rx201.dx.translator.DexCodeGeneration;
 
@@ -38,7 +37,7 @@ public abstract class DexMethodWithCode extends DexMethod {
   @Getter private final boolean direct;
   @Getter private int registerCount;
   
-  private final NoDuplicatesList<DexRegister> parameterRegisters;
+  private final List<DexRegister> parameterRegisters;
   private final Map<DexRegister, DexRegister> parameterRegistersMappings;
 
   public DexMethodWithCode(DexClass parent, String name, Set<AccessFlags> accessFlags,
