@@ -42,6 +42,8 @@ public class DexCodeAnalyzer {
     private AnalyzedDexInstruction startOfMethod;
 
     private AnalyzedBasicBlock startBasicBlock;
+   
+    public long time;
     
     public DexCodeAnalyzer(DexCode code) {
         this.code = code;
@@ -94,8 +96,10 @@ public class DexCodeAnalyzer {
         // Initialise TypeResolver of StartOfMethod, add constraints from function declaration
         analyzeParameters();
 
+        time = System.currentTimeMillis();
         // Compute all use-def chains and link TypeSolver together accordingly
         livenessAnalysis();
+        time  = System.currentTimeMillis() - time;
         
         // Add constraints from uses and defs to TypeSolver
         typeConstraintAnalysis();

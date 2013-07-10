@@ -20,8 +20,8 @@ import com.rx201.dx.translator.DexCodeGeneration;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 
 public class MainTest {
 
@@ -92,6 +92,7 @@ public class MainTest {
     
     System.out.println("Scanning framework");
     hierarchyBuilder.importFrameworkFolder(frameworkDir);
+    long hierarchyTime = System.currentTimeMillis() - epoch;
     
 //    System.out.println("Storing hierarchy");
 //    hierarchyBuilder.importDex(new File("framework-4.2/core.odex"), false);
@@ -119,8 +120,17 @@ public class MainTest {
     }
     
     writeToJar(dex, apkFile_new);
-    long time = System.currentTimeMillis() - epoch;
-    System.out.println("===1=== Total time:" + time + ", Analysis time:" + DexCodeGeneration.totalTime);
+    
+    long analysisTime = DexCodeGeneration.totalAnalysisTime;
+    long translationTime = DexCodeGeneration.totalCGTime;
+    long compileTime = DexCodeGeneration.totalDxTime;
+    long totalTime = System.currentTimeMillis() - epoch;
+    
+    System.out.println("===1=== Hierarchy:" + hierarchyTime + 
+    		", Analyze:" + analysisTime +
+    		", Translate:" + translationTime +
+    		", Compile:" + compileTime +
+    		", Total:" + totalTime);
   }
 
 }
