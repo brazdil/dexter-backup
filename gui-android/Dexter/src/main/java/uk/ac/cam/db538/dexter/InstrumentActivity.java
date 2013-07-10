@@ -16,7 +16,7 @@ import java.io.InputStream;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
+import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class InstrumentActivity extends Activity {
@@ -79,17 +79,17 @@ public class InstrumentActivity extends Activity {
                 terminalDone();
 
                 terminalMessage("Loading application");
-                DexFile apk = new DexFile(packageFile);
+                DexFile dexFile = new DexFile(packageFile);
                 terminalDone();
 
                 terminalMessage("Building runtime hierarchy");
-                RuntimeHierarchy hierarchy = thisApp.getRuntimeHierarchy(apk);
+                RuntimeHierarchy hierarchy = thisApp.getRuntimeHierarchy(dexFile);
                 terminalDone();
 
                 InputStream auxiliaryDex = InstrumentActivity.this.getResources().openRawResource(R.raw.aux);
 
                 terminalMessage("Parsing application");
-                Dex dex = new Dex(apk, hierarchy, auxiliaryDex);
+                Dex dex = new Dex(dexFile, hierarchy, auxiliaryDex);
                 terminalDone();
 
                 terminalMessage("Instrumenting application");

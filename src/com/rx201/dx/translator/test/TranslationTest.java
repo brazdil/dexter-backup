@@ -12,26 +12,22 @@ import java.util.Comparator;
 import lombok.val;
 
 import org.jf.dexlib.DexFile;
-import org.jf.dexlib.Code.Analysis.ClassPath;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.rx201.dx.translator.DexCodeGeneration;
-
-import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 
 @RunWith(Parameterized.class)
 public class TranslationTest {
 
-	private static File frameworkDir = new File("framework-2.3-lite");
+//	private static File frameworkDir = new File("framework-2.3-lite");
 	private static File testsDir = new File("cg_test/tests/");
-//	private static File frameworkDir = new File("framework-2.3");
+	private static File frameworkDir = new File("framework-2.3");
 //	private static File testsDir = new File("cg_test/android-apps/");
 	
 	private static HierarchyBuilder hierarchyBuilder;

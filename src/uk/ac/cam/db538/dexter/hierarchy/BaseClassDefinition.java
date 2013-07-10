@@ -54,18 +54,18 @@ public abstract class BaseClassDefinition implements Serializable {
 	}
 	
 	// only to be called by HierarchyBuilder
-	void setSuperclassLink(BaseClassDefinition superclass) {
+	public void setSuperclassLink(BaseClassDefinition superclass) {
 		this.superclass = superclass;
 		this.superclass._children.add(this);
 	}
 	
-	void addDeclaredMethod(MethodDefinition method) {
+	public void addDeclaredMethod(MethodDefinition method) {
 		assert method.getParentClass() == this;
 		
 		this._methods.add(method);
 	}
 	
-	void addDeclaredStaticField(StaticFieldDefinition field) {
+	public void addDeclaredStaticField(StaticFieldDefinition field) {
 		assert field.isStatic(); 
 		assert field.getParentClass() == this;
 		

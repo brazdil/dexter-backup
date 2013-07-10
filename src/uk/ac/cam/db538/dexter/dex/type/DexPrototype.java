@@ -10,8 +10,6 @@ import lombok.val;
 
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.ProtoIdItem;
-import org.jf.dexlib.TypeIdItem;
-import org.jf.dexlib.TypeListItem;
 
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
@@ -45,26 +43,35 @@ public class DexPrototype implements Serializable {
 		this.hashcode = result;
 	}
 
-	public static DexPrototype parse(ProtoIdItem protoItem, DexTypeCache cache) {
-		val proto = new DexPrototype(parseReturnType(protoItem.getReturnType(), cache),
-		                             parseArgumentTypes(protoItem.getParameters(), cache));
+	public static DexPrototype parse(DexType returnType, List<DexRegisterType> argumentTypes, DexTypeCache cache) {
+		val proto = new DexPrototype(returnType, argumentTypes);
 		return cache.getCachedPrototype(proto); // will return 'proto' if not cached
 	}
 
-	private static DexType parseReturnType(TypeIdItem item, DexTypeCache cache) {
-		return DexType.parse(item.getTypeDescriptor(), cache);
+	public static DexPrototype parse(ProtoIdItem proto, DexTypeCache cache) {
+		return parse(
+			parseReturnType(proto, cache),
+			parseArgumentTypes(proto, cache),
+			cache);
 	}
-
-	private static List<DexRegisterType> parseArgumentTypes(TypeListItem params, DexTypeCache cache) {
+	
+	private static DexType parseReturnType(ProtoIdItem proto, DexTypeCache typeCache) {
+		val item = proto.getReturnType();
+		return DexType.parse(item.getTypeDescriptor(), typeCache);
+	}
+	
+	private static List<DexRegisterType> parseArgumentTypes(ProtoIdItem proto, DexTypeCache typeCache) {
+		val params = proto.getParameters();
+		
 		if (params != null) {
 			val list = new ArrayList<DexRegisterType>(params.getTypeCount());
 			for (val type : params.getTypes())
-				list.add(DexRegisterType.parse(type.getTypeDescriptor(), cache));
+				list.add(DexRegisterType.parse(type.getTypeDescriptor(), typeCache));
 			return list;
 		}
 		return Collections.emptyList();
 	}
-
+	
 	public int countParamWords(boolean isStatic) {
 		int totalWords = 0;
 		if (!isStatic)

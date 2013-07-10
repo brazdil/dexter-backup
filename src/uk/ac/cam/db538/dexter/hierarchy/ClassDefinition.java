@@ -19,7 +19,7 @@ public class ClassDefinition extends BaseClassDefinition {
 	private final Set<InstanceFieldDefinition> _instanceFields;
 	@Getter private final Set<InstanceFieldDefinition> instanceFields;
 
-	ClassDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
+	public ClassDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
 		super(classType, accessFlags, isInternal);
 		
 		this._interfaces = new HashSet<InterfaceDefinition>();
@@ -29,12 +29,12 @@ public class ClassDefinition extends BaseClassDefinition {
 		this.instanceFields = Collections.unmodifiableSet(this._instanceFields);
 	}
 	
-	void addImplementedInterface(InterfaceDefinition iface) {
+	public void addImplementedInterface(InterfaceDefinition iface) {
 		this._interfaces.add(iface);
 		iface._implementors.add(this);
 	}
 
-	void addDeclaredInstanceField(InstanceFieldDefinition field) {
+	public void addDeclaredInstanceField(InstanceFieldDefinition field) {
 		assert !field.isStatic();
 		assert field.getParentClass() == this;
 		

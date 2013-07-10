@@ -5,8 +5,6 @@ import java.io.Serializable;
 import lombok.Getter;
 import lombok.val;
 
-import org.jf.dexlib.MethodIdItem;
-
 public class DexMethodId implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -26,10 +24,8 @@ public class DexMethodId implements Serializable {
 		this.hashcode = result;
 	}
 
-	public static DexMethodId parseMethodId(MethodIdItem item, DexTypeCache cache) {
-		val mid = new DexMethodId(item.getMethodName().getStringValue(), 
-                DexPrototype.parse(item.getPrototype(), cache));
-
+	public static DexMethodId parseMethodId(String methodName, DexPrototype methodPrototype, DexTypeCache cache) {
+		val mid = new DexMethodId(methodName, methodPrototype);
 		return cache.getCachedMethodId(mid); // will return 'mid' if not cached yet
 	}
 

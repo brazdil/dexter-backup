@@ -571,7 +571,7 @@ public class DexCode {
                         this,
                         semaphoreClass,
                         "release",
-                        new DexPrototype(DexType.parse("V", null), null),
+                        new DexPrototype(DexType.parse("V", parsingCache), null),
                         Arrays.asList(new DexRegister[] { regSemaphore }),
                         Opcode_Invoke.Virtual));
       }
