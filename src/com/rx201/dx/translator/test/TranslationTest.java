@@ -18,6 +18,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.rx201.dx.translator.DexCodeGeneration;
+
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
@@ -86,6 +88,7 @@ public class TranslationTest {
 	    Dex dex = new Dex(dexFile, hierarchy, dexAux);
 	    
 	    System.out.println("Instrumenting application");
+	    DexCodeGeneration.DEBUG = false;
 	    dex.instrument(false);
 	    
 	    dex.writeToFile();
