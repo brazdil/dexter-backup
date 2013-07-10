@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.concurrent.Semaphore;
 
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.hierarchy.HierarchyBuilder;
+import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class DexterApplication extends Application {

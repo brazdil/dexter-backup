@@ -16,7 +16,7 @@ public class RuntimeHierarchy {
 	private final Map<DexClassType, BaseClassDefinition> definedClasses;
 	private final ClassDefinition root; 
 	
-	RuntimeHierarchy(Map<DexClassType, BaseClassDefinition> definedClasses, ClassDefinition root, DexTypeCache typeCache) {
+	public RuntimeHierarchy(Map<DexClassType, BaseClassDefinition> definedClasses, ClassDefinition root, DexTypeCache typeCache) {
 		this.definedClasses = definedClasses;
 		this.root = root;
 		this.typeCache = typeCache;
@@ -26,7 +26,7 @@ public class RuntimeHierarchy {
 		if (refType instanceof DexClassType) {
 			val result = definedClasses.get((DexClassType) refType);
 			if (result == null)
-				throw new NoClassDefFoundError();
+				throw new NoClassDefFoundError("Cannot find " + refType.getPrettyName());
 			else
 				return result;
 		} else if (refType instanceof DexArrayType)

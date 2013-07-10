@@ -17,7 +17,7 @@ public class MethodDefinition implements Serializable {
 	@Getter private final DexMethodId methodId;
 	private final int accessFlags;
 	
-	MethodDefinition(BaseClassDefinition parentClass, DexMethodId methodId, int accessFlags) {
+	public MethodDefinition(BaseClassDefinition parentClass, DexMethodId methodId, int accessFlags) {
 		this.parentClass = parentClass;
 		this.methodId = methodId;
 		this.accessFlags = accessFlags;
