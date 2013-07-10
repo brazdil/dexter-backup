@@ -56,10 +56,10 @@ public abstract class DexType implements Serializable {
 		};
 	}
 	  
-	public static Cache<List<DexRegisterType>, TypeListItem> createAssemblingCacheForLists(final DexAssemblingCache cache, final DexFile outFile) {
-		return new Cache<List<DexRegisterType>, TypeListItem>() {
+	public static Cache<List<? extends DexRegisterType>, TypeListItem> createAssemblingCacheForLists(final DexAssemblingCache cache, final DexFile outFile) {
+		return new Cache<List<? extends DexRegisterType>, TypeListItem>() {
 			@Override
-			protected TypeListItem createNewEntry(List<DexRegisterType> typeList) {
+			protected TypeListItem createNewEntry(List<? extends DexRegisterType> typeList) {
 				val dexTypeList = new ArrayList<TypeIdItem>(typeList.size());
 				for (val type : typeList)
 					dexTypeList.add(cache.getType(type));

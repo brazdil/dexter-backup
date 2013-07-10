@@ -99,18 +99,18 @@ public class DexClass {
 			return DexAnnotation.parseAll(annoDir.getClassAnnotations(), parent.getTypeCache());
 	}
 	
-	public Set<DexClassType> getInterfaces() {
+	public List<DexClassType> getInterfaceTypes() {
 		if (classDef instanceof ClassDefinition) {
 			val ifaceDefs = ((ClassDefinition) classDef).getInterfaces();
 			if (ifaceDefs.isEmpty())
-				return Collections.emptySet();
+				return Collections.emptyList();
 
-			val set = new HashSet<DexClassType>();
+			val list = new ArrayList<DexClassType>(ifaceDefs.size());
 			for (val ifaceDef : ifaceDefs)
-				set.add(ifaceDef.getType());
-			return set;
+				list.add(ifaceDef.getType());
+			return list;
 		} else
-			return Collections.emptySet();
+			return Collections.emptyList();
 	}
 
 	public void addAnnotation(DexAnnotation anno) {
@@ -131,18 +131,13 @@ public class DexClass {
 	public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
 		System.out.println("Assembling class " + this.classDef.getType().getPrettyName());
     
-		val interfaces = this.getInterfaces();
 		val classAnnotations = this.getAnnotations();
 
 		val asmClassType = cache.getType(classDef.getType());
 		val asmSuperType = cache.getType(classDef.getSuperclass().getType());
 		val asmAccessFlags = DexUtils.assembleAccessFlags(classDef.getAccessFlags());
-		val asmInterfaces = (interfaces.isEmpty())
-                        ? null
-                        : cache.getTypeList(new ArrayList<DexRegisterType>(interfaces));
-		val asmSourceFile = (sourceFile == null)
-                        ? null
-                        : cache.getStringConstant(sourceFile);
+		val asmInterfaces = cache.getTypeList(getInterfaceTypes());
+		val asmSourceFile = cache.getStringConstant(sourceFile);
 
 		val asmClassAnnotations = new ArrayList<AnnotationItem>(classAnnotations.size());
 		for (val anno : classAnnotations)
@@ -219,11 +214,11 @@ public class DexClass {
 		}
 
 		val classData = ClassDataItem.internClassDataItem(
-                      outFile,
-                      asmStaticFields,
-                      asmInstanceFields,
-                      asmDirectMethods,
-                      asmVirtualMethods);
+			  outFile,
+			  asmStaticFields,
+			  asmInstanceFields,
+			  asmDirectMethods,
+			  asmVirtualMethods);
 
 		ClassDefItem.internClassDefItem(
 				outFile, asmClassType, asmAccessFlags, asmSuperType,

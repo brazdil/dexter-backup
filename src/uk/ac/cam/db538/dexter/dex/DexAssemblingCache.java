@@ -16,20 +16,18 @@ import org.jf.dexlib.TypeListItem;
 import uk.ac.cam.db538.dexter.dex.field.DexField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.utils.Cache;
-import uk.ac.cam.db538.dexter.utils.Triple;
 
 public class DexAssemblingCache {
 
   @Getter private final DexTypeCache parsingCache;
   private final Cache<DexType, TypeIdItem> types;
-  private final Cache<List<DexRegisterType>, TypeListItem> typeLists;
+  private final Cache<List<? extends DexRegisterType>, TypeListItem> typeLists;
   private final Cache<String, StringIdItem> stringConstants;
   private final Cache<DexPrototype, ProtoIdItem> prototypes;
   private final Cache<FieldDefinition, FieldIdItem> fields;
@@ -59,17 +57,20 @@ public class DexAssemblingCache {
     return types.getCachedEntry(key);
   }
 
-  public TypeListItem getTypeList(List<DexRegisterType> key) {
+  public TypeListItem getTypeList(List<? extends DexRegisterType> key) {
 	// According to http://source.android.com/tech/dalvik/dex-format.html
 	// empty type_list should be null, not a 0-length list
-	if (key.size() == 0)
+	if (key == null || key.size() == 0)
 		return null;
 	else
         return typeLists.getCachedEntry(key);
   }
 
   public StringIdItem getStringConstant(String key) {
-    return stringConstants.getCachedEntry(key);
+	if (key == null)
+		return null;
+	else
+		return stringConstants.getCachedEntry(key);
   }
 
   public ProtoIdItem getPrototype(DexPrototype prototype) {
