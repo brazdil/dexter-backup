@@ -196,6 +196,6 @@ public class DexInstruction_Invoke extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getParsingCache().LIST_Throwable;
+	return getParentFile().getTypeCache().LIST_Throwable;
   }
 }

@@ -88,7 +88,7 @@ public class DexInstruction_CheckCast extends DexInstruction {
 
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getParsingCache().LIST_Error_ClassCastException;
+	return getParentFile().getTypeCache().LIST_Error_ClassCastException;
   }
   
 }

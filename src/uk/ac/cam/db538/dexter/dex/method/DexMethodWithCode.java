@@ -62,7 +62,7 @@ public abstract class DexMethodWithCode extends DexMethod {
     this.parameterRegistersMappings = new HashMap<DexRegister, DexRegister>();
 
     if (methodInfo.codeItem != null) {
-      this.code = new DexCode(methodInfo.codeItem, this, parent.getParentFile().getParsingCache());
+      this.code = new DexCode(methodInfo.codeItem, this, parent.getParentFile().getTypeCache());
       this.registerCount = methodInfo.codeItem.getRegisterCount();
       
       val prototype = this.getPrototype();

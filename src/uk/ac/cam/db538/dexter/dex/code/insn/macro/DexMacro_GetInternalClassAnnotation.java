@@ -34,7 +34,7 @@ public class DexMacro_GetInternalClassAnnotation extends DexMacro {
   public List<? extends DexCodeElement> unwrap() {
     val code = getMethodCode();
     val dex = getParentFile();
-    val parsingCache = dex.getParsingCache();
+    val parsingCache = dex.getTypeCache();
 
     val typeInternalClassAnnotation = dex.getInternalClassAnnotation_Type();
     val typeClass = DexClassType.parse("Ljava/lang/Class;", parsingCache);

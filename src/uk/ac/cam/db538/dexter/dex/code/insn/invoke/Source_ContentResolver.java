@@ -39,7 +39,7 @@ public class Source_ContentResolver extends FallbackInstrumentor {
   @Override
   public boolean canBeApplied(DexPseudoinstruction_Invoke insn) {
     val classHierarchy = insn.getParentFile().getHierarchy();
-    val parsingCache = insn.getParentFile().getParsingCache();
+    val parsingCache = insn.getParentFile().getTypeCache();
 
     val insnInvoke = insn.getInstructionInvoke();
     val defInvokedClass = classHierarchy.getBaseClassDefinition(insnInvoke.getClassType());

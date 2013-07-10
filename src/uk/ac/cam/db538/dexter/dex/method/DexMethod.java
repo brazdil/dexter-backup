@@ -55,9 +55,9 @@ public abstract class DexMethod {
     this(parent,
          methodInfo.method.getMethodName().getStringValue(),
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForMethod(methodInfo.accessFlags)),
-         DexPrototype.parse(methodInfo.method.getPrototype(), parent.getParentFile().getParsingCache()),
-         DexAnnotation.parseAll(encodedAnnotations, parent.getParentFile().getParsingCache()),
-         DexAnnotation.parseAll(paramAnnotations, parent.getParentFile().getParsingCache()));
+         DexPrototype.parse(methodInfo.method.getPrototype(), parent.getParentFile().getTypeCache()),
+         DexAnnotation.parseAll(encodedAnnotations, parent.getParentFile().getTypeCache()),
+         DexAnnotation.parseAll(paramAnnotations, parent.getParentFile().getTypeCache()));
   }
 
   public Set<AccessFlags> getAccessFlagSet() {

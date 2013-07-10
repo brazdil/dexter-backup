@@ -30,7 +30,7 @@ public class DexMacro_GetQueryTaint extends DexMacro {
   public List<? extends DexCodeElement> unwrap() {
     val code = getMethodCode();
     val dex = getParentFile();
-    val parsingCache = dex.getParsingCache();
+    val parsingCache = dex.getTypeCache();
 
     val typeString = DexClassType.parse("Ljava/lang/String;", parsingCache);
     val methodQueryTaint = dex.getTaintConstants_QueryTaint();

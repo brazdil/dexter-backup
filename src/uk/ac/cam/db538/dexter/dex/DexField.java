@@ -43,9 +43,9 @@ public class DexField {
   public DexField(DexClass parent, EncodedField fieldInfo, AnnotationSetItem encodedAnnotations) {
     this(parent,
          StringIdItem.getStringValue(fieldInfo.field.getFieldName()),
-         DexRegisterType.parse(fieldInfo.field.getFieldType().getTypeDescriptor(), parent.getParentFile().getParsingCache()),
+         DexRegisterType.parse(fieldInfo.field.getFieldType().getTypeDescriptor(), parent.getParentFile().getTypeCache()),
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForField(fieldInfo.accessFlags)),
-         DexAnnotation.parseAll(encodedAnnotations, parent.getParentFile().getParsingCache()));
+         DexAnnotation.parseAll(encodedAnnotations, parent.getParentFile().getTypeCache()));
   }
 
   public Set<AccessFlags> getAccessFlagSet() {
@@ -113,7 +113,7 @@ public class DexField {
   public DexField instrument() {
     if (type instanceof DexPrimitiveType) {
       val newName = generateTaintFieldName();
-      val newType = DexPrimitiveType.parse("I", parentClass.getParentFile().getParsingCache());
+      val newType = DexPrimitiveType.parse("I", parentClass.getParentFile().getTypeCache());
 
       val newField = new DexField(parentClass, newName, newType, accessFlagSet, annotations);
       parentClass.addField(newField);

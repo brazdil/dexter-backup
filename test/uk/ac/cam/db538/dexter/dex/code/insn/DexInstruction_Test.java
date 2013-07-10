@@ -43,8 +43,8 @@ public class DexInstruction_Test {
   private static DexCode createDexCode() {
     val dex = new Dex();
     val clazz = new DexClass(dex,
-                             DexClassType.parse("Lcom/example/Clazz;", dex.getParsingCache()),
-                             DexClassType.parse("Ljava/lang/Object;", dex.getParsingCache()),
+                             DexClassType.parse("Lcom/example/Clazz;", dex.getTypeCache()),
+                             DexClassType.parse("Ljava/lang/Object;", dex.getTypeCache()),
                              null, null, null, null, null);
 
     val code = new DexCode();
@@ -127,7 +127,7 @@ public class DexInstruction_Test {
     // we pretend that NOP can throw an exception
 
     val code = createDexCode();
-    val cache = code.getParentFile().getParsingCache();
+    val cache = code.getParentFile().getTypeCache();
 
     val nop = new DexInstruction_Nop(code);
     val tryStart = new DexTryBlockStart(code);

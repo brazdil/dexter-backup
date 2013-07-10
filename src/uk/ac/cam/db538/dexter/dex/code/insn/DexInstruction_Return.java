@@ -87,7 +87,7 @@ public class DexInstruction_Return extends DexInstruction {
         code,
         (DexClassType) dex.getMethodCallHelper_SRes().getType(),
         "acquire",
-        new DexPrototype(DexVoid.parse("V", getParentFile().getParsingCache()), null),
+        new DexPrototype(DexVoid.parse("V", getParentFile().getTypeCache()), null),
         Arrays.asList(regResSemaphore),
         Opcode_Invoke.Virtual);
       val insnSetRES = new DexInstruction_StaticPut(code, state.getTaintRegister(regFrom), dex.getMethodCallHelper_Res());

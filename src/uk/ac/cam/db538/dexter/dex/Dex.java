@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -65,10 +64,6 @@ public class Dex {
     this.resAuxiliaryDex = auxiliaryDex;
   }
 
-  public Dex(File filename, RuntimeHierarchy hierarchy, InputStream auxiliaryDex) throws IOException {
-    this(new DexFile(filename), hierarchy, auxiliaryDex);
-  }
-  
   public Dex(DexFile dex, RuntimeHierarchy hierarchy, InputStream auxiliaryDex) {
 	this(hierarchy, auxiliaryDex);
 	
@@ -82,7 +77,7 @@ public class Dex {
 	  this(null, null);
   }
 
-  public DexTypeCache getParsingCache() {
+  public DexTypeCache getTypeCache() {
     return hierarchy.getTypeCache();
   }
 
@@ -100,7 +95,7 @@ public class Dex {
    * Needs to generate a short, but unique class name
    */
   private DexClassType generateClassType() {
-	val typeCache = getParsingCache();
+	val typeCache = getTypeCache();
 	
     String desc;
     long suffix = 0L;
@@ -113,7 +108,7 @@ public class Dex {
   }
 
   private List<DexClass> parseExtraClasses() {
-    val parsingCache = getParsingCache();
+    val parsingCache = getTypeCache();
 
     // generate types
     val clsTaintConstants = generateClassType();
@@ -196,7 +191,7 @@ public class Dex {
   }
 
   private List<DexClass> generateExtraClasses() {
-    val parsingCache = getParsingCache();
+    val parsingCache = getTypeCache();
 
     externalStaticFieldTaint_Class = new DexClass(
       this,
@@ -243,7 +238,7 @@ public class Dex {
   }
 
   public byte[] writeToFile() {
-    val parsingCache = getParsingCache();
+    val parsingCache = getTypeCache();
 
     val outFile = new DexFile();
     val out = new ByteArrayAnnotatedOutput();

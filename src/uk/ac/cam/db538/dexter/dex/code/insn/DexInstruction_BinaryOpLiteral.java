@@ -97,7 +97,7 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   @Override
   protected DexClassType[] throwsExceptions() {
 	if (insnOpcode == Opcode_BinaryOpLiteral.Div || insnOpcode == Opcode_BinaryOpLiteral.Rem) {
-		return getParentFile().getParsingCache().LIST_Error_ArithmeticException;
+		return getParentFile().getTypeCache().LIST_Error_ArithmeticException;
 	} else
 		return null;
   }

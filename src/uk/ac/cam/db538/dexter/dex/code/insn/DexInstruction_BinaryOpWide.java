@@ -121,7 +121,7 @@ public class DexInstruction_BinaryOpWide extends DexInstruction {
   @Override
   protected DexClassType[] throwsExceptions() {
 	if (insnOpcode == Opcode_BinaryOpWide.DivLong || insnOpcode == Opcode_BinaryOpWide.RemLong) {
-		return getParentFile().getParsingCache().LIST_Error_ArithmeticException;
+		return getParentFile().getTypeCache().LIST_Error_ArithmeticException;
 	} else
 		return null;
   }

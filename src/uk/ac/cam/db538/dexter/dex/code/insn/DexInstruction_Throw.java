@@ -63,7 +63,7 @@ public class DexInstruction_Throw extends DexInstruction {
 
   @Override
   protected DexClassType[] throwsExceptions() {
-    return new DexClassType[] { DexClassType.parse("Ljava/lang/Throwable;", getParentFile().getParsingCache()) };
+    return new DexClassType[] { DexClassType.parse("Ljava/lang/Throwable;", getParentFile().getTypeCache()) };
   }
 
   @Override

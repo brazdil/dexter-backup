@@ -463,7 +463,7 @@ public class DexCode {
 
     val addedCode = new InstructionList();
     val dex = getParentFile();
-    val parsingCache = dex.getParsingCache();
+    val parsingCache = dex.getTypeCache();
     val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
     boolean hasPrimitiveArgument = parentMethod.getPrototype().hasPrimitiveArgument();
     boolean staticMethod = parentMethod.isStatic();
