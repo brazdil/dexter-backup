@@ -6,7 +6,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
-public class DexFieldScanner implements IFieldScanner {
+public class DexFieldScanner {
 
 	private final DexTypeCache typeCache;
 	private final EncodedField fieldItem;
@@ -16,7 +16,6 @@ public class DexFieldScanner implements IFieldScanner {
 		this.typeCache = typeCache;
 	}
 
-	@Override
 	public DexFieldId getFieldId() {
 		return DexFieldId.parseFieldId(
 			fieldItem.field.getFieldName().getStringValue(), 
@@ -24,7 +23,6 @@ public class DexFieldScanner implements IFieldScanner {
             typeCache);
 	}
 
-	@Override
 	public int getAccessFlags() {
 		return fieldItem.accessFlags;
 	}
