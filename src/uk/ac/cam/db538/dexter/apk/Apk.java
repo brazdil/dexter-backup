@@ -10,31 +10,47 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 import lombok.Getter;
 import lombok.val;
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.model.FileHeader;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.util.Zip4jConstants;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
 public class Apk {
+	private static final String ManifestFile = "AndroidManifest.xml";
+	private static final String ClassesDex = "classes.dex";
+	
+	public static InputStream readManifestFromAPK(File apkFile)
+			throws IOException {
+		ZipFile apk = null;
+		try {
+			apk = new ZipFile(apkFile);
+			Enumeration<? extends ZipEntry> entries = apk.entries();
 
-  @Getter private final Dex dexFile;
-  @Getter private final File temporaryFilename;
+			while (entries.hasMoreElements()) {
 
-  @Getter private final DexTypeCache parsingCache;
+				ZipEntry entry = (ZipEntry) entries.nextElement();
+				if (entry.getName().equals(ManifestFile)) {
+					return apk.getInputStream(entry);
+				}
+			}
+		} catch (ZipException e) {
+			throw new IOException(e);
+		} finally {
+			if (apk != null)
+				apk.close();
+		}
 
-  public Apk(File filename, File frameworkDir) throws IOException {
-    this.parsingCache = new DexTypeCache();
-    this.dexFile = null;
-
-    this.temporaryFilename = File.createTempFile("dexter-", ".apk");
-    copyFile(filename, this.temporaryFilename);
-  }
+		return null;
+	}
+	
+	public static void produceAPK(File originalFile, File destinationFile, byte[] manifestData, byte[] dexData) {
+		
+	}
 
   public void writeToFile(File filename) throws IOException {
     // prepare the new dex file
