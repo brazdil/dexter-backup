@@ -85,7 +85,7 @@ public class DexInstruction_ArrayGetWide extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getParsingCache().LIST_Error_Null_ArrayIndexOutOfBounds;
+	return getParentFile().getTypeCache().LIST_Error_Null_ArrayIndexOutOfBounds;
   }
   
 }

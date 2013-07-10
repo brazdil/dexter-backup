@@ -63,9 +63,9 @@ public class DexInstruction_Monitor extends DexInstruction {
   @Override
   protected DexClassType[] throwsExceptions() {
 	if (enter)
-		return getParentFile().getParsingCache().LIST_Error_NullPointerException;
+		return getParentFile().getTypeCache().LIST_Error_NullPointerException;
 	else
-		return getParentFile().getParsingCache().LIST_Error_Null_IllegalMonitorStateException;
+		return getParentFile().getTypeCache().LIST_Error_Null_IllegalMonitorStateException;
   }
   
 }

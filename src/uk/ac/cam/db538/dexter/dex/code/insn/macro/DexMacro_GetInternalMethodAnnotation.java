@@ -58,7 +58,7 @@ public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
   public List<? extends DexCodeElement> unwrap() {
     val methodCode = getMethodCode();
     val dex = getParentFile();
-    val parsingCache = dex.getParsingCache();
+    val parsingCache = dex.getTypeCache();
     val classHierarchy = dex.getHierarchy();
 
     val instrumentedCode = new InstructionList();

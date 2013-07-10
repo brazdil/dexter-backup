@@ -22,7 +22,7 @@ public class Sink_IO extends FallbackInstrumentor {
   @Override
   public boolean canBeApplied(DexPseudoinstruction_Invoke insn) {
     val classHierarchy = insn.getParentFile().getHierarchy();
-    val parsingCache = insn.getParentFile().getParsingCache();
+    val parsingCache = insn.getParentFile().getTypeCache();
 
     val insnInvoke = insn.getInstructionInvoke();
     

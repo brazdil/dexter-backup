@@ -38,7 +38,7 @@ public class DexMacro_GetMethodCaller extends DexMacro {
   @Override
   public List<? extends DexCodeElement> unwrap() {
     val code = getMethodCode();
-    val parsingCache = getParentFile().getParsingCache();
+    val parsingCache = getParentFile().getTypeCache();
 
     val typeVoid = DexVoid.parse("V", parsingCache);
     val typeException = DexClassType.parse("Ljava/lang/Exception;", parsingCache);

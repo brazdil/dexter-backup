@@ -91,7 +91,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
 
     val methodCode = getMethodCode();
     val dex = getParentFile();
-    val parsingCache = dex.getParsingCache();
+    val parsingCache = dex.getTypeCache();
     val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
     val callPrototype = instructionInvoke.getMethodPrototype();
 

@@ -64,7 +64,7 @@ public class DexInstruction_NewInstance extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getParsingCache().LIST_Error;
+	return getParentFile().getTypeCache().LIST_Error;
   }
   
 }

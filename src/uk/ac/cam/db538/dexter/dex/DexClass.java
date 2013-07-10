@@ -82,12 +82,12 @@ public class DexClass {
 
   public DexClass(Dex parent, ClassDefItem clsInfo) {
     this(parent,
-         DexClassType.parse(clsInfo.getClassType().getTypeDescriptor(), parent.getParsingCache()),
-         DexClassType.parse(getSuperclassTypeDesc(clsInfo.getClassType(), clsInfo.getSuperclass()), parent.getParsingCache()),
+         DexClassType.parse(clsInfo.getClassType().getTypeDescriptor(), parent.getTypeCache()),
+         DexClassType.parse(getSuperclassTypeDesc(clsInfo.getClassType(), clsInfo.getSuperclass()), parent.getTypeCache()),
          DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForClass(clsInfo.getAccessFlags())),
          null,
-         parseTypeList(clsInfo.getInterfaces(), parent.getParsingCache()),
-         parseAnnotations(clsInfo.getAnnotations(), parent.getParsingCache()),
+         parseTypeList(clsInfo.getInterfaces(), parent.getTypeCache()),
+         parseAnnotations(clsInfo.getAnnotations(), parent.getTypeCache()),
          (clsInfo.getSourceFile() == null) ? null : clsInfo.getSourceFile().getStringValue());
 
     List<MethodAnnotation> methodAnnotations = null;

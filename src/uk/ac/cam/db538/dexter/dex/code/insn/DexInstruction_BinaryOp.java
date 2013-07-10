@@ -106,7 +106,7 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   @Override
   protected DexClassType[] throwsExceptions() {
 	if (insnOpcode == Opcode_BinaryOp.DivInt || insnOpcode == Opcode_BinaryOp.RemInt) {
-		return getParentFile().getParsingCache().LIST_Error_ArithmeticException;
+		return getParentFile().getTypeCache().LIST_Error_ArithmeticException;
 	} else
 		return null;
   }

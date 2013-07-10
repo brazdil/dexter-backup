@@ -137,7 +137,7 @@ public class DexInstruction_StaticPut extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getParsingCache().LIST_Error;
+	return getParentFile().getTypeCache().LIST_Error;
   }
   
 }

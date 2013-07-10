@@ -32,7 +32,7 @@ public class DexMacro_PrintIntegerConst extends DexMacro {
   @Override
   public List<? extends DexCodeElement> unwrap() {
     val code = getMethodCode();
-    val parsingCache = getParentFile().getParsingCache();
+    val parsingCache = getParentFile().getTypeCache();
 
     val regInteger = new DexRegister();
     val regOut = new DexRegister();

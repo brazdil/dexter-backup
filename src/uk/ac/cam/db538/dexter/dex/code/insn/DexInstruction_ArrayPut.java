@@ -91,9 +91,9 @@ public class DexInstruction_ArrayPut extends DexInstruction {
   @Override
   protected DexClassType[] throwsExceptions() {
 	if (opcode == Opcode_GetPut.Object)
-		return getParentFile().getParsingCache().LIST_Error_Null_ArrayIndex_ArrayStore;
+		return getParentFile().getTypeCache().LIST_Error_Null_ArrayIndex_ArrayStore;
 	else
-		return getParentFile().getParsingCache().LIST_Error_Null_ArrayIndexOutOfBounds;
+		return getParentFile().getTypeCache().LIST_Error_Null_ArrayIndexOutOfBounds;
   }
   
 }

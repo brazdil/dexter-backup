@@ -74,7 +74,7 @@ public class DexInstruction_NewArray extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getParsingCache().LIST_Error_NegativeArraySizeException;
+	return getParentFile().getTypeCache().LIST_Error_NegativeArraySizeException;
   }
   
 }

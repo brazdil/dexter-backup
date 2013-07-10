@@ -57,7 +57,7 @@ public class DexInstrumentationCache {
       DexField newField = new DexField(
         taintClass,
         generateFieldName(),
-        DexRegisterType.parse("I", parentFile.getParsingCache()),
+        DexRegisterType.parse("I", parentFile.getTypeCache()),
         EnumSet.of(AccessFlags.PUBLIC, AccessFlags.STATIC),
         null);
       taintClass.addField(newField);

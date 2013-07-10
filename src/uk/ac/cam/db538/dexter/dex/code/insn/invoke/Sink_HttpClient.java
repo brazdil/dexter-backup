@@ -18,7 +18,7 @@ public class Sink_HttpClient extends FallbackInstrumentor {
   @Override
   public boolean canBeApplied(DexPseudoinstruction_Invoke insn) {
     val classHierarchy = insn.getParentFile().getHierarchy();
-    val parsingCache = insn.getParentFile().getParsingCache();
+    val parsingCache = insn.getParentFile().getTypeCache();
 
     val insnInvoke = insn.getInstructionInvoke();
     val callType = insnInvoke.getCallType();

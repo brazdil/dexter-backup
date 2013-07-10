@@ -135,7 +135,7 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
 
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getParsingCache().LIST_Error_NullPointerException;
+	return getParentFile().getTypeCache().LIST_Error_NullPointerException;
   }
   
 }
