@@ -34,8 +34,8 @@ public abstract class BaseClassDefinition implements Serializable {
 	private final Set<MethodDefinition> _methods;
 	@Getter private final Set<MethodDefinition> methods;
 
-	private final Set<StaticFieldDefinition> _staticFields;
-	@Getter private final Set<StaticFieldDefinition> staticFields;
+	private final Set<FieldDefinition> _staticFields;
+	@Getter private final Set<FieldDefinition> staticFields;
 
 	BaseClassDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
 		this.classType = classType;
@@ -49,7 +49,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		this._methods = new HashSet<MethodDefinition>();
 		this.methods = Collections.unmodifiableSet(this._methods);
 
-		this._staticFields = new HashSet<StaticFieldDefinition>();
+		this._staticFields = new HashSet<FieldDefinition>();
 		this.staticFields = Collections.unmodifiableSet(this._staticFields);
 	}
 	
@@ -65,7 +65,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		this._methods.add(method);
 	}
 	
-	public void addDeclaredStaticField(StaticFieldDefinition field) {
+	public void addDeclaredStaticField(FieldDefinition field) {
 		assert field.isStatic(); 
 		assert field.getParentClass() == this;
 		
@@ -107,7 +107,7 @@ public abstract class BaseClassDefinition implements Serializable {
 		return null;
 	}
 
-	public StaticFieldDefinition getStaticField(DexFieldId fieldId) {
+	public FieldDefinition getStaticField(DexFieldId fieldId) {
 		for (val fieldDef : this.staticFields)
 			if (fieldDef.getFieldId().equals(fieldId))
 				return fieldDef;
@@ -223,7 +223,7 @@ public abstract class BaseClassDefinition implements Serializable {
 			throw new HierarchyException("Invalid method call (interface method call on non-class)");
 	}
 	
-	public StaticFieldDefinition getAccessedStaticField(DexFieldId fieldId) {
+	public FieldDefinition getAccessedStaticField(DexFieldId fieldId) {
 		// Application can access a static field on class X, but
 		// the field might actually be defined in one of X's parents
 		// This method will return the definition of the field 
@@ -301,9 +301,9 @@ public abstract class BaseClassDefinition implements Serializable {
 		}
 	};
 	
-	private static final Extractor<DexFieldId, StaticFieldDefinition> extractorStaticField = new Extractor<DexFieldId, StaticFieldDefinition>() {
+	private static final Extractor<DexFieldId, FieldDefinition> extractorStaticField = new Extractor<DexFieldId, FieldDefinition>() {
 		@Override
-		public StaticFieldDefinition extract(BaseClassDefinition clazz, DexFieldId fieldId) {
+		public FieldDefinition extract(BaseClassDefinition clazz, DexFieldId fieldId) {
 			return clazz.getStaticField(fieldId);
 		}
 	};

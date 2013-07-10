@@ -16,8 +16,8 @@ public class ClassDefinition extends BaseClassDefinition {
 	private final Set<InterfaceDefinition> _interfaces;
 	@Getter private final Set<InterfaceDefinition> interfaces;
 
-	private final Set<InstanceFieldDefinition> _instanceFields;
-	@Getter private final Set<InstanceFieldDefinition> instanceFields;
+	private final Set<FieldDefinition> _instanceFields;
+	@Getter private final Set<FieldDefinition> instanceFields;
 
 	public ClassDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
 		super(classType, accessFlags, isInternal);
@@ -25,7 +25,7 @@ public class ClassDefinition extends BaseClassDefinition {
 		this._interfaces = new HashSet<InterfaceDefinition>();
 		this.interfaces = Collections.unmodifiableSet(this._interfaces);
 
-		this._instanceFields = new HashSet<InstanceFieldDefinition>();
+		this._instanceFields = new HashSet<FieldDefinition>();
 		this.instanceFields = Collections.unmodifiableSet(this._instanceFields);
 	}
 	
@@ -34,7 +34,7 @@ public class ClassDefinition extends BaseClassDefinition {
 		iface._implementors.add(this);
 	}
 
-	public void addDeclaredInstanceField(InstanceFieldDefinition field) {
+	public void addDeclaredInstanceField(FieldDefinition field) {
 		assert !field.isStatic();
 		assert field.getParentClass() == this;
 		
@@ -58,14 +58,14 @@ public class ClassDefinition extends BaseClassDefinition {
 		}  
 	}
 	
-	public InstanceFieldDefinition getInstanceField(DexFieldId fieldId) {
+	public FieldDefinition getInstanceField(DexFieldId fieldId) {
 		for (val fieldDef : this.instanceFields)
 			if (fieldDef.getFieldId().equals(fieldId))
 				return fieldDef;
 		return null;
 	}
 	
-	public InstanceFieldDefinition getAccessedInstanceField(DexFieldId fieldId) {
+	public FieldDefinition getAccessedInstanceField(DexFieldId fieldId) {
 		// Application can access an instance field on class X, but
 		// the field might actually be defined in one of X's parents
 		// This method will return the definition of the field 
@@ -74,9 +74,9 @@ public class ClassDefinition extends BaseClassDefinition {
 		return iterateThroughParents(fieldId, extractorInstanceField, acceptorAlwaysTrue, false);
 	}
 	
-	private static final Extractor<DexFieldId, InstanceFieldDefinition> extractorInstanceField = new Extractor<DexFieldId, InstanceFieldDefinition>() {
+	private static final Extractor<DexFieldId, FieldDefinition> extractorInstanceField = new Extractor<DexFieldId, FieldDefinition>() {
 		@Override
-		public InstanceFieldDefinition extract(BaseClassDefinition clazz, DexFieldId fieldId) {
+		public FieldDefinition extract(BaseClassDefinition clazz, DexFieldId fieldId) {
 			if (clazz instanceof ClassDefinition) {
 				return ((ClassDefinition) clazz).getInstanceField(fieldId);
 			} else
