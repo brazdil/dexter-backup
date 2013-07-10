@@ -105,7 +105,7 @@ public class DexInstruction_StaticGet extends DexInstruction {
       if (fieldDeclaringClass != null && fieldDeclaringClass.isInternal()) {
         // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
         // retrieve taint from the adjoined field
-        val field = DexUtils.getField(getParentFile(), fieldDeclaringClass.getType(), fieldName, fieldType);
+        val field = DexUtils.getStaticField(getParentFile(), fieldDeclaringClass.getType(), fieldName, fieldType);
 
         code.replace(this,
                      new DexCodeElement[] {

@@ -26,14 +26,6 @@ import uk.ac.cam.db538.dexter.dex.type.DexType;
 
 public class DexUtils {
 
-//  public static Set<AccessFlags> getAccessFlagSet(AccessFlags[] flags) {
-//    val list = Arrays.asList(flags);
-//    if (list.isEmpty())
-//      return EnumSet.noneOf(AccessFlags.class);
-//    else
-//      return EnumSet.copyOf(list);
-//  }
-//
   public static int assembleAccessFlags(Set<AccessFlags> accessFlags) {
     int result = 0;
     for (val flag : accessFlags)
@@ -41,18 +33,29 @@ public class DexUtils {
     return result;
   }
 
-  public static DexField getField(Dex dex, DexClassType fieldClass, String fieldName, DexRegisterType fieldType) {
+  public static DexField getInstanceField(Dex dex, DexClassType fieldClass, String fieldName, DexRegisterType fieldType) {
     for (val clazz : dex.getClasses())
       if (clazz.getClassDef().getType().equals(fieldClass)) {
-        for (val field : clazz.getFields())
-          if (field.getName().equals(fieldName) && field.getType().equals(fieldType))
+        for (val field : clazz.getInstanceFields())
+          if (field.getFieldDef().getFieldId().getName().equals(fieldName) && field.getFieldDef().getFieldId().getType().equals(fieldType))
             return field;
         return null;
       }
     return null;
   }
 
-	public static String parseString(StringIdItem stringItem) {
+  public static DexField getStaticField(Dex dex, DexClassType fieldClass, String fieldName, DexRegisterType fieldType) {
+	    for (val clazz : dex.getClasses())
+	      if (clazz.getClassDef().getType().equals(fieldClass)) {
+	        for (val field : clazz.getStaticFields())
+	          if (field.getFieldDef().getFieldId().getName().equals(fieldName) && field.getFieldDef().getFieldId().getType().equals(fieldType))
+	            return field;
+	        return null;
+	      }
+	    return null;
+	  }
+
+  public static String parseString(StringIdItem stringItem) {
 		if (stringItem == null)
 			return null;
 		else

@@ -112,7 +112,7 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
     if (fieldDeclaringClass.isInternal()) {
       // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
       // store the taint to the taint field
-      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass.getType(), fieldName, fieldType);
+      val field = DexUtils.getInstanceField(getParentFile(), fieldDeclaringClass.getType(), fieldName, fieldType);
       code.replace(this,
                    new DexCodeElement[] {
                      this,

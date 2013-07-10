@@ -119,7 +119,7 @@ public class DexInstruction_InstanceGetWide extends DexInstruction {
     if (fieldDeclaringClass.isInternal()) {
       // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
       // combine the taint stored in adjoined field with the taint of the object
-      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass.getType(), fieldName, fieldType);
+      val field = DexUtils.getInstanceField(getParentFile(), fieldDeclaringClass.getType(), fieldName, fieldType);
       val regObjectTaint = (regTo1 == regObject) ? new DexRegister() : state.getTaintRegister(regObject);
       code.replace(this,
                    new DexCodeElement[] {
