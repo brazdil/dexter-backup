@@ -44,7 +44,7 @@ public class DexInstruction_Invoke extends DexInstruction {
 
   public DexInstruction_Invoke(DexCode methodCode, DexDirectMethod method, List<DexRegister> argumentRegisters) {
     this(methodCode,
-         method.getParentClass().getType(),
+         method.getParentClass().getClassDef().getType(),
          method.getName(),
          method.getPrototype(),
          argumentRegisters,

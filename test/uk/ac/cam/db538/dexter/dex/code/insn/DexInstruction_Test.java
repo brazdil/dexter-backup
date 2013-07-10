@@ -25,6 +25,8 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 
 public class DexInstruction_Test {
 
@@ -41,17 +43,16 @@ public class DexInstruction_Test {
   }
 
   private static DexCode createDexCode() {
+	val hierarchy = (new HierarchyBuilder()).build();
+	
     val dex = new Dex();
-    val clazz = new DexClass(dex,
-                             DexClassType.parse("Lcom/example/Clazz;", dex.getTypeCache()),
-                             DexClassType.parse("Ljava/lang/Object;", dex.getTypeCache()),
-                             null, null, null, null, null);
+    val clazz = new DexClass(dex, null, null);
 
     val code = new DexCode();
 
     // method will automatically assign itself to DexCode
     new DexDirectMethod(clazz, "m", null,
-                        new DexPrototype(DexVoid.parse("V", null), null),
+                        new DexPrototype(DexVoid.parse("V", hierarchy.getTypeCache()), null),
                         code, null, null);
 
     return code;

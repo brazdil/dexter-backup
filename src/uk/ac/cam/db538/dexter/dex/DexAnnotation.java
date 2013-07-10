@@ -46,14 +46,6 @@ public class DexAnnotation {
       addParam(encAnno.names[i].getStringValue(), encAnno.values[i]);
   }
 
-//  public DexAnnotation(AnnotationEntry anno, DexParsingCache cache) {
-//    this(DexClassType.parse(anno.getAnnotationType(), cache),
-//         (anno.isRuntimeVisible()) ? AnnotationVisibility.RUNTIME : AnnotationVisibility.SYSTEM);
-//
-//    // TODO: load parameters of the annotation
-//    // not necessary though, this is used to load android.jar
-//  }
-
   public void addParam(String name, EncodedValue value) {
 	  paramNames.add(name);
 	  paramValues.add(value);
@@ -69,7 +61,7 @@ public class DexAnnotation {
 
   public static Set<DexAnnotation> parseAll(AnnotationSetItem annotations, DexTypeCache cache) {
     if (annotations == null)
-      return new HashSet<DexAnnotation>();
+      return Collections.emptySet();
 
     val items = annotations.getAnnotations();
     val list = new HashSet<DexAnnotation>(items.length);
@@ -99,7 +91,7 @@ public class DexAnnotation {
 	val paramValues = new EncodedValue[paramCount];
 	for (int i = 0; i < paramCount; i++) {
 		paramNames[paramIndex] = cache.getStringConstant(this.paramNames.get(i));
-		paramValues[paramIndex] = DexEncodedValue.cloneEncodedValue(this.paramValues.get(i), cache);
+		paramValues[paramIndex] = DexUtils.cloneEncodedValue(this.paramValues.get(i), cache);
 		paramIndex++;
 	}
 	   

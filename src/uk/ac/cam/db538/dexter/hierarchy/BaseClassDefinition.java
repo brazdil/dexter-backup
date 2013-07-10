@@ -23,7 +23,7 @@ public abstract class BaseClassDefinition implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	@Getter private final DexClassType classType;
+	@Getter private final DexClassType type;
 	private final int accessFlags;
 	@Getter private final boolean internal;
 
@@ -37,8 +37,8 @@ public abstract class BaseClassDefinition implements Serializable {
 	private final Set<FieldDefinition> _staticFields;
 	@Getter private final Set<FieldDefinition> staticFields;
 
-	BaseClassDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
-		this.classType = classType;
+	BaseClassDefinition(DexClassType type, int accessFlags, boolean isInternal) {
+		this.type = type;
 		this.accessFlags = accessFlags;
 		this.internal = isInternal;
 		

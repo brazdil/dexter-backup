@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import lombok.Getter;
@@ -18,7 +16,6 @@ import org.jf.dexlib.AnnotationDirectoryItem.MethodAnnotation;
 import org.jf.dexlib.AnnotationDirectoryItem.ParameterAnnotation;
 import org.jf.dexlib.AnnotationItem;
 import org.jf.dexlib.AnnotationSetItem;
-import org.jf.dexlib.AnnotationSetRefList;
 import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.ClassDataItem;
 import org.jf.dexlib.ClassDataItem.EncodedField;
@@ -26,11 +23,7 @@ import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.ClassDefItem;
 import org.jf.dexlib.ClassDefItem.StaticFieldInitializer;
 import org.jf.dexlib.DexFile;
-import org.jf.dexlib.EncodedArrayItem;
-import org.jf.dexlib.TypeIdItem;
-import org.jf.dexlib.TypeListItem;
 import org.jf.dexlib.EncodedValue.EncodedValue;
-import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.method.DexAbstractMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
@@ -38,212 +31,141 @@ import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
 
 public class DexClass {
 
-  @Getter private final Dex parentFile;
-  @Getter private final DexClassType type;
-  private final Set<AccessFlags> accessFlagSet;
-  protected final Set<DexField> fields;
-  protected final Set<DexMethod> methods;
-  protected final Set<DexAnnotation> annotations;
-  @Getter private final String sourceFile;
-  private final Map<DexField, EncodedValue> staticInitializer;
+	@Getter private final Dex parentFile;
+	@Getter private final BaseClassDefinition classDef;
   
-  public DexClass(Dex parent, DexClassType type, DexClassType superType,
-                  Set<AccessFlags> accessFlags, Set<DexField> fields,
-                  Set<DexClassType> interfaces,
-                  Set<DexAnnotation> annotations, String sourceFile) {
-    this.parentFile = parent;
-    this.type = type;
-    this.accessFlagSet = DexUtils.getNonNullAccessFlagSet(accessFlags);
-    this.fields = (fields == null) ? new HashSet<DexField>() : fields;
-    this.methods = new HashSet<DexMethod>();
-    this.annotations = (annotations == null) ? new HashSet<DexAnnotation>() : new HashSet<DexAnnotation>(annotations);
-    this.sourceFile = sourceFile;
-    this.staticInitializer = new HashMap<DexField, EncodedValue>();
-  }
+	private final Set<DexMethod> _methods;
+	@Getter private final Set<DexMethod> methods;
   
-  private boolean isMethodAbstract(int accessFlags) {
-    for (val flag : AccessFlags.getAccessFlagsForMethod(accessFlags))
-      if (flag == AccessFlags.ABSTRACT)
-        return true;
-    return false;
-  }
+	private final Set<DexField> _instanceFields;
+	@Getter private final Set<DexField> instanceFields;
 
-  private static String getSuperclassTypeDesc(TypeIdItem classType, TypeIdItem superclassType) {
-    if (superclassType == null)
-      return classType.getTypeDescriptor();
-    else
-      return superclassType.getTypeDescriptor();
-  }
+	private final Set<DexStaticField> _staticFields;
+	@Getter private final Set<DexStaticField> staticFields;
+	
+	private final Set<DexAnnotation> _annotations;
+	@Getter private final Set<DexAnnotation> annotations;
+  
+	@Getter private final String sourceFile;
+  
+	public DexClass(Dex parent, BaseClassDefinition classDef, String sourceFile) {
+		this.parentFile = parent;
+		this.classDef = classDef;
+    
+		this._methods = new HashSet<DexMethod>();
+    	this.methods = Collections.unmodifiableSet(this._methods);
+    
+    	this._instanceFields = new HashSet<DexField>();
+    	this.instanceFields = Collections.unmodifiableSet(this._instanceFields);
 
-  public DexClass(Dex parent, ClassDefItem clsInfo) {
-    this(parent,
-         DexClassType.parse(clsInfo.getClassType().getTypeDescriptor(), parent.getTypeCache()),
-         DexClassType.parse(getSuperclassTypeDesc(clsInfo.getClassType(), clsInfo.getSuperclass()), parent.getTypeCache()),
-         DexUtils.getAccessFlagSet(AccessFlags.getAccessFlagsForClass(clsInfo.getAccessFlags())),
-         null,
-         parseTypeList(clsInfo.getInterfaces(), parent.getTypeCache()),
-         parseAnnotations(clsInfo.getAnnotations(), parent.getTypeCache()),
-         (clsInfo.getSourceFile() == null) ? null : clsInfo.getSourceFile().getStringValue());
+    	this._staticFields = new HashSet<DexStaticField>();
+    	this.staticFields = Collections.unmodifiableSet(this._staticFields);
+    	
+    	this._annotations = new HashSet<DexAnnotation>();
+    	this.annotations = Collections.unmodifiableSet(this._annotations);
+    
+    	this.sourceFile = sourceFile;
+	}
+  
+	public DexClass(Dex parent, ClassDefItem clsItem) {
+		this(parent,
+		     init_FindClassDefinition(parent, clsItem),
+		     DexUtils.parseString(clsItem.getSourceFile()));
 
-    List<MethodAnnotation> methodAnnotations = null;
-    if (clsInfo.getAnnotations() != null)
-      methodAnnotations = clsInfo.getAnnotations().getMethodAnnotations();
+		val annotationDirectory = clsItem.getAnnotations();
+		this._annotations.addAll(init_ParseAnnotations(parent, annotationDirectory));
+		
+//		
+//		
+//    val clsData = clsInfo.getClassData();
+//    if (clsData != null) {
+//      
+//      for (val instanceFieldInfo : clsData.getInstanceFields())
+//        fields.add(new DexField(this, instanceFieldInfo, findFieldAnnotation(instanceFieldInfo, fieldAnnotations)));
+//
+//      for (val directMethodInfo : clsData.getDirectMethods())
+//        methods.add(new DexDirectMethod(this, directMethodInfo, findMethodAnnotation(directMethodInfo, methodAnnotations), 
+//        		findParameterAnnotation(directMethodInfo, paramAnnotations)));
+//      for (val virtualMethodInfo : clsData.getVirtualMethods()) {
+//        if (isMethodAbstract(virtualMethodInfo.accessFlags))
+//          methods.add(new DexAbstractMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations),
+//        		  findParameterAnnotation(virtualMethodInfo, paramAnnotations)));
+//        else
+//          methods.add(new DexVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations),
+//        		  findParameterAnnotation(virtualMethodInfo, paramAnnotations)));
+//      }
+//      
+//    }
+	}
+  
+	private static ClassDefinition init_FindClassDefinition(Dex parent, ClassDefItem clsItem) {
+		val hierarchy = parent.getHierarchy();
+		val clsType = DexClassType.parse(clsItem.getClassType().getTypeDescriptor(), 
+		                                 hierarchy.getTypeCache());
+		return hierarchy.getClassDefinition(clsType); 
+	}
 
-    List<FieldAnnotation> fieldAnnotations = null;
-    if (clsInfo.getAnnotations() != null)
-      fieldAnnotations = clsInfo.getAnnotations().getFieldAnnotations();
-
-    List<ParameterAnnotation> paramAnnotations = null;
-    if (clsInfo.getAnnotations() != null)
-    	paramAnnotations = clsInfo.getAnnotations().getParameterAnnotations();
-
-    val clsData = clsInfo.getClassData();
-    if (clsData != null) {
-      EncodedArrayItem initializers = clsInfo.getStaticFieldInitializers();
-      EncodedValue[] initValues;
-      if (initializers != null) {
-      	  initValues = initializers.getEncodedArray().values;
-      } else {
-  		  initValues = new EncodedValue[0];
-      }
-      
-      for (val staticFieldInfo : clsData.getStaticFields()) {
-    	DexField staticField = new DexField(this, staticFieldInfo, findFieldAnnotation(staticFieldInfo, fieldAnnotations));
-        fields.add(staticField);
-        if (staticInitializer.size() < initValues.length)
-          staticInitializer.put(staticField, initValues[staticInitializer.size()]);
-      }
-      for (val instanceFieldInfo : clsData.getInstanceFields())
-        fields.add(new DexField(this, instanceFieldInfo, findFieldAnnotation(instanceFieldInfo, fieldAnnotations)));
-
-      for (val directMethodInfo : clsData.getDirectMethods())
-        methods.add(new DexDirectMethod(this, directMethodInfo, findMethodAnnotation(directMethodInfo, methodAnnotations), 
-        		findParameterAnnotation(directMethodInfo, paramAnnotations)));
-      for (val virtualMethodInfo : clsData.getVirtualMethods()) {
-        if (isMethodAbstract(virtualMethodInfo.accessFlags))
-          methods.add(new DexAbstractMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations),
-        		  findParameterAnnotation(virtualMethodInfo, paramAnnotations)));
-        else
-          methods.add(new DexVirtualMethod(this, virtualMethodInfo, findMethodAnnotation(virtualMethodInfo, methodAnnotations),
-        		  findParameterAnnotation(virtualMethodInfo, paramAnnotations)));
-      }
-      
-    }
-  }
-
-  private static AnnotationSetItem findMethodAnnotation(EncodedMethod encMethod, List<MethodAnnotation> methodAnnotations) {
-    if (methodAnnotations != null)
-      for (val annoItem : methodAnnotations)
-        if (annoItem.method.equals(encMethod.method))
-          return annoItem.annotationSet;
-    return null;
-  }
-
-  private static AnnotationSetItem findFieldAnnotation(EncodedField encField, List<FieldAnnotation> fieldAnnotations) {
-	    if (fieldAnnotations != null)
-	      for (val annoItem : fieldAnnotations)
-	        if (annoItem.field.equals(encField.field))
-	          return annoItem.annotationSet;
-	    return null;
-	  }
-
-  private static AnnotationSetRefList findParameterAnnotation(EncodedMethod encMethod, List<ParameterAnnotation> paramAnnotations) {
-	    if (paramAnnotations != null)
-	      for (val annoItem : paramAnnotations)
-	        if (annoItem.method.equals(encMethod.method))
-	          return annoItem.annotationSet;
-	    return null;
-	  }
-
-  private static Set<DexClassType> parseTypeList(TypeListItem list, DexTypeCache cache) {
-    val set = new HashSet<DexClassType>();
-
-    if (list != null)
-      for (val elem : list.getTypes())
-        set.add(DexClassType.parse(elem.getTypeDescriptor(), cache));
-
-    return set;
-  }
-
-  private static Set<DexAnnotation> parseAnnotations(AnnotationDirectoryItem annotations, DexTypeCache cache) {
-    if (annotations == null)
-      return Collections.emptySet();
-    else
-      return DexAnnotation.parseAll(annotations.getClassAnnotations(), cache);
-  }
-
-  public Set<AccessFlags> getAccessFlagSet() {
-    return Collections.unmodifiableSet(accessFlagSet);
-  }
-
-  public Set<DexField> getFields() {
-    return Collections.unmodifiableSet(fields);
-  }
-
-  public Set<DexMethod> getMethods() {
-    return Collections.unmodifiableSet(methods);
-  }
-
-  public DexClassType getSuperclassType() {
-    return parentFile.getHierarchy().getBaseClassDefinition(type).getSuperclass().getClassType();
-  }
+	private static Set<DexAnnotation> init_ParseAnnotations(Dex parent, AnnotationDirectoryItem annoDir) {
+		if (annoDir == null)
+			return Collections.emptySet();
+		else
+			return DexAnnotation.parseAll(annoDir.getClassAnnotations(), parent.getTypeCache());
+	}
+	
+	  
+//	private static AnnotationSetItem findMethodAnnotation(EncodedMethod encMethod, AnnotationDirectoryItem annoDir) {
+//		if (annoDir != null)
+//			return annoDir.getMethodAnnotations(encMethod.method);
+//		else
+//			return null;
+//	}
+//
+//	private static AnnotationSetRefList findParameterAnnotation(EncodedMethod encMethod, AnnotationDirectoryItem annoDir) {
+//		if (annoDir != null)
+//			return annoDir.getParameterAnnotations(encMethod.method);
+//		else
+//			return null;
+//	}
+//
 
   public Set<DexClassType> getInterfaces() {
-	val clsDef = parentFile.getHierarchy().getBaseClassDefinition(type);
-	if (clsDef instanceof ClassDefinition) {
-		val ifaceDefs = ((ClassDefinition) clsDef).getInterfaces();
+	if (classDef instanceof ClassDefinition) {
+		val ifaceDefs = ((ClassDefinition) classDef).getInterfaces();
 		if (ifaceDefs.isEmpty())
 			return Collections.emptySet();
 
 		val set = new HashSet<DexClassType>();
 		for (val ifaceDef : ifaceDefs)
-			set.add(ifaceDef.getClassType());
+			set.add(ifaceDef.getType());
 		return set;
 	} else
 		return Collections.emptySet();
   }
 
-  public Set<DexAnnotation> getAnnotations() {
-    return Collections.unmodifiableSet(annotations);
-  }
-
   public void addAnnotation(DexAnnotation anno) {
-	  annotations.add(anno);
-  }
-
-  public boolean isAbstract() {
-    return accessFlagSet.contains(AccessFlags.ABSTRACT);
-  }
-
-  public boolean isAnnotation() {
-    return accessFlagSet.contains(AccessFlags.ANNOTATION);
-  }
-
-  public boolean isEnum() {
-    return accessFlagSet.contains(AccessFlags.ENUM);
-  }
-
-  public boolean isInterface() {
-    return accessFlagSet.contains(AccessFlags.INTERFACE);
+	  this._annotations.add(anno);
   }
 
   public void addField(DexField f) {
-    fields.add(f);
+	  if (f instanceof DexStaticField)
+		  this._staticFields.add((DexStaticField) f);
+	  else
+		  this._instanceFields.add(f);
   }
 
   public void addMethod(DexMethod m) {
-    methods.add(m);
+    this._methods.add(m);
   }
 
   public void instrument(DexInstrumentationCache cache) {
-    System.out.println("Instrumenting class " + this.getType().getPrettyName());
-
-    for (val method : methods)
+    System.out.println("Instrumenting class " + this.classDef.getType().getPrettyName());
+	  
+    for (val method : this._methods)
       method.instrument(cache);
 
     this.addAnnotation(
@@ -252,13 +174,14 @@ public class DexClass {
   }
 
   public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
-    System.out.println("Assembling class " + this.getType().getPrettyName());
+    System.out.println("Assembling class " + this.classDef.getType().getPrettyName());
+    
     val interfaces = this.getInterfaces();
     val classAnnotations = this.getAnnotations();
 
-    val asmClassType = cache.getType(type);
-    val asmSuperType = cache.getType(getSuperclassType());
-    val asmAccessFlags = DexUtils.assembleAccessFlags(accessFlagSet);
+    val asmClassType = cache.getType(classDef.getType());
+    val asmSuperType = cache.getType(classDef.getSuperclass().getType());
+    val asmAccessFlags = DexUtils.assembleAccessFlags(classDef.getAccessFlags());
     val asmInterfaces = (interfaces.isEmpty())
                         ? null
                         : cache.getTypeList(new ArrayList<DexRegisterType>(interfaces));
@@ -277,8 +200,13 @@ public class DexClass {
           asmMethodAnnotations.add(methodAnno);
     }
 
-    val asmFieldAnnotations = new ArrayList<FieldAnnotation>(fields.size());
-    for (val field : fields) {
+    val asmFieldAnnotations = new ArrayList<FieldAnnotation>(instanceFields.size() + staticFields.size());
+    for (val field : instanceFields) {
+        val fieldAnno = field.assembleAnnotations(outFile, cache);
+        if (fieldAnno != null)
+            asmFieldAnnotations.add(fieldAnno);
+    }
+    for (val field : staticFields) {
         val fieldAnno = field.assembleAnnotations(outFile, cache);
         if (fieldAnno != null)
             asmFieldAnnotations.add(fieldAnno);
@@ -314,16 +242,18 @@ public class DexClass {
     val asmVirtualMethods = new LinkedList<EncodedMethod>();
     val staticFieldInitializers = new LinkedList<StaticFieldInitializer>();
 
-    for (val field : fields)
-      if (field.isStatic()) {
+    for (val field : staticFields) {
     	EncodedField outField = field.writeToFile(outFile, cache);  
         asmStaticFields.add(outField);
         
-    	EncodedValue value = null;
-    	if (staticInitializer.containsKey(field))
-    		value = DexEncodedValue.cloneEncodedValue(staticInitializer.get(field), cache);
-		staticFieldInitializers.add(new StaticFieldInitializer(value, outField));
-      } else
+    	EncodedValue initialValue = field.getInitialValue();
+    	if (initialValue != null) {
+    		initialValue = DexUtils.cloneEncodedValue(initialValue, cache);
+    		staticFieldInitializers.add(new StaticFieldInitializer(initialValue, outField));
+    	}
+    }
+    
+    for (val field : instanceFields)
         asmInstanceFields.add(field.writeToFile(outFile, cache));
 
     for (val method : methods) {
@@ -340,7 +270,6 @@ public class DexClass {
                       asmDirectMethods,
                       asmVirtualMethods);
 
-    
     ClassDefItem.internClassDefItem(
       outFile, asmClassType, asmAccessFlags, asmSuperType,
       asmInterfaces, asmSourceFile, asmAnnotations,
@@ -350,13 +279,6 @@ public class DexClass {
   public void markMethodsOriginal() {
     for (val method : methods)
       method.markMethodOriginal();
-  }
-
-  public boolean containsField(String fieldName) {
-    for (val f : fields)
-      if (f.getName().equals(fieldName))
-        return true;
-    return false;
   }
 
   public void countInstructions(HashMap<Class<?>, Integer> count) {

@@ -11,6 +11,7 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
 import uk.ac.cam.db538.dexter.dex.DexField;
+import uk.ac.cam.db538.dexter.dex.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -48,15 +49,15 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
   public DexInstruction_InstancePutWide(DexCode methodCode, DexRegister from1, DexRegister from2, DexRegister obj, DexField field) {
     super(methodCode);
 
-    if (field.isStatic())
+    if (field instanceof DexStaticField)
       throw new InstructionArgumentException("Expected instance field");
 
     this.regFrom1 = from1;
     this.regFrom2 = from2;
     this.regObject = obj;
-    this.fieldClass = field.getParentClass().getType();
-    this.fieldType = field.getType();
-    this.fieldName = field.getName();
+    this.fieldClass = field.getParentClass().getClassDef().getType();
+    this.fieldType = field.getFieldDef().getFieldId().getType();
+    this.fieldName = field.getFieldDef().getFieldId().getName();
 
     Opcode_GetPutWide.checkTypeIsWide(this.fieldType);
   }
@@ -111,7 +112,7 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
     if (fieldDeclaringClass.isInternal()) {
       // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
       // store the taint to the taint field
-      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass.getClassType(), fieldName, fieldType);
+      val field = DexUtils.getField(getParentFile(), fieldDeclaringClass.getType(), fieldName, fieldType);
       code.replace(this,
                    new DexCodeElement[] {
                      this,

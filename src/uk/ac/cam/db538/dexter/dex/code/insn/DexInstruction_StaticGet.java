@@ -10,6 +10,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
 import uk.ac.cam.db538.dexter.dex.DexField;
+import uk.ac.cam.db538.dexter.dex.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -45,14 +46,14 @@ public class DexInstruction_StaticGet extends DexInstruction {
   public DexInstruction_StaticGet(DexCode methodCode, DexRegister to, DexField field) {
     super(methodCode);
 
-    if (!field.isStatic())
+    if (!(field instanceof DexStaticField))
       throw new InstructionArgumentException("Expected static field");
 
     this.regTo = to;
-    this.fieldClass = field.getParentClass().getType();
-    this.fieldType = field.getType();
-    this.fieldName = field.getName();
-    this.opcode = Opcode_GetPut.getOpcodeFromType(field.getType());
+    this.fieldClass = field.getParentClass().getClassDef().getType();
+    this.fieldType = field.getFieldDef().getFieldId().getType();
+    this.fieldName = field.getFieldDef().getFieldId().getName();
+    this.opcode = Opcode_GetPut.getOpcodeFromType(this.fieldType);
   }
 
   public DexInstruction_StaticGet(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
@@ -104,7 +105,7 @@ public class DexInstruction_StaticGet extends DexInstruction {
       if (fieldDeclaringClass != null && fieldDeclaringClass.isInternal()) {
         // FIELD OF PRIMITIVE TYPE DEFINED INTERNALLY
         // retrieve taint from the adjoined field
-        val field = DexUtils.getField(getParentFile(), fieldDeclaringClass.getClassType(), fieldName, fieldType);
+        val field = DexUtils.getField(getParentFile(), fieldDeclaringClass.getType(), fieldName, fieldType);
 
         code.replace(this,
                      new DexCodeElement[] {

@@ -53,8 +53,8 @@ class DalvCodeBridge {
 		DexPrototype dexPrototype = dxMethod.getPrototype();
 		DexClass dexClass = dxMethod.getParentClass();
 		
-		CstType thisClass = toCstType(dexClass.getType().getDescriptor());
-		CstType superClass = toCstType(dexClass.getSuperclassType().getDescriptor());
+		CstType thisClass = toCstType(dexClass.getClassDef().getType().getDescriptor());
+		CstType superClass = toCstType(dexClass.getClassDef().getSuperclass().getType().getDescriptor());
 		
 		StdTypeList interfaces = StdTypeList.EMPTY;
 		for(DexClassType intf : dexClass.getInterfaces()) {
@@ -62,7 +62,7 @@ class DalvCodeBridge {
 		}
 
 		int classAccessFlags = 0;
-		for (AccessFlags flag : dexClass.getAccessFlagSet())
+		for (AccessFlags flag : dexClass.getClassDef().getAccessFlags())
 			classAccessFlags |= flag.getValue();
 		
 		DexFile outputDex = new DexFile(new DexOptions());

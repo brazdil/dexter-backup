@@ -43,7 +43,7 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
       val insnPrintDebug = new DexMacro_PrintStringConst(
         code,
         "$# exiting method " +
-        getParentClass().getType().getPrettyName() +
+        getParentClass().getClassDef().getType().getPrettyName() +
         "->" + getParentMethod().getName(),
         true);
 

@@ -108,7 +108,7 @@ public class DexPrototype implements Serializable {
 	public DexRegisterType getParameterType(int paramId, boolean isStatic, DexClass clazz) {
 		if (!isStatic) {
 			if (paramId == 0)
-				return clazz.getType();
+				return clazz.getClassDef().getType();
 			else
 				paramId--;
 		}

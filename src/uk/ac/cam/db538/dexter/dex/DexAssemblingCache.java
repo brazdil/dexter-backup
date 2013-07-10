@@ -15,11 +15,12 @@ import org.jf.dexlib.TypeListItem;
 
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
-import uk.ac.cam.db538.dexter.dex.type.DexType;
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
+import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Triple;
 
@@ -30,8 +31,8 @@ public class DexAssemblingCache {
   private final Cache<List<DexRegisterType>, TypeListItem> typeLists;
   private final Cache<String, StringIdItem> stringConstants;
   private final Cache<DexPrototype, ProtoIdItem> prototypes;
-  private final Cache<Triple<DexClassType, DexRegisterType, String>, FieldIdItem> fields;
-  private final Cache<Triple<DexReferenceType, DexPrototype, String>, MethodIdItem> methods;
+  private final Cache<FieldDefinition, FieldIdItem> fields;
+  private final Cache<MethodDefinition, MethodIdItem> methods;
 
   public DexAssemblingCache(final DexFile outFile, DexTypeCache parsingCache) {
     this.parsingCache = parsingCache;
@@ -74,11 +75,11 @@ public class DexAssemblingCache {
     return prototypes.getCachedEntry(prototype);
   }
 
-  public FieldIdItem getField(DexClassType classType, DexRegisterType fieldType, String name) {
-    return fields.getCachedEntry(new Triple<DexClassType, DexRegisterType, String>(classType, fieldType, name));
+  public FieldIdItem getField(FieldDefinition fieldDef) {
+    return fields.getCachedEntry(fieldDef);
   }
 
-  public MethodIdItem getMethod(DexReferenceType classType, DexPrototype methodPrototype, String name) {
-    return methods.getCachedEntry(new Triple<DexReferenceType, DexPrototype, String>(classType, methodPrototype, name));
+  public MethodIdItem getMethod(MethodDefinition methodDef) {
+    return methods.getCachedEntry(methodDef);
   }
 }

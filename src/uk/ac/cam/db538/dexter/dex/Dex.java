@@ -161,7 +161,7 @@ public class Dex {
     internalMethodAnnotation_Type = clsInternalMethodAnnotation;
 
     for (val clazz : extraClasses)
-      if (clazz.getType() == objectTaintStorage_Type) {
+      if (clazz.getClassDef().getType() == objectTaintStorage_Type) {
         for (val method : clazz.getMethods())
           if (!(method instanceof DexDirectMethod))
             continue;
@@ -170,7 +170,7 @@ public class Dex {
           else if (method.getName().equals("set"))
             objectTaintStorage_Set = (DexDirectMethod) method;
 
-      } else if (clazz.getType() == methodCallHelper_Type) {
+      } else if (clazz.getClassDef().getType() == methodCallHelper_Type) {
         for (val field : clazz.getFields())
           if (field.getName().equals("ARG"))
             methodCallHelper_Arg = field;
@@ -181,7 +181,7 @@ public class Dex {
           else if (field.getName().equals("S_RES"))
             methodCallHelper_SRes = field;
 
-      } else if (clazz.getType() == taintConstants_Type) {
+      } else if (clazz.getClassDef().getClassType() == taintConstants_Type) {
         for (val method : clazz.getMethods())
           if (!(method instanceof DexDirectMethod))
             continue;

@@ -106,7 +106,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
     if (printDebug) {
       codePreInternalCall.add(new DexMacro_PrintStringConst(
                                 methodCode,
-                                "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                "$ " + methodCode.getParentClass().getClassDef().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
                                 "internal call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName(),
                                 true));
     }
@@ -161,7 +161,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
         if (printDebug) {
           codePostInternalCall.add(new DexMacro_PrintStringConst(
                                      methodCode,
-                                     "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                     "$ " + methodCode.getParentClass().getClassDef().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
                                      "internal result from " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
                                      " => ",
                                      false));
@@ -182,7 +182,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
       codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regResSemaphore, dex.getMethodCallHelper_SRes()));
       codePostInternalCall.add(new DexInstruction_Invoke(
                                  methodCode,
-                                 (DexClassType) dex.getMethodCallHelper_SRes().getType(),
+                                 (DexClassType) dex.getMethodCallHelper_SRes().getFieldDef().getFieldId().getType(),
                                  "release",
                                  new DexPrototype(DexVoid.parse("V", null), null),
                                  Arrays.asList(regResSemaphore),
@@ -196,7 +196,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
         if (printDebug) {
           codePostInternalCall.add(new DexMacro_PrintStringConst(
                                      methodCode,
-                                     "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                     "$ " + methodCode.getParentClass().getClassDef().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
                                      "internal result from " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
                                      " => ",
                                      false));

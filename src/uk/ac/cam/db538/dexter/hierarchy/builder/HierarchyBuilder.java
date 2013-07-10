@@ -26,12 +26,11 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.HierarchyException;
-import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
-import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 
 public class HierarchyBuilder implements Serializable {
 
@@ -146,7 +145,7 @@ public class HierarchyBuilder implements Serializable {
 	private void foundRoot(ClassDefinition clsInfo, boolean isInternal) {
 		// check only one root exists
 		if (root != null)
-			throw new HierarchyException("More than one hierarchy root found (" + root.getClassType().getPrettyName() + " vs. " + clsInfo.getClassType().getPrettyName() + ")");
+			throw new HierarchyException("More than one hierarchy root found (" + root.getType().getPrettyName() + " vs. " + clsInfo.getType().getPrettyName() + ")");
 		else if (isInternal)
 			throw new HierarchyException("Hierarchy root cannot be internal");
 		else
@@ -166,7 +165,7 @@ public class HierarchyBuilder implements Serializable {
 	private void scanStaticFields(IClassScanner clsScanner, BaseClassDefinition baseclsDef) {
 		for (val fieldScanner : clsScanner.getStaticFieldScanners())
 			baseclsDef.addDeclaredStaticField(
-				new StaticFieldDefinition(
+				new FieldDefinition(
 					baseclsDef, 
 					fieldScanner.getFieldId(),
 					fieldScanner.getAccessFlags()));
@@ -175,7 +174,7 @@ public class HierarchyBuilder implements Serializable {
 	private void scanInstanceFields(IClassScanner clsScanner, ClassDefinition clsDef) {
 		for (val fieldScanner : clsScanner.getInstanceFieldScanners())
 			clsDef.addDeclaredInstanceField(
-				new InstanceFieldDefinition(
+				new FieldDefinition(
 					clsDef, 
 					fieldScanner.getFieldId(),
 					fieldScanner.getAccessFlags()));
@@ -197,11 +196,11 @@ public class HierarchyBuilder implements Serializable {
 			val baseCls = clsData.classDef;
 			
 			// connect to parent and vice versa
-			val sclsType = (baseCls instanceof ClassDefinition) ? clsData.superclass : root.getClassType();
+			val sclsType = (baseCls instanceof ClassDefinition) ? clsData.superclass : root.getType();
 			if (sclsType != null) {
 				val sclsVariants = definedClasses.get(sclsType);
 				if (sclsVariants == null)
-					throw new HierarchyException("Class " + baseCls.getClassType().getPrettyName() + " is missing its parent " + sclsType.getPrettyName());
+					throw new HierarchyException("Class " + baseCls.getType().getPrettyName() + " is missing its parent " + sclsType.getPrettyName());
 				else
 					baseCls.setSuperclassLink(sclsVariants.getClassData().classDef);
 			}
@@ -216,14 +215,14 @@ public class HierarchyBuilder implements Serializable {
 					for (val ifaceType : ifaces) {
 						val ifaceInfo_Pair = definedClasses.get(ifaceType);
 						if (ifaceInfo_Pair == null || !(ifaceInfo_Pair.getClassData().classDef instanceof InterfaceDefinition))
-							throw new HierarchyException("Class " + baseCls.getClassType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
+							throw new HierarchyException("Class " + baseCls.getType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
 						else
 							properCls.addImplementedInterface((InterfaceDefinition) ifaceInfo_Pair.getClassData().classDef);
 					}
 				}
 			}
 			
-			classList.put(baseCls.getClassType(), baseCls);
+			classList.put(baseCls.getType(), baseCls);
 		}
 		
 		if (root == null)
@@ -273,12 +272,12 @@ public class HierarchyBuilder implements Serializable {
 		public void setVariant(ClassData cls, boolean isInternal) {
 			if (isInternal) {
 				if (this.internal != null)
-					throw new HierarchyException("Multiple definitions of internal class " + this.internal.classDef.getClassType().getPrettyName());
+					throw new HierarchyException("Multiple definitions of internal class " + this.internal.classDef.getType().getPrettyName());
 				
 				this.internal = cls;
 			} else {
 				if (this.external != null)
-					throw new HierarchyException("Multiple definitions of external class " + this.external.classDef.getClassType().getPrettyName());
+					throw new HierarchyException("Multiple definitions of external class " + this.external.classDef.getType().getPrettyName());
 				
 				this.external = cls;
 			}

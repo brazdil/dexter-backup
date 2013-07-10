@@ -64,13 +64,13 @@ public class DexInstruction_ReturnWide extends DexInstruction {
     val insnPrintDebug = new DexMacro_PrintStringConst(
       code,
       "$# exiting method " +
-      getParentClass().getType().getPrettyName() +
+      getParentClass().getClassDef().getType().getPrettyName() +
       "->" + getParentMethod().getName(),
       true);
     val insnGetSRES = new DexInstruction_StaticGet(code, regResSemaphore, dex.getMethodCallHelper_SRes());
     val insnAcquireSRES = new DexInstruction_Invoke(
       code,
-      (DexClassType) dex.getMethodCallHelper_SRes().getType(),
+      (DexClassType) dex.getMethodCallHelper_SRes().getFieldDef().getFieldId().getType(),
       "acquire",
       new DexPrototype(DexVoid.parse("V", null), null),
       Arrays.asList(regResSemaphore),
