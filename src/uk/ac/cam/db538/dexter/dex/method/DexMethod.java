@@ -162,5 +162,5 @@ public abstract class DexMethod {
 
   public abstract void markMethodOriginal();
 
-  public abstract void countInstructions(HashMap<Class, Integer> count);
+  public abstract void countInstructions(HashMap<Class<?>, Integer> count);
 }

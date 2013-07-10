@@ -359,7 +359,7 @@ public class DexClass {
     return false;
   }
 
-  public void countInstructions(HashMap<Class, Integer> count) {
+  public void countInstructions(HashMap<Class<?>, Integer> count) {
     for (val method : methods)
       method.countInstructions(count);
   }

@@ -4,12 +4,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 import com.rx201.dx.translator.RopType.Category;
-
-
 
 public class TypeSolver {
 
