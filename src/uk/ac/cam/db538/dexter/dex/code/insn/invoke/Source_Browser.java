@@ -3,7 +3,6 @@ package uk.ac.cam.db538.dexter.dex.code.insn.invoke;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
@@ -13,6 +12,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.merge.TaintConstants;
+import uk.ac.cam.db538.dexter.utils.InstructionList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class Source_Browser extends FallbackInstrumentor {
@@ -47,7 +47,7 @@ public class Source_Browser extends FallbackInstrumentor {
    * Generate Browser source instrumentation.
    */
   @Override
-  public Pair<List<DexCodeElement>, List<DexCodeElement>> generateInstrumentation(DexPseudoinstruction_Invoke insn, DexCode_InstrumentationState state) {
+  public Pair<InstructionList, InstructionList> generateInstrumentation(DexPseudoinstruction_Invoke insn, DexCode_InstrumentationState state) {
     val code = insn.getMethodCode();
 
     // generate default external call instrumentation (automatically handles exceptions)
@@ -67,7 +67,7 @@ public class Source_Browser extends FallbackInstrumentor {
     // insert instrumentation right after the method call
     codeAfter.addAll(0, instrumentation);
 
-    return new Pair<List<DexCodeElement>, List<DexCodeElement>>(codeBefore, codeAfter);
+    return new Pair<InstructionList, InstructionList>(codeBefore, codeAfter);
   }
 
 }

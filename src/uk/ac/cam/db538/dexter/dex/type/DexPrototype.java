@@ -17,7 +17,6 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.utils.Cache;
-import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
 
 public class DexPrototype implements Serializable {
 
@@ -116,8 +115,8 @@ public class DexPrototype implements Serializable {
 		return _parameterTypes.get(paramId);
 	}
 
-	public NoDuplicatesList<DexRegister> generateParameterRegisters(boolean isStatic) {
-		val regs = new NoDuplicatesList<DexRegister>();
+	public List<DexRegister> generateParameterRegisters(boolean isStatic) {
+		val regs = new ArrayList<DexRegister>();
 
 		val paramWords = this.countParamWords(isStatic);
 		for (int i = 0; i < paramWords; ++i)

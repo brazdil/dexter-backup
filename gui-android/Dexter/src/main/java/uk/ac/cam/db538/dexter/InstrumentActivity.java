@@ -92,9 +92,14 @@ public class InstrumentActivity extends Activity {
                 Dex dex = new Dex(dexFile, hierarchy, auxiliaryDex);
                 terminalDone();
 
-                terminalMessage("Instrumenting application");
-                dex.instrument(false);
+//                terminalMessage("Instrumenting application");
+//                dex.instrument(false);
+//                terminalDone();
+
+                terminalMessage("Compiling application");
+                dex.writeToFile();
                 terminalDone();
+
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }

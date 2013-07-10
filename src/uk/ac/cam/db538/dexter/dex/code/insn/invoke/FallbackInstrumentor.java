@@ -2,13 +2,11 @@ package uk.ac.cam.db538.dexter.dex.code.insn.invoke;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
@@ -22,13 +20,13 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResultWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
-import uk.ac.cam.db538.dexter.utils.NoDuplicatesList;
+import uk.ac.cam.db538.dexter.utils.InstructionList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class FallbackInstrumentor extends ExternalCallInstrumentor {
@@ -40,11 +38,11 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     return true;
   }
 
-  private List<DexCodeElement> generatePreExternalCallCode(DexPseudoinstruction_Invoke insn, DexRegister regCombinedTaint, DexCode_InstrumentationState state,
+  private InstructionList generatePreExternalCallCode(DexPseudoinstruction_Invoke insn, DexRegister regCombinedTaint, DexCode_InstrumentationState state,
       Collection<Integer> excludeFromTaintAcquirement, Collection<Integer> excludeFromTaintAssignment) {
     val printDebug = state.getCache().isInsertDebugLogging();
 
-    val codePreExternalCall = new NoDuplicatesList<DexCodeElement>();
+    val codePreExternalCall = new InstructionList();
     val methodCode = insn.getMethodCode();
     val instructionInvoke = insn.getInstructionInvoke();
     val isStaticCall = (instructionInvoke.getCallType() == Opcode_Invoke.Static);
@@ -113,9 +111,9 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     return codePreExternalCall;
   }
 
-  private List<DexCodeElement> generatePostExternalCallCode(DexPseudoinstruction_Invoke insn, DexRegister regCombinedTaint, DexCode_InstrumentationState state,
+  private InstructionList generatePostExternalCallCode(DexPseudoinstruction_Invoke insn, DexRegister regCombinedTaint, DexCode_InstrumentationState state,
       Collection<Integer> excludeFromTaintAssignment, boolean excludeResultFromTaintAssignment, DexTryBlockStart tryBlockStart) {
-    val codePostExternalCall = new NoDuplicatesList<DexCodeElement>();
+    val codePostExternalCall = new InstructionList();
     val methodCode = insn.getMethodCode();
     val instructionInvoke = insn.getInstructionInvoke();
     val instructionMoveResult = insn.getInstructionMoveResult();
@@ -160,7 +158,7 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     return codePostExternalCall;
   }
 
-  protected Pair<List<DexCodeElement>, List<DexCodeElement>> generateDefaultInstrumentation(DexPseudoinstruction_Invoke insn,
+  protected Pair<InstructionList, InstructionList> generateDefaultInstrumentation(DexPseudoinstruction_Invoke insn,
       DexCode_InstrumentationState state,
       Collection<Integer> excludeFromTaintAcquirement,
       Collection<Integer> excludeFromTaintAssignment,
@@ -168,11 +166,11 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     regCombinedTaint = new DexRegister();
     val preCode = generatePreExternalCallCode(insn, regCombinedTaint, state, excludeFromTaintAcquirement, excludeFromTaintAssignment);
     val postCode = generatePostExternalCallCode(insn, regCombinedTaint, state, excludeFromTaintAssignment, excludeResultFromTaintAssignment, (DexTryBlockStart) preCode.get(preCode.size() - 1));
-    return new Pair<List<DexCodeElement>, List<DexCodeElement>>(preCode, postCode);
+    return new Pair<InstructionList, InstructionList>(preCode, postCode);
   }
 
   @Override
-  public Pair<List<DexCodeElement>, List<DexCodeElement>> generateInstrumentation(DexPseudoinstruction_Invoke insn, DexCode_InstrumentationState state) {
+  public Pair<InstructionList, InstructionList> generateInstrumentation(DexPseudoinstruction_Invoke insn, DexCode_InstrumentationState state) {
     return generateDefaultInstrumentation(insn, state, Collections.<Integer> emptySet(), Collections.<Integer> emptySet(), false);
   }
 
