@@ -12,12 +12,14 @@ import java.util.Comparator;
 import lombok.val;
 
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.DexFileFromMemory;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
@@ -31,7 +33,6 @@ public class TranslationTest {
 //	private static File testsDir = new File("cg_test/android-apps/");
 	
 	private static HierarchyBuilder hierarchyBuilder;
-	private static InputStream dexAux;
 	
 	@BeforeClass 
 	public static void onlyOnce() throws IOException {
@@ -40,8 +41,6 @@ public class TranslationTest {
 	    
 	    System.out.println("Scanning framework");
 	    hierarchyBuilder.importFrameworkFolder(frameworkDir);
-
-	    dexAux = ClassLoader.getSystemResourceAsStream("merge-classes.dex");
 	}
 	
 	@Parameters(name = "{1}")
@@ -75,20 +74,27 @@ public class TranslationTest {
 	
 	@Test
 	public void test() throws IOException{
-	    
-	    System.out.println("Scanning application");
-	    val dexFile = new DexFile(file);
+
+		System.out.println("Scanning application");
+	    val fileApp = new DexFile(file);
+	    val fileAux = new DexFileFromMemory(ClassLoader.getSystemResourceAsStream("merge-classes.dex"));
 	    
 	    System.out.println("Building hierarchy");
-	    RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(dexFile);
+	    val buildData = hierarchyBuilder.buildAgainstApp(fileApp, fileAux);
+	    val hierarchy = buildData.getValA();
+	    val renamerAux = buildData.getValB();
 	    
 	    System.out.println("Parsing application");
-	    Dex dex = new Dex(dexFile, hierarchy, dexAux);
+	    Dex dexApp = new Dex(fileApp, hierarchy);
+	    AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux); 
 	    
 	    System.out.println("Instrumenting application");
-	    dex.instrument(false);
+	    // dexApp.instrument(false);
 	    
-	    dex.writeToFile();
+	    System.out.println("Recompiling application");
+	    dexApp.writeToFile();
+	    
+	    System.out.println("DONE");
 	}
 	
 }

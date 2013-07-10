@@ -46,8 +46,4 @@ public class TaintConstants {
       return TAINT_SOURCE_DEVICE_ID;
     return 0;
   }
-
-  public static final boolean hasSourceAndSinkTaint(int taint) {
-    return ((taint & TAINT_SOURCE) != 0) && ((taint & TAINT_SINK) != 0);
-  }
 }

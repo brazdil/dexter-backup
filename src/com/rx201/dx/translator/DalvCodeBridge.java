@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.TryItem;
-import org.jf.dexlib.DexFromMemory;
+import org.jf.dexlib.DexFileFromMemory;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Util.AccessFlags;
 
@@ -140,7 +140,7 @@ class DalvCodeBridge {
 		OutputStreamWriter humanOut = null; //new OutputStreamWriter(System.out);
 		try {
 			byte[] outArray = outputDex.toDex(humanOut, true);
-			DexFromMemory tmpDexFile = new DexFromMemory(outArray);
+			DexFileFromMemory tmpDexFile = new DexFileFromMemory(outArray);
 		
 			List<CodeItem> codeItems = tmpDexFile.CodeItemsSection.getItems();
 			assert codeItems.size() == 1;

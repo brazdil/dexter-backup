@@ -9,7 +9,7 @@ public class DexInteger extends DexPrimitiveType {
 	private static String DESCRIPTOR = "I";
 	private static String NAME = "int";
 	
-	DexInteger() { }
+	public DexInteger() { }
 
     @Override
 	public DexRegisterTypeSize getTypeSize() {

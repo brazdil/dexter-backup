@@ -21,6 +21,7 @@ import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Triple;
 
@@ -31,8 +32,8 @@ public class DexInstrumentationCache {
   @Getter private final boolean insertDebugLogging;
 
   private final Map<DexField, DexField> fieldInstrumentation;
-  private final Cache<Triple<DexClassType, DexPrimitiveType, String>, DexField>
-  staticExternalFieldInstrumentation = new Cache<Triple<DexClassType, DexPrimitiveType, String>, DexField>() {
+  private final Cache<FieldDefinition, DexField>
+  staticExternalFieldInstrumentation = new Cache<FieldDefinition, DexField>() {
     private boolean fieldExists(String name) {
       for (DexField field : parentFile.getExternalStaticFieldTaint_Class().getFields())
         if (field.getName().equals(name))

@@ -22,6 +22,7 @@ import lombok.val;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.DexFile.NoClassesDexException;
 
+import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
@@ -31,6 +32,7 @@ import uk.ac.cam.db538.dexter.hierarchy.HierarchyException;
 import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class HierarchyBuilder implements Serializable {
 
@@ -43,6 +45,10 @@ public class HierarchyBuilder implements Serializable {
 		root = null;
 		typeCache = new DexTypeCache();
 		definedClasses = new HashMap<DexClassType, ClassVariants>();
+	}
+	
+	public boolean hasClass(DexClassType clsType) {
+		return definedClasses.containsKey(clsType);
 	}
 
 	public void importDex(File file, boolean isInternal) throws IOException {
@@ -306,11 +312,23 @@ public class HierarchyBuilder implements Serializable {
 		for (String filename : files)
 			importDex(new File(dir, filename), false);
 	}
+	
+	public ClassRenamer importAuxiliaryDex(DexFile dexAux) {
+		val classRenamer = new ClassRenamer(dexAux, this);
+		
+		typeCache.setClassRenamer(classRenamer);
+		importDex(dexAux, true); 
+		typeCache.setClassRenamer(null);
+		
+		return classRenamer;
+	}
 
-	public RuntimeHierarchy buildAgainstApp(DexFile dex) {
+	public Pair<RuntimeHierarchy, ClassRenamer> buildAgainstApp(DexFile dexApp, DexFile dexAux) {
 		try {
-			importDex(dex, true);
-			return build();
+			importDex(dexApp, true);
+			val classRenamer = importAuxiliaryDex(dexAux);
+			val runtimeHierarchy = build();
+			return Pair.create(runtimeHierarchy, classRenamer);
 		} finally {
 			removeInternalClasses();
 		}

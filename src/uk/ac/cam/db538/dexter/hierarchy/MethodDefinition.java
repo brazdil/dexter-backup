@@ -58,4 +58,9 @@ public class MethodDefinition implements Serializable {
 	public boolean hasBytecode() {
 		return !isAbstract() && !isNative();
 	}
+
+	@Override
+	public String toString() {
+		return parentClass.getType().getDescriptor() + "->" + methodId.getName() + methodId.getPrototype().getDescriptor();
+	}
 }

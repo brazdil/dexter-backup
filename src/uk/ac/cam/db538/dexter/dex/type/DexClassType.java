@@ -8,7 +8,7 @@ public class DexClassType extends DexReferenceType {
 
 	private final String descriptor;
   
-	private DexClassType(String descriptor) {
+	public DexClassType(String descriptor) {
 		this.descriptor = descriptor;
 	}
 
@@ -20,7 +20,9 @@ public class DexClassType extends DexReferenceType {
 		if (!isClassDescriptor(typeDescriptor))
 			throw new UnknownTypeException(typeDescriptor);
 		
-		typeDescriptor = cache.getClassRenamer().applyRules(typeDescriptor);
+		val classRenamer = cache.getClassRenamer();
+		if (classRenamer != null)
+			typeDescriptor = classRenamer.applyRules(typeDescriptor);
 		
 		DexClassType type = cache.getCachedType_Class(typeDescriptor);
 		if (type == null) {

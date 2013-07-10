@@ -6,22 +6,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import lombok.val;
-
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.util.Zip4jConstants;
 
-import org.apache.commons.io.IOUtils;
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.DexFileFromMemory;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
-import com.rx201.dx.translator.DexCodeGeneration;
-
+import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
+
+import com.rx201.dx.translator.DexCodeGeneration;
 
 public class MainTest {
 
@@ -94,22 +92,18 @@ public class MainTest {
     hierarchyBuilder.importFrameworkFolder(frameworkDir);
     long hierarchyTime = System.currentTimeMillis() - epoch;
     
-//    System.out.println("Storing hierarchy");
-//    hierarchyBuilder.importDex(new File("framework-4.2/core.odex"), false);
-//    hierarchyBuilder.serialize(new File("hierarchy.dump"));
-    
-//    System.out.println("Loading framework from dump");
-//    HierarchyBuilder hierarchyBuilder = HierarchyBuilder.deserialize(new File("hierarchy.dump"));
-    
     System.out.println("Scanning application");
-    val dexFile = new DexFile(apkFile);
+    val fileApp = new DexFile(apkFile);
+    val fileAux = new DexFileFromMemory(ClassLoader.getSystemResourceAsStream("merge-classes.dex"));
     
     System.out.println("Building hierarchy");
-    RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(dexFile);
+    val buildData = hierarchyBuilder.buildAgainstApp(fileApp, fileAux);
+    val hierarchy = buildData.getValA();
+    val renamerAux = buildData.getValB();
     
     System.out.println("Parsing application");
-    val dexAux = ClassLoader.getSystemResourceAsStream("merge-classes.dex");
-    Dex dex = new Dex(dexFile, hierarchy, dexAux);
+    Dex dexApp = new Dex(fileApp, hierarchy);
+    AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux); 
     
     if (args.length == 3) {
        DexCodeGeneration.DEBUG = false;
@@ -119,7 +113,7 @@ public class MainTest {
 //    	dex.instrument(false);
     }
     
-    writeToJar(dex, apkFile_new);
+    writeToJar(dexApp, apkFile_new);
     
     long analysisTime = DexCodeGeneration.totalAnalysisTime;
     long translationTime = DexCodeGeneration.totalCGTime;

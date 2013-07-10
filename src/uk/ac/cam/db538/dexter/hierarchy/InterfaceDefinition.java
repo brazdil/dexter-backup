@@ -26,4 +26,8 @@ public class InterfaceDefinition extends BaseClassDefinition {
 		this._implementors = new HashSet<ClassDefinition>();
 		this.implementors = Collections.unmodifiableSet(this._implementors);
 	}
+	
+	public boolean isAnnotation() {
+		return getAccessFlags().contains(AccessFlags.ANNOTATION);
+	}
 }

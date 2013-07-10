@@ -7,13 +7,13 @@ import org.apache.commons.io.IOUtils;
 import org.jf.dexlib.Util.ByteArrayInput;
 import org.jf.dexlib.Util.Input;
 
-public class DexFromMemory extends DexFile {
+public class DexFileFromMemory extends DexFile {
 
 	/*
 	 * Constructor for Smali's DexFile that can load DEX from a byte array
 	 * Can only load DEX files, not ODEX
 	 */
-	public DexFromMemory(byte[] data) {
+	public DexFileFromMemory(byte[] data) {
 		Input in = new ByteArrayInput(data);
 		  
 		/*
@@ -60,7 +60,7 @@ public class DexFromMemory extends DexFile {
         }
 	}
 	
-	public DexFromMemory(InputStream in) throws IOException {
+	public DexFileFromMemory(InputStream in) throws IOException {
 		this(IOUtils.toByteArray(in));
 	}
 }

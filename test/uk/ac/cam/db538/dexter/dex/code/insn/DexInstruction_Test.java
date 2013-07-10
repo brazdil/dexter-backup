@@ -25,7 +25,6 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
-import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 
 public class DexInstruction_Test {
@@ -45,7 +44,7 @@ public class DexInstruction_Test {
   private static DexCode createDexCode() {
 	val hierarchy = (new HierarchyBuilder()).build();
 	
-    val dex = new Dex();
+    val dex = new Dex(null, null);
     val clazz = new DexClass(dex, null, null);
 
     val code = new DexCode();

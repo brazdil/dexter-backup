@@ -43,4 +43,7 @@ public class Pair<A, B> implements Serializable {
     return true;
   }
 
+  public static <X, Y> Pair<X, Y> create(X a, Y b) {
+	  return new Pair<X, Y>(a, b);
+  }
 }

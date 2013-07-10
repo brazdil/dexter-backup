@@ -2,7 +2,6 @@ package uk.ac.cam.db538.dexter.dex;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -86,11 +85,11 @@ public class DexClass {
 		// TODO: create methods, fields
 	}
   
-	private static ClassDefinition init_FindClassDefinition(Dex parent, ClassDefItem clsItem) {
+	private static BaseClassDefinition init_FindClassDefinition(Dex parent, ClassDefItem clsItem) {
 		val hierarchy = parent.getHierarchy();
 		val clsType = DexClassType.parse(clsItem.getClassType().getTypeDescriptor(), 
 		                                 hierarchy.getTypeCache());
-		return hierarchy.getClassDefinition(clsType); 
+		return hierarchy.getBaseClassDefinition(clsType); 
 	}
 
 	private static List<DexAnnotation> init_ParseAnnotations(Dex parent, AnnotationDirectoryItem annoDir) {
@@ -116,17 +115,6 @@ public class DexClass {
 
 	public void addAnnotation(DexAnnotation anno) {
 		this._annotations.add(anno);
-	}
-
-	public void addField(DexField f) {
-		if (f instanceof DexStaticField)
-			this._staticFields.add((DexStaticField) f);
-		else
-			this._instanceFields.add(f);
- 	}
-
-	public void addMethod(DexMethod m) {
-		this._methods.add(m);
 	}
 
 	public void instrument(DexInstrumentationCache cache) {
@@ -241,15 +229,5 @@ public class DexClass {
 				outFile, asmClassType, asmAccessFlags, asmSuperType,
 				asmInterfaces, asmSourceFile, asmAnnotations,
 				classData, staticFieldInitializers);
-	}
-
-	public void markMethodsOriginal() {
-		for (val method : _methods)
-			method.markMethodOriginal();
-	}
-
-	public void countInstructions(HashMap<Class<?>, Integer> count) {
-		for (val method : _methods)
-			method.countInstructions(count);
 	}
 }
