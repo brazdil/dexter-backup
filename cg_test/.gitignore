@@ -6,3 +6,7 @@ annot_original.txt
 annot.txt
 output.txt
 path_config
+app_tests/*.apk
+app_tests/*.out
+app_tests/*.err
+
