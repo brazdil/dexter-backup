@@ -73,11 +73,17 @@ public class DexCodeGeneration {
 	private DexCodeAnalyzer analyzer;
 
 	public static boolean DEBUG = true;
+	public static boolean INFO = true;
 	
+	public static long totalAnalysisTime = 0;
+	public static long totalCGTime = 0;
+	public static long totalDxTime = 0;
 	public DexCodeGeneration(DexMethodWithCode method) {
-    	System.out.println("==================================================================================");
-    	System.out.println(String.format("%s param reg: %d", method.getName()  + method.getPrototype().toString(), 
+		if (INFO) {
+			System.out.println("==================================================================================");
+			System.out.println(String.format("%s param reg: %d", method.getName()  + method.getPrototype().toString(), 
 				inWords));
+		}
     	
 		dexOptions = new DexOptions();
 	    dexOptions.targetApiLevel = 10;
@@ -90,11 +96,21 @@ public class DexCodeGeneration {
         DexRegisterHelper.reset(method.getRegisterCount());
         
 		stripMoveParameters();
-		long time = System.currentTimeMillis();
+		
+		long analysisTime = System.currentTimeMillis();
 	    this.analyzer = new DexCodeAnalyzer(method.getCode());
 	    this.analyzer.analyze();
-	    time = System.currentTimeMillis() - time;
-	    System.out.println("Analysis time: " + time);
+	    analysisTime = System.currentTimeMillis() - analysisTime;
+	    
+	    totalAnalysisTime += analysisTime;
+	    
+	    Runtime runtime = Runtime.getRuntime();
+	    long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+	    if (INFO) {
+		    System.out.println("===2=== LivenessTime:" + analyzer.time + ", AnalysisTime:" + analysisTime 
+		    		+ ", Code Size:" + analyzer.getMaxInstructionIndex()
+		    		+ ", Memory:" + usedMemory);
+	    }
 	}
 
 	private DexRegister getMappedParamReg(List<DexRegister> parameterMapping, DexParameterRegister reg) {
@@ -216,7 +232,8 @@ public class DexCodeGeneration {
 		int registerCount = translatedCode.getRegisterCount(); 
 
 		time = System.currentTimeMillis() - time;
-	    System.out.println("Translation time: " + time);
+//	    System.out.println("Translation time: " + time);
+		totalCGTime += time;
 		
 		return CodeItem.internCodeItem(dexFile, registerCount, inWords, outWords, /* debugInfo */ null, instructions, newTries, newCatchHandlers);
 		
@@ -231,7 +248,7 @@ public class DexCodeGeneration {
 			System.out.println("==== Before Optimization ====");
 			dump(rmeth);
 		}
-		
+		long time = System.currentTimeMillis();
         rmeth = Optimizer.optimize(rmeth, inWords, isStatic, false, DexTranslationAdvice.THE_ONE);
 		if (DEBUG) {
 			System.out.println("==== After Optimization ====");
@@ -239,6 +256,8 @@ public class DexCodeGeneration {
 		}
 		
         DalvCode dcode = RopTranslator.translate(rmeth, PositionList.NONE, null, inWords, dexOptions);
+        time = System.currentTimeMillis() - time;
+        totalDxTime += time;
         
         return dcode;
 	}
