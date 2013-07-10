@@ -26,6 +26,7 @@ import org.jf.dexlib.DexFile;
 import org.jf.dexlib.EncodedValue.EncodedValue;
 
 import uk.ac.cam.db538.dexter.dex.field.DexField;
+import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.method.DexAbstractMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
@@ -44,8 +45,8 @@ public class DexClass {
 	private final List<DexMethod> _methods;
 	@Getter private final List<DexMethod> methods;
   
-	private final List<DexField> _instanceFields;
-	@Getter private final List<DexField> instanceFields;
+	private final List<DexInstanceField> _instanceFields;
+	@Getter private final List<DexInstanceField> instanceFields;
 
 	private final List<DexStaticField> _staticFields;
 	@Getter private final List<DexStaticField> staticFields;
@@ -62,7 +63,7 @@ public class DexClass {
 		this._methods = new ArrayList<DexMethod>();
     	this.methods = Collections.unmodifiableList(this._methods);
     
-    	this._instanceFields = new ArrayList<DexField>();
+    	this._instanceFields = new ArrayList<DexInstanceField>();
     	this.instanceFields = Collections.unmodifiableList(this._instanceFields);
 
     	this._staticFields = new ArrayList<DexStaticField>();
