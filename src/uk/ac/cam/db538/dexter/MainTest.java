@@ -18,6 +18,7 @@ import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
 import com.rx201.dx.translator.DexCodeGeneration;
 
+import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -119,7 +120,8 @@ public class MainTest {
 //    	dex.instrument(false);
     }
     
-    writeToJar(dex, apkFile_new);
+//    writeToJar(dex, apkFile_new);
+    Apk.produceAPK(apkFile, apkFile_new, "ApplicationClass", dex.writeToFile());
     
     long analysisTime = DexCodeGeneration.totalAnalysisTime;
     long translationTime = DexCodeGeneration.totalCGTime;
