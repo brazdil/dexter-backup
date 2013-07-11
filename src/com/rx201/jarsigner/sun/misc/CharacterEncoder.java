@@ -23,7 +23,7 @@
  * questions.
  */
 
-package com.rx201.jarsigner;
+package com.rx201.jarsigner.sun.misc;
 
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
