@@ -13,7 +13,6 @@ import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.Util.ByteArrayAnnotatedOutput;
 
-import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache.InstrumentationWarning;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -108,7 +107,7 @@ public class Dex {
 //    return Arrays.asList(new DexClass[] { externalStaticFieldTaint_Class });
 //  }
 
-  public List<InstrumentationWarning> instrument(boolean debug) {
+  public void instrument(boolean debug) {
 //    val cache = new DexInstrumentationCache(this, debug);
 //
 //    val extraClassesLinked = parseExtraClasses();
@@ -121,16 +120,13 @@ public class Dex {
 //    classes.addAll(extraClassesGenerated);
 //
 //    return cache.getWarnings();
-	  return null;
   }
 
   public byte[] writeToFile() {
-    val parsingCache = getTypeCache();
-
     val outFile = new DexFile();
     val out = new ByteArrayAnnotatedOutput();
 
-    val asmCache = new DexAssemblingCache(outFile, parsingCache);
+    val asmCache = new DexAssemblingCache(outFile, hierarchy);
     for (val cls : classes)
       cls.writeToFile(outFile, asmCache);
 

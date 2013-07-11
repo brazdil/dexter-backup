@@ -5,7 +5,6 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.val;
-import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache.InstrumentationWarning;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
@@ -24,16 +23,16 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalMethodAnnotation;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
 import uk.ac.cam.db538.dexter.utils.InstructionList;
@@ -277,10 +276,10 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
     boolean canBeNeitherCall = !canBeInternalCall && !canBeExternalCall;
 
     if (canBeNeitherCall) {
-      val callType = instructionInvoke.getCallType();
-      val callClass = instructionInvoke.getClassType();
-      val methodName = instructionInvoke.getMethodName();
-      state.getCache().getWarnings().add(new InstrumentationWarning("Invoke destination not found: calling " + callType.name().toLowerCase() + " " + callClass.getPrettyName() + "." + methodName));
+//      val callType = instructionInvoke.getCallType();
+//      val callClass = instructionInvoke.getClassType();
+//      val methodName = instructionInvoke.getMethodName();
+//      state.getCache().getWarnings().add(new InstrumentationWarning("Invoke destination not found: calling " + callType.name().toLowerCase() + " " + callClass.getPrettyName() + "." + methodName));
 
       canBeExternalCall = true;
     }

@@ -18,14 +18,14 @@ import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.Cache;
 
 public class DexAssemblingCache {
 
-  @Getter private final DexTypeCache parsingCache;
+  @Getter private final RuntimeHierarchy hierarchy;
   private final Cache<DexType, TypeIdItem> types;
   private final Cache<List<? extends DexRegisterType>, TypeListItem> typeLists;
   private final Cache<String, StringIdItem> stringConstants;
@@ -33,8 +33,8 @@ public class DexAssemblingCache {
   private final Cache<FieldDefinition, FieldIdItem> fields;
   private final Cache<MethodDefinition, MethodIdItem> methods;
 
-  public DexAssemblingCache(final DexFile outFile, DexTypeCache parsingCache) {
-    this.parsingCache = parsingCache;
+  public DexAssemblingCache(final DexFile outFile, RuntimeHierarchy hierarchy) {
+    this.hierarchy = hierarchy;
 
     val cache = this;
 
