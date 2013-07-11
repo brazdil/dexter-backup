@@ -14,7 +14,7 @@ import org.jf.dexlib.Code.Format.Instruction31i;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 
@@ -33,7 +33,7 @@ public class DexInstruction_Const extends DexInstruction {
     this.value = value;
   }
 
-  public DexInstruction_Const(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
+  public DexInstruction_Const(DexCode methodCode, Instruction insn, CodeParserState parsingState) {
     super(methodCode);
 
     if (insn instanceof Instruction11n && insn.opcode == Opcode.CONST_4) {

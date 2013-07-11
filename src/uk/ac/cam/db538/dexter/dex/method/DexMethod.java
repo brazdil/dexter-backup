@@ -3,7 +3,6 @@ package uk.ac.cam.db538.dexter.dex.method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import lombok.Getter;
@@ -24,8 +23,8 @@ import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
-import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.utils.Cache;
 
@@ -33,25 +32,27 @@ public abstract class DexMethod {
 
 	@Getter private final DexClass parentClass;
 	@Getter private final MethodDefinition methodDef;
+	@Getter private final DexCode methodBody;
   
 	private final List<DexAnnotation> annotations;
 	private final List<List<DexAnnotation>> paramAnnotations;
   
-	public DexMethod(DexClass parent, MethodDefinition methodDef) {
+	public DexMethod(DexClass parent, MethodDefinition methodDef, DexCode methodBody) {
 		this.parentClass = parent;
 		this.methodDef = methodDef;
+		this.methodBody = methodBody;
     
 		this.annotations = new ArrayList<DexAnnotation>();
-		this.paramAnnotations = new ArrayList<List<DexAnnotation>>(); 
+		this.paramAnnotations = new ArrayList<List<DexAnnotation>>();
 	}
 
 	public DexMethod(DexClass parent, MethodDefinition methodDef, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {
-		this(parent, methodDef);
+		this(parent, methodDef, null);
 		
 		this.annotations.addAll(init_ParseAnnotations(getParentFile(), methodInfo, annoDir));
 		this.paramAnnotations.addAll(init_ParseParamAnnotations(getParentFile(), methodInfo, annoDir));
 	}
-
+	
 	private static List<DexAnnotation> init_ParseAnnotations(Dex dex, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {
 		if (annoDir == null)
 			return Collections.emptyList();
@@ -69,40 +70,23 @@ public abstract class DexMethod {
 	public Dex getParentFile() {
 		return parentClass.getParentFile();
 	}
-
-	public void addAnnotation(DexAnnotation anno) {
-		annotations.add(anno);
-	}
-
-	public abstract boolean isVirtual();
-
-	public abstract void instrument(DexInstrumentationCache cache);
-
-	protected abstract CodeItem generateCodeItem(DexFile outFile, DexAssemblingCache cache);
-
+	
 	public EncodedMethod writeToFile(DexFile outFile, DexAssemblingCache cache) {
 		val classType = cache.getType(parentClass.getClassDef().getType());
 		val methodName = cache.getStringConstant(methodDef.getMethodId().getName());
 		val methodPrototype = cache.getPrototype(methodDef.getMethodId().getPrototype());
 
 		val methodItem = MethodIdItem.internMethodIdItem(outFile, classType, methodPrototype, methodName);
-		CodeItem code = generateCodeItem(outFile, cache);
+		CodeItem codeItem;
+		if (methodBody != null)
+			codeItem = null; // TODO: link to DexCode
+		else
+			codeItem = null; 
 
-		return new EncodedMethod(methodItem, DexUtils.assembleAccessFlags(methodDef.getAccessFlags()), code);
+		return new EncodedMethod(methodItem, DexUtils.assembleAccessFlags(methodDef.getAccessFlags()), codeItem);
 	}
 
-	public static Cache<MethodDefinition, MethodIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
-		return new Cache<MethodDefinition, MethodIdItem>() {
-			@Override
-			protected MethodIdItem createNewEntry(MethodDefinition key) {
-				return MethodIdItem.internMethodIdItem(
-						outFile,
-						cache.getType(key.getParentClass().getType()),
-						cache.getPrototype(key.getMethodId().getPrototype()),
-						cache.getStringConstant(key.getMethodId().getName()));
-			}
-		};
-	}
+	// ASSEMBLING
 
 	private AnnotationSetItem assembleAnnotationSetItem(DexFile outFile, DexAssemblingCache cache, Collection<DexAnnotation> annoCollections) {
 		val annoList = new ArrayList<AnnotationItem>(annoCollections.size());
@@ -135,7 +119,16 @@ public abstract class DexMethod {
 	    return paramAnno;
 	}
 
-	public abstract void markMethodOriginal();
-
-	public abstract void countInstructions(HashMap<Class<?>, Integer> count);
+	public static Cache<MethodDefinition, MethodIdItem> createAssemblingCache(final DexAssemblingCache cache, final DexFile outFile) {
+		return new Cache<MethodDefinition, MethodIdItem>() {
+			@Override
+			protected MethodIdItem createNewEntry(MethodDefinition key) {
+				return MethodIdItem.internMethodIdItem(
+						outFile,
+						cache.getType(key.getParentClass().getType()),
+						cache.getPrototype(key.getMethodId().getPrototype()),
+						cache.getStringConstant(key.getMethodId().getName()));
+			}
+		};
+	}
 }

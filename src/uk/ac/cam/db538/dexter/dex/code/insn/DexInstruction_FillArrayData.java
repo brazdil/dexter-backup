@@ -15,7 +15,7 @@ import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction.ArrayElement;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 
 public class DexInstruction_FillArrayData extends DexInstruction {
@@ -30,7 +30,7 @@ public class DexInstruction_FillArrayData extends DexInstruction {
     this.elementData = elementData;
   }
 
-  public DexInstruction_FillArrayData(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
+  public DexInstruction_FillArrayData(DexCode methodCode, Instruction insn, CodeParserState parsingState) {
     super(methodCode);
 
     if (insn instanceof ArrayDataPseudoInstruction) {
@@ -39,7 +39,7 @@ public class DexInstruction_FillArrayData extends DexInstruction {
 
       val parentInsn = parsingState.getCurrentOffsetParent();
       if (parentInsn == null || !(parentInsn instanceof DexInstruction_FillArray))
-        throw new InstructionParsingException("Cannot find FillArrayData's parent instruction");
+        throw new InstructionParseError("Cannot find FillArrayData's parent instruction");
       this.parentInstruction = (DexInstruction_FillArray) parentInsn;
 
       this.elementData = new ArrayList<byte[]>(insnFillArrayData.getElementCount());

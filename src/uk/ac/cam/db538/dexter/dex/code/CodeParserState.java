@@ -17,63 +17,86 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParseError;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexWideRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
-public class DexCode_ParsingState {
-  private final Cache<Integer, DexRegister> registerIdCache;
-  private final Cache<Long, DexLabel> labelOffsetCache;
-  private final Cache<Long, DexCatchAll> catchAllOffsetCache;
-  private final Cache<Pair<Long, DexClassType>, DexCatch> catchOffsetCache;
-  private final Map<Long, DexInstruction> instructionOffsetMap;
-  private final Map<Long, DexInstruction> instructionParents;
-  private long currentOffset;
-  @Getter private final DexTypeCache cache;
-  @Getter private final DexCode code;
+public class CodeParserState {
+	
+	@Getter private final RuntimeHierarchy hierarchy;
 
-  public DexCode_ParsingState(DexTypeCache cache, DexCode code) {
-    this.registerIdCache = DexRegister.createCache();
-    this.labelOffsetCache = DexLabel.createCache(code);
-    this.catchAllOffsetCache = DexCatchAll.createCache(code);
+	private final Map<Long, DexInstruction> instructionParents;
+
+	private final Cache<Integer, DexSingleRegister> cacheSingleReg;
+	private final Cache<Integer, DexWideRegister> cacheWideReg;
+	
+	private final Cache<Long, DexLabel> cacheLabels;
+	private final Cache<Long, DexCatchAll> cacheCatchALl;
+	private final Cache<Pair<Long, DexClassType>, DexCatch> catchOffsetCache;
+	
+  public CodeParserState(RuntimeHierarchy hierarchy) {
+	this.hierarchy = hierarchy;
+
+    this.instructionParents = new HashMap<Long, DexInstruction>();
+	
+	this.cacheSingleReg = new Cache<Integer, DexSingleRegister>() {
+		@Override
+		protected DexSingleRegister createNewEntry(Integer key) {
+			return new DexSingleRegister(key);
+		}
+	};
+	
+	this.cacheWideReg = new Cache<Integer, DexWideRegister>() {
+		@Override
+		protected DexWideRegister createNewEntry(Integer key) {
+			return new DexWideRegister(key);
+		}
+	};
+	
+    this.cacheLabels = new Cache<Long, DexLabel>() {
+    	protected DexLabel createNewEntry(Long absoluteOffset) {
+    		return new DexLabel();
+    	}
+    };
+ 
+    this.cacheCatchALl = DexCatchAll.createCache(code);
     this.catchOffsetCache = DexCatch.createCache(code);
 
-    this.instructionOffsetMap = new HashMap<Long, DexInstruction>();
-    this.instructionParents = new HashMap<Long, DexInstruction>();
-    this.cache = cache;
-    this.code = code;
   }
 
-  public DexRegister getRegister(int id) {
-    return registerIdCache.getCachedEntry(id);
+	public DexSingleRegister getSingleRegister(int id) {
+		return cacheSingleReg.getCachedEntry(id);
+	}
+
+	public DexWideRegister getWideRegister(int id) {
+		return cacheWideReg.getCachedEntry(id);
+	}
+
+  public DexLabel getLabel(long relativeInsnOffset) {
+    long absoluteOffset = currentOffset + relativeInsnOffset;
+    return cacheLabels.getCachedEntry(absoluteOffset);
   }
 
-  public boolean containsRegisterId(int id) {
-    return registerIdCache.contains(id);
-  }
-
-  public DexLabel getLabel(long insnOffset) {
-    long absoluteOffset = currentOffset + insnOffset;
-    return labelOffsetCache.getCachedEntry(absoluteOffset);
-  }
-
-  public DexLabel getLabel(long insnOffset, DexInstruction relativeTo) {
-    if (!instructionOffsetMap.containsValue(relativeTo))
-      throw new InstructionParsingException("Cannot find zero-offset instruction");
+  public DexLabel getLabel(long relativeInsnOffset, DexInstruction relativeTo) {
+    if (!instructionOffsets.containsValue(relativeTo))
+      throw new InstructionParseError("Cannot find zero-offset instruction");
 
     long zeroPoint = 0;
-    for (val entry : instructionOffsetMap.entrySet())
+    for (val entry : instructionOffsets.entrySet())
       if (entry.getValue().equals(relativeTo))
         zeroPoint = entry.getKey();
 
-    long absoluteOffset = zeroPoint + insnOffset;
-    return labelOffsetCache.getCachedEntry(absoluteOffset);
+    long absoluteOffset = zeroPoint + relativeInsnOffset;
+    return cacheLabels.getCachedEntry(absoluteOffset);
   }
 
   public DexCatchAll getCatchAll(long handlerOffset) {
-    return catchAllOffsetCache.getCachedEntry(handlerOffset);
+    return cacheCatchALl.getCachedEntry(handlerOffset);
   }
 
   public DexCatch getCatch(long handlerOffset, DexClassType exceptionType) {
@@ -81,9 +104,8 @@ public class DexCode_ParsingState {
   }
 
   public void addInstruction(long size, DexInstruction insn) {
-    instructionOffsetMap.put(currentOffset, insn);
+    instructionOffsets.put(currentOffset, insn);
     currentOffset += size;
-    code.add(insn);
   }
 
   public void registerParentInstruction(DexInstruction parent, long childOffset) {
@@ -95,11 +117,11 @@ public class DexCode_ParsingState {
   }
 
   public void placeLabels() {
-    for (val entry : labelOffsetCache.entrySet()) {
+    for (val entry : cacheLabels.entrySet()) {
       val labelOffset = entry.getKey();
-      val insnAtOffset = instructionOffsetMap.get(labelOffset);
+      val insnAtOffset = instructionOffsets.get(labelOffset);
       if (insnAtOffset == null)
-        throw new InstructionParsingException("Label could not be placed (non-existent offset " + labelOffset + ")");
+        throw new InstructionParseError("Label could not be placed (non-existent offset " + labelOffset + ")");
       else {
         val label = entry.getValue();
         code.insertBefore(label, insnAtOffset);
@@ -120,9 +142,9 @@ public class DexCode_ParsingState {
 
       long allHandlerOffset = encodedCatchHandler.getCatchAllHandlerAddress();
       if (allHandlerOffset != -1L) {
-        val insnAtOffset = instructionOffsetMap.get(allHandlerOffset);
+        val insnAtOffset = instructionOffsets.get(allHandlerOffset);
         if (insnAtOffset == null)
-          throw new InstructionParsingException("CatchAll handler could not be placed (non-existent offset " + allHandlerOffset + ")");
+          throw new InstructionParseError("CatchAll handler could not be placed (non-existent offset " + allHandlerOffset + ")");
 
         val catchAllElem = getCatchAll(allHandlerOffset);
         if (!placedCatchAllHandlers.contains(catchAllElem)) {
@@ -139,9 +161,9 @@ public class DexCode_ParsingState {
       for(val catchHandler : encodedCatchHandler.handlers) {
         long handlerOffset = catchHandler.getHandlerAddress();
 
-        val insnAtOffset = instructionOffsetMap.get(handlerOffset);
+        val insnAtOffset = instructionOffsets.get(handlerOffset);
         if (insnAtOffset == null)
-          throw new InstructionParsingException("Catch handler could not be placed (non-existent offset " + handlerOffset + ")");
+          throw new InstructionParseError("Catch handler could not be placed (non-existent offset " + handlerOffset + ")");
 
         val catchElem = getCatch(handlerOffset, DexClassType.parse(catchHandler.exceptionType.getTypeDescriptor(), cache));
         if (!placedCatchHandlers.contains(catchElem)) {
@@ -161,9 +183,9 @@ public class DexCode_ParsingState {
       long startOffset = tryBlock.getStartCodeAddress();
       long endOffset = startOffset + tryBlock.getTryLength();
 
-      val startInsn = instructionOffsetMap.get(startOffset);
+      val startInsn = instructionOffsets.get(startOffset);
       if (startInsn == null)
-        throw new InstructionParsingException("Start of a try block could not be placed (non-existent offset " + startOffset + ")");
+        throw new InstructionParseError("Start of a try block could not be placed (non-existent offset " + startOffset + ")");
 
       DexCatchAll catchAllHandler = null;
       if (tryBlock.encodedCatchHandler != null) {
@@ -189,9 +211,9 @@ public class DexCode_ParsingState {
         // by the time this method is called
         code.add(newBlockEnd);
       } else {
-        val endInsn = instructionOffsetMap.get(endOffset);
+        val endInsn = instructionOffsets.get(endOffset);
         if (endInsn == null)
-          throw new InstructionParsingException("End of a try block could not be placed (non-existent offset " + endOffset + ")");
+          throw new InstructionParseError("End of a try block could not be placed (non-existent offset " + endOffset + ")");
         code.insertBefore(newBlockEnd, endInsn);
       }
     }
@@ -205,11 +227,11 @@ public class DexCode_ParsingState {
 
         val catchAllHandler = tryBlockStart.getCatchAllHandler();
         if (catchAllHandler != null && !insns.contains(catchAllHandler))
-          throw new InstructionParsingException("CatchAll block hasn't been placed - DEX inconsistent");
+          throw new InstructionParseError("CatchAll block hasn't been placed - DEX inconsistent");
 
         for (val catchHandler : tryBlockStart.getCatchHandlers())
           if (!insns.contains(catchHandler))
-            throw new InstructionParsingException("Catch block hasn't been placed - DEX inconsistent");
+            throw new InstructionParseError("Catch block hasn't been placed - DEX inconsistent");
       }
   }
 }

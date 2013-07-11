@@ -10,7 +10,7 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 
@@ -31,7 +31,7 @@ public class DexInstruction_UnaryOpWide extends DexInstruction {
     insnOpcode = opcode;
   }
 
-  public DexInstruction_UnaryOpWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
+  public DexInstruction_UnaryOpWide(DexCode methodCode, Instruction insn, CodeParserState parsingState) {
     super(methodCode);
     if (insn instanceof Instruction12x && Opcode_UnaryOpWide.convert(insn.opcode) != null) {
 

@@ -10,7 +10,7 @@ import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
@@ -34,7 +34,7 @@ public class DexInstruction_ArrayPut extends DexInstruction {
     this.opcode = opcode;
   }
 
-  public DexInstruction_ArrayPut(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
+  public DexInstruction_ArrayPut(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
     super(methodCode);
 
     if (insn instanceof Instruction23x && Opcode_GetPut.convert_APUT(insn.opcode) != null) {

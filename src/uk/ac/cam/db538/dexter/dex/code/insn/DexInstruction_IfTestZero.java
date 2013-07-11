@@ -10,7 +10,7 @@ import org.jf.dexlib.Code.Format.Instruction21t;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
@@ -29,7 +29,7 @@ public class DexInstruction_IfTestZero extends DexInstruction {
     this.insnOpcode = opcode;
   }
 
-  public DexInstruction_IfTestZero(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_IfTestZero(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError {
     super(methodCode);
 
     if (insn instanceof Instruction21t && Opcode_IfTestZero.convert(insn.opcode) != null) {

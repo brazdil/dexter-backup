@@ -16,7 +16,7 @@ import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -32,11 +32,11 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
     this.argumentRegisters = new LinkedList<DexRegister>(arrayElems);
     this.arrayType = arrayType;
     if (this.arrayType.getElementType().isWide())
-      throw new InstructionParsingException("FilledNewArray doesn't support wide types");
+      throw new InstructionParseError("FilledNewArray doesn't support wide types");
 
   }
 
-  public DexInstruction_FilledNewArray(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
+  public DexInstruction_FilledNewArray(DexCode methodCode, Instruction insn, CodeParserState parsingState) {
     super(methodCode);
 
     this.argumentRegisters = new LinkedList<DexRegister>();
@@ -59,7 +59,7 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
       case 0:
         break;
       default:
-        throw new InstructionParsingException("Unexpected number of FilledNewArray argument registers");
+        throw new InstructionParseError("Unexpected number of FilledNewArray argument registers");
       }
 
     } else if (insn instanceof Instruction3rc && insn.opcode == Opcode.FILLED_NEW_ARRAY_RANGE) {
@@ -75,7 +75,7 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
 
     this.arrayType = DexArrayType.parse(((TypeIdItem)((InstructionWithReference) insn).getReferencedItem()).getTypeDescriptor(), parsingState.getCache());
     if (this.arrayType.getElementType().isWide())
-      throw new InstructionParsingException("FilledNewArray doesn't support wide types");
+      throw new InstructionParseError("FilledNewArray doesn't support wide types");
 
   }
 

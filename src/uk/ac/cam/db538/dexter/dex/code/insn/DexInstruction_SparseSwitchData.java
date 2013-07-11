@@ -14,7 +14,7 @@ import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.utils.Pair;
@@ -33,7 +33,7 @@ public class DexInstruction_SparseSwitchData extends DexInstruction {
     this.keyTargetPairs = keyTargetPairs;
   }
 
-  public DexInstruction_SparseSwitchData(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
+  public DexInstruction_SparseSwitchData(DexCode methodCode, Instruction insn, CodeParserState parsingState) {
     super(methodCode);
 
     if (insn instanceof SparseSwitchDataPseudoInstruction) {
@@ -43,7 +43,7 @@ public class DexInstruction_SparseSwitchData extends DexInstruction {
       val parentInsn = parsingState.getCurrentOffsetParent();
       if (parentInsn == null || !(parentInsn instanceof DexInstruction_Switch) ||
           ((DexInstruction_Switch) parentInsn).isPacked())
-        throw new InstructionParsingException("Cannot find SparseSwitchData's parent instruction");
+        throw new InstructionParseError("Cannot find SparseSwitchData's parent instruction");
       this.parentInstruction = (DexInstruction_Switch) parentInsn;
 
       int targetCount = insnSparseSwitchData.getTargetCount();

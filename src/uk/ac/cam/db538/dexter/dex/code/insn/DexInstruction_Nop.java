@@ -9,7 +9,7 @@ import org.jf.dexlib.Code.Format.Instruction10x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 
 public class DexInstruction_Nop extends DexInstruction {
 
@@ -20,7 +20,7 @@ public class DexInstruction_Nop extends DexInstruction {
     this.forcedAssembly = true;
   }
 
-  public DexInstruction_Nop(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
+  public DexInstruction_Nop(DexCode methodCode, Instruction insn, CodeParserState parsingState) {
     super(methodCode);
 
     if (!(insn instanceof Instruction10x) || insn.opcode != Opcode.NOP)

@@ -14,4 +14,9 @@ public class DexWideRegister extends DexOriginalRegister {
 	String getPlainId() {
 		return Integer.toString(id) + "|" + Integer.toString(id + 1);
 	}
+
+	@Override
+	public RegisterWidth getWidth() {
+		return RegisterWidth.WIDE;
+	}
 }

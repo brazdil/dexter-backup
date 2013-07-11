@@ -83,7 +83,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOpWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParseError;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
@@ -97,58 +97,30 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
-import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.InstructionList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexCode {
 
+  private final RuntimeHierarchy hierarchy;
   private final InstructionList instructionList;
-  @Getter private final DexCodeStart startingLabel;
-  @Getter @Setter private DexMethodWithCode parentMethod;
 
-  // stores information about original register mapping
-  // is null for run-time generated code
-  private DexCode_ParsingState parsingInfo = null;
-
-  @Getter private DexCode_InstrumentationState instrumentationState = null;
-
-  // creates completely empty code
-  public DexCode() {
-    this(null);
+  public DexCode(CodeItem codeItem, RuntimeHierarchy hierarchy) {
+	  this.hierarchy = hierarchy;
+	  this.instructionList = CodeParser.parse(codeItem, hierarchy); 
   }
-
-  public DexCode(DexMethodWithCode parentMethod) {
-    this.instructionList = new InstructionList();
-    this.parentMethod = parentMethod;
-    this.startingLabel = new DexCodeStart(this);
-    instructionList.add(startingLabel);
-  }
-
-  public DexCode(CodeItem methodInfo, DexMethodWithCode parentMethod, DexTypeCache cache) {
-    this(parentMethod);
-    parsingInfo = new DexCode_ParsingState(cache, this);
-    parseInstructions(methodInfo.getInstructions(), methodInfo.getHandlers(), methodInfo.getTries(), parsingInfo);
-  }
-
-  public DexCode(CodeItem methodInfo, DexTypeCache cache) {
-    this(methodInfo, null, cache);
-  }
-
-  // called internally and from tests
-  // should not be called directly in real life
-  DexCode(Instruction[] instructions, DexTypeCache cache) {
-    this();
-    parsingInfo = new DexCode_ParsingState(cache, this);
-    parseInstructions(instructions, null, null, parsingInfo);
-  }
-
-  private void parseInstructions(Instruction[] instructions, EncodedCatchHandler[] catchHandlers, TryItem[] tries, DexCode_ParsingState parsingState) {
+  
+  private void parseInstructions(CodeItem codeItem) {
+	  val instructions = codeItem.getInstructions();
+	  val catchHandlers = codeItem.getHandlers();
+	  val tries = codeItem.getTries();
+	  
     // What happens here:
     // - each instruction is parsed
     //   - offset of each instruction is stored
@@ -168,18 +140,6 @@ public class DexCode {
     parsingState.placeLabels();
 
     parsingState.checkTryCatchBlocksPlaced();
-  }
-
-  public DexClass getParentClass() {
-    return parentMethod.getParentClass();
-  }
-
-  public Dex getParentFile() {
-    return parentMethod.getParentFile();
-  }
-
-  public List<DexCodeElement> getInstructionList() {
-    return Collections.unmodifiableList(instructionList);
   }
 
   public Set<DexRegister> getUsedRegisters() {
@@ -632,339 +592,6 @@ public class DexCode {
 	  }
 
 	  return maxWords;
-  }
-
-  private DexInstruction parseInstruction(Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-    switch (insn.opcode) {
-
-    case NOP:
-      if (insn instanceof PackedSwitchDataPseudoInstruction)
-        return new DexInstruction_PackedSwitchData(this, insn, parsingState);
-      else if (insn instanceof SparseSwitchDataPseudoInstruction)
-        return new DexInstruction_SparseSwitchData(this, insn, parsingState);
-      else if (insn instanceof ArrayDataPseudoInstruction)
-        return new DexInstruction_FillArrayData(this, insn, parsingState);
-      else
-        return new DexInstruction_Nop(this, insn, parsingState);
-
-    case MOVE:
-    case MOVE_OBJECT:
-    case MOVE_FROM16:
-    case MOVE_OBJECT_FROM16:
-    case MOVE_16:
-    case MOVE_OBJECT_16:
-      return new DexInstruction_Move(this, insn, parsingState);
-
-    case MOVE_WIDE:
-    case MOVE_WIDE_FROM16:
-    case MOVE_WIDE_16:
-      return new DexInstruction_MoveWide(this, insn, parsingState);
-
-    case MOVE_RESULT:
-    case MOVE_RESULT_OBJECT:
-      return new DexInstruction_MoveResult(this, insn, parsingState);
-
-    case MOVE_RESULT_WIDE:
-      return new DexInstruction_MoveResultWide(this, insn, parsingState);
-
-    case MOVE_EXCEPTION:
-      return new DexInstruction_MoveException(this, insn, parsingState);
-
-    case RETURN_VOID:
-      return new DexInstruction_ReturnVoid(this, insn, parsingState);
-
-    case RETURN:
-    case RETURN_OBJECT:
-      return new DexInstruction_Return(this, insn, parsingState);
-
-    case RETURN_WIDE:
-      return new DexInstruction_ReturnWide(this, insn, parsingState);
-
-    case CONST_4:
-    case CONST_16:
-    case CONST:
-    case CONST_HIGH16:
-      return new DexInstruction_Const(this, insn, parsingState);
-
-    case CONST_WIDE_16:
-    case CONST_WIDE_32:
-    case CONST_WIDE:
-    case CONST_WIDE_HIGH16:
-      return new DexInstruction_ConstWide(this, insn, parsingState);
-
-    case CONST_STRING:
-    case CONST_STRING_JUMBO:
-      return new DexInstruction_ConstString(this, insn, parsingState);
-
-    case CONST_CLASS:
-      return new DexInstruction_ConstClass(this, insn, parsingState);
-
-    case MONITOR_ENTER:
-    case MONITOR_EXIT:
-      return new DexInstruction_Monitor(this, insn, parsingState);
-
-    case CHECK_CAST:
-      return new DexInstruction_CheckCast(this, insn, parsingState);
-
-    case INSTANCE_OF:
-      return new DexInstruction_InstanceOf(this, insn, parsingState);
-
-    case NEW_INSTANCE:
-      return new DexInstruction_NewInstance(this, insn, parsingState);
-
-    case NEW_ARRAY:
-      return new DexInstruction_NewArray(this, insn, parsingState);
-
-    case ARRAY_LENGTH:
-      return new DexInstruction_ArrayLength(this, insn, parsingState);
-
-    case THROW:
-      return new DexInstruction_Throw(this, insn, parsingState);
-
-    case GOTO:
-    case GOTO_16:
-    case GOTO_32:
-      return new DexInstruction_Goto(this, insn, parsingState);
-
-    case IF_EQ:
-    case IF_NE:
-    case IF_LT:
-    case IF_GE:
-    case IF_GT:
-    case IF_LE:
-      return new DexInstruction_IfTest(this, insn, parsingState);
-
-    case IF_EQZ:
-    case IF_NEZ:
-    case IF_LTZ:
-    case IF_GEZ:
-    case IF_GTZ:
-    case IF_LEZ:
-      return new DexInstruction_IfTestZero(this, insn, parsingState);
-
-    case CMPL_FLOAT:
-    case CMPG_FLOAT:
-      return new DexInstruction_CompareFloat(this, insn, parsingState);
-
-    case CMPL_DOUBLE:
-    case CMPG_DOUBLE:
-    case CMP_LONG:
-      return new DexInstruction_CompareWide(this, insn, parsingState);
-
-    case SGET:
-    case SGET_OBJECT:
-    case SGET_BOOLEAN:
-    case SGET_BYTE:
-    case SGET_CHAR:
-    case SGET_SHORT:
-      return new DexInstruction_StaticGet(this, insn, parsingState);
-
-    case SGET_WIDE:
-      return new DexInstruction_StaticGetWide(this, insn, parsingState);
-
-    case SPUT:
-    case SPUT_OBJECT:
-    case SPUT_BOOLEAN:
-    case SPUT_BYTE:
-    case SPUT_CHAR:
-    case SPUT_SHORT:
-      return new DexInstruction_StaticPut(this, insn, parsingState);
-
-    case SPUT_WIDE:
-      return new DexInstruction_StaticPutWide(this, insn, parsingState);
-
-    case IGET:
-    case IGET_OBJECT:
-    case IGET_BOOLEAN:
-    case IGET_BYTE:
-    case IGET_CHAR:
-    case IGET_SHORT:
-      return new DexInstruction_InstanceGet(this, insn, parsingState);
-
-    case IGET_WIDE:
-      return new DexInstruction_InstanceGetWide(this, insn, parsingState);
-
-    case IPUT:
-    case IPUT_OBJECT:
-    case IPUT_BOOLEAN:
-    case IPUT_BYTE:
-    case IPUT_CHAR:
-    case IPUT_SHORT:
-      return new DexInstruction_InstancePut(this, insn, parsingState);
-
-    case IPUT_WIDE:
-      return new DexInstruction_InstancePutWide(this, insn, parsingState);
-
-    case AGET:
-    case AGET_OBJECT:
-    case AGET_BOOLEAN:
-    case AGET_BYTE:
-    case AGET_CHAR:
-    case AGET_SHORT:
-      return new DexInstruction_ArrayGet(this, insn, parsingState);
-
-    case AGET_WIDE:
-      return new DexInstruction_ArrayGetWide(this, insn, parsingState);
-
-    case APUT:
-    case APUT_OBJECT:
-    case APUT_BOOLEAN:
-    case APUT_BYTE:
-    case APUT_CHAR:
-    case APUT_SHORT:
-      return new DexInstruction_ArrayPut(this, insn, parsingState);
-
-    case APUT_WIDE:
-      return new DexInstruction_ArrayPutWide(this, insn, parsingState);
-
-    case INVOKE_VIRTUAL:
-    case INVOKE_SUPER:
-    case INVOKE_DIRECT:
-    case INVOKE_STATIC:
-    case INVOKE_INTERFACE:
-    case INVOKE_VIRTUAL_RANGE:
-    case INVOKE_SUPER_RANGE:
-    case INVOKE_DIRECT_RANGE:
-    case INVOKE_STATIC_RANGE:
-    case INVOKE_INTERFACE_RANGE:
-      return new DexInstruction_Invoke(this, insn, parsingState);
-
-    case NEG_INT:
-    case NOT_INT:
-    case NEG_FLOAT:
-      return new DexInstruction_UnaryOp(this, insn, parsingState);
-
-    case NEG_LONG:
-    case NOT_LONG:
-    case NEG_DOUBLE:
-      return new DexInstruction_UnaryOpWide(this, insn, parsingState);
-
-    case INT_TO_FLOAT:
-    case FLOAT_TO_INT:
-    case INT_TO_BYTE:
-    case INT_TO_CHAR:
-    case INT_TO_SHORT:
-      return new DexInstruction_Convert(this, insn, parsingState);
-
-    case INT_TO_LONG:
-    case INT_TO_DOUBLE:
-    case FLOAT_TO_LONG:
-    case FLOAT_TO_DOUBLE:
-      return new DexInstruction_ConvertToWide(this, insn, parsingState);
-
-    case LONG_TO_INT:
-    case DOUBLE_TO_INT:
-    case LONG_TO_FLOAT:
-    case DOUBLE_TO_FLOAT:
-      return new DexInstruction_ConvertFromWide(this, insn, parsingState);
-
-    case LONG_TO_DOUBLE:
-    case DOUBLE_TO_LONG:
-      return new DexInstruction_ConvertWide(this, insn, parsingState);
-
-    case ADD_INT:
-    case SUB_INT:
-    case MUL_INT:
-    case DIV_INT:
-    case REM_INT:
-    case AND_INT:
-    case OR_INT:
-    case XOR_INT:
-    case SHL_INT:
-    case SHR_INT:
-    case USHR_INT:
-    case ADD_FLOAT:
-    case SUB_FLOAT:
-    case MUL_FLOAT:
-    case DIV_FLOAT:
-    case REM_FLOAT:
-    case ADD_INT_2ADDR:
-    case SUB_INT_2ADDR:
-    case MUL_INT_2ADDR:
-    case DIV_INT_2ADDR:
-    case REM_INT_2ADDR:
-    case AND_INT_2ADDR:
-    case OR_INT_2ADDR:
-    case XOR_INT_2ADDR:
-    case SHL_INT_2ADDR:
-    case SHR_INT_2ADDR:
-    case USHR_INT_2ADDR:
-    case ADD_FLOAT_2ADDR:
-    case SUB_FLOAT_2ADDR:
-    case MUL_FLOAT_2ADDR:
-    case DIV_FLOAT_2ADDR:
-    case REM_FLOAT_2ADDR:
-      return new DexInstruction_BinaryOp(this, insn, parsingState);
-
-    case ADD_LONG:
-    case SUB_LONG:
-    case MUL_LONG:
-    case DIV_LONG:
-    case REM_LONG:
-    case AND_LONG:
-    case OR_LONG:
-    case XOR_LONG:
-    case SHL_LONG:
-    case SHR_LONG:
-    case USHR_LONG:
-    case ADD_DOUBLE:
-    case SUB_DOUBLE:
-    case MUL_DOUBLE:
-    case DIV_DOUBLE:
-    case REM_DOUBLE:
-    case ADD_LONG_2ADDR:
-    case SUB_LONG_2ADDR:
-    case MUL_LONG_2ADDR:
-    case DIV_LONG_2ADDR:
-    case REM_LONG_2ADDR:
-    case AND_LONG_2ADDR:
-    case OR_LONG_2ADDR:
-    case XOR_LONG_2ADDR:
-    case SHL_LONG_2ADDR:
-    case SHR_LONG_2ADDR:
-    case USHR_LONG_2ADDR:
-    case ADD_DOUBLE_2ADDR:
-    case SUB_DOUBLE_2ADDR:
-    case MUL_DOUBLE_2ADDR:
-    case DIV_DOUBLE_2ADDR:
-    case REM_DOUBLE_2ADDR:
-      return new DexInstruction_BinaryOpWide(this, insn, parsingState);
-
-    case ADD_INT_LIT16:
-    case ADD_INT_LIT8:
-    case RSUB_INT:
-    case RSUB_INT_LIT8:
-    case MUL_INT_LIT16:
-    case MUL_INT_LIT8:
-    case DIV_INT_LIT16:
-    case DIV_INT_LIT8:
-    case REM_INT_LIT16:
-    case REM_INT_LIT8:
-    case AND_INT_LIT16:
-    case AND_INT_LIT8:
-    case OR_INT_LIT16:
-    case OR_INT_LIT8:
-    case XOR_INT_LIT16:
-    case XOR_INT_LIT8:
-    case SHL_INT_LIT8:
-    case SHR_INT_LIT8:
-    case USHR_INT_LIT8:
-      return new DexInstruction_BinaryOpLiteral(this, insn, parsingState);
-
-    case PACKED_SWITCH:
-    case SPARSE_SWITCH:
-      return new DexInstruction_Switch(this, insn, parsingState);
-
-    case FILL_ARRAY_DATA:
-      return new DexInstruction_FillArray(this, insn, parsingState);
-
-    case FILLED_NEW_ARRAY:
-    case FILLED_NEW_ARRAY_RANGE:
-      return new DexInstruction_FilledNewArray(this, insn, parsingState);
-
-    default:
-      throw new InstructionParsingException("Unknown instruction " + insn.opcode.name());
-    }
   }
 
   public void markAllInstructionsOriginal() {

@@ -10,7 +10,7 @@ import uk.ac.cam.db538.dexter.dex.code.Utils;
 public class DexInstruction_StaticPut_Test {
 
   @Test
-  public void testParse_StaticPut() throws InstructionParsingException {
+  public void testParse_StaticPut() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction21c(Opcode.SPUT_OBJECT, (short) 236, Utils.getFieldItem("Lcom/example/MyClass1;", "Ljava/lang/Object;", "TestField1")),
@@ -32,42 +32,42 @@ public class DexInstruction_StaticPut_Test {
   }
 
   @Test(expected=InstructionArgumentException.class)
-  public void testParse_StaticPut_WrongType_Object() throws InstructionParsingException {
+  public void testParse_StaticPut_WrongType_Object() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction21c(Opcode.SPUT_OBJECT, (short) 236, Utils.getFieldItem("Lcom/example/MyClass1;", "I", "TestField1")),
       "");
   }
 
   @Test(expected=InstructionArgumentException.class)
-  public void testParse_StaticPut_WrongType_Integer() throws InstructionParsingException {
+  public void testParse_StaticPut_WrongType_Integer() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction21c(Opcode.SPUT, (short) 236, Utils.getFieldItem("Lcom/example/MyClass1;", "Z", "TestField1")),
       "");
   }
 
   @Test(expected=InstructionArgumentException.class)
-  public void testParse_StaticPut_WrongType_Boolean() throws InstructionParsingException {
+  public void testParse_StaticPut_WrongType_Boolean() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction21c(Opcode.SPUT_BOOLEAN, (short) 236, Utils.getFieldItem("Lcom/example/MyClass1;", "B", "TestField1")),
       "");
   }
 
   @Test(expected=InstructionArgumentException.class)
-  public void testParse_StaticPut_WrongType_Byte() throws InstructionParsingException {
+  public void testParse_StaticPut_WrongType_Byte() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction21c(Opcode.SPUT_BYTE, (short) 236, Utils.getFieldItem("Lcom/example/MyClass1;", "C", "TestField1")),
       "");
   }
 
   @Test(expected=InstructionArgumentException.class)
-  public void testParse_StaticPut_WrongType_Char() throws InstructionParsingException {
+  public void testParse_StaticPut_WrongType_Char() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction21c(Opcode.SPUT_CHAR, (short) 236, Utils.getFieldItem("Lcom/example/MyClass1;", "S", "TestField1")),
       "");
   }
 
   @Test(expected=InstructionArgumentException.class)
-  public void testParse_StaticPut_WrongType_Short() throws InstructionParsingException {
+  public void testParse_StaticPut_WrongType_Short() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction21c(Opcode.SPUT_SHORT, (short) 236, Utils.getFieldItem("Lcom/example/MyClass1;", "I", "TestField1")),
       "");

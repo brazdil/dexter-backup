@@ -11,7 +11,7 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
@@ -30,7 +30,7 @@ public class DexInstruction_ArrayLength extends DexInstruction {
     this.regArray = array;
   }
 
-  public DexInstruction_ArrayLength(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
+  public DexInstruction_ArrayLength(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
     super(methodCode);
 
     if (insn instanceof Instruction12x && insn.opcode == Opcode.ARRAY_LENGTH) {

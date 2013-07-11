@@ -16,7 +16,7 @@ public class InstructionList extends ArrayList<DexCodeElement> {
   public InstructionList(int initialCapacity) {
     super(initialCapacity);
   }
-
+  
   public boolean addAll(DexCodeElement[] c) {
     for (val e : c)
       add(e);

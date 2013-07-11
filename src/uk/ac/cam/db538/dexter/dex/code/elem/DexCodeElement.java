@@ -6,28 +6,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.val;
-import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 public abstract class DexCodeElement {
 
-  @Getter private final DexCode methodCode;
-  @Getter @Setter private boolean originalElement = false;
-  @Getter @Setter private boolean auxiliaryElement = false;
-
-  public DexCodeElement(DexCode methodCode) {
-    this.methodCode = methodCode;
-  }
-
-  public abstract String getOriginalAssembly();
-
-  public final DexCodeElement getNextCodeElement() {
+  public final DexCodeElement getNextCodeElement(DexCode methodCode) {
     val insns = methodCode.getInstructionList();
 
     int location = insns.indexOf(this);
@@ -73,7 +58,7 @@ public abstract class DexCodeElement {
   }
   
   public Set<DexCodeElement> cfgGetExceptionSuccessors() {
-	  return new HashSet<DexCodeElement>();
+	  return Collections.emptySet();
   }
 
   // LIVE VARIABLE ANALYSIS
@@ -91,29 +76,5 @@ public abstract class DexCodeElement {
     set.addAll(lvaDefinedRegisters());
     set.addAll(lvaReferencedRegisters());
     return set;
-  }
-
-  // UTILS
-
-  @SafeVarargs
-  protected final <T> Set<T> createSet(T ... members) {
-    return new HashSet<T>(Arrays.asList(members));
-  }
-
-  @SafeVarargs
-  protected final <T> List<T> createList(T ... elements) {
-    return Arrays.asList(elements);
-  }
-
-  public Dex getParentFile() {
-    return methodCode.getParentFile();
-  }
-
-  public DexClass getParentClass() {
-    return methodCode.getParentClass();
-  }
-
-  public DexMethodWithCode getParentMethod() {
-    return methodCode.getParentMethod();
   }
 }

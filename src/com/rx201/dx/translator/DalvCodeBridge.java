@@ -11,7 +11,7 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.DexClass;
-import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithBody;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
@@ -34,7 +34,7 @@ class DalvCodeBridge {
 	private DalvCode dvCode;
 	private CodeItem codeItem;
 
-	public DalvCodeBridge(DalvCode dvCode, DexMethodWithCode dxMethod) {
+	public DalvCodeBridge(DalvCode dvCode, DexMethodWithBody dxMethod) {
 		this.dvCode = dvCode;
 		process(dxMethod);
 	}
@@ -49,7 +49,7 @@ class DalvCodeBridge {
 				);
 	}
 	
-	private void process(DexMethodWithCode dxMethod) {
+	private void process(DexMethodWithBody dxMethod) {
 		MethodDefinition methodDef = dxMethod.getMethodDef();
 		
 		String methodName = methodDef.getMethodId().getName();

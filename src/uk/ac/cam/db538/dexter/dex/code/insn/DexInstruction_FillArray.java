@@ -11,7 +11,7 @@ import org.jf.dexlib.Code.Format.Instruction31t;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
@@ -31,7 +31,7 @@ public class DexInstruction_FillArray extends DexInstruction {
     setUp();
   }
 
-  public DexInstruction_FillArray(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
+  public DexInstruction_FillArray(DexCode methodCode, Instruction insn, CodeParserState parsingState) {
     super(methodCode);
 
     if (insn instanceof Instruction31t && insn.opcode == Opcode.FILL_ARRAY_DATA) {

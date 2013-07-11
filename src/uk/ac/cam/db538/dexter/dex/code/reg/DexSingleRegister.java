@@ -14,4 +14,9 @@ public class DexSingleRegister extends DexOriginalRegister {
 	String getPlainId() {
 		return Integer.toString(id);
 	}
+
+	@Override
+	public RegisterWidth getWidth() {
+		return RegisterWidth.SINGLE;
+	}
 }

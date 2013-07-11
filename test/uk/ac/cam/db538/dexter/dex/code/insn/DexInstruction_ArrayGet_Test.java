@@ -10,7 +10,7 @@ import uk.ac.cam.db538.dexter.dex.code.Utils;
 public class DexInstruction_ArrayGet_Test {
 
   @Test
-  public void testParse_ArrayGet() throws InstructionParsingException {
+  public void testParse_ArrayGet() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction23x(Opcode.AGET_OBJECT, (short) 190, (short) 191, (short) 240),

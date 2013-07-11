@@ -15,7 +15,7 @@ import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -51,7 +51,7 @@ public class DexInstruction_Invoke extends DexInstruction {
          method.getCallType());
   }
 
-  public DexInstruction_Invoke(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
+  public DexInstruction_Invoke(DexCode methodCode, Instruction insn, CodeParserState parsingState) {
     super(methodCode);
 
     val cache = parsingState.getCache();
@@ -78,7 +78,7 @@ public class DexInstruction_Invoke extends DexInstruction {
       case 0:
         break;
       default:
-        throw new InstructionParsingException("Unexpected number of method argument registers");
+        throw new InstructionParseError("Unexpected number of method argument registers");
       }
 
     } else if (insn instanceof Instruction3rc && Opcode_Invoke.convert(insn.opcode) != null) {

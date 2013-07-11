@@ -1,10 +1,9 @@
 package uk.ac.cam.db538.dexter.dex.code.reg;
 
-import lombok.Getter;
 
 public abstract class DexOriginalRegister extends DexRegister {
 
-	@Getter private final DexTaintRegister taintRegister;
+	private final DexTaintRegister taintRegister;
 	
 	public DexOriginalRegister() {
 		this.taintRegister = new DexTaintRegister(this);
@@ -15,5 +14,10 @@ public abstract class DexOriginalRegister extends DexRegister {
 	@Override
 	public String toString() {
 		return "v" + getPlainId();
+	}
+
+	@Override
+	public DexTaintRegister getTaintRegister() {
+		return this.taintRegister;
 	}
 }

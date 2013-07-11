@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexLong extends DexPrimitiveType {
@@ -12,8 +13,8 @@ public class DexLong extends DexPrimitiveType {
 	DexLong() { }
 
     @Override
-	public DexRegisterTypeSize getTypeSize() {
-    	return DexRegisterTypeSize.WIDE;
+	public RegisterWidth getTypeSize() {
+    	return RegisterWidth.WIDE;
 	}
 
 	@Override

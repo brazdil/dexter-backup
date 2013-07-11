@@ -11,7 +11,7 @@ import org.jf.dexlib.Code.Format.Instruction22c;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.field.DexField;
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
@@ -55,7 +55,7 @@ public class DexInstruction_InstanceGet extends DexInstruction {
     this.opcode = Opcode_GetPut.getOpcodeFromType(this.fieldType);
   }
 
-  public DexInstruction_InstanceGet(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException, UnknownTypeException {
+  public DexInstruction_InstanceGet(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
     super(methodCode);
 
     if (insn instanceof Instruction22c && Opcode_GetPut.convert_IGET(insn.opcode) != null) {

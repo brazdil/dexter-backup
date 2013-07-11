@@ -25,10 +25,7 @@ import org.jf.dexlib.EncodedValue.EncodedValue;
 
 import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
-import uk.ac.cam.db538.dexter.dex.method.DexAbstractMethod;
-import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
-import uk.ac.cam.db538.dexter.dex.method.DexVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
@@ -115,14 +112,14 @@ public class DexClass {
 	}
 
 	public void instrument(DexInstrumentationCache cache) {
-		System.out.println("Instrumenting class " + this.classDef.getType().getPrettyName());
-	  
-		for (val method : this._methods)
-			method.instrument(cache);
-
-		this.addAnnotation(new DexAnnotation(
-			parentFile.getAuxiliaryDex().getAnno_InternalClass().getType(),
-			AnnotationVisibility.RUNTIME));
+//		System.out.println("Instrumenting class " + this.classDef.getType().getPrettyName());
+//	  
+//		for (val method : this._methods)
+//			method.instrument(cache);
+//
+//		this.addAnnotation(new DexAnnotation(
+//			parentFile.getAuxiliaryDex().getAnno_InternalClass().getType(),
+//			AnnotationVisibility.RUNTIME));
 	}
 
 	public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
@@ -204,10 +201,10 @@ public class DexClass {
 			asmInstanceFields.add(field.writeToFile(outFile, cache));
 
 		for (val method : _methods) {
-			if (method instanceof DexDirectMethod)
-				asmDirectMethods.add(method.writeToFile(outFile, cache));
-			else if ((method instanceof DexVirtualMethod) || (method instanceof DexAbstractMethod))
+			if (method.getMethodDef().isVirtual())
 				asmVirtualMethods.add(method.writeToFile(outFile, cache));
+			else
+				asmDirectMethods.add(method.writeToFile(outFile, cache));
 		}
 
 		val classData = ClassDataItem.internClassDataItem(

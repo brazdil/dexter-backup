@@ -14,7 +14,7 @@ import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 
@@ -32,7 +32,7 @@ public class DexInstruction_PackedSwitchData extends DexInstruction {
     this.targets = targets;
   }
 
-  public DexInstruction_PackedSwitchData(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
+  public DexInstruction_PackedSwitchData(DexCode methodCode, Instruction insn, CodeParserState parsingState) {
     super(methodCode);
 
     if (insn instanceof PackedSwitchDataPseudoInstruction) {
@@ -42,7 +42,7 @@ public class DexInstruction_PackedSwitchData extends DexInstruction {
       val parentInsn = parsingState.getCurrentOffsetParent();
       if (parentInsn == null || !(parentInsn instanceof DexInstruction_Switch) ||
           !((DexInstruction_Switch) parentInsn).isPacked())
-        throw new InstructionParsingException("Cannot find PackedSwitchData's parent instruction");
+        throw new InstructionParseError("Cannot find PackedSwitchData's parent instruction");
       this.parentInstruction = (DexInstruction_Switch) parentInsn;
 
       this.firstKey = insnPackedSwitchData.getFirstKey();

@@ -13,7 +13,7 @@ import org.jf.dexlib.Code.Format.Instruction31c;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 
@@ -32,7 +32,7 @@ public class DexInstruction_ConstString extends DexInstruction {
     stringConstant = value;
   }
 
-  public DexInstruction_ConstString(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_ConstString(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError {
     super(methodCode);
 
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_STRING) {

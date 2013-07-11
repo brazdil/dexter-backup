@@ -12,7 +12,7 @@ import org.jf.dexlib.Code.Format.Instruction30t;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 
@@ -26,7 +26,7 @@ public class DexInstruction_Goto extends DexInstruction {
     this.target = target;
   }
 
-  public DexInstruction_Goto(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_Goto(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError {
     super(methodCode);
 
     long targetOffset;

@@ -10,11 +10,9 @@ public class DexInstruction_Unknown extends DexInstruction {
 
   @Getter private final String opcode;
 
-  public DexInstruction_Unknown(DexCode methodCode, Instruction insn) {
+  public DexInstruction_Unknown(Instruction insn) {
     super(methodCode);
     opcode = insn.opcode.name();
-    System.out.println("Unknown instruction in " + getParentClass().getClassDef().getType().getPrettyName() +
-                       "..." + getParentMethod().getMethodDef().getMethodId().getName());
   }
 
   @Override

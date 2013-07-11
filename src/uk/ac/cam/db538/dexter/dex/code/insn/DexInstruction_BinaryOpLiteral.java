@@ -11,7 +11,7 @@ import org.jf.dexlib.Code.Format.Instruction22s;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -32,7 +32,7 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
     insnOpcode = opcode;
   }
 
-  public DexInstruction_BinaryOpLiteral(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_BinaryOpLiteral(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError {
     super(methodCode);
 
     int regA, regB;

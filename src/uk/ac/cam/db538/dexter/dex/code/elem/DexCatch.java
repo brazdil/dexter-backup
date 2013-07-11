@@ -13,15 +13,15 @@ public class DexCatch extends DexCodeElement {
   @Getter private final long originalAbsoluteOffset;
   @Getter private final DexClassType exceptionType;
 
-  public DexCatch(DexCode methodCode, long originalAbsoluteOffset, DexClassType exceptionType) {
-    super(methodCode);
+  public DexCatch(long originalAbsoluteOffset, DexClassType exceptionType) {
+    super();
 
     this.originalAbsoluteOffset = originalAbsoluteOffset;
     this.exceptionType = exceptionType;
   }
 
-  public DexCatch(DexCode methodCode, DexClassType exceptionType) {
-    this(methodCode, CATCH_COUNTER, exceptionType);
+  public DexCatch(DexClassType exceptionType) {
+    this(CATCH_COUNTER, exceptionType);
 
     CATCH_COUNTER--;
     if (CATCH_COUNTER >= 0L)

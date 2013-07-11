@@ -10,7 +10,7 @@ import uk.ac.cam.db538.dexter.dex.code.Utils;
 public class DexInstruction_ArrayPutWide_Test {
 
   @Test
-  public void testParse_ArrayPutWide() throws InstructionParsingException {
+  public void testParse_ArrayPutWide() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction23x(Opcode.APUT_WIDE, (short) 200, (short) 201, (short) 202),

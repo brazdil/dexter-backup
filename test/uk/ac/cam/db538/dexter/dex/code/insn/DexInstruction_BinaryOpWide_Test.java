@@ -16,7 +16,7 @@ import uk.ac.cam.db538.dexter.dex.code.Utils;
 public class DexInstruction_BinaryOpWide_Test {
 
   @Test
-  public void testParse_BinaryOpWide() throws InstructionParsingException {
+  public void testParse_BinaryOpWide() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction23x(Opcode.ADD_LONG, (short) 234, (short) 235, (short) 236),
@@ -66,7 +66,7 @@ public class DexInstruction_BinaryOpWide_Test {
   }
 
   @Test
-  public void testParse_BinaryOpWide2addr() throws InstructionParsingException {
+  public void testParse_BinaryOpWide2addr() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction12x(Opcode.ADD_LONG_2ADDR, (byte) 4, (byte) 14),

@@ -6,7 +6,7 @@ import lombok.val;
 import org.jf.dexlib.DexFile;
 
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
-import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
+import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
@@ -19,11 +19,11 @@ import uk.ac.cam.db538.dexter.merge.TaintConstants;
 
 public class AuxiliaryDex extends Dex {
 
-	@Getter private final DexDirectMethod method_TaintGet; 
-	@Getter private final DexDirectMethod method_TaintSet; 
+	@Getter private final DexMethod method_TaintGet; 
+	@Getter private final DexMethod method_TaintSet; 
 
-	@Getter private final DexDirectMethod method_QueryTaint; 
-	@Getter private final DexDirectMethod method_ServiceTaint; 
+	@Getter private final DexMethod method_QueryTaint; 
+	@Getter private final DexMethod method_ServiceTaint; 
 	
 	@Getter private final DexStaticField field_CallParamTaint;
 	@Getter private final DexStaticField field_CallResultTaint;
@@ -61,12 +61,11 @@ public class AuxiliaryDex extends Dex {
 		this.anno_InternalMethod = getAnnoDef(hierarchy, renamer, CLASS_INTERNALMETHOD);
 	}
 	
-	private static DexDirectMethod findStaticMethodByName(DexClass clsDef, String name) {
+	private static DexMethod findStaticMethodByName(DexClass clsDef, String name) {
 		for (val method : clsDef.getMethods())
 			if (method.getMethodDef().getMethodId().getName().equals(name) &&
-				method instanceof DexDirectMethod &&
 				method.getMethodDef().isStatic())
-				return (DexDirectMethod) method;
+				return method;
 		throw new Error("Failed to locate an auxiliary method");
 	}
 	

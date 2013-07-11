@@ -33,7 +33,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
-import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithBody;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
@@ -67,7 +67,7 @@ public class DexCodeGeneration {
 
 	private DexOptions dexOptions;
 	
-	private DexMethodWithCode method;
+	private DexMethodWithBody method;
 	private int inWords;
 	private int outWords;
 	private boolean isStatic;
@@ -80,7 +80,7 @@ public class DexCodeGeneration {
 	public static long totalAnalysisTime = 0;
 	public static long totalCGTime = 0;
 	public static long totalDxTime = 0;
-	public DexCodeGeneration(DexMethodWithCode method) {
+	public DexCodeGeneration(DexMethodWithBody method) {
 		MethodDefinition methodDef = method.getMethodDef();
 		DexMethodId methodId = methodDef.getMethodId();
 		

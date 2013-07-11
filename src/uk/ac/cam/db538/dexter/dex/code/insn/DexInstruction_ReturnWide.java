@@ -13,7 +13,7 @@ import org.jf.dexlib.Code.Format.Instruction11x;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
@@ -33,10 +33,10 @@ public class DexInstruction_ReturnWide extends DexInstruction {
     regFrom2 = from2;
   }
 
-  public DexInstruction_ReturnWide(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
+  public DexInstruction_ReturnWide(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParsingException {
     super(methodCode);
 
-    if (insn instanceof Instruction11x && insn.opcode == Opcode.RETURN_WIDE) {
+    if (insn instanceof Instruction11x && ) {
 
       val insnReturnWide = (Instruction11x) insn;
       regFrom1 = parsingState.getRegister(insnReturnWide.getRegisterA());

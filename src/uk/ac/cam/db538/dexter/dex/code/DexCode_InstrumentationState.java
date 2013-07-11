@@ -8,7 +8,6 @@ import lombok.val;
 import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 
 public class DexCode_InstrumentationState {
-  private final Map<DexRegister, DexRegister> registerMap;
   private final int idOffset;
 
   @Getter private final DexInstrumentationCache cache;
@@ -22,8 +21,6 @@ public class DexCode_InstrumentationState {
     this.needsCallInstrumentation = parentMethod != null && !parentMethod.getMethodDef().isAbstract();
     this.internalClassAnnotationRegister = (parentMethod != null && parentMethod.isVirtual()) ? new DexRegister() : null;
 
-    registerMap = new HashMap<DexRegister, DexRegister>();
-
     // find the maximal register id in the code
     // this is strictly for GUI purposes
     // actual register allocation happens later;
@@ -34,18 +31,5 @@ public class DexCode_InstrumentationState {
         maxId = id;
     }
     idOffset = maxId + 1;
-  }
-
-  public DexRegister getTaintRegister(DexRegister reg) {
-    if (reg == null)
-      return null;
-
-    val taintReg = registerMap.get(reg);
-    if (taintReg == null) {
-      val newReg = new DexRegister(reg.getOriginalIndex() + idOffset);
-      registerMap.put(reg, newReg);
-      return newReg;
-    } else
-      return taintReg;
   }
 }

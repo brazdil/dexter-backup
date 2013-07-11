@@ -9,53 +9,56 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+
+import com.google.common.collect.Sets;
 
 public class DexInstruction_MoveResult extends DexInstruction {
 
   @Getter private final DexRegister regTo;
-  @Getter private final boolean objectMoving;
+  @Getter private final Opcode_Move opcode;
 
-  public DexInstruction_MoveResult(DexCode methodCode, DexRegister to, boolean objectMoving) {
-    super(methodCode);
-
-    this.regTo = to;
-    this.objectMoving = objectMoving;
+  public DexInstruction_MoveResult(DexRegister regTo, Opcode_Move opcode) {
+    this.regTo = regTo;
+    this.opcode = opcode;
+    
+    this.opcode.checkRegisterType(this.regTo);    
   }
 
-  public DexInstruction_MoveResult(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-    super(methodCode);
-
+  public DexInstruction_MoveResult(Instruction insn, CodeParserState parsingState) {
     if (insn instanceof Instruction11x &&
-        (insn.opcode == Opcode.MOVE_RESULT || insn.opcode == Opcode.MOVE_RESULT_OBJECT)) {
+        (insn.opcode == Opcode.MOVE_RESULT || insn.opcode == Opcode.MOVE_RESULT_WIDE || insn.opcode == Opcode.MOVE_RESULT_OBJECT)) {
 
       val insnMoveResult = (Instruction11x) insn;
-      regTo = parsingState.getRegister(insnMoveResult.getRegisterA());
-      objectMoving = insn.opcode == Opcode.MOVE_RESULT_OBJECT;
+      this.opcode = Opcode_Move.convert(insn.opcode);
+      if (this.opcode == Opcode_Move.Wide)
+    	  regTo = parsingState.getWideRegister(insnMoveResult.getRegisterA());
+      else
+    	  regTo = parsingState.getSingleRegister(insnMoveResult.getRegisterA());
 
     } else
       throw FORMAT_EXCEPTION;
   }
 
   public DexInstruction_MoveResult(DexInstruction_MoveResult toClone) {
-    this(toClone.getMethodCode(),
-         toClone.regTo,
-         toClone.objectMoving);
-
-    this.setOriginalElement(toClone.isOriginalElement());
+    this(toClone.regTo, toClone.opcode);
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return "move-result" + (objectMoving ? "-object" : "") +
-           " " + regTo.getOriginalIndexString();
+  public String toString() {
+	return opcode.getAssemblyName_Result() + " " + regTo.toString();
+  }
+  
+  @Override
+  public void instrument(DexCode_InstrumentationState state) {
+	  throw new Error("MoveResult instruction is not meant to be instrumented directly");
   }
 
   @Override
   public Set<DexRegister> lvaDefinedRegisters() {
-    return createSet(regTo);
+    return Sets.newHashSet(regTo);
   }
 
   @Override

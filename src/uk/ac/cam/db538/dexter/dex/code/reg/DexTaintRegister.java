@@ -14,4 +14,14 @@ public class DexTaintRegister extends DexRegister {
 	public String toString() {
 		return "t" + originalRegister.getPlainId();
 	}
+
+	@Override
+	public DexTaintRegister getTaintRegister() {
+		throw new Error("Cannot get the taint register of a taint register.");
+	}
+
+	@Override
+	public RegisterWidth getWidth() {
+		return RegisterWidth.SINGLE;
+	}
 }
