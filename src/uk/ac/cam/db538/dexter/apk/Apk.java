@@ -9,20 +9,48 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
+
+import com.rx201.jarsigner.JarSigner;
+import com.rx201.jarsigner.KeyGenerator;
 
 import lombok.Getter;
 import lombok.val;
+import sun.security.x509.AlgorithmId;
+import sun.security.x509.CertificateAlgorithmId;
+import sun.security.x509.CertificateIssuerName;
+import sun.security.x509.CertificateSerialNumber;
+import sun.security.x509.CertificateSubjectName;
+import sun.security.x509.CertificateValidity;
+import sun.security.x509.CertificateVersion;
+import sun.security.x509.CertificateX509Key;
+import sun.security.x509.X500Name;
+import sun.security.x509.X509CertImpl;
+import sun.security.x509.X509CertInfo;
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
 public class Apk {
 	private static final String ManifestFile = "AndroidManifest.xml";
 	private static final String ClassesDex = "classes.dex";
+	private static final String MetaInfo = "META-INF";
 	
 	public static InputStream readManifestFromAPK(File apkFile)
 			throws IOException {
@@ -48,10 +76,69 @@ public class Apk {
 		return null;
 	}
 	
-	public static void produceAPK(File originalFile, File destinationFile, byte[] manifestData, byte[] dexData) {
-		
-	}
+	private static KeyGenerator keyGenerator = new KeyGenerator();
+	
+	public static void produceAPK(File originalFile, File destinationFile, byte[] manifestData, byte[] dexData) throws IOException {
 
+		// originalFile ---(replacing content)--->  workingFile --(signing)--> destinationFile 
+	    File workingFile = File.createTempFile("dexter-", ".apk");
+
+	    ZipFile originalAPK = null;
+	    ZipOutputStream workingAPK = null;
+		try {
+			byte[] buffer = new byte[16*1024];
+			
+			originalAPK = new ZipFile(originalFile);
+		    workingAPK = new ZipOutputStream(new FileOutputStream(workingFile));
+
+		    // Create intermediate apk with new classes.dex and AndroidManifest.xml, excluding
+		    // old signature data/
+			Enumeration<? extends ZipEntry> entries = originalAPK.entries();
+			while (entries.hasMoreElements()) {
+				ZipEntry entry = (ZipEntry) entries.nextElement();
+		        String name = entry.getName();
+		        
+		        ZipEntry newEntry;
+		        InputStream data = null;
+		        if (name.equals(ManifestFile) && manifestData != null) {
+		        	newEntry = new ZipEntry(ManifestFile);
+		        	data = new ByteArrayInputStream(manifestData);
+		        } else if (name.equals(ClassesDex) && dexData != null) {
+		        	newEntry = new ZipEntry(ClassesDex);
+		        	data = new ByteArrayInputStream(dexData);
+		        } else if (name.startsWith(MetaInfo)) {
+		        	newEntry = null;
+		        } else {
+		        	newEntry = entry;
+		        	data = originalAPK.getInputStream(entry);
+		        }
+		        
+		        if (newEntry != null) {
+		        	workingAPK.putNextEntry(newEntry);
+		            int len;
+		            while ((len = data.read(buffer)) > 0) {
+		            	workingAPK.write(buffer, 0, len);
+		            }
+		            workingAPK.closeEntry();
+		        }
+			}
+			workingAPK.close();
+			
+			X509Certificate[] certChain = keyGenerator.getCertificateChain();
+			PrivateKey privateKey = keyGenerator.getPrivateKey();
+			
+			JarSigner.sign(workingFile, destinationFile, "DEXTER", certChain, privateKey);
+		} catch (ZipException e) {
+			throw new IOException(e);
+		} finally {
+			if (originalAPK != null)
+				originalAPK.close();
+			if (workingAPK != null)
+				workingAPK.close();
+		}
+
+	}
+/*
   public void writeToFile(File filename) throws IOException {
     // prepare the new dex file
     System.out.println("Generating new DEX");
@@ -169,4 +256,5 @@ public class Apk {
 	  in.close();
 	  out.close(); 	  
   }
+*/
 }
