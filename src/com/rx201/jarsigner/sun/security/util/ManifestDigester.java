@@ -23,7 +23,7 @@
  * questions.
  */
 
-package com.rx201.jarsigner;
+package com.rx201.jarsigner.sun.security.util;
 
 import java.security.*;
 import java.util.HashMap;
