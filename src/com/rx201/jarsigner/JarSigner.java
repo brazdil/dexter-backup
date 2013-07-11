@@ -23,19 +23,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.security.spec.KeySpec;
-import java.security.spec.RSAPrivateKeySpec;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.jar.*;
-import java.util.zip.ZipFile;
 
-import com.rx201.jarsigner.sun.misc.BASE64Encoder;
-import com.rx201.jarsigner.sun.security.util.ManifestDigester;
-import com.rx201.jarsigner.sun.tools.jar.SignatureFile;
+import sun.security.util.ManifestDigester;
 
 /**
  * Adopted from https://svn.cs.cf.ac.uk/projects/whip/trunk/whip-core/src/main/java/org/whipplugin/data/bundle/JarSigner15.java
@@ -54,7 +48,7 @@ import com.rx201.jarsigner.sun.tools.jar.SignatureFile;
  */
 
 
-public class JarSigner15 {
+public class JarSigner {
 
     // the alias for the signing key, the private key to sign with,
     // and the certificate chain
@@ -62,7 +56,7 @@ public class JarSigner15 {
     private PrivateKey privateKey;
     private X509Certificate[] certChain;
 
-    public JarSigner15(String alias, PrivateKey privateKey, X509Certificate[] certChain) {
+    public JarSigner(String alias, PrivateKey privateKey, X509Certificate[] certChain) {
         this.alias = alias;
         this.privateKey = privateKey;
         this.certChain = certChain;
@@ -136,7 +130,7 @@ public class JarSigner15 {
     }
 
     // helper function to update the digest
-    private static BASE64Encoder b64Encoder = new BASE64Encoder();
+    private static JarBASE64Encoder b64Encoder = new JarBASE64Encoder();
 
     private static String updateDigest(MessageDigest digest, InputStream inputStream)
             throws IOException {
@@ -243,7 +237,8 @@ public class JarSigner15 {
         // construct the signature file object and the
         // signature block objects
         SignatureFile signatureFile = createSignatureFile(manifest, messageDigest);
-        SignatureFile.Block block = signatureFile.generateBlock(privateKey, certChain, true, jarFile);
+        SignatureFile.Block block = signatureFile.generateBlock(privateKey, null, certChain, 
+        		true, null, null, null, null, jarFile);
 
         // start writing out the signed JAR file
 
@@ -306,12 +301,11 @@ public class JarSigner15 {
     }
 
 
-	public static File sign(File jar, String newName, String alias, X509Certificate certChain[], PrivateKey privateKey) {
+	public static File sign(File jar, File newJar, String alias, X509Certificate certChain[], PrivateKey privateKey) {
         try {
-            JarSigner15 jarSigner = new JarSigner15(alias, privateKey, certChain);
+            JarSigner jarSigner = new JarSigner(alias, privateKey, certChain);
 
             JarFile jarFile = new JarFile(jar.getCanonicalPath());
-            File newJar = new File(jar.getParentFile(), newName);
             OutputStream outStream = new FileOutputStream(newJar);
             jarSigner.signJarFile(jarFile, outStream);
             return newJar;
