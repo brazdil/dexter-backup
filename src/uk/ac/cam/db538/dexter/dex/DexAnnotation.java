@@ -72,11 +72,15 @@ public class DexAnnotation {
 
   public static List<List<DexAnnotation>> parseAll(AnnotationSetRefList annotations, DexTypeCache cache) {
     if (annotations == null)
-      return new ArrayList<List<DexAnnotation>>();
+      return null;
 
-    val list = new ArrayList<List<DexAnnotation>>();
-
-    for (val anno : annotations.getAnnotationSets())
+    val annotationLists = annotations.getAnnotationSets();
+    if (annotationLists.length == 0)
+    	return null;
+    
+    List<List<DexAnnotation>> list = new ArrayList<List<DexAnnotation>>(annotationLists.length);
+    
+    for (val anno : annotationLists)
       list.add(parseAll(anno, cache));
 
     return list;

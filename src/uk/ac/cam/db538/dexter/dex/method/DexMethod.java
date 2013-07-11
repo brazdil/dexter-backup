@@ -14,6 +14,7 @@ import org.jf.dexlib.AnnotationDirectoryItem.MethodAnnotation;
 import org.jf.dexlib.AnnotationDirectoryItem.ParameterAnnotation;
 import org.jf.dexlib.AnnotationItem;
 import org.jf.dexlib.AnnotationSetItem;
+import org.jf.dexlib.AnnotationSetRefList;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
@@ -33,25 +34,22 @@ public abstract class DexMethod {
 	@Getter private final DexClass parentClass;
 	@Getter private final MethodDefinition methodDef;
   
-	private final List<DexAnnotation> _annotations;
-	@Getter private final List<DexAnnotation> annotations;
-	
-	// private final List<Set<DexAnnotation>> paramAnnotations;
+	private final List<DexAnnotation> annotations;
+	private final List<List<DexAnnotation>> paramAnnotations;
   
 	public DexMethod(DexClass parent, MethodDefinition methodDef) {
 		this.parentClass = parent;
 		this.methodDef = methodDef;
     
-		this._annotations = new ArrayList<DexAnnotation>();
-		this.annotations = Collections.unmodifiableList(this._annotations);
-    
-		// this.paramAnnotations = (paramAnnotations == null) ? new ArrayList<Set<DexAnnotation>>() : paramAnnotations;
+		this.annotations = new ArrayList<DexAnnotation>();
+		this.paramAnnotations = new ArrayList<List<DexAnnotation>>(); 
 	}
 
 	public DexMethod(DexClass parent, MethodDefinition methodDef, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {
 		this(parent, methodDef);
 		
-		this._annotations.addAll(init_ParseAnnotations(getParentFile(), methodInfo, annoDir));
+		this.annotations.addAll(init_ParseAnnotations(getParentFile(), methodInfo, annoDir));
+		this.paramAnnotations.addAll(init_ParseParamAnnotations(getParentFile(), methodInfo, annoDir));
 	}
 
 	private static List<DexAnnotation> init_ParseAnnotations(Dex dex, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {
@@ -61,12 +59,19 @@ public abstract class DexMethod {
 			return DexAnnotation.parseAll(annoDir.getMethodAnnotations(methodInfo.method), dex.getTypeCache());
 	}
 	
+	private static List<List<DexAnnotation>> init_ParseParamAnnotations(Dex dex, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {
+		if (annoDir == null)
+			return Collections.emptyList();
+		else
+			return DexAnnotation.parseAll(annoDir.getParameterAnnotations(methodInfo.method), dex.getTypeCache());
+	}
+	
 	public Dex getParentFile() {
 		return parentClass.getParentFile();
 	}
 
 	public void addAnnotation(DexAnnotation anno) {
-		_annotations.add(anno);
+		annotations.add(anno);
 	}
 
 	public abstract boolean isVirtual();
@@ -117,19 +122,17 @@ public abstract class DexMethod {
 	}
 
 	public ParameterAnnotation assembleParameterAnnotations(DexFile outFile, DexAssemblingCache cache) {
-//		if (paramAnnotations.size() == 0)
-//			return null;
-//		
-//		List<AnnotationSetItem> annoList = new ArrayList<AnnotationSetItem>();
-//		for (val anno : paramAnnotations)
-//			annoList.add(assembleAnnotationSetItem(outFile, cache, anno));
-//		
-//	    val annoSetRefList = AnnotationSetRefList.internAnnotationSetRefList(outFile, annoList);
-//	    val paramAnno = new ParameterAnnotation(cache.getMethod(methodDef), annoSetRefList);
-//
-//	    return paramAnno;
-		// TODO: finish this
-		return null;
+		if (paramAnnotations.size() == 0)
+			return null;
+		
+		List<AnnotationSetItem> annoList = new ArrayList<AnnotationSetItem>();
+		for (val anno : paramAnnotations)
+			annoList.add(assembleAnnotationSetItem(outFile, cache, anno));
+		
+	    val annoSetRefList = AnnotationSetRefList.internAnnotationSetRefList(outFile, annoList);
+	    val paramAnno = new ParameterAnnotation(cache.getMethod(methodDef), annoSetRefList);
+
+	    return paramAnno;
 	}
 
 	public abstract void markMethodOriginal();
