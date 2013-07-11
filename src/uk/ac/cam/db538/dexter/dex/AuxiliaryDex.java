@@ -5,12 +5,11 @@ import lombok.val;
 
 import org.jf.dexlib.DexFile;
 
+import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
+import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
-import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
-import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.merge.InternalClassAnnotation;
 import uk.ac.cam.db538.dexter.merge.InternalMethodAnnotation;
@@ -20,16 +19,16 @@ import uk.ac.cam.db538.dexter.merge.TaintConstants;
 
 public class AuxiliaryDex extends Dex {
 
-	@Getter private final MethodDefinition method_TaintGet; 
-	@Getter private final MethodDefinition method_TaintSet; 
+	@Getter private final DexDirectMethod method_TaintGet; 
+	@Getter private final DexDirectMethod method_TaintSet; 
 
-	@Getter private final MethodDefinition method_QueryTaint; 
-	@Getter private final MethodDefinition method_ServiceTaint; 
+	@Getter private final DexDirectMethod method_QueryTaint; 
+	@Getter private final DexDirectMethod method_ServiceTaint; 
 	
-	@Getter private final FieldDefinition field_CallParamTaint;
-	@Getter private final FieldDefinition field_CallResultTaint;
-	@Getter private final FieldDefinition field_CallParamSemaphore;
-	@Getter private final FieldDefinition field_CallResultSemaphore;
+	@Getter private final DexStaticField field_CallParamTaint;
+	@Getter private final DexStaticField field_CallResultTaint;
+	@Getter private final DexStaticField field_CallParamSemaphore;
+	@Getter private final DexStaticField field_CallResultSemaphore;
 	
 	@Getter private final InterfaceDefinition anno_InternalClass;
 	@Getter private final InterfaceDefinition anno_InternalMethod;
@@ -38,19 +37,19 @@ public class AuxiliaryDex extends Dex {
 		super(dexAux, hierarchy, null, renamer);
 		
 		// ObjectTaintStorage class
-		val clsObjTaint = getClassDef(hierarchy, renamer, CLASS_OBJTAINT);
+		val clsObjTaint = getDexClass(hierarchy, renamer, CLASS_OBJTAINT);
 		
-		this.method_TaintGet = findMethodByName(clsObjTaint, "get");
-		this.method_TaintSet = findMethodByName(clsObjTaint, "set");
+		this.method_TaintGet = findStaticMethodByName(clsObjTaint, "get");
+		this.method_TaintSet = findStaticMethodByName(clsObjTaint, "set");
 		
 		// TaintConstants class
-		val clsTaintConsts = getClassDef(hierarchy, renamer, CLASS_TAINTCONSTANTS);
+		val clsTaintConsts = getDexClass(hierarchy, renamer, CLASS_TAINTCONSTANTS);
 		
-		this.method_QueryTaint = findMethodByName(clsTaintConsts, "queryTaint");
-		this.method_ServiceTaint = findMethodByName(clsTaintConsts, "serviceTaint");
+		this.method_QueryTaint = findStaticMethodByName(clsTaintConsts, "queryTaint");
+		this.method_ServiceTaint = findStaticMethodByName(clsTaintConsts, "serviceTaint");
 		
 		// MethodCallHelper class
-		val clsMethodCallHelper = getClassDef(hierarchy, renamer, CLASS_METHODCALLHELPER);
+		val clsMethodCallHelper = getDexClass(hierarchy, renamer, CLASS_METHODCALLHELPER);
 		
 		this.field_CallParamTaint = findStaticFieldByName(clsMethodCallHelper, "ARG");
 		this.field_CallResultTaint = findStaticFieldByName(clsMethodCallHelper, "RES");
@@ -62,25 +61,31 @@ public class AuxiliaryDex extends Dex {
 		this.anno_InternalMethod = getAnnoDef(hierarchy, renamer, CLASS_INTERNALMETHOD);
 	}
 	
-	private static MethodDefinition findMethodByName(ClassDefinition clsDef, String name) {
+	private static DexDirectMethod findStaticMethodByName(DexClass clsDef, String name) {
 		for (val method : clsDef.getMethods())
-			if (method.getMethodId().getName().equals(name))
-				return method;
+			if (method.getMethodDef().getMethodId().getName().equals(name) &&
+				method instanceof DexDirectMethod &&
+				method.getMethodDef().isStatic())
+				return (DexDirectMethod) method;
 		throw new Error("Failed to locate an auxiliary method");
 	}
 	
-	private static FieldDefinition findStaticFieldByName(ClassDefinition clsDef, String name) {
+	private static DexStaticField findStaticFieldByName(DexClass clsDef, String name) {
 		for (val field : clsDef.getStaticFields())
-			if (field.getFieldId().getName().equals(name))
+			if (field.getFieldDef().getFieldId().getName().equals(name))
 				return field;
 		throw new Error("Failed to locate an auxiliary static field");
 	}
 
-	private static ClassDefinition getClassDef(RuntimeHierarchy hierarchy, ClassRenamer classRenamer, String className) {
-		return hierarchy.getClassDefinition(new DexClassType(classRenamer.applyRules(className)));
+	private DexClass getDexClass(RuntimeHierarchy hierarchy, ClassRenamer classRenamer, String className) {
+		val classDef = hierarchy.getClassDefinition(new DexClassType(classRenamer.applyRules(className)));
+		for (val cls : this.getClasses())
+			if (classDef.equals(cls.getClassDef()))
+				return cls;
+		throw new Error("Auxiliary class was not found");
 	}
 	
-	private static InterfaceDefinition getAnnoDef(RuntimeHierarchy hierarchy, ClassRenamer classRenamer, String className) {
+	private InterfaceDefinition getAnnoDef(RuntimeHierarchy hierarchy, ClassRenamer classRenamer, String className) {
 		return hierarchy.getInterfaceDefinition(new DexClassType(classRenamer.applyRules(className)));
 	}
 

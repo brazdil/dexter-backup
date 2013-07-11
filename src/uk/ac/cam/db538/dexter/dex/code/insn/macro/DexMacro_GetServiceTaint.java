@@ -28,7 +28,7 @@ public class DexMacro_GetServiceTaint extends DexMacro {
     val code = getMethodCode();
     val dex = getParentFile();
 
-    val methodQueryTaint = dex.getTaintConstants_ServiceTaint();
+    val methodQueryTaint = dex.getAuxiliaryDex().getMethod_ServiceTaint();
 
     return Arrays.asList(new DexCodeElement[] {
                            // regTo = TaintConstants.managerTaint(regManagerName)

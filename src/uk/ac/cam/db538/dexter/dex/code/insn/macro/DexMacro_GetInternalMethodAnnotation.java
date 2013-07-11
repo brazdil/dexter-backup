@@ -157,7 +157,7 @@ public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
 
     }
     // ask if it implements the Internal annotation
-    instrumentedCode.add(new DexInstruction_ConstClass(methodCode, regInternalAnnotationClass, dex.getInternalMethodAnnotation_Type()));
+    instrumentedCode.add(new DexInstruction_ConstClass(methodCode, regInternalAnnotationClass, dex.getAuxiliaryDex().getAnno_InternalMethod().getType()));
     instrumentedCode.add(
       new DexInstruction_Invoke(
         methodCode,

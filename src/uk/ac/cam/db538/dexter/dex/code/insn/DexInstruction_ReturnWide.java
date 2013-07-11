@@ -64,18 +64,17 @@ public class DexInstruction_ReturnWide extends DexInstruction {
     val insnPrintDebug = new DexMacro_PrintStringConst(
       code,
       "$# exiting method " +
-      getParentClass().getClassDef().getType().getPrettyName() +
-      "->" + getParentMethod().getName(),
+      getParentMethod().getMethodDef().toString(),
       true);
-    val insnGetSRES = new DexInstruction_StaticGet(code, regResSemaphore, dex.getMethodCallHelper_SRes());
+    val insnGetSRES = new DexInstruction_StaticGet(code, regResSemaphore, dex.getAuxiliaryDex().getField_CallResultSemaphore());
     val insnAcquireSRES = new DexInstruction_Invoke(
       code,
-      (DexClassType) dex.getMethodCallHelper_SRes().getFieldDef().getFieldId().getType(),
+      (DexClassType) dex.getAuxiliaryDex().getField_CallResultSemaphore().getFieldDef().getFieldId().getType(),
       "acquire",
-      new DexPrototype(DexVoid.parse("V", null), null),
+      new DexPrototype(DexVoid.parse("V", getParentFile().getTypeCache()), null),
       Arrays.asList(regResSemaphore),
       Opcode_Invoke.Virtual);
-    val insnSetRES = new DexInstruction_StaticPut(code, state.getTaintRegister(regFrom1), dex.getMethodCallHelper_Res());
+    val insnSetRES = new DexInstruction_StaticPut(code, state.getTaintRegister(regFrom1), dex.getAuxiliaryDex().getField_CallResultTaint());
 
     if (parentMethod.isVirtual()) {
       val labelSkipTaintPassing = new DexLabel(code);

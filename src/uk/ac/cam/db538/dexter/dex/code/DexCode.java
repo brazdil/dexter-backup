@@ -436,20 +436,16 @@ public class DexCode {
     DexRegister.resetCounter();
     instrumentationState = new DexCode_InstrumentationState(this, cache);
 
-    boolean shouldInstrument = !(getParentClass().getType().getDescriptor().startsWith("Lcom/quicinc/vellamo/benchmarks/html5/"));
+    generatePseudoinstructions();
 
-    if (shouldInstrument) {
-      generatePseudoinstructions();
+    val insns = new HashSet<DexInstruction>();
+    for (val elem : instructionList)
+      if (elem instanceof DexInstruction)
+        insns.add((DexInstruction) elem);
 
-      val insns = new HashSet<DexInstruction>();
-      for (val elem : instructionList)
-        if (elem instanceof DexInstruction)
-          insns.add((DexInstruction) elem);
-
-      for (val insn : insns)
-        if (!insn.isAuxiliaryElement())
-          insn.instrument(instrumentationState);
-    }
+    for (val insn : insns)
+      if (!insn.isAuxiliaryElement())
+        insn.instrument(instrumentationState);
 
     if (instrumentationState.isNeedsCallInstrumentation())
       insertCallHandling(instrumentationState);
@@ -465,9 +461,9 @@ public class DexCode {
     val dex = getParentFile();
     val parsingCache = dex.getTypeCache();
     val semaphoreClass = DexClassType.parse("Ljava/util/concurrent/Semaphore;", parsingCache);
-    boolean hasPrimitiveArgument = parentMethod.getPrototype().hasPrimitiveArgument();
-    boolean staticMethod = parentMethod.isStatic();
-    boolean constructorMethod = parentMethod.isConstructor();
+    boolean hasPrimitiveArgument = parentMethod.getMethodDef().getMethodId().getPrototype().hasPrimitiveArgument();
+    boolean staticMethod = parentMethod.getMethodDef().isStatic();
+    boolean constructorMethod = parentMethod.getMethodDef().isConstructor();
 
     // need to do different things for static/direct and virtual methods
     // static/direct methods can never be called from external origin
@@ -512,8 +508,8 @@ public class DexCode {
           new DexMacro_PrintStringConst(
             this,
             "$# entering method " +
-            getParentClass().getType().getPrettyName() +
-            "->" + parentMethod.getName() +
+            getParentClass().getClassDef().getType().getPrettyName() +
+            "->" + parentMethod.getMethodDef().getMethodId().getName() +
             " (internal origin)",
             true));
       }
@@ -522,14 +518,14 @@ public class DexCode {
       val regIndex = new DexRegister();
       val regSemaphore = new DexRegister();
       val regArrayElement = new DexRegister();
-
+      
       // get the ARG array
       if (hasPrimitiveArgument)
-        addedCode.add(new DexInstruction_StaticGet(this, regArray, dex.getMethodCallHelper_Arg()));
+        addedCode.add(new DexInstruction_StaticGet(this, regArray, dex.getAuxiliaryDex().getField_CallParamTaint()));
 
       int paramRegIndex = staticMethod ? 0 : 1;
       int paramTaintArrayIndex = 0;
-      for (val paramType : parentMethod.getPrototype().getParameterTypes()) {
+      for (val paramType : parentMethod.getMethodDef().getMethodId().getPrototype().getParameterTypes()) {
         if (paramType instanceof DexPrimitiveType) {
           // for primitives, put the taint information in their respective taint registers
           val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
@@ -545,7 +541,7 @@ public class DexCode {
 
           if (printDebug) {
             addedCode.add(new DexMacro_PrintStringConst(this,
-                          "$ " + getParentClass().getType().getShortName() + "->" + parentMethod.getName() + ": " +
+                          "$ " + parentMethod.getMethodDef().toString() + ": " +
                           "ARG[" + paramTaintArrayIndex + "] = ",
                           false));
             addedCode.add(new DexMacro_PrintInteger(this, regArrayElement, true));
@@ -566,7 +562,7 @@ public class DexCode {
         addedCode.add(new DexInstruction_StaticGet(
                         this,
                         regSemaphore,
-                        dex.getMethodCallHelper_SArg()));
+                        dex.getAuxiliaryDex().getField_CallParamSemaphore()));
         addedCode.add(new DexInstruction_Invoke(
                         this,
                         semaphoreClass,
@@ -590,14 +586,13 @@ public class DexCode {
           new DexMacro_PrintStringConst(
             this,
             "$# entering method " +
-            getParentClass().getType().getPrettyName() +
-            "->" + parentMethod.getName() +
+            parentMethod.getMethodDef().toString() +
             " (external origin)",
             true));
       }
 
       int paramRegIndex = 1;
-      for (val paramType : parentMethod.getPrototype().getParameterTypes()) {
+      for (val paramType : parentMethod.getMethodDef().getMethodId().getPrototype().getParameterTypes()) {
         // assign the taint information of 'this' object to all the params
         if (paramType instanceof DexPrimitiveType) {
           val regParamMapping = parentMethod.getParameterMappedRegisters().get(paramRegIndex);
