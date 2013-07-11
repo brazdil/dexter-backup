@@ -17,11 +17,7 @@
 package com.rx201.jarsigner;
 
 import java.io.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -36,6 +32,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.jar.*;
 import java.util.zip.ZipFile;
+
+import com.rx201.jarsigner.sun.misc.BASE64Encoder;
+import com.rx201.jarsigner.sun.security.util.ManifestDigester;
+import com.rx201.jarsigner.sun.tools.jar.SignatureFile;
 
 /**
  * Adopted from https://svn.cs.cf.ac.uk/projects/whip/trunk/whip-core/src/main/java/org/whipplugin/data/bundle/JarSigner15.java
@@ -200,7 +200,7 @@ public class JarSigner15 {
     // create a signature file object out of the manifest and the
     // message digest
     private SignatureFile createSignatureFile(Manifest manifest, MessageDigest messageDigest)
-            throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException, InstantiationException, ClassNotFoundException {
+            throws IOException {
         // construct the signature file and the signature block for
         // this manifest
         ManifestDigester manifestDigester = new ManifestDigester(serialiseManifest(manifest));
@@ -225,7 +225,7 @@ public class JarSigner15 {
     // the actual JAR signing method -- this is the method which
     // will be called by those wrapping the JARSigner class
     public void signJarFile(JarFile jarFile, OutputStream outputStream)
-            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, IOException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, CertificateException, InstantiationException, ClassNotFoundException {
+            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, IOException, CertificateException {
 
         // calculate the necessary files for the signed jAR
 
@@ -303,136 +303,6 @@ public class JarSigner15 {
         // close the JAR file that we have been using
         jarFile.close();
 
-    }
-
-
-    private static Constructor findConstructor(Class c, Class... argTypes) throws NoSuchMethodException {
-        Constructor ct = c.getDeclaredConstructor(argTypes);
-        if (ct == null) {
-            throw new RuntimeException(c.getName());
-        }
-        ct.setAccessible(true);
-        return ct;
-    }
-
-    private static Method findMethod(Class c, String methodName, Class... argTypes) throws NoSuchMethodException {
-        Method m = c.getDeclaredMethod(methodName, argTypes);
-        if (m == null) {
-            throw new RuntimeException(c.getName());
-        }
-        m.setAccessible(true);
-        return m;
-    }
-
-    private class SignatureFile {
-
-        private Object sigFile;
-
-        private Class JDKsfClass;
-
-        private Method getMetaNameMethod;
-        private Method writeMethod;
-
-        private static final String JDK_SIGNATURE_FILE = "sun.security.tools.SignatureFile";
-        private static final String GETMETANAME_METHOD = "getMetaName";
-        private static final String WRITE_METHOD = "write";
-
-        public SignatureFile(MessageDigest digests[],
-                             Manifest mf,
-                             ManifestDigester md,
-                             String baseName,
-                             boolean signManifest) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-
-            JDKsfClass = getClass().forName(JDK_SIGNATURE_FILE);
-
-            Constructor constructor = findConstructor(JDKsfClass,
-                    MessageDigest[].class,
-                    Manifest.class,
-                    ManifestDigester.class,
-                    String.class,
-                    Boolean.TYPE);
-
-            sigFile = constructor.newInstance(digests, mf, md, baseName, signManifest);
-
-            getMetaNameMethod = findMethod(JDKsfClass, GETMETANAME_METHOD);
-            writeMethod = findMethod(JDKsfClass, WRITE_METHOD, OutputStream.class);
-        }
-
-        public Block generateBlock(PrivateKey privateKey,
-                                   X509Certificate[] certChain,
-                                   boolean externalSF, ZipFile zipFile)
-                throws NoSuchAlgorithmException, InvalidKeyException, IOException,
-                SignatureException, CertificateException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-            return new Block(this, privateKey, certChain, externalSF, zipFile);
-        }
-
-        public Class getJDKSignatureFileClass() {
-            return JDKsfClass;
-        }
-
-        public Object getJDKSignatureFile() {
-            return sigFile;
-        }
-
-        public String getMetaName() throws IllegalAccessException, InvocationTargetException {
-            return (String) getMetaNameMethod.invoke(sigFile);
-        }
-
-        public void write(OutputStream os) throws IllegalAccessException, InvocationTargetException {
-            writeMethod.invoke(sigFile, os);
-        }
-
-        private class Block {
-
-            private Object block;
-
-            private static final String JDK_BLOCK = JDK_SIGNATURE_FILE + "$Block";
-            private static final String JDK_CONTENT_SIGNER = "com.sun.jarsigner.ContentSigner";
-
-            private Method getMetaNameMethod;
-            private Method writeMethod;
-
-            public Block(SignatureFile sfg, PrivateKey privateKey,
-                         X509Certificate[] certChain, boolean externalSF, ZipFile zipFile) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
-
-                Class blockClass = getClass().forName(JDK_BLOCK);
-
-                Class contentSignerClass = getClass().forName(JDK_CONTENT_SIGNER);
-
-                Constructor constructor = findConstructor(blockClass,
-                        sfg.getJDKSignatureFileClass(),
-                        PrivateKey.class,
-                        X509Certificate[].class,
-                        Boolean.TYPE,
-                        String.class,
-                        X509Certificate.class,
-                        contentSignerClass,
-                        String[].class,
-                        ZipFile.class);
-
-                getMetaNameMethod = findMethod(blockClass, GETMETANAME_METHOD);
-                writeMethod = findMethod(blockClass, WRITE_METHOD, OutputStream.class);
-
-                block = constructor.newInstance(
-                        sfg.getJDKSignatureFile(), /* explicit argument on the constructor */
-                        privateKey,
-                        certChain,
-                        externalSF,
-                        null,
-                        null,
-                        null,
-                        null,
-                        zipFile);
-            }
-
-            public String getMetaName() throws IllegalAccessException, InvocationTargetException {
-                return (String) getMetaNameMethod.invoke(block);
-            }
-
-            public void write(OutputStream os) throws IllegalAccessException, InvocationTargetException {
-                writeMethod.invoke(block, os);
-            }
-        }
     }
 
 

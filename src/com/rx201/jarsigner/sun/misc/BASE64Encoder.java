@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package com.rx201.jarsigner;
+package com.rx201.jarsigner.sun.misc;
 
 import java.io.OutputStream;
 import java.io.InputStream;
