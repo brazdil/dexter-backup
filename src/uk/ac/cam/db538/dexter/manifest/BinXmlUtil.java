@@ -45,16 +45,46 @@ public class BinXmlUtil {
 	private static final String ANDROID_APP_TAG = "application";
 	private static final String ANDROID_SCHEMA = "http://schemas.android.com/apk/res/android";
 	private static final String ANDROID_APP_NAME = "name";
+	private static final String ANDROID_PACKAGE = "package";
 
-	public static String getApplicationClass(final InputStream xml) throws IOException {
+	/**
+	 * Represent the details of the application class for the Android application.
+	 * 
+	 * The full name of the class may be specified directly in the "name" attribute
+	 * of the &lt;application&gt; tag. Alternatively the name of the class may need
+	 * to be combined with the package specified in the &lt;manifest&gt; tag.
+	 */
+	private static class FullAppName {
+		String packageName;
+		String appName;
+		@Override
+		public String toString() {
+			if (appName != null && appName.contains(".")) {
+				return appName;
+			} else if (appName != null && packageName != null) {
+				return packageName + "." + appName;
+			}
+			return null;
+		}
+	}
+
+	private static FullAppName getFullAppName(final InputStream xml) throws IOException {
 
 		AxmlReader ar = new AxmlReader(IOUtils.toByteArray(xml));
-		final ArrayList<String> result = new ArrayList<String>();
+		final FullAppName fullAppName = new FullAppName();
 
 		ar.accept(new AxmlVisitor() {
 			public NodeVisitor first(String ns, String name) {//top level: <manifest>
 				final NodeVisitor rootNv = super.first(ns, name);
 				return new NodeVisitor(rootNv){
+					@Override
+					public void attr(String ns, String name, int resourceId, int type, Object obj) {
+						if (name.equals(ANDROID_PACKAGE) &&
+								type == TYPE_STRING &&
+								obj instanceof String) {
+							fullAppName.packageName = (String) obj;
+						}
+					}
 					@Override
 					public NodeVisitor child(String ns, String name) {//first-level child tag <application>
 						final NodeVisitor childNv = super.child(ns, name);
@@ -66,7 +96,8 @@ public class BinXmlUtil {
 											name.equals(ANDROID_APP_NAME) &&
 											type == TYPE_STRING &&
 											obj instanceof String) {
-										result.add((String) obj);
+										//Android spec says at most one attribute with this name so no overwrite possible.
+										fullAppName.appName = (String) obj;
 									}
 								}
 							};
@@ -76,12 +107,35 @@ public class BinXmlUtil {
 				};
 			}
 		});
-		//AndroidManifest.xml has at most one "name" attribute so first should be okay here
-		return (result.size() > 0) ? result.get(0) : null;
+		return fullAppName;
 	}
 
 	/**
-	 * Edit a binary AndroidManifest.xml file to insert/update the android:name attribute of the application tag.
+	 * Return the fully qualified application class name from the manifest, or null if not found.
+	 * 
+	 * This method will combine the data from the manifest tag if necessary to generate a fully qualified class name.
+	 *  
+	 * @param xml
+	 * @return
+	 * @throws IOException
+	 */
+	public static String getApplicationClass(final InputStream xml) throws IOException {
+		return getFullAppName(xml).toString();
+	}
+
+	/**
+	 * Return the package associated with this application in the &lt;manifest&gt; tag.
+	 * 
+	 * @param xml
+	 * @return
+	 * @throws IOException
+	 */
+	public static String getPackage(final InputStream xml) throws IOException {
+		return getFullAppName(xml).packageName;
+	}
+
+	/**
+	 * Edit a binary AndroidManifest.xml file to insert/update the "android:name" attribute of the application tag.
 	 * 
 	 * @param xml input file containing the current binary xml file
 	 * @param applicationClassName the new name for the value associated with the android:name attribute
@@ -123,7 +177,7 @@ public class BinXmlUtil {
 	}
 
 	/**
-	 * Print out a copy of the binary XML file in text format. Attributes are currently not displayed.
+	 * Print out a copy of the binary XML file in text format. Attribute schemas are currently not displayed.
 	 * 
 	 * @param xml
 	 * @throws IOException
@@ -198,16 +252,18 @@ public class BinXmlUtil {
 
 		byte[] inputBinXml = FileUtils.readFileToByteArray(new File(args[0]));
 		InputStream inputBinXmlStream = new ByteArrayInputStream(inputBinXml);
-		
-		System.out.println("App name is: " + getApplicationClass(inputBinXmlStream));
-//		inputBinXmlStream.reset();
-//		prettyPrint(inputBinXmlStream);
-		
+
+		System.out.println("App name read as: " + getApplicationClass(inputBinXmlStream));
+		inputBinXmlStream.reset();
+		System.out.println("App package read as: " + getPackage(inputBinXmlStream));
+		//inputBinXmlStream.reset();
+		//prettyPrint(inputBinXmlStream);
+
 		if (args.length >= 3) {
 			inputBinXmlStream.reset();
 			byte[] modified = setApplicationClass(inputBinXmlStream, args[1]);
 			InputStream modStream = new ByteArrayInputStream(modified);
-			System.out.println("App name is now: " + getApplicationClass(modStream));
+			System.out.println("App name changed to: " + getApplicationClass(modStream));
 			modStream.reset();
 			FileUtils.writeByteArrayToFile(new File(args[2]), modified);
 		}
