@@ -21,6 +21,7 @@ import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 public class Dex {
 
   @Getter final RuntimeHierarchy hierarchy;
+  @Getter final AuxiliaryDex auxiliaryDex;
 
   private final Set<DexClass> _classes;
   @Getter private final Set<DexClass> classes;
@@ -31,8 +32,9 @@ public class Dex {
   /*
    * Creates an empty Dex
    */
-  public Dex(RuntimeHierarchy hierarchy) {
+  public Dex(RuntimeHierarchy hierarchy, AuxiliaryDex dexAux) {
     this.hierarchy = hierarchy;
+    this.auxiliaryDex = dexAux;
     
     this._classes = new HashSet<DexClass>();
     this.classes = Collections.unmodifiableSet(this._classes);
@@ -41,8 +43,8 @@ public class Dex {
   /*
    * Creates a new Dex and parses all classes inside the given DexFile
    */
-  public Dex(DexFile dex, RuntimeHierarchy hierarchy) {
-	this(hierarchy);
+  public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux) {
+	this(hierarchy, dexAux);
 	
     this._classes.addAll(parseAllClasses(dex));
   }
@@ -50,8 +52,8 @@ public class Dex {
   /*
    * This constructor applies a descriptor renamer on the classes parsed from given DexFile
    */
-  public Dex(DexFile dex, RuntimeHierarchy hierarchy, ClassRenamer renamer) {
-	  this(dex, setRenamer(hierarchy, renamer));
+  public Dex(DexFile dex, RuntimeHierarchy hierarchy, AuxiliaryDex dexAux, ClassRenamer renamer) {
+	  this(dex, setRenamer(hierarchy, renamer), dexAux);
 	  unsetRenamer(hierarchy);
   }
   

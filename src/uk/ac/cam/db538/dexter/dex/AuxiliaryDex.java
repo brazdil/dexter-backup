@@ -35,7 +35,7 @@ public class AuxiliaryDex extends Dex {
 	@Getter private final InterfaceDefinition anno_InternalMethod;
 	
 	public AuxiliaryDex(DexFile dexAux, RuntimeHierarchy hierarchy, ClassRenamer renamer) {
-		super(dexAux, hierarchy, renamer);
+		super(dexAux, hierarchy, null, renamer);
 		
 		// ObjectTaintStorage class
 		val clsObjTaint = getClassDef(hierarchy, renamer, CLASS_OBJTAINT);

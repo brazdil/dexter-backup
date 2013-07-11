@@ -47,8 +47,8 @@ public class MainConsole {
     val renamerAux = buildData.getValB();
     
     System.out.println("Parsing application");
-    Dex dexApp = new Dex(fileApp, hierarchy);
     AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux); 
+    Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
     
     System.out.println("Instrumenting application");
     dexApp.instrument(false);

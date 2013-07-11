@@ -102,8 +102,8 @@ public class MainTest {
     val renamerAux = buildData.getValB();
     
     System.out.println("Parsing application");
-    Dex dexApp = new Dex(fileApp, hierarchy);
     AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux); 
+    Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
     
     if (args.length == 3) {
        DexCodeGeneration.DEBUG = false;

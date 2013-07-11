@@ -3,7 +3,6 @@ package com.rx201.dx.translator.test;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -21,7 +20,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 
 @RunWith(Parameterized.class)
@@ -85,8 +83,8 @@ public class TranslationTest {
 	    val renamerAux = buildData.getValB();
 	    
 	    System.out.println("Parsing application");
-	    Dex dexApp = new Dex(fileApp, hierarchy);
 	    AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux); 
+	    Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
 	    
 	    System.out.println("Instrumenting application");
 	    // dexApp.instrument(false);

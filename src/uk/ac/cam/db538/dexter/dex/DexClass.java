@@ -2,10 +2,8 @@ package uk.ac.cam.db538.dexter.dex;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
@@ -25,7 +23,6 @@ import org.jf.dexlib.ClassDefItem.StaticFieldInitializer;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.EncodedValue.EncodedValue;
 
-import uk.ac.cam.db538.dexter.dex.field.DexField;
 import uk.ac.cam.db538.dexter.dex.field.DexInstanceField;
 import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
 import uk.ac.cam.db538.dexter.dex.method.DexAbstractMethod;
@@ -33,7 +30,6 @@ import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.method.DexVirtualMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
 
@@ -124,9 +120,9 @@ public class DexClass {
 		for (val method : this._methods)
 			method.instrument(cache);
 
-		this.addAnnotation(
-				new DexAnnotation(parentFile.getInternalClassAnnotation_Type(),
-						AnnotationVisibility.RUNTIME));
+		this.addAnnotation(new DexAnnotation(
+			parentFile.getAuxiliaryDex().getAnno_InternalClass().getType(),
+			AnnotationVisibility.RUNTIME));
 	}
 
 	public void writeToFile(DexFile outFile, DexAssemblingCache cache) {
