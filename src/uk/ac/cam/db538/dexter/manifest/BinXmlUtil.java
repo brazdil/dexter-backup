@@ -198,9 +198,11 @@ public class BinXmlUtil {
 
 		byte[] inputBinXml = FileUtils.readFileToByteArray(new File(args[0]));
 		InputStream inputBinXmlStream = new ByteArrayInputStream(inputBinXml);
-
+		
 		System.out.println("App name is: " + getApplicationClass(inputBinXmlStream));
-
+//		inputBinXmlStream.reset();
+//		prettyPrint(inputBinXmlStream);
+		
 		if (args.length >= 3) {
 			inputBinXmlStream.reset();
 			byte[] modified = setApplicationClass(inputBinXmlStream, args[1]);
