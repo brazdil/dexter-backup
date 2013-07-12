@@ -17,6 +17,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
@@ -150,14 +151,14 @@ public abstract class CodeParser {
 		    case IF_LE:
 		      return DexInstruction_IfTest.parse(insn, parsingCache);
 
-//		    case IF_EQZ:
-//		    case IF_NEZ:
-//		    case IF_LTZ:
-//		    case IF_GEZ:
-//		    case IF_GTZ:
-//		    case IF_LEZ:
-//		      return DexInstruction_IfTestZero.parse(insn, parsingCache);
-//
+		    case IF_EQZ:
+		    case IF_NEZ:
+		    case IF_LTZ:
+		    case IF_GEZ:
+		    case IF_GTZ:
+		    case IF_LEZ:
+		      return DexInstruction_IfTestZero.parse(insn, parsingCache);
+
 //		    case CMPL_FLOAT:
 //		    case CMPG_FLOAT:
 //		      return DexInstruction_CompareFloat.parse(insn, parsingCache);

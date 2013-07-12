@@ -8,45 +8,48 @@ import lombok.val;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction21t;
 
+import com.google.common.collect.Sets;
+
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class DexInstruction_IfTestZero extends DexInstruction {
 
-  @Getter private final DexRegister reg;
+  @Getter private final DexSingleRegister reg;
   @Getter private final DexLabel target;
   @Getter private final Opcode_IfTestZero insnOpcode;
 
-  public DexInstruction_IfTestZero(DexCode methodCode, DexRegister reg, DexLabel target, Opcode_IfTestZero opcode) {
-    super(methodCode);
+  public DexInstruction_IfTestZero(DexSingleRegister reg, DexLabel target, Opcode_IfTestZero opcode, RuntimeHierarchy hierarchy) {
+    super(hierarchy);
 
     this.reg = reg;
     this.target = target;
     this.insnOpcode = opcode;
   }
 
-  public DexInstruction_IfTestZero(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError {
-    super(methodCode);
-
+  public static DexInstruction_IfTestZero parse(Instruction insn, CodeParserState parsingState) {
     if (insn instanceof Instruction21t && Opcode_IfTestZero.convert(insn.opcode) != null) {
 
       val insnIfTestZero = (Instruction21t) insn;
-      reg = parsingState.getRegister(insnIfTestZero.getRegisterA());
-      target = parsingState.getLabel(insnIfTestZero.getTargetAddressOffset());
-      insnOpcode = Opcode_IfTestZero.convert(insn.opcode);
+      return new DexInstruction_IfTestZero(
+    		  parsingState.getSingleRegister(insnIfTestZero.getRegisterA()),
+    		  parsingState.getLabel(insnIfTestZero.getTargetAddressOffset()),
+    		  Opcode_IfTestZero.convert(insn.opcode),
+    		  parsingState.getHierarchy());
 
     } else
       throw FORMAT_EXCEPTION;
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return "if-" + insnOpcode.name() + " " + reg.getOriginalIndexString() +
-           ", L" + target.getOriginalAbsoluteOffset();
+  public String toString() {
+    return "if-" + insnOpcode.name() + " " + reg.toString() + ", " + target.toString();
   }
 
   @Override
@@ -56,15 +59,11 @@ public class DexInstruction_IfTestZero extends DexInstruction {
 
   @Override
   public Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
-	val set = createSet((DexCodeElement) target);
-	val next = this.getNextCodeElement();
-	if (next != null)
-		set.add(next);
-	return set;
+	return Sets.newHashSet(target, code.getFollower(this));
   }
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
-    return createSet(reg);
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(reg);
   }
 
   @Override
