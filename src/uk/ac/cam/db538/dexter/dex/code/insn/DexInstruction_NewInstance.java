@@ -10,48 +10,51 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import com.google.common.collect.Sets;
+
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class DexInstruction_NewInstance extends DexInstruction {
 
-  @Getter private final DexRegister regTo;
+  @Getter private final DexSingleRegister regTo;
   @Getter private final DexClassType value;
 
-  public DexInstruction_NewInstance(DexCode methodCode, DexRegister to, DexClassType value) {
-    super(methodCode);
-
+  public DexInstruction_NewInstance(DexSingleRegister to, DexClassType value, RuntimeHierarchy hierarchy) {
+	super(hierarchy);
     this.regTo = to;
     this.value = value;
   }
 
-  public DexInstruction_NewInstance(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
-    super(methodCode);
-
+  public static DexInstruction_NewInstance parse(Instruction insn, CodeParserState parsingState) {
     if (insn instanceof Instruction21c && insn.opcode == Opcode.NEW_INSTANCE) {
 
+      val hierarchy = parsingState.getHierarchy();
+    	
       val insnNewInstance = (Instruction21c) insn;
-      regTo = parsingState.getRegister(insnNewInstance.getRegisterA());
-      value = DexClassType.parse(
+      return new DexInstruction_NewInstance(
+    		  parsingState.getSingleRegister(insnNewInstance.getRegisterA()),
+    		  DexClassType.parse(
                 ((TypeIdItem) insnNewInstance.getReferencedItem()).getTypeDescriptor(),
-                parsingState.getCache());
+                hierarchy.getTypeCache()),
+    		  hierarchy);
 
     } else
       throw FORMAT_EXCEPTION;
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return "new-instance " + regTo.getOriginalIndexString() + ", " + value.getDescriptor();
+  public String toString() {
+    return "new-instance " + regTo.toString() + ", " + value.getDescriptor();
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaDefinedRegisters() {
-    return createSet(regTo);
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
+    return Sets.newHashSet(regTo);
   }
 
   @Override
@@ -64,7 +67,7 @@ public class DexInstruction_NewInstance extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getTypeCache().LIST_Error;
+	return this.hierarchy.getTypeCache().LIST_Error;
   }
   
 }

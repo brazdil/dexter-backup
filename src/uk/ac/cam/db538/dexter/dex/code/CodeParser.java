@@ -19,6 +19,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveException;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
@@ -119,9 +120,9 @@ public abstract class CodeParser {
 		    case INSTANCE_OF:
 		      return DexInstruction_InstanceOf.parse(insn, parsingCache);
 
-//		    case NEW_INSTANCE:
-//		      return new DexInstruction_NewInstance(this, insn, parsingCache);
-//
+		    case NEW_INSTANCE:
+		      return DexInstruction_NewInstance.parse(insn, parsingCache);
+
 //		    case NEW_ARRAY:
 //		      return new DexInstruction_NewArray(this, insn, parsingCache);
 //
