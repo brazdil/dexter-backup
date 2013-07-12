@@ -15,6 +15,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
@@ -24,6 +25,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParseError;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -131,14 +133,14 @@ public abstract class CodeParser {
 		    case ARRAY_LENGTH:
 		      return DexInstruction_ArrayLength.parse(insn, parsingCache);
 
-//		    case THROW:
-//		      return DexInstruction_Throw.parse(insn, parsingCache);
-//
-//		    case GOTO:
-//		    case GOTO_16:
-//		    case GOTO_32:
-//		      return DexInstruction_Goto.parse(insn, parsingCache);
-//
+		    case THROW:
+		      return DexInstruction_Throw.parse(insn, parsingCache);
+
+		    case GOTO:
+		    case GOTO_16:
+		    case GOTO_32:
+		      return DexInstruction_Goto.parse(insn, parsingCache);
+
 //		    case IF_EQ:
 //		    case IF_NE:
 //		    case IF_LT:

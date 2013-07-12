@@ -76,7 +76,7 @@ public class DexInstruction_Return extends DexInstruction {
   }
   
   @Override
-  public Set<DexCodeElement> cfgJumpTargets() {
+  public Set<? extends DexCodeElement> cfgJumpTargets() {
     return Collections.emptySet();
   }
 

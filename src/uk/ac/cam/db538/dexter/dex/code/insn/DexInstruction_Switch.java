@@ -89,7 +89,7 @@ public class DexInstruction_Switch extends DexInstruction {
   }
 
   @Override
-  public Set<DexCodeElement> cfgJumpTargets() {
+  public Set<? extends DexCodeElement> cfgJumpTargets() {
     return createSet(getNextCodeElement(), (DexCodeElement) switchTable);
   }
 

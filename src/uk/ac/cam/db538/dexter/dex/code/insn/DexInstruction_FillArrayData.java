@@ -68,7 +68,7 @@ public class DexInstruction_FillArrayData extends DexInstruction {
   }
 
   @Override
-  public Set<DexCodeElement> cfgJumpTargets() {
+  public Set<? extends DexCodeElement> cfgJumpTargets() {
 	val next = parentInstruction.getNextCodeElement();
 	if (next != null)
 		return createSet(next);

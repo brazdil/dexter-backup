@@ -70,7 +70,7 @@ public class DexInstruction_Throw extends DexInstruction {
   }
 
   @Override
-  protected Set<DexCodeElement> cfgJumpTargets() {
+  protected Set<? extends DexCodeElement> cfgJumpTargets() {
 	  return Collections.emptySet();
   }
 }

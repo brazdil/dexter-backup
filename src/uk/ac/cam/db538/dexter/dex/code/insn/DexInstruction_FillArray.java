@@ -81,7 +81,7 @@ public class DexInstruction_FillArray extends DexInstruction {
   }
 
   @Override
-  public Set<DexCodeElement> cfgJumpTargets() {
+  public Set<? extends DexCodeElement> cfgJumpTargets() {
     return createSet((DexCodeElement) arrayTable);
   }
 

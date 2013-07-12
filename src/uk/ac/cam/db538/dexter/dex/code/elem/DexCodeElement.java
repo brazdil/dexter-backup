@@ -42,7 +42,7 @@ public abstract class DexCodeElement {
     return false;
   }
 
-  protected Set<DexCodeElement> cfgJumpTargets() {
+  protected Set<? extends DexCodeElement> cfgJumpTargets() {
     val set = new HashSet<DexCodeElement>();
 	val next = this.getNextCodeElement();
     if (next != null)
