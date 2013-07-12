@@ -35,6 +35,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParseError;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -238,17 +239,15 @@ public abstract class CodeParser {
 //		    case INVOKE_STATIC_RANGE:
 //		    case INVOKE_INTERFACE_RANGE:
 //		      return DexInstruction_Invoke.parse(insn, parsingCache);
-//
-//		    case NEG_INT:
-//		    case NOT_INT:
-//		    case NEG_FLOAT:
-//		      return DexInstruction_UnaryOp.parse(insn, parsingCache);
-//
-//		    case NEG_LONG:
-//		    case NOT_LONG:
-//		    case NEG_DOUBLE:
-//		      return DexInstruction_UnaryOpWide.parse(insn, parsingCache);
-//
+
+		    case NEG_INT:
+		    case NOT_INT:
+		    case NEG_FLOAT:
+		    case NEG_LONG:
+		    case NOT_LONG:
+		    case NEG_DOUBLE:
+		      return DexInstruction_UnaryOp.parse(insn, parsingCache);
+
 //		    case INT_TO_FLOAT:
 //		    case FLOAT_TO_INT:
 //		    case INT_TO_BYTE:
