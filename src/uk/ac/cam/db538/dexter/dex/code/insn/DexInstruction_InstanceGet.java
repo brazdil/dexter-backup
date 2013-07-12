@@ -9,89 +9,85 @@ import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.field.DexField;
-import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
+import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+
+import com.google.common.collect.Sets;
 
 public class DexInstruction_InstanceGet extends DexInstruction {
 
   @Getter private final DexRegister regTo;
-  @Getter private final DexRegister regObject;
-  @Getter private final DexClassType fieldClass;
-  @Getter private final DexRegisterType fieldType;
-  @Getter private final String fieldName;
+  @Getter private final DexSingleRegister regObject;
+  @Getter private final InstanceFieldDefinition fieldDef;
   @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_InstanceGet(DexCode methodCode, DexRegister to, DexRegister obj, DexClassType fieldClass, DexRegisterType fieldType, String fieldName, Opcode_GetPut opcode) {
-    super(methodCode);
+  public DexInstruction_InstanceGet(DexRegister to, DexSingleRegister obj, InstanceFieldDefinition fieldDef, Opcode_GetPut opcode, RuntimeHierarchy hierarchy) {
+    super(hierarchy);
 
     this.regTo = to;
     this.regObject = obj;
-    this.fieldClass = fieldClass;
-    this.fieldType = fieldType;
-    this.fieldName = fieldName;
+    this.fieldDef = fieldDef;
     this.opcode = opcode;
-
-    Opcode_GetPut.checkTypeAgainstOpcode(this.fieldType, this.opcode);
+    
+    Opcode_GetPut.checkTypeAgainstOpcode(this.fieldDef.getFieldId().getType(), this.opcode);
   }
 
-  public DexInstruction_InstanceGet(DexCode methodCode, DexRegister to, DexRegister obj, DexField field) {
-    super(methodCode);
+  public static DexInstruction_InstanceGet parse(Instruction insn, CodeParserState parsingState) {
+    val opcode = Opcode_GetPut.convert_IGET(insn.opcode);
+    
+	if (insn instanceof Instruction22c && opcode != null) {
 
-    if (field instanceof DexStaticField)
-      throw new Error("Expected instance field");
-
-    this.regTo = to;
-    this.regObject = obj;
-    this.fieldClass = field.getParentClass().getClassDef().getType();
-    this.fieldType = field.getFieldDef().getFieldId().getType();
-    this.fieldName = field.getFieldDef().getFieldId().getName();
-    this.opcode = Opcode_GetPut.getOpcodeFromType(this.fieldType);
-  }
-
-  public DexInstruction_InstanceGet(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
-    super(methodCode);
-
-    if (insn instanceof Instruction22c && Opcode_GetPut.convert_IGET(insn.opcode) != null) {
-
+      val hierarchy = parsingState.getHierarchy();
+    	
       val insnInstanceGet = (Instruction22c) insn;
       val refItem = (FieldIdItem) insnInstanceGet.getReferencedItem();
-      regTo = parsingState.getRegister(insnInstanceGet.getRegisterA());
-      regObject = parsingState.getRegister(insnInstanceGet.getRegisterB());
-      fieldClass = DexClassType.parse(
-                     refItem.getContainingClass().getTypeDescriptor(),
-                     parsingState.getCache());
-      fieldType = DexRegisterType.parse(
-                    refItem.getFieldType().getTypeDescriptor(),
-                    parsingState.getCache());
-      fieldName = refItem.getFieldName().getStringValue();
-      opcode = Opcode_GetPut.convert_IGET(insn.opcode);
+      
+      DexRegister regTo;
+      if (opcode == Opcode_GetPut.Wide)
+    	  regTo = parsingState.getWideRegister(insnInstanceGet.getRegisterA());
+      else
+    	  regTo = parsingState.getSingleRegister(insnInstanceGet.getRegisterA());
+      val regObj = parsingState.getSingleRegister(insnInstanceGet.getRegisterB());
+      
+      InstanceFieldDefinition fieldDef = hierarchy
+    		 .getClassDefinition(
+    		  	DexClassType.parse(
+    				  refItem.getContainingClass().getTypeDescriptor(),
+    				  hierarchy.getTypeCache()))
+    		 .getAccessedInstanceField(
+    		    DexFieldId.parseFieldId(
+		    		refItem.getFieldName().getStringValue(),
+		    		DexRegisterType.parse(
+		    				refItem.getFieldType().getTypeDescriptor(),
+		    				hierarchy.getTypeCache()),
+		    		hierarchy.getTypeCache()));
+      
+      return new DexInstruction_InstanceGet(regTo, regObj, fieldDef, opcode, hierarchy);
 
     } else
       throw FORMAT_EXCEPTION;
-
-    Opcode_GetPut.checkTypeAgainstOpcode(this.fieldType, this.opcode);
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return "iget-" + opcode.getAssemblyName() + " " + regTo.getOriginalIndexString() + ", {" + regObject.getOriginalIndexString() + "}" + fieldClass.getPrettyName() + "." + fieldName;
+  public String toString() {
+    return "iget" + opcode.getAsmSuffix() + " " + regTo.toString() + ", {" + regObject.toString() + "}" + fieldDef.toString();
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
-    return createSet(regObject);
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(regObject);
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaDefinedRegisters() {
-    return createSet(regTo);
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
+    return Sets.newHashSet(regTo);
   }
 
   @Override
@@ -152,7 +148,7 @@ public class DexInstruction_InstanceGet extends DexInstruction {
 
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getTypeCache().LIST_Error_NullPointerException;
+	return this.hierarchy.getTypeCache().LIST_Error_NullPointerException;
   }
   
 }

@@ -55,8 +55,8 @@ public class DexInstruction_ArrayPutWide extends DexInstruction {
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
-    return createSet(regFrom1, regFrom2, regArray, regIndex);
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(regFrom1, regFrom2, regArray, regIndex);
   }
 
   @Override
@@ -77,7 +77,7 @@ public class DexInstruction_ArrayPutWide extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getTypeCache().LIST_Error_Null_ArrayIndexOutOfBounds;
+	return this.hierarchy.getTypeCache().LIST_Error_Null_ArrayIndexOutOfBounds;
   }
   
 }

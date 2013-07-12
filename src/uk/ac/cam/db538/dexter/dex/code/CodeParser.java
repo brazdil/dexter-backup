@@ -19,7 +19,9 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveException;
@@ -187,28 +189,24 @@ public abstract class CodeParser {
 		    case SPUT_WIDE:
 		      return DexInstruction_StaticPut.parse(insn, parsingCache);
 
-//		    case IGET:
-//		    case IGET_OBJECT:
-//		    case IGET_BOOLEAN:
-//		    case IGET_BYTE:
-//		    case IGET_CHAR:
-//		    case IGET_SHORT:
-//		      return DexInstruction_InstanceGet.parse(insn, parsingCache);
-//
-//		    case IGET_WIDE:
-//		      return DexInstruction_InstanceGetWide.parse(insn, parsingCache);
-//
-//		    case IPUT:
-//		    case IPUT_OBJECT:
-//		    case IPUT_BOOLEAN:
-//		    case IPUT_BYTE:
-//		    case IPUT_CHAR:
-//		    case IPUT_SHORT:
-//		      return DexInstruction_InstancePut.parse(insn, parsingCache);
-//
-//		    case IPUT_WIDE:
-//		      return DexInstruction_InstancePutWide.parse(insn, parsingCache);
-//
+		    case IGET:
+		    case IGET_OBJECT:
+		    case IGET_BOOLEAN:
+		    case IGET_BYTE:
+		    case IGET_CHAR:
+		    case IGET_SHORT:
+		    case IGET_WIDE:
+		      return DexInstruction_InstanceGet.parse(insn, parsingCache);
+
+		    case IPUT:
+		    case IPUT_OBJECT:
+		    case IPUT_BOOLEAN:
+		    case IPUT_BYTE:
+		    case IPUT_CHAR:
+		    case IPUT_SHORT:
+		    case IPUT_WIDE:
+		      return DexInstruction_InstancePut.parse(insn, parsingCache);
+
 //		    case AGET:
 //		    case AGET_OBJECT:
 //		    case AGET_BOOLEAN:

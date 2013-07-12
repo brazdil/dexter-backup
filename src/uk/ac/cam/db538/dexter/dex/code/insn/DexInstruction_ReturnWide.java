@@ -120,8 +120,8 @@ public class DexInstruction_ReturnWide extends DexInstruction {
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
-    return createSet(regFrom1, regFrom2);
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(regFrom1, regFrom2);
   }
 
   @Override

@@ -71,7 +71,7 @@ public class DexInstruction_FillArrayData extends DexInstruction {
   public Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
 	val next = parentInstruction.getNextCodeElement();
 	if (next != null)
-		return createSet(next);
+		return Sets.newHashSet(next);
 	else
 		return Collections.emptySet();
   }

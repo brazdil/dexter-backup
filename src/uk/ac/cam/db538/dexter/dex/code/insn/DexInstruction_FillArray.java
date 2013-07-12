@@ -82,12 +82,12 @@ public class DexInstruction_FillArray extends DexInstruction {
 
   @Override
   public Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
-    return createSet((DexCodeElement) arrayTable);
+    return Sets.newHashSet((DexCodeElement) arrayTable);
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
-    return createSet(regArray);
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(regArray);
   }
 
   @Override

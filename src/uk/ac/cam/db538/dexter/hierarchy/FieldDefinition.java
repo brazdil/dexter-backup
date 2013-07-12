@@ -9,7 +9,7 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 
-public class FieldDefinition implements Serializable {
+public abstract class FieldDefinition implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	

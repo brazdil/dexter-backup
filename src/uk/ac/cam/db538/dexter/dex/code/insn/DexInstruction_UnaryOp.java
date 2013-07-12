@@ -55,13 +55,13 @@ public class DexInstruction_UnaryOp extends DexInstruction {
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaDefinedRegisters() {
-    return createSet(regTo);
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
+    return Sets.newHashSet(regTo);
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
-    return createSet(regFrom);
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(regFrom);
   }
 
   @Override

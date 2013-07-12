@@ -97,7 +97,7 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
     return new HashSet<DexRegister>(argumentRegisters);
   }
 
@@ -108,7 +108,7 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getTypeCache().LIST_Error;
+	return this.hierarchy.getTypeCache().LIST_Error;
   }
   
 }

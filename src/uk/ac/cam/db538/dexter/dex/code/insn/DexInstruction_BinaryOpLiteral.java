@@ -68,13 +68,13 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaDefinedRegisters() {
-    return createSet(regTarget);
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
+    return Sets.newHashSet(regTarget);
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
-    return createSet(regSource);
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(regSource);
   }
 
   @Override
@@ -97,7 +97,7 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   @Override
   protected DexClassType[] throwsExceptions() {
 	if (insnOpcode == Opcode_BinaryOpLiteral.Div || insnOpcode == Opcode_BinaryOpLiteral.Rem) {
-		return getParentFile().getTypeCache().LIST_Error_ArithmeticException;
+		return this.hierarchy.getTypeCache().LIST_Error_ArithmeticException;
 	} else
 		return null;
   }

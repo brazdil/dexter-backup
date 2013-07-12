@@ -15,18 +15,18 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 
 import com.google.common.collect.Sets;
 
 public class DexInstruction_StaticPut extends DexInstruction {
 
   @Getter private final DexRegister regFrom;
-  @Getter private final FieldDefinition fieldDef; 
+  @Getter private final StaticFieldDefinition fieldDef; 
   @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_StaticPut(DexRegister to, FieldDefinition fieldDef, Opcode_GetPut opcode, RuntimeHierarchy hierarchy) {
+  public DexInstruction_StaticPut(DexRegister to, StaticFieldDefinition fieldDef, Opcode_GetPut opcode, RuntimeHierarchy hierarchy) {
     super(hierarchy);
 
     this.regFrom = to;
@@ -52,7 +52,7 @@ public class DexInstruction_StaticPut extends DexInstruction {
       else
     	  regFrom = parsingState.getSingleRegister(insnStaticPut.getRegisterA());
       
-      FieldDefinition fieldDef = hierarchy
+      StaticFieldDefinition fieldDef = hierarchy
     		 .getBaseClassDefinition(
     		  	DexClassType.parse(
     				  refItem.getContainingClass().getTypeDescriptor(),

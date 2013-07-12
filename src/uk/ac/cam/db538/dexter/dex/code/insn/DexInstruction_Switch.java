@@ -90,12 +90,12 @@ public class DexInstruction_Switch extends DexInstruction {
 
   @Override
   public Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
-    return createSet(getNextCodeElement(), (DexCodeElement) switchTable);
+    return Sets.newHashSet(getNextCodeElement(), (DexCodeElement) switchTable);
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
-    return createSet(regTest);
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(regTest);
   }
 
   @Override

@@ -27,11 +27,12 @@ import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.ClassDefinition;
-import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.HierarchyException;
+import uk.ac.cam.db538.dexter.hierarchy.InstanceFieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class HierarchyBuilder implements Serializable {
@@ -126,7 +127,7 @@ public class HierarchyBuilder implements Serializable {
 	private void scanStaticFields(DexClassScanner clsScanner, BaseClassDefinition baseclsDef) {
 		for (val fieldScanner : clsScanner.getStaticFieldScanners())
 			baseclsDef.addDeclaredStaticField(
-				new FieldDefinition(
+				new StaticFieldDefinition(
 					baseclsDef, 
 					fieldScanner.getFieldId(),
 					fieldScanner.getAccessFlags()));
@@ -135,7 +136,7 @@ public class HierarchyBuilder implements Serializable {
 	private void scanInstanceFields(DexClassScanner clsScanner, ClassDefinition clsDef) {
 		for (val fieldScanner : clsScanner.getInstanceFieldScanners())
 			clsDef.addDeclaredInstanceField(
-				new FieldDefinition(
+				new InstanceFieldDefinition(
 					clsDef, 
 					fieldScanner.getFieldId(),
 					fieldScanner.getAccessFlags()));

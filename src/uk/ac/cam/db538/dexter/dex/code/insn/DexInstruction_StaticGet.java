@@ -15,24 +15,24 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
 
 import com.google.common.collect.Sets;
 
 public class DexInstruction_StaticGet extends DexInstruction {
 
   @Getter private final DexRegister regTo;
-  @Getter private final FieldDefinition fieldDef; 
+  @Getter private final StaticFieldDefinition fieldDef; 
   @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_StaticGet(DexRegister to, FieldDefinition fieldDef, Opcode_GetPut opcode, RuntimeHierarchy hierarchy) {
+  public DexInstruction_StaticGet(DexRegister to, StaticFieldDefinition fieldDef, Opcode_GetPut opcode, RuntimeHierarchy hierarchy) {
     super(hierarchy);
 
     this.regTo = to;
     this.fieldDef = fieldDef;
     this.opcode = opcode;
-
+    
     Opcode_GetPut.checkTypeAgainstOpcode(this.fieldDef.getFieldId().getType(), this.opcode);
   }
 
@@ -52,7 +52,7 @@ public class DexInstruction_StaticGet extends DexInstruction {
       else
     	  regTo = parsingState.getSingleRegister(insnStaticGet.getRegisterA());
       
-      FieldDefinition fieldDef = hierarchy
+      StaticFieldDefinition fieldDef = hierarchy
     		 .getBaseClassDefinition(
     		  	DexClassType.parse(
     				  refItem.getContainingClass().getTypeDescriptor(),
