@@ -68,12 +68,12 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaDefinedRegisters() {
+  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaDefinedRegisters() {
     return createSet(regTarget);
   }
 
   @Override
-  public Set<DexRegister> lvaReferencedRegisters() {
+  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
     return createSet(regSource);
   }
 

@@ -54,7 +54,7 @@ public class DexInstruction_ConstClass extends DexInstruction {
   public void instrument(DexCode_InstrumentationState state) {  }
 
   @Override
-  public Set<DexRegister> lvaDefinedRegisters() {
+  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaDefinedRegisters() {
     return createSet(regTo);
   }
 

@@ -63,15 +63,15 @@ public abstract class DexCodeElement {
 
   // LIVE VARIABLE ANALYSIS
 
-  public Set<DexRegister> lvaDefinedRegisters() {
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
     return Collections.emptySet();
   }
 
-  public Set<DexRegister> lvaReferencedRegisters() {
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
     return Collections.emptySet();
   }
 
-  public final Set<DexRegister> lvaUsedRegisters() {
+  public final Set<? extends DexRegister> lvaUsedRegisters() {
     val set = new HashSet<DexRegister>();
     set.addAll(lvaDefinedRegisters());
     set.addAll(lvaReferencedRegisters());

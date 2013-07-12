@@ -97,7 +97,7 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaReferencedRegisters() {
+  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
     return new HashSet<DexRegister>(argumentRegisters);
   }
 

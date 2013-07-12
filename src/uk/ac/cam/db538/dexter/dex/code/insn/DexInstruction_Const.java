@@ -17,6 +17,7 @@ import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 import com.google.common.collect.Sets;
 
@@ -28,7 +29,9 @@ public class DexInstruction_Const extends DexInstruction {
   // CAREFUL: if Value is 32-bit and bottom 16-bits are zero,
   //          turn it into const/high16 instruction
 
-  public DexInstruction_Const(DexRegister to, long value) {
+  public DexInstruction_Const(DexRegister to, long value, RuntimeHierarchy hierarchy) {
+	super(hierarchy);
+	  
     this.regTo = to;
     this.value = value;
     
@@ -38,7 +41,9 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   public DexInstruction_Const(Instruction insn, CodeParserState parsingState) {
-    if (insn instanceof Instruction11n && insn.opcode == Opcode.CONST_4) {
+	super(parsingState.getHierarchy());
+
+	if (insn instanceof Instruction11n && insn.opcode == Opcode.CONST_4) {
 
       val insnConst4 = (Instruction11n) insn;
       regTo = parsingState.getSingleRegister(insnConst4.getRegisterA());
@@ -111,7 +116,7 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaDefinedRegisters() {
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
     return Sets.newHashSet(regTo);
   }
 

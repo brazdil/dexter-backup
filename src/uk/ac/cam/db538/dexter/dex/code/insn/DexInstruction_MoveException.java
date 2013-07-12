@@ -12,6 +12,7 @@ import org.jf.dexlib.Code.Format.Instruction11x;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 import com.google.common.collect.Sets;
 
@@ -19,13 +20,16 @@ public class DexInstruction_MoveException extends DexInstruction {
 
   @Getter private final DexRegister regTo;
 
-  public DexInstruction_MoveException(DexRegister regTo) {
+  public DexInstruction_MoveException(DexRegister regTo, RuntimeHierarchy hierarchy) {
+	super(hierarchy);
+	  
     this.regTo = regTo;
-    
     Opcode_Move.Object.checkRegisterType(this.regTo);
   }
 
   public DexInstruction_MoveException(Instruction insn, CodeParserState parsingState) {
+	super(parsingState.getHierarchy());
+	
     if (insn instanceof Instruction11x && insn.opcode == Opcode.MOVE_EXCEPTION) {
 
       val insnMoveException = (Instruction11x) insn;
@@ -42,7 +46,7 @@ public class DexInstruction_MoveException extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaDefinedRegisters() {
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
     return Sets.newHashSet(regTo);
   }
 

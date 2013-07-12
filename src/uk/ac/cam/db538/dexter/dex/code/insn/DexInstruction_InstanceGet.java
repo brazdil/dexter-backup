@@ -85,12 +85,12 @@ public class DexInstruction_InstanceGet extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaReferencedRegisters() {
+  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
     return createSet(regObject);
   }
 
   @Override
-  public Set<DexRegister> lvaDefinedRegisters() {
+  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaDefinedRegisters() {
     return createSet(regTo);
   }
 

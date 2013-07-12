@@ -69,12 +69,12 @@ public class DexInstruction_CompareWide extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaDefinedRegisters() {
+  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaDefinedRegisters() {
     return createSet(regTo);
   }
 
   @Override
-  public Set<DexRegister> lvaReferencedRegisters() {
+  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
     return createSet(regSourceA1, regSourceA2, regSourceB1, regSourceB2);
   }
 

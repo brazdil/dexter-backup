@@ -81,7 +81,7 @@ public class DexInstruction_StaticPut extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaReferencedRegisters() {
+  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom);
   }
 

@@ -14,6 +14,7 @@ import org.jf.dexlib.Code.Format.Instruction32x;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 import com.google.common.collect.Sets;
 
@@ -23,7 +24,9 @@ public class DexInstruction_Move extends DexInstruction {
   @Getter private final DexRegister regFrom;
   @Getter private final Opcode_Move opcode;
 
-  public DexInstruction_Move(DexRegister regTo, DexRegister regFrom, Opcode_Move opcode) {
+  public DexInstruction_Move(DexRegister regTo, DexRegister regFrom, Opcode_Move opcode, RuntimeHierarchy hierarchy) {
+	super(hierarchy);
+	
     this.regTo = regTo;
     this.regFrom = regFrom;
     this.opcode = opcode;
@@ -36,6 +39,8 @@ public class DexInstruction_Move extends DexInstruction {
   }
 
   public DexInstruction_Move(Instruction insn, CodeParserState parsingState) {
+	super(parsingState.getHierarchy());
+	
     int regA, regB;
 
     if (insn instanceof Instruction12x &&
@@ -79,12 +84,12 @@ public class DexInstruction_Move extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaDefinedRegisters() {
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
     return Sets.newHashSet(regTo);
   }
 
   @Override
-  public Set<DexRegister> lvaReferencedRegisters() {
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
     return Sets.newHashSet(regFrom);
   }
 

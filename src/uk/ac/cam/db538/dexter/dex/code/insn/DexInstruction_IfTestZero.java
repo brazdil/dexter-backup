@@ -63,7 +63,7 @@ public class DexInstruction_IfTestZero extends DexInstruction {
 	return set;
   }
   @Override
-  public Set<DexRegister> lvaReferencedRegisters() {
+  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
     return createSet(reg);
   }
 

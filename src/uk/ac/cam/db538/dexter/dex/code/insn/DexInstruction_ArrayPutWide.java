@@ -55,7 +55,7 @@ public class DexInstruction_ArrayPutWide extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaReferencedRegisters() {
+  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
     return createSet(regFrom1, regFrom2, regArray, regIndex);
   }
 

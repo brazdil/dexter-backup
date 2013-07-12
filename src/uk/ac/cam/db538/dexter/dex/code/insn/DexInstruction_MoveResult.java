@@ -12,6 +12,7 @@ import org.jf.dexlib.Code.Format.Instruction11x;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 import com.google.common.collect.Sets;
 
@@ -20,7 +21,9 @@ public class DexInstruction_MoveResult extends DexInstruction {
   @Getter private final DexRegister regTo;
   @Getter private final Opcode_Move opcode;
 
-  public DexInstruction_MoveResult(DexRegister regTo, Opcode_Move opcode) {
+  public DexInstruction_MoveResult(DexRegister regTo, Opcode_Move opcode, RuntimeHierarchy hierarchy) {
+	super(hierarchy);
+	
     this.regTo = regTo;
     this.opcode = opcode;
     
@@ -28,6 +31,8 @@ public class DexInstruction_MoveResult extends DexInstruction {
   }
 
   public DexInstruction_MoveResult(Instruction insn, CodeParserState parsingState) {
+	super(parsingState.getHierarchy());
+	
     if (insn instanceof Instruction11x &&
         (insn.opcode == Opcode.MOVE_RESULT || insn.opcode == Opcode.MOVE_RESULT_WIDE || insn.opcode == Opcode.MOVE_RESULT_OBJECT)) {
 
@@ -43,7 +48,7 @@ public class DexInstruction_MoveResult extends DexInstruction {
   }
 
   public DexInstruction_MoveResult(DexInstruction_MoveResult toClone) {
-    this(toClone.regTo, toClone.opcode);
+    this(toClone.regTo, toClone.opcode, toClone.hierarchy);
   }
 
   @Override
@@ -57,7 +62,7 @@ public class DexInstruction_MoveResult extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaDefinedRegisters() {
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
     return Sets.newHashSet(regTo);
   }
 

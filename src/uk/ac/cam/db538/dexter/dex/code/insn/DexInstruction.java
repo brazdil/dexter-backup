@@ -16,9 +16,16 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public abstract class DexInstruction extends DexCodeElement {
 
+	protected final RuntimeHierarchy hierarchy; 
+	
+	protected DexInstruction(RuntimeHierarchy hierarchy) {
+		this.hierarchy = hierarchy;
+	}
+	
   // PARSING
 
   protected static final InstructionParseError FORMAT_EXCEPTION = new InstructionParseError("Unknown instruction format or opcode");
