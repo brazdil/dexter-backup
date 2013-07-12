@@ -10,6 +10,7 @@ import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveException;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveResult;
@@ -86,18 +87,16 @@ public abstract class CodeParser {
 		    case RETURN_WIDE:
 		      return new DexInstruction_Return(insn, parsingCache);
 
-//		    case CONST_4:
-//		    case CONST_16:
-//		    case CONST:
-//		    case CONST_HIGH16:
-//		      return new DexInstruction_Const(this, insn, parsingCache);
-//
-//		    case CONST_WIDE_16:
-//		    case CONST_WIDE_32:
-//		    case CONST_WIDE:
-//		    case CONST_WIDE_HIGH16:
-//		      return new DexInstruction_ConstWide(this, insn, parsingCache);
-//
+		    case CONST_4:
+		    case CONST_16:
+		    case CONST:
+		    case CONST_HIGH16:
+		    case CONST_WIDE_16:
+		    case CONST_WIDE_32:
+		    case CONST_WIDE:
+		    case CONST_WIDE_HIGH16:
+		      return new DexInstruction_Const(insn, parsingCache);
+
 //		    case CONST_STRING:
 //		    case CONST_STRING_JUMBO:
 //		      return new DexInstruction_ConstString(this, insn, parsingCache);

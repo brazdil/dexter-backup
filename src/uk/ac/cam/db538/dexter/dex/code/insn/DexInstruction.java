@@ -209,4 +209,11 @@ public abstract class DexInstruction extends DexCodeElement {
 	  return set;
   }
 
+  static boolean fitsIntoBits_Signed(long value, int bits) {
+	  assert bits > 0;
+	  assert bits <= 64;
+
+	  long upperBound = 1L << bits - 1;
+	  return (value < upperBound) && (value >= -upperBound);
+  }
 }
