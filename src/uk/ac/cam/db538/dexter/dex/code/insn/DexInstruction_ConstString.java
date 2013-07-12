@@ -11,15 +11,14 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 import org.jf.dexlib.Code.Format.Instruction31c;
 
-import com.google.common.collect.Sets;
-
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+
+import com.google.common.collect.Sets;
 
 public class DexInstruction_ConstString extends DexInstruction {
 
@@ -75,7 +74,7 @@ public class DexInstruction_ConstString extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getHierarchy.getTypeCache().LIST_Error;
+	return this.hierarchy.getTypeCache().LIST_Error;
   }
   
 }

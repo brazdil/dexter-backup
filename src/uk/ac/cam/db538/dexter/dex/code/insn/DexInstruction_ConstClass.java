@@ -10,52 +10,55 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+
+import com.google.common.collect.Sets;
 
 public class DexInstruction_ConstClass extends DexInstruction {
 
-  @Getter private final DexRegister regTo;
+  @Getter private final DexSingleRegister regTo;
   @Getter private final DexReferenceType value;
 
-  public DexInstruction_ConstClass(DexCode methodCode, DexRegister to, DexReferenceType value) {
-    super(methodCode);
+  public DexInstruction_ConstClass(DexSingleRegister to, DexReferenceType value, RuntimeHierarchy hierarchy) {
+    super(hierarchy);
 
     this.regTo = to;
     this.value = value;
   }
 
-  public DexInstruction_ConstClass(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
-    super(methodCode);
+  public DexInstruction_ConstClass(Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
+    super(parsingState.getHierarchy());
 
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_CLASS) {
 
       val insnConstClass = (Instruction21c) insn;
-      regTo = parsingState.getRegister(insnConstClass.getRegisterA());
+      regTo = parsingState.getSingleRegister(insnConstClass.getRegisterA());
       value = DexReferenceType.parse(
                 ((TypeIdItem) insnConstClass.getReferencedItem()).getTypeDescriptor(),
-                parsingState.getCache());
+                this.hierarchy.getTypeCache());
 
     } else
       throw FORMAT_EXCEPTION;
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return "const-class " + regTo.getOriginalIndexString() + ", " + value.getDescriptor();
+  public String toString() {
+    return "const-class " + regTo.toString() + ", " + value.getDescriptor();
   }
 
   @Override
   public void instrument(DexCode_InstrumentationState state) {  }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaDefinedRegisters() {
-    return createSet(regTo);
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
+    return Sets.newHashSet(regTo);
   }
 
   @Override
@@ -65,7 +68,6 @@ public class DexInstruction_ConstClass extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getTypeCache().LIST_Error;
+	return this.hierarchy.getTypeCache().LIST_Error;
   }
-  
 }
