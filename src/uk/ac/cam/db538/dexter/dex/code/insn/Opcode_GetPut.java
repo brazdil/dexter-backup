@@ -7,27 +7,30 @@ import org.jf.dexlib.Code.Opcode;
 import uk.ac.cam.db538.dexter.dex.type.DexBoolean;
 import uk.ac.cam.db538.dexter.dex.type.DexByte;
 import uk.ac.cam.db538.dexter.dex.type.DexChar;
+import uk.ac.cam.db538.dexter.dex.type.DexDouble;
 import uk.ac.cam.db538.dexter.dex.type.DexFloat;
 import uk.ac.cam.db538.dexter.dex.type.DexInteger;
+import uk.ac.cam.db538.dexter.dex.type.DexLong;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexShort;
 
 public enum Opcode_GetPut {
-  Object("object"),
-  IntFloat("int-float"),
-  Boolean("boolean"),
-  Byte("byte"),
-  Char("char"),
-  Short("short");
+  Object("-object"),
+  IntFloat("-int-float"),
+  Boolean("-boolean"),
+  Byte("-byte"),
+  Char("-char"),
+  Short("-short"),
+  Wide("-wide");
 
-  @Getter private final String AssemblyName;
+  @Getter private final String AsmSuffix;
 
-  private Opcode_GetPut(String assemblyName) {
-    AssemblyName = assemblyName;
+  private Opcode_GetPut(String asmSuffix) {
+	  AsmSuffix = asmSuffix;
   }
 
-  public static Opcode_GetPut convert_SGET(org.jf.dexlib.Code.Opcode opcode) {
+  public static Opcode_GetPut convert_SGET(Opcode opcode) {
     switch (opcode) {
     case SGET:
       return IntFloat;
@@ -41,31 +44,14 @@ public enum Opcode_GetPut {
       return Char;
     case SGET_SHORT:
       return Short;
+    case SGET_WIDE:
+      return Wide;
     default:
       return null;
     }
   }
 
-  public static org.jf.dexlib.Code.Opcode convert_SGET(Opcode_GetPut opcode) {
-    switch (opcode) {
-    case IntFloat:
-      return Opcode.SGET;
-    case Object:
-      return Opcode.SGET_OBJECT;
-    case Boolean:
-      return Opcode.SGET_BOOLEAN;
-    case Byte:
-      return Opcode.SGET_BYTE;
-    case Char:
-      return Opcode.SGET_CHAR;
-    case Short:
-      return Opcode.SGET_SHORT;
-    default:
-      return null;
-    }
-  }
-
-  public static Opcode_GetPut convert_SPUT(org.jf.dexlib.Code.Opcode opcode) {
+  public static Opcode_GetPut convert_SPUT(Opcode opcode) {
     switch (opcode) {
     case SPUT:
       return IntFloat;
@@ -79,25 +65,8 @@ public enum Opcode_GetPut {
       return Char;
     case SPUT_SHORT:
       return Short;
-    default:
-      return null;
-    }
-  }
-
-  public static org.jf.dexlib.Code.Opcode convert_SPUT(Opcode_GetPut opcode) {
-    switch (opcode) {
-    case IntFloat:
-      return Opcode.SPUT;
-    case Object:
-      return Opcode.SPUT_OBJECT;
-    case Boolean:
-      return Opcode.SPUT_BOOLEAN;
-    case Byte:
-      return Opcode.SPUT_BYTE;
-    case Char:
-      return Opcode.SPUT_CHAR;
-    case Short:
-      return Opcode.SPUT_SHORT;
+    case SPUT_WIDE:
+      return Wide;
     default:
       return null;
     }
@@ -117,25 +86,8 @@ public enum Opcode_GetPut {
       return Char;
     case IGET_SHORT:
       return Short;
-    default:
-      return null;
-    }
-  }
-
-  public static org.jf.dexlib.Code.Opcode convert_IGET(Opcode_GetPut opcode) {
-    switch (opcode) {
-    case IntFloat:
-      return Opcode.IGET;
-    case Object:
-      return Opcode.IGET_OBJECT;
-    case Boolean:
-      return Opcode.IGET_BOOLEAN;
-    case Byte:
-      return Opcode.IGET_BYTE;
-    case Char:
-      return Opcode.IGET_CHAR;
-    case Short:
-      return Opcode.IGET_SHORT;
+    case IGET_WIDE:
+      return Wide;
     default:
       return null;
     }
@@ -155,30 +107,13 @@ public enum Opcode_GetPut {
       return Char;
     case IPUT_SHORT:
       return Short;
+    case IPUT_WIDE:
+      return Wide;
     default:
       return null;
     }
   }
-
-  public static org.jf.dexlib.Code.Opcode convert_IPUT(Opcode_GetPut opcode) {
-    switch (opcode) {
-    case IntFloat:
-      return Opcode.IPUT;
-    case Object:
-      return Opcode.IPUT_OBJECT;
-    case Boolean:
-      return Opcode.IPUT_BOOLEAN;
-    case Byte:
-      return Opcode.IPUT_BYTE;
-    case Char:
-      return Opcode.IPUT_CHAR;
-    case Short:
-      return Opcode.IPUT_SHORT;
-    default:
-      return null;
-    }
-  }
-
+  
   public static Opcode_GetPut convert_AGET(org.jf.dexlib.Code.Opcode opcode) {
     switch (opcode) {
     case AGET:
@@ -193,25 +128,8 @@ public enum Opcode_GetPut {
       return Char;
     case AGET_SHORT:
       return Short;
-    default:
-      return null;
-    }
-  }
-
-  public static org.jf.dexlib.Code.Opcode convert_AGET(Opcode_GetPut opcode) {
-    switch (opcode) {
-    case IntFloat:
-      return Opcode.AGET;
-    case Object:
-      return Opcode.AGET_OBJECT;
-    case Boolean:
-      return Opcode.AGET_BOOLEAN;
-    case Byte:
-      return Opcode.AGET_BYTE;
-    case Char:
-      return Opcode.AGET_CHAR;
-    case Short:
-      return Opcode.AGET_SHORT;
+    case AGET_WIDE:
+      return Wide;
     default:
       return null;
     }
@@ -231,25 +149,8 @@ public enum Opcode_GetPut {
       return Char;
     case APUT_SHORT:
       return Short;
-    default:
-      return null;
-    }
-  }
-
-  public static org.jf.dexlib.Code.Opcode convert_APUT(Opcode_GetPut opcode) {
-    switch (opcode) {
-    case IntFloat:
-      return Opcode.APUT;
-    case Object:
-      return Opcode.APUT_OBJECT;
-    case Boolean:
-      return Opcode.APUT_BOOLEAN;
-    case Byte:
-      return Opcode.APUT_BYTE;
-    case Char:
-      return Opcode.APUT_CHAR;
-    case Short:
-      return Opcode.APUT_SHORT;
+    case APUT_WIDE:
+      return Wide;
     default:
       return null;
     }
@@ -276,12 +177,15 @@ public enum Opcode_GetPut {
     case Short:
       typeOK = type instanceof DexShort;
       break;
+    case Wide:
+      typeOK = (type instanceof DexLong) || (type instanceof DexDouble);
+      break;
     default:
       typeOK = false;
     }
 
     if (!typeOK)
-      throw new InstructionArgumentException("Source/target type doesn't match the instruction's opcode");
+      throw new Error("Source/target type doesn't match the instruction's opcode");
   }
 
   public static Opcode_GetPut getOpcodeFromType(DexRegisterType type) {
@@ -297,7 +201,9 @@ public enum Opcode_GetPut {
       return Char;
     else if (type instanceof DexShort)
       return Short;
+    else if (type instanceof DexLong || type instanceof DexDouble)
+      return Wide;
     else
-      throw new InstructionArgumentException("Type given to instruction is not supported");
+      throw new Error("Type given to instruction is not supported");
   }
 }

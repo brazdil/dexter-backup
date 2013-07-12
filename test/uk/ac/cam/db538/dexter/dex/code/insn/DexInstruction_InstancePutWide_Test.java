@@ -21,7 +21,7 @@ public class DexInstruction_InstancePutWide_Test {
       });
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testParse_InstancePutWide_WrongType() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IPUT_WIDE, (byte) 0, (byte) 1, Utils.getFieldItem("Lcom/example/MyClass1;", "I", "TestField1")),

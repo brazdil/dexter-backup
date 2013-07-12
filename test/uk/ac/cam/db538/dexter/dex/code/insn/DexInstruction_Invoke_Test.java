@@ -167,7 +167,7 @@ public class DexInstruction_Invoke_Test {
                               Opcode_Invoke.Static);
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testCheckArguments_Static_Incorrect() {
     val cache = new DexTypeCache();
     val params = Arrays.asList(new DexRegisterType[] {
@@ -206,7 +206,7 @@ public class DexInstruction_Invoke_Test {
                               Opcode_Invoke.Direct);
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testCheckArguments_Direct_Incorrect() {
     val cache = new DexTypeCache();
     val params = Arrays.asList(new DexRegisterType[] {
@@ -226,7 +226,7 @@ public class DexInstruction_Invoke_Test {
                               Opcode_Invoke.Direct);
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testCheckArguments_TooManyArgRegs() {
     val cache = new DexTypeCache();
 

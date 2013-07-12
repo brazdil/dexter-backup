@@ -120,10 +120,10 @@ public class DexInstruction_Invoke extends DexInstruction {
     for (val argType : methodPrototype.getParameterTypes())
       expectedRegisterCount += argType.getRegisters();
     if (expectedRegisterCount != argumentRegisters.size())
-      throw new InstructionArgumentException("Wrong number of arguments given to a method call");
+      throw new Error("Wrong number of arguments given to a method call");
 
     if (argumentRegisters.size() > 255)
-      throw new InstructionArgumentException("Too many argument registers given to a method call");
+      throw new Error("Too many argument registers given to a method call");
   }
 
   public List<DexRegister> getArgumentRegisters() {

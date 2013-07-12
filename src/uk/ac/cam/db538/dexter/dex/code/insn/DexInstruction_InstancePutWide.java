@@ -46,7 +46,7 @@ public class DexInstruction_InstancePutWide extends DexInstruction {
     super(methodCode);
 
     if (field instanceof DexStaticField)
-      throw new InstructionArgumentException("Expected instance field");
+      throw new Error("Expected instance field");
 
     this.regFrom1 = from1;
     this.regFrom2 = from2;

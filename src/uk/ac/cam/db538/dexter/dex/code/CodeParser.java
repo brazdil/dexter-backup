@@ -28,6 +28,8 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_NewInstance;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParseError;
@@ -167,28 +169,24 @@ public abstract class CodeParser {
 		    case CMP_LONG:
 		      return DexInstruction_Compare.parse(insn, parsingCache);
 
-//		    case SGET:
-//		    case SGET_OBJECT:
-//		    case SGET_BOOLEAN:
-//		    case SGET_BYTE:
-//		    case SGET_CHAR:
-//		    case SGET_SHORT:
-//		      return DexInstruction_StaticGet.parse(insn, parsingCache);
-//
-//		    case SGET_WIDE:
-//		      return DexInstruction_StaticGetWide.parse(insn, parsingCache);
-//
-//		    case SPUT:
-//		    case SPUT_OBJECT:
-//		    case SPUT_BOOLEAN:
-//		    case SPUT_BYTE:
-//		    case SPUT_CHAR:
-//		    case SPUT_SHORT:
-//		      return DexInstruction_StaticPut.parse(insn, parsingCache);
-//
-//		    case SPUT_WIDE:
-//		      return DexInstruction_StaticPutWide.parse(insn, parsingCache);
-//
+		    case SGET:
+		    case SGET_OBJECT:
+		    case SGET_BOOLEAN:
+		    case SGET_BYTE:
+		    case SGET_CHAR:
+		    case SGET_SHORT:
+		    case SGET_WIDE:
+		      return DexInstruction_StaticGet.parse(insn, parsingCache);
+
+		    case SPUT:
+		    case SPUT_OBJECT:
+		    case SPUT_BOOLEAN:
+		    case SPUT_BYTE:
+		    case SPUT_CHAR:
+		    case SPUT_SHORT:
+		    case SPUT_WIDE:
+		      return DexInstruction_StaticPut.parse(insn, parsingCache);
+
 //		    case IGET:
 //		    case IGET_OBJECT:
 //		    case IGET_BOOLEAN:

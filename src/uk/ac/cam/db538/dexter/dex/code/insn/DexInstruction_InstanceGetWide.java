@@ -46,7 +46,7 @@ public class DexInstruction_InstanceGetWide extends DexInstruction {
     super(methodCode);
 
     if (field instanceof DexStaticField)
-      throw new InstructionArgumentException("Expected instance field");
+      throw new Error("Expected instance field");
 
     this.regTo1 = to1;
     this.regTo2 = to2;

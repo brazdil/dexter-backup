@@ -31,42 +31,42 @@ public class DexInstruction_InstanceGet_Test {
       });
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testParse_InstanceGet_WrongType_Object() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IGET_OBJECT, (byte) 10, (byte) 11, Utils.getFieldItem("Lcom/example/MyClass1;", "I", "TestField1")),
       "");
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testParse_InstanceGet_WrongType_Integer() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IGET, (byte) 10, (byte) 11, Utils.getFieldItem("Lcom/example/MyClass1;", "Z", "TestField1")),
       "");
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testParse_InstanceGet_WrongType_Boolean() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IGET_BOOLEAN, (byte) 10, (byte) 11, Utils.getFieldItem("Lcom/example/MyClass1;", "B", "TestField1")),
       "");
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testParse_InstanceGet_WrongType_Byte() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IGET_BYTE, (byte) 10, (byte) 11, Utils.getFieldItem("Lcom/example/MyClass1;", "C", "TestField1")),
       "");
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testParse_InstanceGet_WrongType_Char() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IGET_CHAR, (byte) 10, (byte) 11, Utils.getFieldItem("Lcom/example/MyClass1;", "S", "TestField1")),
       "");
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testParse_InstanceGet_WrongType_Short() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IGET_SHORT, (byte) 10, (byte) 11, Utils.getFieldItem("Lcom/example/MyClass1;", "I", "TestField1")),

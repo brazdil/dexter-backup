@@ -45,7 +45,7 @@ public class DexInstruction_InstancePut extends DexInstruction {
     super(methodCode);
 
     if (field instanceof DexStaticField)
-      throw new InstructionArgumentException("Expected instance field");
+      throw new Error("Expected instance field");
 
     this.regFrom = from;
     this.regObject = obj;

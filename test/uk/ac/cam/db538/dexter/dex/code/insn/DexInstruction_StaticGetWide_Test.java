@@ -21,7 +21,7 @@ public class DexInstruction_StaticGetWide_Test {
       });
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testParse_StaticGetWide_WrongType() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction21c(Opcode.SGET_WIDE, (short) 236, Utils.getFieldItem("Lcom/example/MyClass1;", "I", "TestField1")),

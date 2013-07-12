@@ -9,80 +9,76 @@ import org.jf.dexlib.FieldIdItem;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.field.DexField;
-import uk.ac.cam.db538.dexter.dex.field.DexStaticField;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
+import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+
+import com.google.common.collect.Sets;
 
 public class DexInstruction_StaticGet extends DexInstruction {
 
   @Getter private final DexRegister regTo;
-  @Getter private final DexClassType fieldClass;
-  @Getter private final DexRegisterType fieldType;
-  @Getter private final String fieldName;
+  @Getter private final FieldDefinition fieldDef; 
   @Getter private final Opcode_GetPut opcode;
 
-  public DexInstruction_StaticGet(DexCode methodCode, DexRegister to, DexClassType fieldClass, DexRegisterType fieldType, String fieldName, Opcode_GetPut opcode) {
-    super(methodCode);
+  public DexInstruction_StaticGet(DexRegister to, FieldDefinition fieldDef, Opcode_GetPut opcode, RuntimeHierarchy hierarchy) {
+    super(hierarchy);
 
     this.regTo = to;
-    this.fieldClass = fieldClass;
-    this.fieldType = fieldType;
-    this.fieldName = fieldName;
+    this.fieldDef = fieldDef;
     this.opcode = opcode;
 
-    Opcode_GetPut.checkTypeAgainstOpcode(this.fieldType, this.opcode);
+    Opcode_GetPut.checkTypeAgainstOpcode(this.fieldDef.getFieldId().getType(), this.opcode);
   }
 
-  public DexInstruction_StaticGet(DexCode methodCode, DexRegister to, DexField field) {
-    super(methodCode);
+  public static DexInstruction_StaticGet parse(Instruction insn, CodeParserState parsingState) {
+    val opcode = Opcode_GetPut.convert_SGET(insn.opcode);
+    
+	if (insn instanceof Instruction21c && opcode != null) {
 
-    if (!(field instanceof DexStaticField))
-      throw new InstructionArgumentException("Expected static field");
-
-    this.regTo = to;
-    this.fieldClass = field.getParentClass().getClassDef().getType();
-    this.fieldType = field.getFieldDef().getFieldId().getType();
-    this.fieldName = field.getFieldDef().getFieldId().getName();
-    this.opcode = Opcode_GetPut.getOpcodeFromType(this.fieldType);
-  }
-
-  public DexInstruction_StaticGet(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
-    super(methodCode);
-
-    if (insn instanceof Instruction21c && Opcode_GetPut.convert_SGET(insn.opcode) != null) {
-
+      val hierarchy = parsingState.getHierarchy();
+    	
       val insnStaticGet = (Instruction21c) insn;
       val refItem = (FieldIdItem) insnStaticGet.getReferencedItem();
-      regTo = parsingState.getRegister(insnStaticGet.getRegisterA());
-      fieldClass = DexClassType.parse(
-                     refItem.getContainingClass().getTypeDescriptor(),
-                     parsingState.getCache());
-      fieldType = DexRegisterType.parse(
-                    refItem.getFieldType().getTypeDescriptor(),
-                    parsingState.getCache());
-      fieldName = refItem.getFieldName().getStringValue();
-      opcode = Opcode_GetPut.convert_SGET(insn.opcode);
+      
+      DexRegister regTo;
+      if (opcode == Opcode_GetPut.Wide)
+    	  regTo = parsingState.getWideRegister(insnStaticGet.getRegisterA());
+      else
+    	  regTo = parsingState.getSingleRegister(insnStaticGet.getRegisterA());
+      
+      FieldDefinition fieldDef = hierarchy
+    		 .getBaseClassDefinition(
+    		  	DexClassType.parse(
+    				  refItem.getContainingClass().getTypeDescriptor(),
+    				  hierarchy.getTypeCache()))
+    		 .getAccessedStaticField(
+    		    DexFieldId.parseFieldId(
+		    		refItem.getFieldName().getStringValue(),
+		    		DexRegisterType.parse(
+		    				refItem.getFieldType().getTypeDescriptor(),
+		    				hierarchy.getTypeCache()),
+		    		hierarchy.getTypeCache()));
+      
+      return new DexInstruction_StaticGet(regTo, fieldDef, opcode, hierarchy);
 
     } else
       throw FORMAT_EXCEPTION;
-
-    Opcode_GetPut.checkTypeAgainstOpcode(this.fieldType, this.opcode);
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return "sget-" + opcode.getAssemblyName() + " " + regTo.getOriginalIndexString() + ", " + fieldClass.getPrettyName() + "." + fieldName;
+  public String toString() {
+    return "sget" + opcode.getAsmSuffix() + " " + regTo.toString() + ", " + fieldDef.toString(); 
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaDefinedRegisters() {
-    return createSet(regTo);
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
+    return Sets.newHashSet(regTo);
   }
 
   @Override
@@ -135,7 +131,7 @@ public class DexInstruction_StaticGet extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getTypeCache().LIST_Error;
+	return this.hierarchy.getTypeCache().LIST_Error;
   }
   
 }

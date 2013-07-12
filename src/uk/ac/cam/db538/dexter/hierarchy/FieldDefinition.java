@@ -34,4 +34,9 @@ public class FieldDefinition implements Serializable {
 	public boolean isStatic() {
 		return getAccessFlags().contains(AccessFlags.STATIC);
 	}
+	
+	@Override
+	public String toString() {
+		return parentClass.getType().getDescriptor() + "->" + fieldId.getName() + ":" + fieldId.getType().getDescriptor();
+	}
 }
