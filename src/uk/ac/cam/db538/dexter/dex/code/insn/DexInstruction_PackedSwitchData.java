@@ -58,7 +58,7 @@ public class DexInstruction_PackedSwitchData extends DexInstruction {
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     return "packed-switch-data";
   }
 

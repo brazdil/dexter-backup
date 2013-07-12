@@ -9,7 +9,7 @@ public class DexCodeStart extends DexCodeElement {
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     return "START:";
   }
 }

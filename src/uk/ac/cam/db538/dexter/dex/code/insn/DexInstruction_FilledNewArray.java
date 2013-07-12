@@ -80,7 +80,7 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     val str = new StringBuffer("filled-new-array (");
     boolean first = true;
     for (val arg : argumentRegisters) {
@@ -88,7 +88,7 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
         first = false;
       else
         str.append(", ");
-      str.append(arg.getOriginalIndexString());
+      str.append(arg.toString());
     }
     str.append("), ");
     str.append(arrayType.getDescriptor());

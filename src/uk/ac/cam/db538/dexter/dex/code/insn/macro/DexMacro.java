@@ -13,7 +13,7 @@ public abstract class DexMacro extends DexInstruction {
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     throw new UnsupportedOperationException("Pseudoinstructions should not be displayed");
   }
 

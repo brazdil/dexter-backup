@@ -41,8 +41,8 @@ public class DexInstruction_UnaryOp extends DexInstruction {
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return insnOpcode.getAssemblyName() + " " + regTo.getOriginalIndexString() + ", " + regFrom.getOriginalIndexString();
+  public String toString() {
+    return insnOpcode.getAssemblyName() + " " + regTo.toString() + ", " + regFrom.toString();
   }
 
   @Override

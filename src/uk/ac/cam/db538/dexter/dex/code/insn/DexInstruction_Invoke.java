@@ -135,7 +135,7 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     val str = new StringBuilder();
     str.append("invoke-");
     str.append(callType.name().toLowerCase());
@@ -151,7 +151,7 @@ public class DexInstruction_Invoke extends DexInstruction {
       for (val reg : argumentRegisters) {
         if (first) first = false;
         else str.append(", ");
-        str.append(reg.getOriginalIndexString());
+        str.append(reg.toString());
       }
       str.append(")");
 
@@ -164,7 +164,7 @@ public class DexInstruction_Invoke extends DexInstruction {
         if (second) second = false;
         else if (!first) str.append(", ");
 
-        str.append(reg.getOriginalIndexString());
+        str.append(reg.toString());
 
         if (first) {
           first = false;

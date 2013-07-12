@@ -54,8 +54,8 @@ public class DexInstruction_FillArray extends DexInstruction {
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return "fill-array " + regArray.getOriginalIndexString() + ", L" + arrayTable.getOriginalAbsoluteOffset();
+  public String toString() {
+    return "fill-array " + regArray.toString() + ", L" + arrayTable.getOriginalAbsoluteOffset();
   }
 
   public Pair<DexCodeElement, DexCodeElement> gcReplaceFillArrayDataReference(DexInstruction_FillArray replacementFillArray) {

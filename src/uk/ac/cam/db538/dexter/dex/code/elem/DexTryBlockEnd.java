@@ -15,7 +15,7 @@ public class DexTryBlockEnd extends DexCodeElement {
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     return "} // end TRY" + blockStart.getOriginalAbsoluteOffsetString();
   }
 

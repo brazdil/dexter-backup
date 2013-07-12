@@ -46,10 +46,10 @@ public class DexInstruction_ConvertToWide extends DexInstruction {
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return insnOpcode.getAssemblyName() + " " + regTo1.getOriginalIndexString()
-           + "|" + regTo2.getOriginalIndexString()
-           + ", " + regFrom.getOriginalIndexString();
+  public String toString() {
+    return insnOpcode.getAssemblyName() + " " + regTo1.toString()
+           + "|" + regTo2.toString()
+           + ", " + regFrom.toString();
   }
 
   @Override

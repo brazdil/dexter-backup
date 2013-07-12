@@ -30,7 +30,7 @@ public class DexInstruction_Nop extends DexInstruction {
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     return "nop";
   }
 

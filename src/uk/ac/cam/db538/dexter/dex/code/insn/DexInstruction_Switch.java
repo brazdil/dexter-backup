@@ -58,8 +58,8 @@ public class DexInstruction_Switch extends DexInstruction {
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return (packed ? "packed" : "sparse") + "-switch " + regTest.getOriginalIndexString() + ", L" + switchTable.getOriginalAbsoluteOffset();
+  public String toString() {
+    return (packed ? "packed" : "sparse") + "-switch " + regTest.toString() + ", L" + switchTable.getOriginalAbsoluteOffset();
   }
 
   public Pair<DexCodeElement, DexCodeElement> gcReplaceSwitchTableParentReference(DexInstruction_Switch replacementSwitch) {

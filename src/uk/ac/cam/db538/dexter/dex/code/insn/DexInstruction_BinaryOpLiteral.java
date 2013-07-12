@@ -62,9 +62,9 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return insnOpcode.name().toLowerCase() + "-int/lit " + regTarget.getOriginalIndexString() +
-           ", " + regSource.getOriginalIndexString() + ", #" + literal;
+  public String toString() {
+    return insnOpcode.name().toLowerCase() + "-int/lit " + regTarget.toString() +
+           ", " + regSource.toString() + ", #" + literal;
   }
 
   @Override

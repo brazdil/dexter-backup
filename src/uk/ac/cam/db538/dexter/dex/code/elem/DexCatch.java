@@ -29,7 +29,7 @@ public class DexCatch extends DexCodeElement {
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     return "CATCH" + originalAbsoluteOffset + ":";
   }
 

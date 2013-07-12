@@ -10,7 +10,9 @@ import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Compare;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
@@ -207,28 +209,24 @@ public abstract class CodeParser {
 		    case IPUT_WIDE:
 		      return DexInstruction_InstancePut.parse(insn, parsingCache);
 
-//		    case AGET:
-//		    case AGET_OBJECT:
-//		    case AGET_BOOLEAN:
-//		    case AGET_BYTE:
-//		    case AGET_CHAR:
-//		    case AGET_SHORT:
-//		      return DexInstruction_ArrayGet.parse(insn, parsingCache);
-//
-//		    case AGET_WIDE:
-//		      return DexInstruction_ArrayGetWide.parse(insn, parsingCache);
-//
-//		    case APUT:
-//		    case APUT_OBJECT:
-//		    case APUT_BOOLEAN:
-//		    case APUT_BYTE:
-//		    case APUT_CHAR:
-//		    case APUT_SHORT:
-//		      return DexInstruction_ArrayPut.parse(insn, parsingCache);
-//
-//		    case APUT_WIDE:
-//		      return DexInstruction_ArrayPutWide.parse(insn, parsingCache);
-//
+		    case AGET:
+		    case AGET_OBJECT:
+		    case AGET_BOOLEAN:
+		    case AGET_BYTE:
+		    case AGET_CHAR:
+		    case AGET_SHORT:
+		    case AGET_WIDE:
+		      return DexInstruction_ArrayGet.parse(insn, parsingCache);
+
+		    case APUT:
+		    case APUT_OBJECT:
+		    case APUT_BOOLEAN:
+		    case APUT_BYTE:
+		    case APUT_CHAR:
+		    case APUT_SHORT:
+		    case APUT_WIDE:
+		      return DexInstruction_ArrayPut.parse(insn, parsingCache);
+
 //		    case INVOKE_VIRTUAL:
 //		    case INVOKE_SUPER:
 //		    case INVOKE_DIRECT:

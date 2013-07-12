@@ -60,7 +60,7 @@ public class DexInstruction_SparseSwitchData extends DexInstruction {
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     return "sparse-switch-data";
   }
 

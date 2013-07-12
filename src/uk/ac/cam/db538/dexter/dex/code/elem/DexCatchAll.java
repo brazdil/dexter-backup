@@ -25,7 +25,7 @@ public class DexCatchAll extends DexCodeElement {
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     return "CATCHALL" + originalAbsoluteOffset + ":";
   }
 

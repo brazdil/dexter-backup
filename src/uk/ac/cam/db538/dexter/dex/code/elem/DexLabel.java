@@ -19,7 +19,7 @@ public class DexLabel extends DexCodeElement {
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     return "L" + Long.toString(id) + ":";
   }
 

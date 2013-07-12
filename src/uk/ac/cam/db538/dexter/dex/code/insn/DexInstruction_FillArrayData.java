@@ -55,7 +55,7 @@ public class DexInstruction_FillArrayData extends DexInstruction {
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     return "fill-array-data";
   }
 
