@@ -10,6 +10,7 @@ import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
@@ -127,9 +128,9 @@ public abstract class CodeParser {
 		    case NEW_ARRAY:
 		      return DexInstruction_NewArray.parse(insn, parsingCache);
 
-//		    case ARRAY_LENGTH:
-//		      return new DexInstruction_ArrayLength(this, insn, parsingCache);
-//
+		    case ARRAY_LENGTH:
+		      return DexInstruction_ArrayLength.parse(insn, parsingCache);
+
 //		    case THROW:
 //		      return new DexInstruction_Throw(this, insn, parsingCache);
 //
