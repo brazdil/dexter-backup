@@ -18,6 +18,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Compare;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
@@ -248,29 +249,23 @@ public abstract class CodeParser {
 		    case NEG_DOUBLE:
 		      return DexInstruction_UnaryOp.parse(insn, parsingCache);
 
-//		    case INT_TO_FLOAT:
-//		    case FLOAT_TO_INT:
-//		    case INT_TO_BYTE:
-//		    case INT_TO_CHAR:
-//		    case INT_TO_SHORT:
-//		      return DexInstruction_Convert.parse(insn, parsingCache);
-//
-//		    case INT_TO_LONG:
-//		    case INT_TO_DOUBLE:
-//		    case FLOAT_TO_LONG:
-//		    case FLOAT_TO_DOUBLE:
-//		      return DexInstruction_ConvertToWide.parse(insn, parsingCache);
-//
-//		    case LONG_TO_INT:
-//		    case DOUBLE_TO_INT:
-//		    case LONG_TO_FLOAT:
-//		    case DOUBLE_TO_FLOAT:
-//		      return DexInstruction_ConvertFromWide.parse(insn, parsingCache);
-//
-//		    case LONG_TO_DOUBLE:
-//		    case DOUBLE_TO_LONG:
-//		      return DexInstruction_ConvertWide.parse(insn, parsingCache);
-//
+		    case INT_TO_FLOAT:
+		    case FLOAT_TO_INT:
+		    case INT_TO_BYTE:
+		    case INT_TO_CHAR:
+		    case INT_TO_SHORT:
+		    case INT_TO_LONG:
+		    case INT_TO_DOUBLE:
+		    case FLOAT_TO_LONG:
+		    case FLOAT_TO_DOUBLE:
+		    case LONG_TO_INT:
+		    case DOUBLE_TO_INT:
+		    case LONG_TO_FLOAT:
+		    case DOUBLE_TO_FLOAT:
+		    case LONG_TO_DOUBLE:
+		    case DOUBLE_TO_LONG:
+		      return DexInstruction_Convert.parse(insn, parsingCache);
+
 //		    case ADD_INT:
 //		    case SUB_INT:
 //		    case MUL_INT:
