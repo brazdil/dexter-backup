@@ -9,43 +9,44 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction22b;
 import org.jf.dexlib.Code.Format.Instruction22s;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+
+import com.google.common.collect.Sets;
 
 public class DexInstruction_BinaryOpLiteral extends DexInstruction {
 
-  @Getter private final DexRegister regTarget;
-  @Getter private final DexRegister regSource;
+  @Getter private final DexSingleRegister regTarget;
+  @Getter private final DexSingleRegister regSource;
   @Getter private final long literal;
   @Getter private final Opcode_BinaryOpLiteral insnOpcode;
   
-  public DexInstruction_BinaryOpLiteral(DexCode methodCode, DexRegister target, DexRegister source, long literal, Opcode_BinaryOpLiteral opcode) {
-    super(methodCode);
+  public DexInstruction_BinaryOpLiteral(DexSingleRegister target, DexSingleRegister source, long literal, Opcode_BinaryOpLiteral opcode, RuntimeHierarchy hierarchy) {
+    super(hierarchy);
 
     this.regTarget = target;
     this.regSource = source;
     this.literal = literal;
-    insnOpcode = opcode;
+    this.insnOpcode = opcode;
   }
 
-  public DexInstruction_BinaryOpLiteral(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError {
-    super(methodCode);
-
+  public static DexInstruction_BinaryOpLiteral parse(Instruction insn, CodeParserState parsingState) {
+	val opcode = Opcode_BinaryOpLiteral.convert(insn.opcode);
     int regA, regB;
     long lit;
 
-    if (insn instanceof Instruction22s && Opcode_BinaryOpLiteral.convert(insn.opcode) != null) {
+    if (insn instanceof Instruction22s && opcode != null) {
 
       val insnBinaryOpLit16 = (Instruction22s) insn;
       regA = insnBinaryOpLit16.getRegisterA();
       regB = insnBinaryOpLit16.getRegisterB();
       lit = insnBinaryOpLit16.getLiteral();
 
-    } else if (insn instanceof Instruction22b && Opcode_BinaryOpLiteral.convert(insn.opcode) != null) {
+    } else if (insn instanceof Instruction22b && opcode != null) {
 
       val insnBinaryOpLit8 = (Instruction22b) insn;
       regA = insnBinaryOpLit8.getRegisterA();
@@ -55,10 +56,12 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
     } else
       throw FORMAT_EXCEPTION;
 
-    this.regTarget = parsingState.getRegister(regA);
-    this.regSource = parsingState.getRegister(regB);
-    this.literal = lit;
-    this.insnOpcode = Opcode_BinaryOpLiteral.convert(insn.opcode);
+    return new DexInstruction_BinaryOpLiteral(
+    		parsingState.getSingleRegister(regA),
+    		parsingState.getSingleRegister(regB),
+    		lit,
+    		opcode,
+    		parsingState.getHierarchy());
   }
 
   @Override
@@ -79,14 +82,14 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
 
   @Override
   public void instrument(DexCode_InstrumentationState state) {
-	// taint propagation into ArithmeticException is not necessary here
-	// because only taint of the denominator propagates and that's
-	// zero for constant literals
-    getMethodCode().replace(this,
-                            new DexCodeElement[] {
-                              this,
-                              new DexInstruction_Move(getMethodCode(), state.getTaintRegister(regTarget), state.getTaintRegister(regSource), false)
-                            });
+//	// taint propagation into ArithmeticException is not necessary here
+//	// because only taint of the denominator propagates and that's
+//	// zero for constant literals
+//    getMethodCode().replace(this,
+//                            new DexCodeElement[] {
+//                              this,
+//                              new DexInstruction_Move(getMethodCode(), state.getTaintRegister(regTarget), state.getTaintRegister(regSource), false)
+//                            });
   }
 
   @Override

@@ -14,6 +14,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Compare;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
@@ -333,37 +334,37 @@ public abstract class CodeParser {
 		    case REM_DOUBLE_2ADDR:
 		      return DexInstruction_BinaryOp.parse(insn, parsingCache);
 
-//		    case ADD_INT_LIT16:
-//		    case ADD_INT_LIT8:
-//		    case RSUB_INT:
-//		    case RSUB_INT_LIT8:
-//		    case MUL_INT_LIT16:
-//		    case MUL_INT_LIT8:
-//		    case DIV_INT_LIT16:
-//		    case DIV_INT_LIT8:
-//		    case REM_INT_LIT16:
-//		    case REM_INT_LIT8:
-//		    case AND_INT_LIT16:
-//		    case AND_INT_LIT8:
-//		    case OR_INT_LIT16:
-//		    case OR_INT_LIT8:
-//		    case XOR_INT_LIT16:
-//		    case XOR_INT_LIT8:
-//		    case SHL_INT_LIT8:
-//		    case SHR_INT_LIT8:
-//		    case USHR_INT_LIT8:
-//		      return DexInstruction_BinaryOpLiteral.parse(insn, parsingCache);
-//
-//		    case PACKED_SWITCH:
-//		    case SPARSE_SWITCH:
-//		      return DexInstruction_Switch.parse(insn, parsingCache);
-//
+		    case ADD_INT_LIT16:
+		    case ADD_INT_LIT8:
+		    case RSUB_INT:
+		    case RSUB_INT_LIT8:
+		    case MUL_INT_LIT16:
+		    case MUL_INT_LIT8:
+		    case DIV_INT_LIT16:
+		    case DIV_INT_LIT8:
+		    case REM_INT_LIT16:
+		    case REM_INT_LIT8:
+		    case AND_INT_LIT16:
+		    case AND_INT_LIT8:
+		    case OR_INT_LIT16:
+		    case OR_INT_LIT8:
+		    case XOR_INT_LIT16:
+		    case XOR_INT_LIT8:
+		    case SHL_INT_LIT8:
+		    case SHR_INT_LIT8:
+		    case USHR_INT_LIT8:
+		      return DexInstruction_BinaryOpLiteral.parse(insn, parsingCache);
+
 //		    case FILL_ARRAY_DATA:
 //		      return DexInstruction_FillArray.parse(insn, parsingCache);
 //
 //		    case FILLED_NEW_ARRAY:
 //		    case FILLED_NEW_ARRAY_RANGE:
 //		      return DexInstruction_FilledNewArray.parse(insn, parsingCache);
+
+//			    case PACKED_SWITCH:
+//			    case SPARSE_SWITCH:
+//			      return DexInstruction_Switch.parse(insn, parsingCache);
 
 		    default:
 		    	return new DexInstruction_Unknown(insn, parsingCache);
