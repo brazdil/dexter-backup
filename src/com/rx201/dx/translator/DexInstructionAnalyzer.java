@@ -18,7 +18,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CompareFloat;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Compare;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CompareWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
@@ -304,7 +304,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	public void visit(DexInstruction_SparseSwitchData instruction) {}
 	
 	@Override
-	public void visit(DexInstruction_CompareFloat instruction) {
+	public void visit(DexInstruction_Compare instruction) {
 		useFreezedRegister(instruction.getRegSourceA(), RopType.Float);
 		useFreezedRegister(instruction.getRegSourceB(), RopType.Float);
 		defineFreezedRegister(instruction.getRegTo(), RopType.Byte);

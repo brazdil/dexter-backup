@@ -27,7 +27,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpLiteral;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOpWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CompareFloat;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Compare;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CompareWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
@@ -879,7 +879,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 
 	@Override
-	public void visit(DexInstruction_CompareFloat instruction) {
+	public void visit(DexInstruction_Compare instruction) {
 		doPlainInsn(instruction.isLtBias() ? Rops.CMPL_FLOAT : Rops.CMPG_FLOAT, 
 				getDestRegSpec(instruction.getRegTo()), instruction.getRegSourceA(), instruction.getRegSourceB());
 	}

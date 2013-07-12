@@ -70,7 +70,7 @@ public interface DexInstructionVisitor {
 
 	void visit(DexInstruction_SparseSwitchData instruction);
 
-	void visit(DexInstruction_CompareFloat instruction);
+	void visit(DexInstruction_Compare instruction);
 
 	void visit(DexInstruction_CompareWide instruction);
 
