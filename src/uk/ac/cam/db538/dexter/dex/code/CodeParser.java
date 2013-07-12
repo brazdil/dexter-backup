@@ -60,13 +60,13 @@ public abstract class CodeParser {
 
 //		    case NOP:
 //		      if (insn instanceof PackedSwitchDataPseudoInstruction)
-//		        return new DexInstruction_PackedSwitchData(this, insn, parsingCache);
+//		        return DexInstruction_PackedSwitchData(this, insn, parsingCache);
 //		      else if (insn instanceof SparseSwitchDataPseudoInstruction)
-//		        return new DexInstruction_SparseSwitchData(this, insn, parsingCache);
+//		        return DexInstruction_SparseSwitchData(this, insn, parsingCache);
 //		      else if (insn instanceof ArrayDataPseudoInstruction)
-//		        return new DexInstruction_FillArrayData(this, insn, parsingCache);
+//		        return DexInstruction_FillArrayData(this, insn, parsingCache);
 //		      else
-//		        return new DexInstruction_Nop(this, insn, parsingCache);
+//		        return DexInstruction_Nop(this, insn, parsingCache);
 
 		    case MOVE:
 		    case MOVE_OBJECT:
@@ -132,12 +132,12 @@ public abstract class CodeParser {
 		      return DexInstruction_ArrayLength.parse(insn, parsingCache);
 
 //		    case THROW:
-//		      return new DexInstruction_Throw(this, insn, parsingCache);
+//		      return DexInstruction_Throw.parse(insn, parsingCache);
 //
 //		    case GOTO:
 //		    case GOTO_16:
 //		    case GOTO_32:
-//		      return new DexInstruction_Goto(this, insn, parsingCache);
+//		      return DexInstruction_Goto.parse(insn, parsingCache);
 //
 //		    case IF_EQ:
 //		    case IF_NE:
@@ -145,7 +145,7 @@ public abstract class CodeParser {
 //		    case IF_GE:
 //		    case IF_GT:
 //		    case IF_LE:
-//		      return new DexInstruction_IfTest(this, insn, parsingCache);
+//		      return DexInstruction_IfTest.parse(insn, parsingCache);
 //
 //		    case IF_EQZ:
 //		    case IF_NEZ:
@@ -153,16 +153,16 @@ public abstract class CodeParser {
 //		    case IF_GEZ:
 //		    case IF_GTZ:
 //		    case IF_LEZ:
-//		      return new DexInstruction_IfTestZero(this, insn, parsingCache);
+//		      return DexInstruction_IfTestZero.parse(insn, parsingCache);
 //
 //		    case CMPL_FLOAT:
 //		    case CMPG_FLOAT:
-//		      return new DexInstruction_CompareFloat(this, insn, parsingCache);
+//		      return DexInstruction_CompareFloat.parse(insn, parsingCache);
 //
 //		    case CMPL_DOUBLE:
 //		    case CMPG_DOUBLE:
 //		    case CMP_LONG:
-//		      return new DexInstruction_CompareWide(this, insn, parsingCache);
+//		      return DexInstruction_CompareWide.parse(insn, parsingCache);
 //
 //		    case SGET:
 //		    case SGET_OBJECT:
@@ -170,10 +170,10 @@ public abstract class CodeParser {
 //		    case SGET_BYTE:
 //		    case SGET_CHAR:
 //		    case SGET_SHORT:
-//		      return new DexInstruction_StaticGet(this, insn, parsingCache);
+//		      return DexInstruction_StaticGet.parse(insn, parsingCache);
 //
 //		    case SGET_WIDE:
-//		      return new DexInstruction_StaticGetWide(this, insn, parsingCache);
+//		      return DexInstruction_StaticGetWide.parse(insn, parsingCache);
 //
 //		    case SPUT:
 //		    case SPUT_OBJECT:
@@ -181,10 +181,10 @@ public abstract class CodeParser {
 //		    case SPUT_BYTE:
 //		    case SPUT_CHAR:
 //		    case SPUT_SHORT:
-//		      return new DexInstruction_StaticPut(this, insn, parsingCache);
+//		      return DexInstruction_StaticPut.parse(insn, parsingCache);
 //
 //		    case SPUT_WIDE:
-//		      return new DexInstruction_StaticPutWide(this, insn, parsingCache);
+//		      return DexInstruction_StaticPutWide.parse(insn, parsingCache);
 //
 //		    case IGET:
 //		    case IGET_OBJECT:
@@ -192,10 +192,10 @@ public abstract class CodeParser {
 //		    case IGET_BYTE:
 //		    case IGET_CHAR:
 //		    case IGET_SHORT:
-//		      return new DexInstruction_InstanceGet(this, insn, parsingCache);
+//		      return DexInstruction_InstanceGet.parse(insn, parsingCache);
 //
 //		    case IGET_WIDE:
-//		      return new DexInstruction_InstanceGetWide(this, insn, parsingCache);
+//		      return DexInstruction_InstanceGetWide.parse(insn, parsingCache);
 //
 //		    case IPUT:
 //		    case IPUT_OBJECT:
@@ -203,10 +203,10 @@ public abstract class CodeParser {
 //		    case IPUT_BYTE:
 //		    case IPUT_CHAR:
 //		    case IPUT_SHORT:
-//		      return new DexInstruction_InstancePut(this, insn, parsingCache);
+//		      return DexInstruction_InstancePut.parse(insn, parsingCache);
 //
 //		    case IPUT_WIDE:
-//		      return new DexInstruction_InstancePutWide(this, insn, parsingCache);
+//		      return DexInstruction_InstancePutWide.parse(insn, parsingCache);
 //
 //		    case AGET:
 //		    case AGET_OBJECT:
@@ -214,10 +214,10 @@ public abstract class CodeParser {
 //		    case AGET_BYTE:
 //		    case AGET_CHAR:
 //		    case AGET_SHORT:
-//		      return new DexInstruction_ArrayGet(this, insn, parsingCache);
+//		      return DexInstruction_ArrayGet.parse(insn, parsingCache);
 //
 //		    case AGET_WIDE:
-//		      return new DexInstruction_ArrayGetWide(this, insn, parsingCache);
+//		      return DexInstruction_ArrayGetWide.parse(insn, parsingCache);
 //
 //		    case APUT:
 //		    case APUT_OBJECT:
@@ -225,10 +225,10 @@ public abstract class CodeParser {
 //		    case APUT_BYTE:
 //		    case APUT_CHAR:
 //		    case APUT_SHORT:
-//		      return new DexInstruction_ArrayPut(this, insn, parsingCache);
+//		      return DexInstruction_ArrayPut.parse(insn, parsingCache);
 //
 //		    case APUT_WIDE:
-//		      return new DexInstruction_ArrayPutWide(this, insn, parsingCache);
+//		      return DexInstruction_ArrayPutWide.parse(insn, parsingCache);
 //
 //		    case INVOKE_VIRTUAL:
 //		    case INVOKE_SUPER:
@@ -240,40 +240,40 @@ public abstract class CodeParser {
 //		    case INVOKE_DIRECT_RANGE:
 //		    case INVOKE_STATIC_RANGE:
 //		    case INVOKE_INTERFACE_RANGE:
-//		      return new DexInstruction_Invoke(this, insn, parsingCache);
+//		      return DexInstruction_Invoke.parse(insn, parsingCache);
 //
 //		    case NEG_INT:
 //		    case NOT_INT:
 //		    case NEG_FLOAT:
-//		      return new DexInstruction_UnaryOp(this, insn, parsingCache);
+//		      return DexInstruction_UnaryOp.parse(insn, parsingCache);
 //
 //		    case NEG_LONG:
 //		    case NOT_LONG:
 //		    case NEG_DOUBLE:
-//		      return new DexInstruction_UnaryOpWide(this, insn, parsingCache);
+//		      return DexInstruction_UnaryOpWide.parse(insn, parsingCache);
 //
 //		    case INT_TO_FLOAT:
 //		    case FLOAT_TO_INT:
 //		    case INT_TO_BYTE:
 //		    case INT_TO_CHAR:
 //		    case INT_TO_SHORT:
-//		      return new DexInstruction_Convert(this, insn, parsingCache);
+//		      return DexInstruction_Convert.parse(insn, parsingCache);
 //
 //		    case INT_TO_LONG:
 //		    case INT_TO_DOUBLE:
 //		    case FLOAT_TO_LONG:
 //		    case FLOAT_TO_DOUBLE:
-//		      return new DexInstruction_ConvertToWide(this, insn, parsingCache);
+//		      return DexInstruction_ConvertToWide.parse(insn, parsingCache);
 //
 //		    case LONG_TO_INT:
 //		    case DOUBLE_TO_INT:
 //		    case LONG_TO_FLOAT:
 //		    case DOUBLE_TO_FLOAT:
-//		      return new DexInstruction_ConvertFromWide(this, insn, parsingCache);
+//		      return DexInstruction_ConvertFromWide.parse(insn, parsingCache);
 //
 //		    case LONG_TO_DOUBLE:
 //		    case DOUBLE_TO_LONG:
-//		      return new DexInstruction_ConvertWide(this, insn, parsingCache);
+//		      return DexInstruction_ConvertWide.parse(insn, parsingCache);
 //
 //		    case ADD_INT:
 //		    case SUB_INT:
@@ -307,7 +307,7 @@ public abstract class CodeParser {
 //		    case MUL_FLOAT_2ADDR:
 //		    case DIV_FLOAT_2ADDR:
 //		    case REM_FLOAT_2ADDR:
-//		      return new DexInstruction_BinaryOp(this, insn, parsingCache);
+//		      return DexInstruction_BinaryOp.parse(insn, parsingCache);
 //
 //		    case ADD_LONG:
 //		    case SUB_LONG:
@@ -341,7 +341,7 @@ public abstract class CodeParser {
 //		    case MUL_DOUBLE_2ADDR:
 //		    case DIV_DOUBLE_2ADDR:
 //		    case REM_DOUBLE_2ADDR:
-//		      return new DexInstruction_BinaryOpWide(this, insn, parsingCache);
+//		      return DexInstruction_BinaryOpWide.parse(insn, parsingCache);
 //
 //		    case ADD_INT_LIT16:
 //		    case ADD_INT_LIT8:
@@ -362,21 +362,21 @@ public abstract class CodeParser {
 //		    case SHL_INT_LIT8:
 //		    case SHR_INT_LIT8:
 //		    case USHR_INT_LIT8:
-//		      return new DexInstruction_BinaryOpLiteral(this, insn, parsingCache);
+//		      return DexInstruction_BinaryOpLiteral.parse(insn, parsingCache);
 //
 //		    case PACKED_SWITCH:
 //		    case SPARSE_SWITCH:
-//		      return new DexInstruction_Switch(this, insn, parsingCache);
+//		      return DexInstruction_Switch.parse(insn, parsingCache);
 //
 //		    case FILL_ARRAY_DATA:
-//		      return new DexInstruction_FillArray(this, insn, parsingCache);
+//		      return DexInstruction_FillArray.parse(insn, parsingCache);
 //
 //		    case FILLED_NEW_ARRAY:
 //		    case FILLED_NEW_ARRAY_RANGE:
-//		      return new DexInstruction_FilledNewArray(this, insn, parsingCache);
+//		      return DexInstruction_FilledNewArray.parse(insn, parsingCache);
 
 		    default:
-		    	return new DexInstruction_Unknown(insn);
+		    	return new DexInstruction_Unknown(insn, parsingCache);
 		    	// throw new InstructionParsingException("Unknown instruction " + insn.opcode.name());
 		    }
 		  }
