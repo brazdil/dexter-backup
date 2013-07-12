@@ -13,6 +13,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Compare;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
@@ -266,74 +267,72 @@ public abstract class CodeParser {
 		    case DOUBLE_TO_LONG:
 		      return DexInstruction_Convert.parse(insn, parsingCache);
 
-//		    case ADD_INT:
-//		    case SUB_INT:
-//		    case MUL_INT:
-//		    case DIV_INT:
-//		    case REM_INT:
-//		    case AND_INT:
-//		    case OR_INT:
-//		    case XOR_INT:
-//		    case SHL_INT:
-//		    case SHR_INT:
-//		    case USHR_INT:
-//		    case ADD_FLOAT:
-//		    case SUB_FLOAT:
-//		    case MUL_FLOAT:
-//		    case DIV_FLOAT:
-//		    case REM_FLOAT:
-//		    case ADD_INT_2ADDR:
-//		    case SUB_INT_2ADDR:
-//		    case MUL_INT_2ADDR:
-//		    case DIV_INT_2ADDR:
-//		    case REM_INT_2ADDR:
-//		    case AND_INT_2ADDR:
-//		    case OR_INT_2ADDR:
-//		    case XOR_INT_2ADDR:
-//		    case SHL_INT_2ADDR:
-//		    case SHR_INT_2ADDR:
-//		    case USHR_INT_2ADDR:
-//		    case ADD_FLOAT_2ADDR:
-//		    case SUB_FLOAT_2ADDR:
-//		    case MUL_FLOAT_2ADDR:
-//		    case DIV_FLOAT_2ADDR:
-//		    case REM_FLOAT_2ADDR:
-//		      return DexInstruction_BinaryOp.parse(insn, parsingCache);
-//
-//		    case ADD_LONG:
-//		    case SUB_LONG:
-//		    case MUL_LONG:
-//		    case DIV_LONG:
-//		    case REM_LONG:
-//		    case AND_LONG:
-//		    case OR_LONG:
-//		    case XOR_LONG:
-//		    case SHL_LONG:
-//		    case SHR_LONG:
-//		    case USHR_LONG:
-//		    case ADD_DOUBLE:
-//		    case SUB_DOUBLE:
-//		    case MUL_DOUBLE:
-//		    case DIV_DOUBLE:
-//		    case REM_DOUBLE:
-//		    case ADD_LONG_2ADDR:
-//		    case SUB_LONG_2ADDR:
-//		    case MUL_LONG_2ADDR:
-//		    case DIV_LONG_2ADDR:
-//		    case REM_LONG_2ADDR:
-//		    case AND_LONG_2ADDR:
-//		    case OR_LONG_2ADDR:
-//		    case XOR_LONG_2ADDR:
-//		    case SHL_LONG_2ADDR:
-//		    case SHR_LONG_2ADDR:
-//		    case USHR_LONG_2ADDR:
-//		    case ADD_DOUBLE_2ADDR:
-//		    case SUB_DOUBLE_2ADDR:
-//		    case MUL_DOUBLE_2ADDR:
-//		    case DIV_DOUBLE_2ADDR:
-//		    case REM_DOUBLE_2ADDR:
-//		      return DexInstruction_BinaryOpWide.parse(insn, parsingCache);
-//
+		    case ADD_INT:
+		    case SUB_INT:
+		    case MUL_INT:
+		    case DIV_INT:
+		    case REM_INT:
+		    case AND_INT:
+		    case OR_INT:
+		    case XOR_INT:
+		    case SHL_INT:
+		    case SHR_INT:
+		    case USHR_INT:
+		    case ADD_FLOAT:
+		    case SUB_FLOAT:
+		    case MUL_FLOAT:
+		    case DIV_FLOAT:
+		    case REM_FLOAT:
+		    case ADD_INT_2ADDR:
+		    case SUB_INT_2ADDR:
+		    case MUL_INT_2ADDR:
+		    case DIV_INT_2ADDR:
+		    case REM_INT_2ADDR:
+		    case AND_INT_2ADDR:
+		    case OR_INT_2ADDR:
+		    case XOR_INT_2ADDR:
+		    case SHL_INT_2ADDR:
+		    case SHR_INT_2ADDR:
+		    case USHR_INT_2ADDR:
+		    case ADD_FLOAT_2ADDR:
+		    case SUB_FLOAT_2ADDR:
+		    case MUL_FLOAT_2ADDR:
+		    case DIV_FLOAT_2ADDR:
+		    case REM_FLOAT_2ADDR:
+		    case ADD_LONG:
+		    case SUB_LONG:
+		    case MUL_LONG:
+		    case DIV_LONG:
+		    case REM_LONG:
+		    case AND_LONG:
+		    case OR_LONG:
+		    case XOR_LONG:
+		    case SHL_LONG:
+		    case SHR_LONG:
+		    case USHR_LONG:
+		    case ADD_DOUBLE:
+		    case SUB_DOUBLE:
+		    case MUL_DOUBLE:
+		    case DIV_DOUBLE:
+		    case REM_DOUBLE:
+		    case ADD_LONG_2ADDR:
+		    case SUB_LONG_2ADDR:
+		    case MUL_LONG_2ADDR:
+		    case DIV_LONG_2ADDR:
+		    case REM_LONG_2ADDR:
+		    case AND_LONG_2ADDR:
+		    case OR_LONG_2ADDR:
+		    case XOR_LONG_2ADDR:
+		    case SHL_LONG_2ADDR:
+		    case SHR_LONG_2ADDR:
+		    case USHR_LONG_2ADDR:
+		    case ADD_DOUBLE_2ADDR:
+		    case SUB_DOUBLE_2ADDR:
+		    case MUL_DOUBLE_2ADDR:
+		    case DIV_DOUBLE_2ADDR:
+		    case REM_DOUBLE_2ADDR:
+		      return DexInstruction_BinaryOp.parse(insn, parsingCache);
+
 //		    case ADD_INT_LIT16:
 //		    case ADD_INT_LIT8:
 //		    case RSUB_INT:
