@@ -21,17 +21,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import pxb.android.axml.AxmlReader;
 import pxb.android.axml.AxmlVisitor;
+import pxb.android.axml.AxmlVisitor.NodeVisitor;
 import pxb.android.axml.AxmlWriter;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Stack;
 
 /**
@@ -134,6 +130,19 @@ public class BinXmlUtil {
 		return getFullAppName(xml).packageName;
 	}
 
+	private static class NvReplaceAppName extends NodeVisitor {
+		NvReplaceAppName(NodeVisitor nv, String appName) {
+			super(nv);
+			super.attr(ANDROID_SCHEMA, ANDROID_APP_NAME, 0x1010003, AxmlVisitor.TYPE_STRING, appName);
+		}
+		@Override
+		public void attr(String ns, String name, int resourceId, int type, Object obj) {
+			if (!ns.equals(ANDROID_SCHEMA) || !name.equals(ANDROID_APP_NAME)) {
+				super.attr(ns, name, resourceId, type, obj);
+			}
+		}
+	}
+	
 	/**
 	 * Edit a binary AndroidManifest.xml file to insert/update the "android:name" attribute of the application tag.
 	 * 
@@ -155,17 +164,7 @@ public class BinXmlUtil {
 					@Override
 					public NodeVisitor child(String ns, String name) {//<application>
 						if (name.equals(ANDROID_APP_TAG)) {
-							return new NodeVisitor(super.child(ns, name)) {
-								@Override
-								public void attr(String ns, String name, int resourceId, int type, Object obj) {
-									if (ns.equals(ANDROID_SCHEMA)
-											&& name.equals("name")) {
-										super.attr(ns, name, resourceId, type, applicationClassName);
-									} else {
-										super.attr(ns, name, resourceId, type, obj);
-									}
-								}
-							};
+							return new NvReplaceAppName(super.child(ns, name), applicationClassName);
 						}
 						return super.child(ns, name);
 					}
