@@ -18,7 +18,9 @@ import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParseError;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleOriginalRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexWideOriginalRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexWideRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
@@ -47,14 +49,14 @@ public class CodeParserState {
 	this.cacheSingleReg = new Cache<Integer, DexSingleRegister>() {
 		@Override
 		protected DexSingleRegister createNewEntry(Integer key) {
-			return new DexSingleRegister(key);
+			return new DexSingleOriginalRegister(key);
 		}
 	};
 	
 	this.cacheWideReg = new Cache<Integer, DexWideRegister>() {
 		@Override
 		protected DexWideRegister createNewEntry(Integer key) {
-			return new DexWideRegister(key);
+			return new DexWideOriginalRegister(key);
 		}
 	};
 	

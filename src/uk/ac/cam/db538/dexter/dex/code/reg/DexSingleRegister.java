@@ -1,22 +1,13 @@
 package uk.ac.cam.db538.dexter.dex.code.reg;
 
-import lombok.Getter;
-
-public class DexSingleRegister extends DexOriginalRegister {
-
-	@Getter private final int id;
-	
-	public DexSingleRegister(int id) {
-		this.id = id;
-	}
-
-	@Override
-	String getPlainId() {
-		return Integer.toString(id);
-	}
-
+public abstract class DexSingleRegister extends DexStandardRegister {
 	@Override
 	public RegisterWidth getWidth() {
 		return RegisterWidth.SINGLE;
+	}
+
+	@Override
+	public boolean storesType(RegisterType type) {
+		return type == RegisterType.SINGLE_PRIMITIVE || type == RegisterType.REFERENCE;
 	}
 }

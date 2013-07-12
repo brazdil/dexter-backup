@@ -33,16 +33,18 @@ public class DexInstruction_ConstClass extends DexInstruction {
     this.value = value;
   }
 
-  public DexInstruction_ConstClass(Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
-    super(parsingState.getHierarchy());
-
+  public static DexInstruction_ConstClass parse(Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_CLASS) {
 
+      val hierarchy = parsingState.getHierarchy();
+    	
       val insnConstClass = (Instruction21c) insn;
-      regTo = parsingState.getSingleRegister(insnConstClass.getRegisterA());
-      value = DexReferenceType.parse(
+      return new DexInstruction_ConstClass(
+    		  parsingState.getSingleRegister(insnConstClass.getRegisterA()),
+    		  DexReferenceType.parse(
                 ((TypeIdItem) insnConstClass.getReferencedItem()).getTypeDescriptor(),
-                this.hierarchy.getTypeCache());
+                hierarchy.getTypeCache()),
+              hierarchy);
 
     } else
       throw FORMAT_EXCEPTION;

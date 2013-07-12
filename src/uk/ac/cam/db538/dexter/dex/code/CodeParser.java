@@ -14,6 +14,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_CheckCast;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveException;
@@ -73,23 +74,23 @@ public abstract class CodeParser {
 		    case MOVE_WIDE:
 		    case MOVE_WIDE_FROM16:
 		    case MOVE_WIDE_16:
-		      return new DexInstruction_Move(insn, parsingCache);
+		      return DexInstruction_Move.parse(insn, parsingCache);
 
 		    case MOVE_RESULT:
 		    case MOVE_RESULT_OBJECT:
 		    case MOVE_RESULT_WIDE:
-		      return new DexInstruction_MoveResult(insn, parsingCache);
+		      return DexInstruction_MoveResult.parse(insn, parsingCache);
 
 		    case MOVE_EXCEPTION:
-		      return new DexInstruction_MoveException(insn, parsingCache);
+		      return DexInstruction_MoveException.parse(insn, parsingCache);
 
 		    case RETURN_VOID:
-		      return new DexInstruction_ReturnVoid(insn, parsingCache);
+		      return DexInstruction_ReturnVoid.parse(insn, parsingCache);
 
 		    case RETURN:
 		    case RETURN_OBJECT:
 		    case RETURN_WIDE:
-		      return new DexInstruction_Return(insn, parsingCache);
+		      return DexInstruction_Return.parse(insn, parsingCache);
 
 		    case CONST_4:
 		    case CONST_16:
@@ -99,25 +100,25 @@ public abstract class CodeParser {
 		    case CONST_WIDE_32:
 		    case CONST_WIDE:
 		    case CONST_WIDE_HIGH16:
-		      return new DexInstruction_Const(insn, parsingCache);
+		      return DexInstruction_Const.parse(insn, parsingCache);
 
 		    case CONST_STRING:
 		    case CONST_STRING_JUMBO:
-		      return new DexInstruction_ConstString(insn, parsingCache);
+		      return DexInstruction_ConstString.parse(insn, parsingCache);
 
 		    case CONST_CLASS:
-		      return new DexInstruction_ConstClass(insn, parsingCache);
+		      return DexInstruction_ConstClass.parse(insn, parsingCache);
 
 		    case MONITOR_ENTER:
 		    case MONITOR_EXIT:
-		      return new DexInstruction_Monitor(insn, parsingCache);
+		      return DexInstruction_Monitor.parse(insn, parsingCache);
 
 		    case CHECK_CAST:
-		      return new DexInstruction_CheckCast(insn, parsingCache);
+		      return DexInstruction_CheckCast.parse(insn, parsingCache);
 
-//		    case INSTANCE_OF:
-//		      return new DexInstruction_InstanceOf(this, insn, parsingCache);
-//
+		    case INSTANCE_OF:
+		      return DexInstruction_InstanceOf.parse(insn, parsingCache);
+
 //		    case NEW_INSTANCE:
 //		      return new DexInstruction_NewInstance(this, insn, parsingCache);
 //

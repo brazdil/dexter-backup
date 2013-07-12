@@ -18,11 +18,11 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
 	super(hierarchy);
   }
 
-  public DexInstruction_ReturnVoid(Instruction insn, CodeParserState parsingState) {
-	super(parsingState.getHierarchy());
-	
-    if (!(insn instanceof Instruction10x) || insn.opcode != Opcode.RETURN_VOID)
-      throw FORMAT_EXCEPTION;
+  public static DexInstruction_ReturnVoid parse(Instruction insn, CodeParserState parsingState) {
+    if (insn instanceof Instruction10x && insn.opcode == Opcode.RETURN_VOID)
+    	return new DexInstruction_ReturnVoid(parsingState.getHierarchy());
+    else
+    	throw FORMAT_EXCEPTION;
   }
 
   @Override

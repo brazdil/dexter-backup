@@ -14,6 +14,10 @@ import org.jf.dexlib.Code.Format.Instruction32x;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexWideRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 import com.google.common.collect.Sets;
@@ -22,25 +26,33 @@ public class DexInstruction_Move extends DexInstruction {
 
   @Getter private final DexRegister regTo;
   @Getter private final DexRegister regFrom;
-  @Getter private final Opcode_Move opcode;
+  @Getter private final RegisterType type;
 
-  public DexInstruction_Move(DexRegister regTo, DexRegister regFrom, Opcode_Move opcode, RuntimeHierarchy hierarchy) {
+  public DexInstruction_Move(DexSingleRegister regTo, DexSingleRegister regFrom, boolean objectMoving, RuntimeHierarchy hierarchy) {
 	super(hierarchy);
 	
     this.regTo = regTo;
     this.regFrom = regFrom;
-    this.opcode = opcode;
-
-    if (this.regTo.getClass() != this.regFrom.getClass())
-    	throw new Error("Cannot move between different types of registers");
-
-    this.opcode.checkRegisterType(this.regTo);
-    this.opcode.checkRegisterType(this.regFrom);
+    this.type = objectMoving ? RegisterType.REFERENCE : RegisterType.WIDE_PRIMITIVE;
   }
 
-  public DexInstruction_Move(Instruction insn, CodeParserState parsingState) {
-	super(parsingState.getHierarchy());
+  public DexInstruction_Move(DexWideRegister regTo, DexWideRegister regFrom, RuntimeHierarchy hierarchy) {
+	super(hierarchy);
 	
+    this.regTo = regTo;
+    this.regFrom = regFrom;
+    this.type = RegisterType.WIDE_PRIMITIVE;
+  }
+
+  public DexInstruction_Move(DexTaintRegister regTo, DexTaintRegister regFrom, RuntimeHierarchy hierarchy) {
+	super(hierarchy);
+	
+    this.regTo = regTo;
+    this.regFrom = regFrom;
+    this.type = RegisterType.SINGLE_PRIMITIVE;
+  }
+  
+  public static DexInstruction_Move parse(Instruction insn, CodeParserState parsingState) {
     int regA, regB;
 
     if (insn instanceof Instruction12x &&
@@ -67,20 +79,24 @@ public class DexInstruction_Move extends DexInstruction {
     } else
       throw FORMAT_EXCEPTION;
     
-    this.opcode = Opcode_Move.convert(insn.opcode);
-
-    if (this.opcode == Opcode_Move.Wide) {
-    	regTo = parsingState.getWideRegister(regA);
-    	regFrom = parsingState.getWideRegister(regB);
+    val opcode = RegisterType.fromOpcode(insn.opcode);
+    if (opcode == RegisterType.WIDE_PRIMITIVE) {
+    	return new DexInstruction_Move(
+    			parsingState.getWideRegister(regA),
+    			parsingState.getWideRegister(regB),
+    			parsingState.getHierarchy());
     } else {
-    	regTo = parsingState.getSingleRegister(regA);
-    	regFrom = parsingState.getSingleRegister(regB);
+    	return new DexInstruction_Move(
+    			parsingState.getSingleRegister(regA),
+    			parsingState.getSingleRegister(regB),
+    			opcode == RegisterType.REFERENCE,
+    			parsingState.getHierarchy());
     }
   }
 
   @Override
   public String toString() {
-	return opcode.getAssemblyName_Standard() + " " + regTo.toString() + ", " + regFrom.toString();
+	return "move" + type.getAsmSuffix() + " " + regTo.toString() + ", " + regFrom.toString();
   }
 
   @Override

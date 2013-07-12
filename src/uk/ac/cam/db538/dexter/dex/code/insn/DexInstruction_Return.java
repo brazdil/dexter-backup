@@ -14,6 +14,9 @@ import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexWideRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 import com.google.common.collect.Sets;
@@ -21,29 +24,37 @@ import com.google.common.collect.Sets;
 public class DexInstruction_Return extends DexInstruction {
 
   @Getter private final DexRegister regFrom;
-  @Getter private final Opcode_Move opcode;
+  @Getter private final RegisterType opcode;
 
-  public DexInstruction_Return(DexRegister from, Opcode_Move opcode, RuntimeHierarchy hierarchy) {
+  public DexInstruction_Return(DexSingleRegister regFrom, boolean objectMoving, RuntimeHierarchy hierarchy) {
 	super(hierarchy);
 	
-    this.regFrom = from;
-    this.opcode = opcode;
-    
-    this.opcode.checkRegisterType(this.regFrom);
+    this.regFrom = regFrom;
+    this.opcode = objectMoving ? RegisterType.REFERENCE : RegisterType.SINGLE_PRIMITIVE;
   }
 
-  public DexInstruction_Return(Instruction insn, CodeParserState parsingState) {
-	super(parsingState.getHierarchy());
+  public DexInstruction_Return(DexWideRegister regFrom, RuntimeHierarchy hierarchy) {
+	super(hierarchy);
 	
+    this.regFrom = regFrom;
+    this.opcode = RegisterType.WIDE_PRIMITIVE;
+  }
+
+  public static DexInstruction_Return parse(Instruction insn, CodeParserState parsingState) {
     if (insn instanceof Instruction11x &&
         (insn.opcode == Opcode.RETURN || insn.opcode == Opcode.RETURN_WIDE || insn.opcode == Opcode.RETURN_OBJECT)) {
 
       val insnReturn = (Instruction11x) insn;
-      this.opcode = Opcode_Move.convert(insn.opcode);
-      if (this.opcode == Opcode_Move.Wide)
-    	  this.regFrom = parsingState.getWideRegister(insnReturn.getRegisterA());
+      val opcode = RegisterType.fromOpcode(insn.opcode);
+      if (opcode == RegisterType.WIDE_PRIMITIVE)
+    	  return new DexInstruction_Return(
+    			  parsingState.getWideRegister(insnReturn.getRegisterA()),
+    			  parsingState.getHierarchy());
       else
-    	  this.regFrom = parsingState.getSingleRegister(insnReturn.getRegisterA());
+    	  return new DexInstruction_Return(
+    			  parsingState.getSingleRegister(insnReturn.getRegisterA()),
+    			  opcode == RegisterType.REFERENCE,
+    			  parsingState.getHierarchy());
 
     } else
       throw FORMAT_EXCEPTION;
@@ -51,7 +62,7 @@ public class DexInstruction_Return extends DexInstruction {
 
   @Override
   public String toString() {
-	  return opcode.getAssemblyName_Result() + " " + regFrom.toString();
+	  return "return" + opcode.getAsmSuffix() + " " + regFrom.toString();
   }
 
   @Override

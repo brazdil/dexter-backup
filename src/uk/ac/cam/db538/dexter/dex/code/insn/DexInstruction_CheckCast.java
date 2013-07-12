@@ -32,16 +32,18 @@ public class DexInstruction_CheckCast extends DexInstruction {
     this.value = value;
   }
 
-  public DexInstruction_CheckCast(Instruction insn, CodeParserState parsingState) {
-    super(parsingState.getHierarchy());
-
+  public static DexInstruction_CheckCast parse(Instruction insn, CodeParserState parsingState) {
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CHECK_CAST) {
 
+      val hierarchy = parsingState.getHierarchy();
+    	
       val insnCheckCast = (Instruction21c) insn;
-      this.regObject = parsingState.getSingleRegister(insnCheckCast.getRegisterA());
-      this.value = DexReferenceType.parse(
+      return new DexInstruction_CheckCast(
+    		  parsingState.getSingleRegister(insnCheckCast.getRegisterA()),
+    		  DexReferenceType.parse(
                      ((TypeIdItem) insnCheckCast.getReferencedItem()).getTypeDescriptor(),
-                     this.hierarchy.getTypeCache());
+                     hierarchy.getTypeCache()),
+              hierarchy);
 
     } else
       throw FORMAT_EXCEPTION;

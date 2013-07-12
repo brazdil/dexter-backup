@@ -1,22 +1,14 @@
 package uk.ac.cam.db538.dexter.dex.code.reg;
 
-import lombok.Getter;
 
-public class DexWideRegister extends DexOriginalRegister {
-
-	@Getter private final int id;
-	
-	public DexWideRegister(int id) {
-		this.id = id;
-	}
-
-	@Override
-	String getPlainId() {
-		return Integer.toString(id) + "|" + Integer.toString(id + 1);
-	}
-
+public abstract class DexWideRegister extends DexStandardRegister {
 	@Override
 	public RegisterWidth getWidth() {
 		return RegisterWidth.WIDE;
+	}
+
+	@Override
+	public boolean storesType(RegisterType type) {
+		return type == RegisterType.WIDE_PRIMITIVE;
 	}
 }

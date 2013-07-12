@@ -32,9 +32,10 @@ public class DexInstruction_ConstString extends DexInstruction {
     stringConstant = value;
   }
 
-  public DexInstruction_ConstString(Instruction insn, CodeParserState parsingState) {
-	super(parsingState.getHierarchy());
-	
+  public static DexInstruction_ConstString parse(Instruction insn, CodeParserState parsingState) {
+    DexSingleRegister regTo;
+    String stringConstant;
+	  
     if (insn instanceof Instruction21c && insn.opcode == Opcode.CONST_STRING) {
 
       val insnConstString = (Instruction21c) insn;
@@ -49,6 +50,8 @@ public class DexInstruction_ConstString extends DexInstruction {
 
     } else
       throw FORMAT_EXCEPTION;
+    
+    return new DexInstruction_ConstString(regTo, stringConstant, parsingState.getHierarchy());
   }
 
   @Override

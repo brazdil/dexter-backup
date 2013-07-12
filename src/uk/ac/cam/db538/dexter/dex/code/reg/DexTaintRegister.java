@@ -4,9 +4,10 @@ import lombok.Getter;
 
 public class DexTaintRegister extends DexRegister {
 
-	@Getter private final DexOriginalRegister originalRegister;
-	
-	public DexTaintRegister(DexOriginalRegister origReg) {
+	@Getter private final DexStandardRegister originalRegister;
+
+	// Only to be called by Dex{Single,Wide}OriginalRegister constructors
+	DexTaintRegister(DexStandardRegister origReg) {
 		this.originalRegister = origReg;
 	}
 
@@ -16,12 +17,12 @@ public class DexTaintRegister extends DexRegister {
 	}
 
 	@Override
-	public DexTaintRegister getTaintRegister() {
-		throw new Error("Cannot get the taint register of a taint register.");
+	public RegisterWidth getWidth() {
+		return RegisterWidth.SINGLE;
 	}
 
 	@Override
-	public RegisterWidth getWidth() {
-		return RegisterWidth.SINGLE;
+	public boolean storesType(RegisterType type) {
+		return type == RegisterType.SINGLE_PRIMITIVE;
 	}
 }

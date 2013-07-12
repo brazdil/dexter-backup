@@ -10,73 +10,72 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
-import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+
+import com.google.common.collect.Sets;
 
 public class DexInstruction_InstanceOf extends DexInstruction {
 
-  @Getter private final DexRegister regTo;
-  @Getter private final DexRegister regObject;
+  @Getter private final DexSingleRegister regTo;
+  @Getter private final DexSingleRegister regObject;
   @Getter private final DexReferenceType value;
 
-  // CAREFUL: likely to throw exception
-
-  public DexInstruction_InstanceOf(DexCode methodCode, DexRegister to, DexRegister object, DexReferenceType value) {
-    super(methodCode);
+  public DexInstruction_InstanceOf(DexSingleRegister to, DexSingleRegister object, DexReferenceType value, RuntimeHierarchy hierarchy) {
+    super(hierarchy);
 
     this.regTo = to;
     this.regObject = object;
     this.value = value;
   }
 
-  public DexInstruction_InstanceOf(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
-    super(methodCode);
-
+  public static DexInstruction_InstanceOf parse(Instruction insn, CodeParserState parsingState) {
     if (insn instanceof Instruction22c && insn.opcode == Opcode.INSTANCE_OF) {
 
+      val hierarchy = parsingState.getHierarchy();
+    	
       val insnInstanceOf = (Instruction22c) insn;
-      regTo = parsingState.getRegister(insnInstanceOf.getRegisterA());
-      regObject = parsingState.getRegister(insnInstanceOf.getRegisterB());
-      value = DexReferenceType.parse(
+      return new DexInstruction_InstanceOf(
+    		  parsingState.getSingleRegister(insnInstanceOf.getRegisterA()),
+    		  parsingState.getSingleRegister(insnInstanceOf.getRegisterB()),
+    		  DexReferenceType.parse(
                 ((TypeIdItem) insnInstanceOf.getReferencedItem()).getTypeDescriptor(),
-                parsingState.getCache());
+                hierarchy.getTypeCache()),
+              hierarchy);
 
     } else
       throw FORMAT_EXCEPTION;
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return "instance-of " + regTo.getOriginalIndexString() + ", " + regObject.getOriginalIndexString() +
-           ", " + value.getDescriptor();
+  public String toString() {
+    return "instance-of " + regTo.toString() + ", " + regObject.toString() + ", " + value.getDescriptor();
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaDefinedRegisters() {
-    return createSet(regTo);
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
+    return Sets.newHashSet(regTo);
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
-    return createSet(regObject);
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(regObject);
   }
 
   @Override
   public void instrument(DexCode_InstrumentationState state) {
-    // copy the taint across
-    val code = getMethodCode();
-    code.replace(this,
-                 new DexCodeElement[] {
-                   new DexMacro_GetObjectTaint(code, state.getTaintRegister(regTo), regObject),
-                   this
-                 });
+//    // copy the taint across
+//    val code = getMethodCode();
+//    code.replace(this,
+//                 new DexCodeElement[] {
+//                   new DexMacro_GetObjectTaint(code, state.getTaintRegister(regTo), regObject),
+//                   this
+//                 });
   }
 
   @Override
@@ -86,7 +85,6 @@ public class DexInstruction_InstanceOf extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getTypeCache().LIST_Error;
+	return this.hierarchy.getTypeCache().LIST_Error;
   }
-  
 }

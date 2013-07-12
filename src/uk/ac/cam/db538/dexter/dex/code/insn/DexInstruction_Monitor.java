@@ -30,15 +30,15 @@ public class DexInstruction_Monitor extends DexInstruction {
     this.enter = entering;
   }
 
-  public DexInstruction_Monitor(Instruction insn, CodeParserState parsingState) {
-    super(parsingState.getHierarchy());
-
+  public static DexInstruction_Monitor parse(Instruction insn, CodeParserState parsingState) {
     if (insn instanceof Instruction11x &&
         (insn.opcode == Opcode.MONITOR_ENTER || insn.opcode == Opcode.MONITOR_EXIT)) {
 
       val insnMonitor = (Instruction11x) insn;
-      regMonitor = parsingState.getSingleRegister(insnMonitor.getRegisterA());
-      enter = insn.opcode == Opcode.MONITOR_ENTER;
+      return new DexInstruction_Monitor(
+    		  parsingState.getSingleRegister(insnMonitor.getRegisterA()),
+    		  insn.opcode == Opcode.MONITOR_ENTER,
+    		  parsingState.getHierarchy());
 
     } else
       throw FORMAT_EXCEPTION;

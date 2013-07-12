@@ -16,6 +16,7 @@ import org.jf.dexlib.Code.Format.Instruction51l;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
@@ -31,7 +32,7 @@ public class DexInstruction_Const extends DexInstruction {
 
   public DexInstruction_Const(DexRegister to, long value, RuntimeHierarchy hierarchy) {
 	super(hierarchy);
-	  
+	
     this.regTo = to;
     this.value = value;
     
@@ -40,9 +41,10 @@ public class DexInstruction_Const extends DexInstruction {
     	throw new Error("Constant too big for a single-width const instruction");
   }
 
-  public DexInstruction_Const(Instruction insn, CodeParserState parsingState) {
-	super(parsingState.getHierarchy());
-
+  public static DexInstruction_Const parse(Instruction insn, CodeParserState parsingState) {
+	DexStandardRegister regTo;
+	long value;
+	
 	if (insn instanceof Instruction11n && insn.opcode == Opcode.CONST_4) {
 
       val insnConst4 = (Instruction11n) insn;
@@ -93,6 +95,8 @@ public class DexInstruction_Const extends DexInstruction {
 
     } else
       throw FORMAT_EXCEPTION;
+	
+	return new DexInstruction_Const(regTo, value, parsingState.getHierarchy());
   }
 
   @Override
