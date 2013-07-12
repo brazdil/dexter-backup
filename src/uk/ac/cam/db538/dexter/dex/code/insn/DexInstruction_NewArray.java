@@ -10,58 +10,60 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import com.google.common.collect.Sets;
+
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class DexInstruction_NewArray extends DexInstruction {
 
-  @Getter private final DexRegister regTo;
-  @Getter private final DexRegister regSize;
+  @Getter private final DexSingleRegister regTo;
+  @Getter private final DexSingleRegister regSize;
   @Getter private final DexArrayType value;
 
-  public DexInstruction_NewArray(DexCode methodCode, DexRegister to, DexRegister size, DexArrayType value) {
-    super(methodCode);
-
+  public DexInstruction_NewArray(DexSingleRegister to, DexSingleRegister size, DexArrayType value, RuntimeHierarchy hierarchy) {
+	super(hierarchy);
     this.regTo = to;
     this.regSize = size;
     this.value = value;
   }
 
-  public DexInstruction_NewArray(DexCode methodCode, Instruction insn, CodeParserState parsingState) throws InstructionParseError, UnknownTypeException {
-    super(methodCode);
-
+  public static DexInstruction_NewArray parse(Instruction insn, CodeParserState parsingState) {
     if (insn instanceof Instruction22c && insn.opcode == Opcode.NEW_ARRAY) {
-
+    	
+      val hierarchy = parsingState.getHierarchy();
+    
       val insnNewArray = (Instruction22c) insn;
-      regTo = parsingState.getRegister(insnNewArray.getRegisterA());
-      regSize = parsingState.getRegister(insnNewArray.getRegisterB());
-      value = DexArrayType.parse(
+      return new DexInstruction_NewArray(
+    		  parsingState.getSingleRegister(insnNewArray.getRegisterA()),
+    		  parsingState.getSingleRegister(insnNewArray.getRegisterB()),
+    		  DexArrayType.parse(
                 ((TypeIdItem) insnNewArray.getReferencedItem()).getTypeDescriptor(),
-                parsingState.getCache());
+                hierarchy.getTypeCache()),
+              hierarchy);
 
     } else
       throw FORMAT_EXCEPTION;
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return "new-array " + regTo.getOriginalIndexString() + ", [" + regSize.getOriginalIndexString() +
-           "], " + value.getDescriptor();
+  public String toString() {
+    return "new-array " + regTo.toString() + ", [" + regSize.toString() + "], " + value.getDescriptor();
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaDefinedRegisters() {
-    return createSet(regTo);
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
+    return Sets.newHashSet(regTo);
   }
 
   @Override
-  public Set<? extends uk.ac.cam.db538.dexter.dex.code.reg.DexRegister> lvaReferencedRegisters() {
-    return createSet(regSize);
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(regSize);
   }
 
   @Override
@@ -74,7 +76,7 @@ public class DexInstruction_NewArray extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getTypeCache().LIST_Error_NegativeArraySizeException;
+	return this.hierarchy.getTypeCache().LIST_Error_NegativeArraySizeException;
   }
   
 }
