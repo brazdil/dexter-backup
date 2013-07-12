@@ -11,6 +11,7 @@ import org.jf.dexlib.Code.Format.Instruction20t;
 import org.jf.dexlib.Code.Format.Instruction30t;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
@@ -55,7 +56,7 @@ public class DexInstruction_Goto extends DexInstruction {
   }
 
   @Override
-  public Set<? extends DexCodeElement> cfgJumpTargets() {
+  public Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
 	  return Sets.newHashSet(target);
   }
 

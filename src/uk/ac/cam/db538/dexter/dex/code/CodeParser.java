@@ -16,6 +16,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
@@ -141,14 +142,14 @@ public abstract class CodeParser {
 		    case GOTO_32:
 		      return DexInstruction_Goto.parse(insn, parsingCache);
 
-//		    case IF_EQ:
-//		    case IF_NE:
-//		    case IF_LT:
-//		    case IF_GE:
-//		    case IF_GT:
-//		    case IF_LE:
-//		      return DexInstruction_IfTest.parse(insn, parsingCache);
-//
+		    case IF_EQ:
+		    case IF_NE:
+		    case IF_LT:
+		    case IF_GE:
+		    case IF_GT:
+		    case IF_LE:
+		      return DexInstruction_IfTest.parse(insn, parsingCache);
+
 //		    case IF_EQZ:
 //		    case IF_NEZ:
 //		    case IF_LTZ:

@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Sets;
+
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
@@ -42,17 +44,13 @@ public abstract class DexCodeElement {
     return false;
   }
 
-  protected Set<? extends DexCodeElement> cfgJumpTargets() {
-    val set = new HashSet<DexCodeElement>();
-	val next = this.getNextCodeElement();
-    if (next != null)
-    	set.add(next);
-    return set;
+  protected Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
+	return Sets.newHashSet(code.getFollower(this));
   }
 
   public Set<DexCodeElement> cfgGetSuccessors() {
     val set = new HashSet<DexCodeElement>();
-    for (DexCodeElement target : cfgJumpTargets())
+    for (DexCodeElement target : cfgJumpTargets(null))
     	set.add(target);
     return set;
   }

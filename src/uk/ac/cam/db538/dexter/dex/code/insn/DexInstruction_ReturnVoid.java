@@ -8,6 +8,7 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction10x;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
+import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -48,7 +49,7 @@ public class DexInstruction_ReturnVoid extends DexInstruction {
   }
 
   @Override
-  public Set<? extends DexCodeElement> cfgJumpTargets() {
+  public Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
     return Collections.emptySet();
   }
 

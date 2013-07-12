@@ -55,7 +55,7 @@ public class DexInstruction_IfTestZero extends DexInstruction {
   }
 
   @Override
-  public Set<? extends DexCodeElement> cfgJumpTargets() {
+  public Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
 	val set = createSet((DexCodeElement) target);
 	val next = this.getNextCodeElement();
 	if (next != null)

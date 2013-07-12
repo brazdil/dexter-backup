@@ -71,7 +71,7 @@ public class DexInstruction_PackedSwitchData extends DexInstruction {
   }
 
   @Override
-  public Set<? extends DexCodeElement> cfgJumpTargets() {
+  public Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
 	return new HashSet<DexCodeElement>(targets);
   }
 

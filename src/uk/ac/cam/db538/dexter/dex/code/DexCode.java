@@ -221,6 +221,11 @@ public class DexCode {
     instructionList.remove(index);
     instructionList.addAll(index, replacement);
   }
+  
+  public DexCodeElement getFollower(DexCodeElement elem) {
+	  int index = findElement(elem);
+	  return instructionList.get(index + 1);
+  }
 
   public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, DexCodeElement elemSought) {
     boolean hitStart = false, hitEnd = false;
