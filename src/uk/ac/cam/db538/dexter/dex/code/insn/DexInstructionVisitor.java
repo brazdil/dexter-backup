@@ -16,15 +16,9 @@ import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
 
 public interface DexInstructionVisitor {
 
-	void visit(DexInstruction_Nop instruction);
-
 	void visit(DexInstruction_Move instruction);
 
-	void visit(DexInstruction_MoveWide instruction);
-
 	void visit(DexInstruction_MoveResult instruction);
-
-	void visit(DexInstruction_MoveResultWide instruction);
 
 	void visit(DexInstruction_MoveException instruction);
 
@@ -32,11 +26,7 @@ public interface DexInstructionVisitor {
 
 	void visit(DexInstruction_Return instruction);
 
-	void visit(DexInstruction_ReturnWide instruction);
-
 	void visit(DexInstruction_Const instruction);
-
-	void visit(DexInstruction_ConstWide instruction);
 
 	void visit(DexInstruction_ConstString instruction);
 
@@ -58,21 +48,13 @@ public interface DexInstructionVisitor {
 
 	void visit(DexInstruction_FillArrayData instruction);
 
-	void visit(DexInstruction_FillArrayData instruction);
-
 	void visit(DexInstruction_Throw instruction);
 
 	void visit(DexInstruction_Goto instruction);
 
 	void visit(DexInstruction_Switch instruction);
 
-	void visit(DexInstruction_PackedSwitchData instruction);
-
-	void visit(DexInstruction_SparseSwitchData instruction);
-
 	void visit(DexInstruction_Compare instruction);
-
-	void visit(DexInstruction_CompareWide instruction);
 
 	void visit(DexInstruction_IfTest instruction);
 
@@ -80,47 +62,25 @@ public interface DexInstructionVisitor {
 
 	void visit(DexInstruction_ArrayGet instruction);
 
-	void visit(DexInstruction_ArrayGetWide instruction);
-
 	void visit(DexInstruction_ArrayPut instruction);
-
-	void visit(DexInstruction_ArrayPutWide instruction);
 
 	void visit(DexInstruction_InstanceGet instruction);
 
-	void visit(DexInstruction_InstanceGetWide instruction);
-
 	void visit(DexInstruction_InstancePut instruction);
-
-	void visit(DexInstruction_InstancePutWide instruction);
 
 	void visit(DexInstruction_StaticGet instruction);
 
-	void visit(DexInstruction_StaticGetWide instruction);
-
 	void visit(DexInstruction_StaticPut instruction);
-
-	void visit(DexInstruction_StaticPutWide instruction);
 
 	void visit(DexInstruction_Invoke instruction);
 
 	void visit(DexInstruction_UnaryOp instruction);
 
-	void visit(DexInstruction_UnaryOpWide instruction);
-
 	void visit(DexInstruction_Convert instruction);
-
-	void visit(DexInstruction_ConvertWide instruction);
-
-	void visit(DexInstruction_ConvertFromWide instruction);
-
-	void visit(DexInstruction_ConvertToWide instruction);
 
 	void visit(DexInstruction_BinaryOp instruction);
 
 	void visit(DexInstruction_BinaryOpLiteral instruction);
-
-	void visit(DexInstruction_BinaryOpWide instruction);
 
 	void visit(DexInstruction_Unknown instruction);
 
@@ -149,5 +109,4 @@ public interface DexInstructionVisitor {
 	void visit(DexMacro_SetObjectTaint instruction);
 
     void visit(DexPseudoinstruction_Invoke instruction);
-
 }
