@@ -83,6 +83,10 @@ public abstract class BaseClassDefinition implements Serializable {
 	public boolean isAbstract() {
 		return getAccessFlags().contains(AccessFlags.ABSTRACT);
 	}
+	
+	public boolean isInterface() {
+		return getAccessFlags().contains(AccessFlags.INTERFACE);
+	}
 
 	public boolean isRoot() {
 		return this.getSuperclass() == null;

@@ -1,6 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.code.reg;
 
 import lombok.Getter;
+import uk.ac.cam.db538.dexter.dex.type.DexInteger;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 
 public class DexTaintRegister extends DexRegister {
 
@@ -22,7 +24,12 @@ public class DexTaintRegister extends DexRegister {
 	}
 
 	@Override
-	public boolean storesType(RegisterType type) {
+	public boolean canStoreType(RegisterType type) {
 		return type == RegisterType.SINGLE_PRIMITIVE;
+	}
+
+	@Override
+	public boolean canStoreType(DexRegisterType type) {
+		return (type instanceof DexInteger);  
 	}
 }

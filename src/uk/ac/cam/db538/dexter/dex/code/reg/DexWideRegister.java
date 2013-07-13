@@ -1,5 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.reg;
 
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+
 
 public abstract class DexWideRegister extends DexStandardRegister {
 	@Override
@@ -8,7 +10,12 @@ public abstract class DexWideRegister extends DexStandardRegister {
 	}
 
 	@Override
-	public boolean storesType(RegisterType type) {
+	public boolean canStoreType(RegisterType type) {
 		return type == RegisterType.WIDE_PRIMITIVE;
+	}
+
+	@Override
+	public boolean canStoreType(DexRegisterType type) {
+		return type.isWide(); 
 	}
 }

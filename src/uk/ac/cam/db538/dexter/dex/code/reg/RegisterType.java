@@ -16,7 +16,7 @@ public enum RegisterType {
 	}
 
 	public void checkRegisterType(DexRegister reg) {
-		if (!reg.storesType(this))
+		if (!reg.canStoreType(this))
 			throw new Error("Register cannot store type " + this.name());
 	}
 

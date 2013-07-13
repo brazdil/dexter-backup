@@ -27,6 +27,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstanceOf;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_InstancePut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Monitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveException;
@@ -154,6 +155,18 @@ public abstract class CodeParser {
 		    case GOTO_32:
 		      return DexInstruction_Goto.parse(insn, parsingCache);
 
+		    case INVOKE_VIRTUAL:
+		    case INVOKE_SUPER:
+		    case INVOKE_DIRECT:
+		    case INVOKE_STATIC:
+		    case INVOKE_INTERFACE:
+		    case INVOKE_VIRTUAL_RANGE:
+		    case INVOKE_SUPER_RANGE:
+		    case INVOKE_DIRECT_RANGE:
+		    case INVOKE_STATIC_RANGE:
+		    case INVOKE_INTERFACE_RANGE:
+		      return DexInstruction_Invoke.parse(insn, parsingCache);
+		      
 		    case IF_EQ:
 		    case IF_NE:
 		    case IF_LT:
@@ -230,18 +243,6 @@ public abstract class CodeParser {
 		    case APUT_SHORT:
 		    case APUT_WIDE:
 		      return DexInstruction_ArrayPut.parse(insn, parsingCache);
-
-//		    case INVOKE_VIRTUAL:
-//		    case INVOKE_SUPER:
-//		    case INVOKE_DIRECT:
-//		    case INVOKE_STATIC:
-//		    case INVOKE_INTERFACE:
-//		    case INVOKE_VIRTUAL_RANGE:
-//		    case INVOKE_SUPER_RANGE:
-//		    case INVOKE_DIRECT_RANGE:
-//		    case INVOKE_STATIC_RANGE:
-//		    case INVOKE_INTERFACE_RANGE:
-//		      return DexInstruction_Invoke.parse(insn, parsingCache);
 
 		    case NEG_INT:
 		    case NOT_INT:

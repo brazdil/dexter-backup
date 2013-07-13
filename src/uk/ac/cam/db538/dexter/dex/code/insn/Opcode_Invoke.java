@@ -1,6 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import org.jf.dexlib.Code.Opcode;
 
 public enum Opcode_Invoke {
   Virtual,
@@ -31,37 +30,7 @@ public enum Opcode_Invoke {
     }
   }
 
-  public static org.jf.dexlib.Code.Opcode convertStandard(Opcode_Invoke opcode) {
-    switch (opcode) {
-    case Virtual:
-      return Opcode.INVOKE_VIRTUAL;
-    case Super:
-      return Opcode.INVOKE_SUPER;
-    case Direct:
-      return Opcode.INVOKE_DIRECT;
-    case Static:
-      return Opcode.INVOKE_STATIC;
-    case Interface:
-      return Opcode.INVOKE_INTERFACE;
-    default:
-      return null;
-    }
-  }
-
-  public static org.jf.dexlib.Code.Opcode convertRange(Opcode_Invoke opcode) {
-    switch (opcode) {
-    case Virtual:
-      return Opcode.INVOKE_VIRTUAL_RANGE;
-    case Super:
-      return Opcode.INVOKE_SUPER_RANGE;
-    case Direct:
-      return Opcode.INVOKE_DIRECT_RANGE;
-    case Static:
-      return Opcode.INVOKE_STATIC_RANGE;
-    case Interface:
-      return Opcode.INVOKE_INTERFACE_RANGE;
-    default:
-      return null;
-    }
+  public boolean isStatic() {
+    return this == Opcode_Invoke.Static;
   }
 }
