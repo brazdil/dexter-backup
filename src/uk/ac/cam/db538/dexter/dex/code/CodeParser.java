@@ -21,6 +21,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
@@ -166,6 +167,10 @@ public abstract class CodeParser {
 		    case INVOKE_STATIC_RANGE:
 		    case INVOKE_INTERFACE_RANGE:
 		      return DexInstruction_Invoke.parse(insn, parsingCache);
+		      
+		    case FILLED_NEW_ARRAY:
+		    case FILLED_NEW_ARRAY_RANGE:
+		      return DexInstruction_FilledNewArray.parse(insn, parsingCache);
 		      
 		    case IF_EQ:
 		    case IF_NE:
@@ -359,9 +364,6 @@ public abstract class CodeParser {
 //		    case FILL_ARRAY_DATA:
 //		      return DexInstruction_FillArray.parse(insn, parsingCache);
 //
-//		    case FILLED_NEW_ARRAY:
-//		    case FILLED_NEW_ARRAY_RANGE:
-//		      return DexInstruction_FilledNewArray.parse(insn, parsingCache);
 
 //			    case PACKED_SWITCH:
 //			    case SPARSE_SWITCH:

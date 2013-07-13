@@ -1,5 +1,7 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,31 +17,33 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class DexInstruction_FilledNewArray extends DexInstruction {
 
-  @Getter private final List<DexRegister> argumentRegisters;
+  @Getter private final List<DexSingleRegister> argumentRegisters;
   @Getter private final DexArrayType arrayType;
 
-  public DexInstruction_FilledNewArray(DexCode methodCode, List<DexRegister> arrayElems, DexArrayType arrayType) {
-    super(methodCode);
+  public DexInstruction_FilledNewArray(List<DexSingleRegister> arrayElems, DexArrayType arrayType, RuntimeHierarchy hierarchy) {
+    super(hierarchy);
 
-    this.argumentRegisters = new LinkedList<DexRegister>(arrayElems);
     this.arrayType = arrayType;
     if (this.arrayType.getElementType().isWide())
       throw new InstructionParseError("FilledNewArray doesn't support wide types");
 
+    if (arrayElems == null)
+    	this.argumentRegisters = Collections.emptyList();
+    else
+    	this.argumentRegisters = Collections.unmodifiableList(new ArrayList<DexSingleRegister>(arrayElems));
   }
 
-  public DexInstruction_FilledNewArray(DexCode methodCode, Instruction insn, CodeParserState parsingState) {
-    super(methodCode);
-
-    this.argumentRegisters = new LinkedList<DexRegister>();
+  public static DexInstruction_FilledNewArray parse(Instruction insn, CodeParserState parsingState) {
+    val argumentRegisters = new LinkedList<DexSingleRegister>();
 
     if (insn instanceof Instruction35c && insn.opcode == Opcode.FILLED_NEW_ARRAY) {
 
@@ -47,15 +51,15 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
 
       switch (insnFilledNewArray.getRegCount()) {
       case 5:
-        argumentRegisters.add(0, parsingState.getRegister(insnFilledNewArray.getRegisterA()));
+        argumentRegisters.add(0, parsingState.getSingleRegister(insnFilledNewArray.getRegisterA()));
       case 4:
-        argumentRegisters.add(0, parsingState.getRegister(insnFilledNewArray.getRegisterG()));
+        argumentRegisters.add(0, parsingState.getSingleRegister(insnFilledNewArray.getRegisterG()));
       case 3:
-        argumentRegisters.add(0, parsingState.getRegister(insnFilledNewArray.getRegisterF()));
+        argumentRegisters.add(0, parsingState.getSingleRegister(insnFilledNewArray.getRegisterF()));
       case 2:
-        argumentRegisters.add(0, parsingState.getRegister(insnFilledNewArray.getRegisterE()));
+        argumentRegisters.add(0, parsingState.getSingleRegister(insnFilledNewArray.getRegisterE()));
       case 1:
-        argumentRegisters.add(0, parsingState.getRegister(insnFilledNewArray.getRegisterD()));
+        argumentRegisters.add(0, parsingState.getSingleRegister(insnFilledNewArray.getRegisterD()));
       case 0:
         break;
       default:
@@ -68,15 +72,15 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
 
       val startRegister = insnFilledNewArray.getStartRegister();
       for (int i = 0; i < insnFilledNewArray.getRegCount(); ++i)
-        argumentRegisters.add(parsingState.getRegister(startRegister + i));
+        argumentRegisters.add(parsingState.getSingleRegister(startRegister + i));
 
     } else
       throw FORMAT_EXCEPTION;
 
-    this.arrayType = DexArrayType.parse(((TypeIdItem)((InstructionWithReference) insn).getReferencedItem()).getTypeDescriptor(), parsingState.getCache());
-    if (this.arrayType.getElementType().isWide())
-      throw new InstructionParseError("FilledNewArray doesn't support wide types");
+    val hierarchy = parsingState.getHierarchy();
+    val arrayType = DexArrayType.parse(((TypeIdItem)((InstructionWithReference) insn).getReferencedItem()).getTypeDescriptor(), hierarchy.getTypeCache());
 
+    return new DexInstruction_FilledNewArray(argumentRegisters, arrayType, hierarchy);
   }
 
   @Override
