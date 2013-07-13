@@ -102,22 +102,12 @@ public class CodeParserState {
 		return cacheWideReg.getCachedEntry(id);
 	}
 
-  public DexLabel getLabel(long relativeInsnOffset) {
-    long absoluteOffset = currentOffset + relativeInsnOffset;
+  public DexLabel getLabel(long absoluteOffset) {
     return cacheLabels.getCachedEntry(absoluteOffset);
   }
 
-  public DexLabel getLabel(long relativeInsnOffset, DexInstruction relativeTo) {
-    if (!instructionOffsets.containsValue(relativeTo))
-      throw new InstructionParseError("Cannot find zero-offset instruction");
-
-    long zeroPoint = 0;
-    for (val entry : instructionOffsets.entrySet())
-      if (entry.getValue().equals(relativeTo))
-        zeroPoint = entry.getKey();
-
-    long absoluteOffset = zeroPoint + relativeInsnOffset;
-    return cacheLabels.getCachedEntry(absoluteOffset);
+  public DexLabel getLabel(long offset, Instruction relativeTo) {
+	  return getLabel(offset + getOffsetOfInstruction(relativeTo));
   }
 
   public DexCatchAll getCatchAll(long handlerOffset) {
