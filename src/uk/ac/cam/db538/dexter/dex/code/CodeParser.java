@@ -21,6 +21,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstClass;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTest;
@@ -42,7 +43,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParseError;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.InstructionList;
 import uk.ac.cam.db538.dexter.utils.Pair;
@@ -50,7 +50,7 @@ import uk.ac.cam.db538.dexter.utils.Pair;
 public abstract class CodeParser {
 
 	public static InstructionList parse(CodeItem codeItem, RuntimeHierarchy hierarchy) {
-		val parserCache = new CodeParserState(hierarchy);
+		val parserCache = new CodeParserState(codeItem, hierarchy);
 		
 		val dexlibInstructions = codeItem.getInstructions();
 		val parsedCode = new LinkedList<Pair<? extends DexCodeElement, Long>>();
@@ -72,18 +72,8 @@ public abstract class CodeParser {
 		return insnList;
 	}
 
-	  private static DexInstruction parseInstruction(Instruction insn, CodeParserState parsingCache) throws InstructionParseError {
+	  private static DexInstruction parseInstruction(Instruction insn, CodeParserState parsingCache) {
 		    switch (insn.opcode) {
-
-//		    case NOP:
-//		      if (insn instanceof PackedSwitchDataPseudoInstruction)
-//		        return DexInstruction_PackedSwitchData(this, insn, parsingCache);
-//		      else if (insn instanceof SparseSwitchDataPseudoInstruction)
-//		        return DexInstruction_SparseSwitchData(this, insn, parsingCache);
-//		      else if (insn instanceof ArrayDataPseudoInstruction)
-//		        return DexInstruction_FillArrayData(this, insn, parsingCache);
-//		      else
-//		        return DexInstruction_Nop(this, insn, parsingCache);
 
 		    case MOVE:
 		    case MOVE_OBJECT:
@@ -361,9 +351,8 @@ public abstract class CodeParser {
 		    case USHR_INT_LIT8:
 		      return DexInstruction_BinaryOpLiteral.parse(insn, parsingCache);
 
-//		    case FILL_ARRAY_DATA:
-//		      return DexInstruction_FillArray.parse(insn, parsingCache);
-//
+		    case FILL_ARRAY_DATA:
+		      return DexInstruction_FillArrayData.parse(insn, parsingCache);
 
 //			    case PACKED_SWITCH:
 //			    case SPARSE_SWITCH:

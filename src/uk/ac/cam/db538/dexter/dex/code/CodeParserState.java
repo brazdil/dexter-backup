@@ -1,15 +1,15 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
 import lombok.Getter;
 import lombok.val;
 
+import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.EncodedCatchHandler;
 import org.jf.dexlib.CodeItem.TryItem;
+import org.jf.dexlib.Code.Instruction;
 
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
@@ -23,16 +23,14 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexWideOriginalRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexWideRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.Cache;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class CodeParserState {
 	
+	private final CodeItem codeItem;
 	@Getter private final RuntimeHierarchy hierarchy;
-
-	private final Map<Long, DexInstruction> instructionParents;
 
 	private final Cache<Integer, DexSingleRegister> cacheSingleReg;
 	private final Cache<Integer, DexWideRegister> cacheWideReg;
@@ -41,11 +39,10 @@ public class CodeParserState {
 	private final Cache<Long, DexCatchAll> cacheCatchALl;
 	private final Cache<Pair<Long, DexClassType>, DexCatch> catchOffsetCache;
 	
-  public CodeParserState(RuntimeHierarchy hierarchy) {
+  public CodeParserState(CodeItem codeItem, RuntimeHierarchy hierarchy) {
+	this.codeItem = codeItem;
 	this.hierarchy = hierarchy;
 
-    this.instructionParents = new HashMap<Long, DexInstruction>();
-	
 	this.cacheSingleReg = new Cache<Integer, DexSingleRegister>() {
 		@Override
 		protected DexSingleRegister createNewEntry(Integer key) {
@@ -71,6 +68,32 @@ public class CodeParserState {
 
   }
 
+  private int getOffsetOfInstruction(Instruction insn) {
+	  int offset = 0;
+	  for (val current : codeItem.getInstructions())
+		  if (current.equals(insn))
+			  return offset;
+		  else
+			  offset += current.getSize(0);
+	  throw new ArrayIndexOutOfBoundsException();
+  }
+  
+  private Instruction getInstructionAtOffset(int offset) {
+	  int currentOffset = 0;
+	  for (val insn : codeItem.getInstructions())
+		  if (currentOffset == offset)
+			  return insn;
+		  else if (currentOffset > offset)
+			  throw new Error("Given offset does not correspond to a beginning of an instruction");
+		  else
+			  currentOffset += insn.getSize(0);
+	  throw new ArrayIndexOutOfBoundsException();
+  }
+  
+  public Instruction getDexlibInstructionAt(int offset, Instruction relativeTo) {
+	  return getInstructionAtOffset(offset + getOffsetOfInstruction(relativeTo));
+  }
+  
 	public DexSingleRegister getSingleRegister(int id) {
 		return cacheSingleReg.getCachedEntry(id);
 	}
@@ -103,19 +126,6 @@ public class CodeParserState {
 
   public DexCatch getCatch(long handlerOffset, DexClassType exceptionType) {
     return catchOffsetCache.getCachedEntry(new Pair<Long, DexClassType>(handlerOffset, exceptionType));
-  }
-
-  public void addInstruction(long size, DexInstruction insn) {
-    instructionOffsets.put(currentOffset, insn);
-    currentOffset += size;
-  }
-
-  public void registerParentInstruction(DexInstruction parent, long childOffset) {
-    instructionParents.put(currentOffset + childOffset, parent);
-  }
-
-  public DexInstruction getCurrentOffsetParent() {
-    return instructionParents.get(currentOffset);
   }
 
   public void placeLabels() {

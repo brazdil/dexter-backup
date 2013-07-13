@@ -56,7 +56,7 @@ public interface DexInstructionVisitor {
 
 	void visit(DexInstruction_FilledNewArray instruction);
 
-	void visit(DexInstruction_FillArray instruction);
+	void visit(DexInstruction_FillArrayData instruction);
 
 	void visit(DexInstruction_FillArrayData instruction);
 

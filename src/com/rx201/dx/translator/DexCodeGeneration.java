@@ -29,7 +29,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
@@ -465,7 +465,7 @@ public class DexCodeGeneration {
         					leads.push(switchSuccessor);
         			}
         		}
-        	} else if (current.getInstruction() instanceof DexInstruction_FillArray) {
+        	} else if (current.getInstruction() instanceof DexInstruction_FillArrayData) {
         		// Collapse the following DexLabel and DexInstruction_FilledArrayData
         		AnalyzedDexInstruction next = current.getOnlySuccesor(); // This a DexLabel
         		leads.push(next.getOnlySuccesor().getOnlySuccesor()); // Whatever follows FilledArrayData

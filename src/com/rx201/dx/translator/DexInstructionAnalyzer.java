@@ -28,7 +28,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Convert;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertFromWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertToWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConvertWide;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
@@ -277,7 +277,7 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	}
 	
 	@Override
-	public void visit(DexInstruction_FillArray instruction) {
+	public void visit(DexInstruction_FillArrayData instruction) {
 		useRegister(instruction.getRegArray(), RopType.Array);
 	}
 	
