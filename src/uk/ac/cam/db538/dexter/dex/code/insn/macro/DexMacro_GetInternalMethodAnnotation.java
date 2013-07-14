@@ -7,11 +7,12 @@ import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionVisitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
@@ -32,7 +33,6 @@ import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
-import uk.ac.cam.db538.dexter.utils.InstructionList;
 
 public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
 
@@ -133,8 +133,8 @@ public class DexMacro_GetInternalMethodAnnotation extends DexMacro {
       instrumentedCode.add(new DexInstruction_MoveResult(methodCode, regMethodObject, true));
     } else {
       val catchBlock = new DexCatch(methodCode, DexClassType.parse("Ljava/lang/NoSuchMethodException;", parsingCache));
-      val tryStart = new DexTryBlockStart(methodCode);
-      val tryEnd = new DexTryBlockEnd(methodCode, tryStart);
+      val tryStart = new DexTryStart(methodCode);
+      val tryEnd = new DexTryEnd(methodCode, tryStart);
       val labelBefore = new DexLabel(methodCode);
       val labelAfter = new DexLabel(methodCode);
       tryStart.addCatchHandler(catchBlock);

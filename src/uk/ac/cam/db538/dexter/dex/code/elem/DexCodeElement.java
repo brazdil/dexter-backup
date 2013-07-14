@@ -1,31 +1,16 @@
 package uk.ac.cam.db538.dexter.dex.code.elem;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+
+import lombok.val;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 import com.google.common.collect.Sets;
 
-import lombok.val;
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
-
 public abstract class DexCodeElement {
-
-  public final DexCodeElement getNextCodeElement(DexCode methodCode) {
-    val insns = methodCode.getInstructionList();
-
-    int location = insns.indexOf(this);
-    if (location < 0) // sanity check, should never happen
-      throw new RuntimeException("Instruction not part of its DexCode");
-
-    if (location + 1 < insns.size())
-      return insns.get(location + 1);
-    else
-      return null;
-  }
 
   // CONTROL FLOW GRAPHS
   //
@@ -44,7 +29,7 @@ public abstract class DexCodeElement {
     return false;
   }
 
-  protected Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
+  protected Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
 	return Sets.newHashSet(code.getFollower(this));
   }
 

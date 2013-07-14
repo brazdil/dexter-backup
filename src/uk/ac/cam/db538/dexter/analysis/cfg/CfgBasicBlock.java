@@ -7,11 +7,10 @@ import java.util.Set;
 
 import lombok.Getter;
 import lombok.val;
-
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.utils.InstructionList;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 public class CfgBasicBlock extends CfgBlock {
 

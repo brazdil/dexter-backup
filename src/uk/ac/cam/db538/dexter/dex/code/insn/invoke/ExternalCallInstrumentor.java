@@ -5,7 +5,7 @@ import java.util.List;
 
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.utils.InstructionList;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public abstract class ExternalCallInstrumentor {

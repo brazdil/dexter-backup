@@ -9,7 +9,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
@@ -72,7 +71,7 @@ public class DexInstruction_ArrayGet extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) {
+  public void instrument() {
 //    // need to combine the taint of the array object and the index
 //    val code = getMethodCode();
 //    val regArrayTaint = (regTo == regArray) ? new DexRegister() : state.getTaintRegister(regArray);

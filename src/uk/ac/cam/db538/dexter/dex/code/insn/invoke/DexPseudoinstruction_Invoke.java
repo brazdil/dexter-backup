@@ -8,6 +8,7 @@ import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
@@ -35,7 +36,6 @@ import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
-import uk.ac.cam.db538.dexter.utils.InstructionList;
 
 public class DexPseudoinstruction_Invoke extends DexMacro {
 
@@ -330,7 +330,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) {
+  public void instrument() {
     switch (instructionInvoke.getCallType()) {
     case Direct:
     case Static:

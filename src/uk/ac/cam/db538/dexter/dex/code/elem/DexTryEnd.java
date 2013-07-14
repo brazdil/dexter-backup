@@ -2,21 +2,21 @@ package uk.ac.cam.db538.dexter.dex.code.elem;
 
 import lombok.Getter;
 
-public class DexCatchAll extends DexCodeElement {
+public class DexTryEnd extends DexCodeElement {
 
   @Getter private final int id;
-  
-  public DexCatchAll(int id) {
+	
+  public DexTryEnd(int id) {
     this.id = id;
   }
 
   @Override
   public String toString() {
-    return "CATCHALL" + Integer.toString(id);
+    return "TRYEND" + Integer.toString(this.getId());
   }
 
   @Override
-  public boolean cfgStartsBasicBlock() {
+  public boolean cfgEndsBasicBlock() {
     return true;
   }
 }

@@ -9,7 +9,6 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
@@ -68,7 +67,7 @@ public class DexInstruction_ArrayPut extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) {
+  public void instrument() {
 //    // primitives should copy the the taint to the array object
 //    // all types should copy the taint of the index to the array object
 //    val code = getMethodCode();

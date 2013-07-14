@@ -12,7 +12,6 @@ import org.jf.dexlib.Code.Format.Instruction22x;
 import org.jf.dexlib.Code.Format.Instruction32x;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
@@ -110,7 +109,7 @@ public class DexInstruction_Move extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) {
+  public void instrument() {
 //    if (!objectMoving) {
 //      val code = getMethodCode();
 //      val taintRegFrom = state.getTaintRegister(regFrom);

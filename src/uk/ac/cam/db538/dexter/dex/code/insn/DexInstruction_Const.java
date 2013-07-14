@@ -14,7 +14,6 @@ import org.jf.dexlib.Code.Format.Instruction31i;
 import org.jf.dexlib.Code.Format.Instruction51l;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
@@ -108,7 +107,7 @@ public class DexInstruction_Const extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) {
+  public void instrument() {
 //    getMethodCode().replace(this,
 //                            new DexCodeElement[] {
 //                              this,

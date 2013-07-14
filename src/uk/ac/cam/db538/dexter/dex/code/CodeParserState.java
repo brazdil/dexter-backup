@@ -1,23 +1,16 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-
 import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.CodeItem;
-import org.jf.dexlib.CodeItem.EncodedCatchHandler;
-import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.Code.Instruction;
 
+import uk.ac.cam.db538.dexter.dex.code.CodeParser.Fragment;
+import uk.ac.cam.db538.dexter.dex.code.CodeParser.FragmentList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParseError;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleOriginalRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexWideOriginalRegister;
@@ -36,8 +29,8 @@ public class CodeParserState {
 	private final Cache<Integer, DexWideRegister> cacheWideReg;
 	
 	private final Cache<Long, DexLabel> cacheLabels;
-	private final Cache<Long, DexCatchAll> cacheCatchALl;
-	private final Cache<Pair<Long, DexClassType>, DexCatch> catchOffsetCache;
+	private final Cache<Pair<Long, DexClassType>, DexCatch> cacheCatches;
+	private final Cache<Long, DexCatchAll> cacheCatchAlls;
 	
   public CodeParserState(CodeItem codeItem, RuntimeHierarchy hierarchy) {
 	this.codeItem = codeItem;
@@ -58,14 +51,30 @@ public class CodeParserState {
 	};
 	
     this.cacheLabels = new Cache<Long, DexLabel>() {
+    	private int counter = 1;
+    	
     	protected DexLabel createNewEntry(Long absoluteOffset) {
-    		return new DexLabel();
+    		return new DexLabel(counter++);
     	}
     };
- 
-    this.cacheCatchALl = DexCatchAll.createCache(code);
-    this.catchOffsetCache = DexCatch.createCache(code);
-
+    
+    this.cacheCatches = new Cache<Pair<Long, DexClassType>, DexCatch>() {
+    	private int counter = 1;
+    	
+		@Override
+		protected DexCatch createNewEntry(Pair<Long, DexClassType> offsetTypePair) {
+			return new DexCatch(counter++, offsetTypePair.getValB(), CodeParserState.this.hierarchy);
+		}
+	};
+    
+    this.cacheCatchAlls = new Cache<Long, DexCatchAll>() {
+    	private int counter = 1;
+    	
+		@Override
+		protected DexCatchAll createNewEntry(Long absoluteOffset) {
+			return new DexCatchAll(counter++);
+		}
+	};
   }
 
   private int getOffsetOfInstruction(Instruction insn) {
@@ -110,130 +119,32 @@ public class CodeParserState {
 	  return getLabel(offset + getOffsetOfInstruction(relativeTo));
   }
 
-  public DexCatchAll getCatchAll(long handlerOffset) {
-    return cacheCatchALl.getCachedEntry(handlerOffset);
+  public DexCatchAll getCatchAll(long absoluteHandlerOffset) {
+    return cacheCatchAlls.getCachedEntry(absoluteHandlerOffset);
   }
 
-  public DexCatch getCatch(long handlerOffset, DexClassType exceptionType) {
-    return catchOffsetCache.getCachedEntry(new Pair<Long, DexClassType>(handlerOffset, exceptionType));
+  public DexCatch getCatch(long absoluteHandlerOffset, DexClassType exceptionType) {
+    return cacheCatches.getCachedEntry(new Pair<Long, DexClassType>(absoluteHandlerOffset, exceptionType));
+  }
+  
+  public FragmentList<DexLabel> getListOfLabels() {
+	  val list = new FragmentList<DexLabel>();
+	  for (val entry : cacheLabels.entrySet())
+		  list.add(new Fragment<DexLabel>(entry.getKey(), entry.getValue()));
+	  return list;
   }
 
-  public void placeLabels() {
-    for (val entry : cacheLabels.entrySet()) {
-      val labelOffset = entry.getKey();
-      val insnAtOffset = instructionOffsets.get(labelOffset);
-      if (insnAtOffset == null)
-        throw new InstructionParseError("Label could not be placed (non-existent offset " + labelOffset + ")");
-      else {
-        val label = entry.getValue();
-        code.insertBefore(label, insnAtOffset);
-      }
-    }
+  public FragmentList<DexCatch> getListOfCatches() {
+	  val list = new FragmentList<DexCatch>();
+	  for (val entry : cacheCatches.entrySet())
+		  list.add(new Fragment<DexCatch>(entry.getKey().getValA(), entry.getValue()));
+	  return list;
   }
 
-  public void placeCatches(EncodedCatchHandler[] encodedCatchHandlers) {
-    if (encodedCatchHandlers == null)
-      return;
-
-    val placedCatchAllHandlers = new HashSet<DexCatchAll>();
-    val placedCatchHandlers = new HashSet<DexCatch>();
-
-    for (val encodedCatchHandler : encodedCatchHandlers) {
-
-      // place catch all handler
-
-      long allHandlerOffset = encodedCatchHandler.getCatchAllHandlerAddress();
-      if (allHandlerOffset != -1L) {
-        val insnAtOffset = instructionOffsets.get(allHandlerOffset);
-        if (insnAtOffset == null)
-          throw new InstructionParseError("CatchAll handler could not be placed (non-existent offset " + allHandlerOffset + ")");
-
-        val catchAllElem = getCatchAll(allHandlerOffset);
-        if (!placedCatchAllHandlers.contains(catchAllElem)) {
-          code.insertBefore(catchAllElem, insnAtOffset);
-          placedCatchAllHandlers.add(catchAllElem);
-        }
-      }
-
-      // place individual handlers
-
-      if (encodedCatchHandler.handlers == null)
-        continue;
-
-      for(val catchHandler : encodedCatchHandler.handlers) {
-        long handlerOffset = catchHandler.getHandlerAddress();
-
-        val insnAtOffset = instructionOffsets.get(handlerOffset);
-        if (insnAtOffset == null)
-          throw new InstructionParseError("Catch handler could not be placed (non-existent offset " + handlerOffset + ")");
-
-        val catchElem = getCatch(handlerOffset, DexClassType.parse(catchHandler.exceptionType.getTypeDescriptor(), cache));
-        if (!placedCatchHandlers.contains(catchElem)) {
-          code.insertBefore(catchElem, insnAtOffset);
-          placedCatchHandlers.add(catchElem);
-        }
-      }
-    }
-
-  }
-
-  public void placeTries(TryItem[] tries) {
-    if (tries == null)
-      return;
-
-    for (val tryBlock : tries) {
-      long startOffset = tryBlock.getStartCodeAddress();
-      long endOffset = startOffset + tryBlock.getTryLength();
-
-      val startInsn = instructionOffsets.get(startOffset);
-      if (startInsn == null)
-        throw new InstructionParseError("Start of a try block could not be placed (non-existent offset " + startOffset + ")");
-
-      DexCatchAll catchAllHandler = null;
-      if (tryBlock.encodedCatchHandler != null) {
-        long catchAllOffset = tryBlock.encodedCatchHandler.getCatchAllHandlerAddress();
-        if (catchAllOffset != -1L)
-          catchAllHandler = getCatchAll(catchAllOffset);
-      }
-
-      val catchHandlers = new ArrayList<DexCatch>();
-      if (tryBlock.encodedCatchHandler != null && tryBlock.encodedCatchHandler.handlers != null)
-        for (val catchBlock : tryBlock.encodedCatchHandler.handlers)
-          catchHandlers.add(
-            getCatch(catchBlock.getHandlerAddress(),
-                     DexClassType.parse(catchBlock.exceptionType.getTypeDescriptor(), cache)));
-
-      val newBlockStart = new DexTryBlockStart(code, startOffset, catchAllHandler, catchHandlers);
-      val newBlockEnd = new DexTryBlockEnd(code, newBlockStart);
-
-      code.insertBefore(newBlockStart, startInsn);
-
-      if (endOffset == currentOffset) {
-        // current offset should equal to total length of the instruction block
-        // by the time this method is called
-        code.add(newBlockEnd);
-      } else {
-        val endInsn = instructionOffsets.get(endOffset);
-        if (endInsn == null)
-          throw new InstructionParseError("End of a try block could not be placed (non-existent offset " + endOffset + ")");
-        code.insertBefore(newBlockEnd, endInsn);
-      }
-    }
-  }
-
-  public void checkTryCatchBlocksPlaced() {
-    val insns = code.getInstructionList();
-    for (val elem : insns)
-      if (elem instanceof DexTryBlockStart) {
-        val tryBlockStart = (DexTryBlockStart) elem;
-
-        val catchAllHandler = tryBlockStart.getCatchAllHandler();
-        if (catchAllHandler != null && !insns.contains(catchAllHandler))
-          throw new InstructionParseError("CatchAll block hasn't been placed - DEX inconsistent");
-
-        for (val catchHandler : tryBlockStart.getCatchHandlers())
-          if (!insns.contains(catchHandler))
-            throw new InstructionParseError("Catch block hasn't been placed - DEX inconsistent");
-      }
+  public FragmentList<DexCatchAll> getListOfCatchAlls() {
+	  val list = new FragmentList<DexCatchAll>();
+	  for (val entry : cacheCatchAlls.entrySet())
+		  list.add(new Fragment<DexCatchAll>(entry.getKey(), entry.getValue()));
+	  return list;
   }
 }

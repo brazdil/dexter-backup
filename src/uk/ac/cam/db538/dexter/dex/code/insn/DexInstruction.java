@@ -1,19 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import lombok.val;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
-import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
@@ -32,7 +24,7 @@ public abstract class DexInstruction extends DexCodeElement {
 
   // INSTRUCTION INSTRUMENTATION
 
-  public void instrument(DexCode_InstrumentationState state) {
+  public void instrument() {
     throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have instrumentation implemented");
   }
   
@@ -127,7 +119,7 @@ public abstract class DexInstruction extends DexCodeElement {
     return throwingInsn_CatchHandlers(null);
   }
 
-  protected final DexTryBlockEnd getSurroundingTryBlock() {
+  protected final DexTryEnd getSurroundingTryBlock() {
     val code = getMethodCode();
     for (val tryBlockEnd : code.getTryBlocks())
       // check that the instruction is in this try block
@@ -136,33 +128,33 @@ public abstract class DexInstruction extends DexCodeElement {
     return null;
   }
 
-  protected final List<DexCodeElement> throwingInsn_GenerateSurroundingCatchBlock(DexCodeElement[] tryBlockCode, DexCodeElement[] catchBlockCode, DexRegister regException) {
-    val code = getMethodCode();
-
-    val catchAll = new DexCatchAll(code);
-    val tryStart = new DexTryBlockStart(code);
-    tryStart.setCatchAllHandler(catchAll);
-    val tryEnd = new DexTryBlockEnd(code, tryStart);
-
-    val labelSucc = new DexLabel(code);
-    val gotoSucc = new DexInstruction_Goto(code, labelSucc);
-
-    val moveException = new DexInstruction_MoveException(code, regException);
-    val throwException = new DexInstruction_Throw(code, regException);
-
-    val instrumentedCode = new ArrayList<DexCodeElement>();
-    instrumentedCode.add(tryStart);
-    instrumentedCode.addAll(Arrays.asList(tryBlockCode));
-    instrumentedCode.add(gotoSucc);
-    instrumentedCode.add(tryEnd);
-    instrumentedCode.add(catchAll);
-    instrumentedCode.add(moveException);
-    instrumentedCode.addAll(Arrays.asList(catchBlockCode));
-    instrumentedCode.add(throwException);
-    instrumentedCode.add(labelSucc);
-
-    return instrumentedCode;
-  }
+//  protected final List<DexCodeElement> throwingInsn_GenerateSurroundingCatchBlock(DexCodeElement[] tryBlockCode, DexCodeElement[] catchBlockCode, DexRegister regException) {
+//    val code = getMethodCode();
+//
+//    val catchAll = new DexCatchAll(code);
+//    val tryStart = new DexTryBlockStart(code);
+//    tryStart.setCatchAllHandler(catchAll);
+//    val tryEnd = new DexTryBlockEnd(code, tryStart);
+//
+//    val labelSucc = new DexLabel(code);
+//    val gotoSucc = new DexInstruction_Goto(code, labelSucc);
+//
+//    val moveException = new DexInstruction_MoveException(code, regException);
+//    val throwException = new DexInstruction_Throw(code, regException);
+//
+//    val instrumentedCode = new ArrayList<DexCodeElement>();
+//    instrumentedCode.add(tryStart);
+//    instrumentedCode.addAll(Arrays.asList(tryBlockCode));
+//    instrumentedCode.add(gotoSucc);
+//    instrumentedCode.add(tryEnd);
+//    instrumentedCode.add(catchAll);
+//    instrumentedCode.add(moveException);
+//    instrumentedCode.addAll(Arrays.asList(catchBlockCode));
+//    instrumentedCode.add(throwException);
+//    instrumentedCode.add(labelSucc);
+//
+//    return instrumentedCode;
+//  }
   
   abstract public void accept(DexInstructionVisitor visitor);
   

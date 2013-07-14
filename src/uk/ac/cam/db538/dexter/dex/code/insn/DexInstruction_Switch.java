@@ -15,8 +15,7 @@ import org.jf.dexlib.Code.Format.PackedSwitchDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.SparseSwitchDataPseudoInstruction;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
@@ -117,7 +116,7 @@ public class DexInstruction_Switch extends DexInstruction {
   }
 
   @Override
-  public Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
+  public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
 	  val set = new HashSet<DexCodeElement>();
 	  set.add(code.getFollower(this));
 	  for (val entry : switchTable)
@@ -131,7 +130,7 @@ public class DexInstruction_Switch extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) { }
+  public void instrument() { }
 
   @Override
   public void accept(DexInstructionVisitor visitor) {

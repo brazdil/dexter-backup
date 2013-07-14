@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.rx201.dx.translator.util.DexRegisterHelper;
-
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.Pair;
+
+import com.rx201.dx.translator.util.DexRegisterHelper;
 
 public class AnalyzedDexInstruction {
 

@@ -10,7 +10,6 @@ import org.jf.dexlib.Code.Format.Instruction22b;
 import org.jf.dexlib.Code.Format.Instruction22s;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -81,7 +80,7 @@ public class DexInstruction_BinaryOpLiteral extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) {
+  public void instrument() {
 //	// taint propagation into ArithmeticException is not necessary here
 //	// because only taint of the denominator propagates and that's
 //	// zero for constant literals

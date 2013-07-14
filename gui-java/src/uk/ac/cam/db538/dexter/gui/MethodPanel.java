@@ -11,7 +11,7 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
@@ -149,8 +149,8 @@ public class MethodPanel extends InfoPanel {
           TooltipManager.setTooltip(label, ((DexInstruction_ConstString) insn).getStringConstant(), TooltipWay.up, 0);
         else if (insn instanceof DexCatch)
           TooltipManager.setTooltip(label, ((DexCatch) insn).getExceptionType().getPrettyName(), TooltipWay.trailing, 0);
-        else if (insn instanceof DexTryBlockStart) {
-          val tryBlockStart = (DexTryBlockStart) insn;
+        else if (insn instanceof DexTryStart) {
+          val tryBlockStart = (DexTryStart) insn;
           val str = new StringBuilder();
           str.append("<html>");
 

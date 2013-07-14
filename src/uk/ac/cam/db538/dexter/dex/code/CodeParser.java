@@ -1,14 +1,21 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
 
 import lombok.val;
 
 import org.jf.dexlib.CodeItem;
+import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.Code.Instruction;
 
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ArrayLength;
@@ -40,11 +47,12 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Return;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ReturnVoid;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticPut;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParseError;
+import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
-import uk.ac.cam.db538.dexter.utils.InstructionList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public abstract class CodeParser {
@@ -52,24 +60,115 @@ public abstract class CodeParser {
 	public static InstructionList parse(CodeItem codeItem, RuntimeHierarchy hierarchy) {
 		val parserCache = new CodeParserState(codeItem, hierarchy);
 		
+		val parsedInstructions = parseInstructions(codeItem, parserCache);
+		val parsedTryBlocks = parseTryBlocks(codeItem.getTries(), parserCache);
+		val parsedTryStarts = parsedTryBlocks.getValA();
+		val parsedTryEnds = parsedTryBlocks.getValB();
+		val parsedLabels = parserCache.getListOfLabels();
+		val parsedCatches = parserCache.getListOfCatches();
+		val parsedCatchAlls = parserCache.getListOfCatchAlls();
+		
+		return finalizeCode(parsedInstructions, parsedTryStarts, parsedTryEnds, parsedLabels, parsedCatches, parsedCatchAlls);
+	}
+	
+	private static FragmentList<DexInstruction> parseInstructions(CodeItem codeItem, CodeParserState parserCache) {
 		val dexlibInstructions = codeItem.getInstructions();
-		val parsedCode = new LinkedList<Pair<? extends DexCodeElement, Long>>();
+		val parsedCode = new FragmentList<DexInstruction>();
 		
 		long insnOffset = 0L;
 		for (val insn : dexlibInstructions) {
-			parsedCode.add(
-				Pair.create(parseInstruction(insn, parserCache), insnOffset));
-			insnOffset += insn.getSize(0); // param ignored
+			parsedCode.add(new Fragment<DexInstruction>(insnOffset, parseInstruction(insn, parserCache)));
+			insnOffset += insn.getSize(0);
 		}
 		
-		return finalizeCode(parsedCode);
+		return parsedCode;
 	}
 	
-	private static InstructionList finalizeCode(List<Pair<? extends DexCodeElement, Long>> insnsData) {
-		val insnList = new InstructionList(insnsData.size());
-		for (val insnData : insnsData)
-			insnList.add(insnData.getValA());
-		return insnList;
+	private static Pair<FragmentList<DexTryStart>, FragmentList<DexTryEnd>> parseTryBlocks(TryItem[] tryItems, CodeParserState parserCache) {
+		val parsedTryStarts = new FragmentList<DexTryStart>();
+		val parsedTryEnds = new FragmentList<DexTryEnd>();
+		int counter = 1;
+		
+		for (val tryItem : tryItems) {
+
+			// start/end offsets
+			final long startOffset = tryItem.getStartCodeAddress();
+			final long endOffset = startOffset + tryItem.getTryLength();
+			
+			// CatchAll handler (null if not set)
+			val catchallOffset = tryItem.encodedCatchHandler.getCatchAllHandlerAddress();
+			DexCatchAll catchallHandler;
+			if (catchallOffset < 0)
+				catchallHandler = null;
+			else
+				catchallHandler = parserCache.getCatchAll(catchallOffset);
+			
+			// other Catch handlers
+			val encodedHandlers = tryItem.encodedCatchHandler.handlers;
+			val catchHandlers = new ArrayList<DexCatch>(encodedHandlers.length);
+			for (val encodedHandler : encodedHandlers) {
+				val catchOffset = encodedHandler.getHandlerAddress();
+				val catchType = DexClassType.parse(encodedHandler.exceptionType.getTypeDescriptor(), parserCache.getHierarchy().getTypeCache());
+				catchHandlers.add(parserCache.getCatch(catchOffset, catchType));
+			}
+			
+			// create TryStart and TryEnd
+			val tryEnd = new DexTryEnd(counter);
+			val tryStart = new DexTryStart(counter, tryEnd, catchallHandler, catchHandlers);
+			counter++;
+			
+			// add them to the fragments list
+			parsedTryStarts.add(new Fragment<DexTryStart>(startOffset, tryStart));
+			parsedTryEnds.add(new Fragment<DexTryEnd>(endOffset, tryEnd));
+		}
+		
+		return Pair.create(parsedTryStarts, parsedTryEnds);
+	}
+	
+	private static InstructionList finalizeCode(FragmentList<DexInstruction> instructions, 
+												FragmentList<DexTryStart> tryStarts,
+												FragmentList<DexTryEnd> tryEnds,
+												FragmentList<DexLabel> labels, 
+												FragmentList<DexCatch> catches, 
+												FragmentList<DexCatchAll> catchAlls) {
+
+		val finalInstructionList = new ArrayList<DexCodeElement>(instructions.size() + tryStarts.size() + tryEnds.size() + labels.size() + catches.size() + catchAlls.size());
+		
+		// Ordering is important! Reflects the desired order of combining the fragment lists
+		val nonInstructionFragments = new FragmentList<?>[] { tryEnds, catches, catchAlls, labels, tryStarts }; 
+
+		// sort everything by the absolute offset address
+		instructions.sortFragments();
+		tryStarts.sortFragments();
+		tryEnds.sortFragments();
+		labels.sortFragments();
+		catches.sortFragments();
+		catchAlls.sortFragments();
+		
+		while (!instructions.isEmpty()) {
+			val headInsn = instructions.pop();
+			val offset = headInsn.getAbsoluteOffset();
+			
+			// Check that markers don't have a lower offset than the current instruction
+			// If they do, the file is inconsistent (markers can only be placed at
+			// positions with instructions, not between).
+			for (val fragList : nonInstructionFragments)
+				if (!fragList.isEmpty() && fragList.peek().getAbsoluteOffset() < offset)
+					throw new InstructionParseError("A " + fragList.peek().getClass().getSimpleName() + " marker is defined between instructions");
+			
+			// Place them in the final instruction list. Order of combining is given by the definition of the nonInstructionFragments array
+			for (val fragList : nonInstructionFragments) {
+				while (!fragList.isEmpty() && fragList.peek().getAbsoluteOffset() == offset) {
+					val fragment = fragList.pop();
+					finalInstructionList.add(fragment.getElement());
+				}
+			}
+			
+			// Add the instruction into the instruction list
+			finalInstructionList.add(headInsn.getElement());
+		}
+		
+		return new InstructionList(finalInstructionList);
 	}
 
 	  private static DexInstruction parseInstruction(Instruction insn, CodeParserState parsingCache) {
@@ -354,13 +453,41 @@ public abstract class CodeParser {
 		    case FILL_ARRAY_DATA:
 		      return DexInstruction_FillArrayData.parse(insn, parsingCache);
 
-//			    case PACKED_SWITCH:
-//			    case SPARSE_SWITCH:
-//			      return DexInstruction_Switch.parse(insn, parsingCache);
+		    case PACKED_SWITCH:
+		    case SPARSE_SWITCH:
+		      return DexInstruction_Switch.parse(insn, parsingCache);
 
 		    default:
-		    	return new DexInstruction_Unknown(insn, parsingCache);
-		    	// throw new InstructionParsingException("Unknown instruction " + insn.opcode.name());
+		    	throw new InstructionParseError("Unknown instruction " + insn.opcode.name());
 		    }
 		  }
+
+		static class Fragment<T extends DexCodeElement> extends Pair<Long, T> implements Comparable<Fragment<T>> {
+			private static final long serialVersionUID = 1L;
+			
+			public Fragment(Long valA, T valB) {
+				super(valA, valB);
+			}
+
+			public long getAbsoluteOffset() {
+				return this.getValA();
+			}
+			
+			public T getElement() {
+				return this.getValB();
+			}
+
+			@Override
+			public int compareTo(Fragment<T> other) {
+				return Long.compare(this.getAbsoluteOffset(), other.getAbsoluteOffset()); 
+			}
+		}
+		
+		static class FragmentList<T extends DexCodeElement> extends LinkedList<Fragment<T>> { 
+			private static final long serialVersionUID = 1L;
+
+			public void sortFragments() {
+				Collections.sort(this);
+			}
+		}
 }

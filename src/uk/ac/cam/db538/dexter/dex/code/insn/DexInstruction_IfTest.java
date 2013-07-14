@@ -8,16 +8,15 @@ import lombok.val;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction22t;
 
-import com.google.common.collect.Sets;
-
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+
+import com.google.common.collect.Sets;
 
 public class DexInstruction_IfTest extends DexInstruction {
 
@@ -62,7 +61,7 @@ public class DexInstruction_IfTest extends DexInstruction {
   }
 
   @Override
-  public Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
+  public Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
 	return Sets.newHashSet(target, code.getFollower(this));
   }
 
@@ -72,7 +71,7 @@ public class DexInstruction_IfTest extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) { }
+  public void instrument() { }
 
 
   @Override

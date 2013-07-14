@@ -11,7 +11,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction21c;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
@@ -56,7 +55,7 @@ public class DexInstruction_ConstClass extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) {  }
+  public void instrument() {  }
 
   @Override
   public Set<? extends DexRegister> lvaDefinedRegisters() {

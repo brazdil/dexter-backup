@@ -10,7 +10,6 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexWideRegister;
@@ -71,7 +70,7 @@ public class DexInstruction_MoveResult extends DexInstruction {
   }
   
   @Override
-  public void instrument(DexCode_InstrumentationState state) {
+  public void instrument() {
 	  throw new Error("MoveResult instruction is not meant to be instrumented directly");
   }
 

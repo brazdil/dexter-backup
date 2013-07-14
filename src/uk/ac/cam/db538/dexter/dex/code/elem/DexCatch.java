@@ -1,49 +1,34 @@
 package uk.ac.cam.db538.dexter.dex.code.elem;
 
 import lombok.Getter;
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import lombok.val;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.utils.Cache;
-import uk.ac.cam.db538.dexter.utils.Pair;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class DexCatch extends DexCodeElement {
 
-  private static long CATCH_COUNTER = -1L;
-
-  @Getter private final long originalAbsoluteOffset;
+  @Getter private final int id;
   @Getter private final DexClassType exceptionType;
 
-  public DexCatch(long originalAbsoluteOffset, DexClassType exceptionType) {
-    super();
-
-    this.originalAbsoluteOffset = originalAbsoluteOffset;
+  public DexCatch(int id, DexClassType exceptionType, RuntimeHierarchy hierarchy) {
+    this.id = id;
     this.exceptionType = exceptionType;
-  }
-
-  public DexCatch(DexClassType exceptionType) {
-    this(CATCH_COUNTER, exceptionType);
-
-    CATCH_COUNTER--;
-    if (CATCH_COUNTER >= 0L)
-      CATCH_COUNTER = -1L;
+    
+    // check that it is a Throwable class
+    val throwableType = DexClassType.parse("Ljava/lang/Throwable;", hierarchy.getTypeCache());
+    val throwableDef = hierarchy.getClassDefinition(throwableType);
+    val classDef = hierarchy.getClassDefinition(this.exceptionType);
+    if (!classDef.isChildOf(throwableDef))
+    	throw new IllegalArgumentException("Given class does not extend Throwable");
   }
 
   @Override
   public String toString() {
-    return "CATCH" + originalAbsoluteOffset + ":";
+    return "CATCH" + Integer.toString(id);
   }
 
   @Override
   public boolean cfgStartsBasicBlock() {
     return true;
-  }
-
-  public static Cache<Pair<Long, DexClassType>, DexCatch> createCache(final DexCode code) {
-    return new Cache<Pair<Long, DexClassType>, DexCatch>() {
-      @Override
-      protected DexCatch createNewEntry(Pair<Long, DexClassType> args) {
-        return new DexCatch(code, args.getValA(), args.getValB());
-      }
-    };
   }
 }

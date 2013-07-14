@@ -10,15 +10,14 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction22c;
 
-import com.google.common.collect.Sets;
-
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+
+import com.google.common.collect.Sets;
 
 public class DexInstruction_NewArray extends DexInstruction {
 
@@ -67,7 +66,7 @@ public class DexInstruction_NewArray extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) { }
+  public void instrument() { }
 
   @Override
   public void accept(DexInstructionVisitor visitor) {

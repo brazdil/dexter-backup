@@ -11,8 +11,7 @@ import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
@@ -58,7 +57,7 @@ public class DexInstruction_Throw extends DexInstruction {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) { }
+  public void instrument() { }
 
   @Override
   public void accept(DexInstructionVisitor visitor) {
@@ -71,7 +70,7 @@ public class DexInstruction_Throw extends DexInstruction {
   }
 
   @Override
-  protected Set<? extends DexCodeElement> cfgJumpTargets(DexCode code) {
+  protected Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
 	  return Collections.emptySet();
   }
 }
