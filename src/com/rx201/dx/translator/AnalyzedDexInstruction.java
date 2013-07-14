@@ -224,9 +224,9 @@ public class AnalyzedDexInstruction {
 		@Override
 		public String toString() {
 			if (auxillaryElement != null)
-				return auxillaryElement.getOriginalAssembly();
+				return auxillaryElement.toString();
 			else if (instruction != null)
-				return instruction.getOriginalAssembly();
+				return instruction.toString();
 			else
 				return "null:" + instructionIndex;
 		}

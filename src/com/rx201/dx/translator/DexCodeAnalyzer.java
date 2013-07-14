@@ -6,20 +6,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
-import com.rx201.dx.translator.util.DexRegisterHelper;
-
 import uk.ac.cam.db538.dexter.analysis.cfg.CfgBasicBlock;
 import uk.ac.cam.db538.dexter.analysis.cfg.CfgBlock;
 import uk.ac.cam.db538.dexter.analysis.cfg.ControlFlowGraph;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
-
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.utils.Pair;
+
+import com.rx201.dx.translator.util.DexRegisterHelper;
 
 public class DexCodeAnalyzer {
 	private DexCode code;
@@ -50,7 +48,7 @@ public class DexCodeAnalyzer {
         basicBlocks = new ArrayList<AnalyzedBasicBlock>();
         maxInstructionIndex = 0;
         buildInstructionList();
-        AnalyzedDexInstruction.hierarchy = code.getParentFile().getHierarchy();
+        AnalyzedDexInstruction.hierarchy = code.getHierarchy();
     }
 
     public boolean isAnalyzed() {
