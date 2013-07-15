@@ -115,7 +115,9 @@ public abstract class CodeParser {
 		
 		long insnOffset = 0L;
 		for (val insn : dexlibInstructions) {
-			parsedCode.add(new Fragment<DexInstruction>(insnOffset, parseInstruction(insn, parserCache)));
+			val parsedInsn = parseInstruction(insn, parserCache);
+			if (parsedInsn != null)
+				parsedCode.add(new Fragment<DexInstruction>(insnOffset, parsedInsn));
 			insnOffset += insn.getSize(0);
 		}
 		
@@ -231,6 +233,9 @@ public abstract class CodeParser {
 	  private static DexInstruction parseInstruction(Instruction insn, CodeParserState parsingCache) {
 		    switch (insn.opcode) {
 
+		    case NOP:
+		    	return null;
+		    
 		    case MOVE:
 		    case MOVE_OBJECT:
 		    case MOVE_FROM16:
