@@ -49,6 +49,7 @@ public class DexCodeAnalyzer {
     
     public DexCodeAnalyzer(DexMethod method) {
         this.method = method;
+        this.code = method.getMethodBody();
         basicBlocks = new ArrayList<AnalyzedBasicBlock>();
         maxInstructionIndex = 0;
         buildInstructionList();
