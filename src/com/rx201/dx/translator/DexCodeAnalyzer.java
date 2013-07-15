@@ -66,7 +66,7 @@ public class DexCodeAnalyzer {
 			int paramRegIndex = prototype.getFirstParameterRegisterIndex(i, isStatic);
 			DexRegister paramReg = parameterMapping.get(paramRegIndex);
 			
-			switch (dexRegType.getTypeSize()) {
+			switch (dexRegType.getTypeWidth()) {
 	        case SINGLE:
 	        	startOfMethod.defineRegister(paramReg, regType, true);
 	        	break;

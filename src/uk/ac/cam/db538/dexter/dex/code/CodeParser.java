@@ -3,6 +3,7 @@ package uk.ac.cam.db538.dexter.dex.code;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 import lombok.val;
 
@@ -10,6 +11,7 @@ import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.TryItem;
 import org.jf.dexlib.Code.Instruction;
 
+import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -51,13 +53,16 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParseError;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public abstract class CodeParser {
 
-	public static InstructionList parse(CodeItem codeItem, RuntimeHierarchy hierarchy) {
+	public static DexCode parse(MethodDefinition methodDef, CodeItem codeItem, RuntimeHierarchy hierarchy) {
 		val parserCache = new CodeParserState(codeItem, hierarchy);
 		
 		val parsedInstructions = parseInstructions(codeItem, parserCache);
@@ -68,7 +73,40 @@ public abstract class CodeParser {
 		val parsedCatches = parserCache.getListOfCatches();
 		val parsedCatchAlls = parserCache.getListOfCatchAlls();
 		
-		return finalizeCode(parsedInstructions, parsedTryStarts, parsedTryEnds, parsedLabels, parsedCatches, parsedCatchAlls);
+		val instructionList = finalizeCode(parsedInstructions, parsedTryStarts, parsedTryEnds, parsedLabels, parsedCatches, parsedCatchAlls);
+		val params = parseParameters(methodDef, codeItem, parserCache);
+		
+		return new DexCode(instructionList, params, hierarchy);
+	}
+	
+	private static List<Parameter> parseParameters(MethodDefinition methodDef, CodeItem codeItem, CodeParserState parserCache) {
+		val definingClass = methodDef.getParentClass().getType();
+		val isStatic = methodDef.isStatic();
+		val prototype = methodDef.getMethodId().getPrototype();
+		
+		val paramCount = prototype.getParameterCount(isStatic);
+		val paramRegCount = prototype.countParamWords(isStatic);
+		val regCount = codeItem.getRegisterCount();
+		
+		val params = new ArrayList<Parameter>(paramCount);
+		int regId = regCount - paramRegCount - 1;
+		
+		for (int i = 0; i < paramCount; i++) {
+			val paramType = prototype.getParameterType(i, isStatic, definingClass);
+			val paramWidth = paramType.getTypeWidth(); 
+			
+			DexStandardRegister paramReg;
+			if (paramWidth == RegisterWidth.SINGLE)
+				paramReg = parserCache.getSingleRegister(regId);
+			else
+				paramReg = parserCache.getWideRegister(regId);
+			
+			regId += paramWidth.getRegisterCount();
+			
+			params.add(new Parameter(paramType, paramReg));
+		}
+		
+		return params;
 	}
 	
 	private static FragmentList<DexInstruction> parseInstructions(CodeItem codeItem, CodeParserState parserCache) {

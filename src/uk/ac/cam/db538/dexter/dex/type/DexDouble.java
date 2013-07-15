@@ -12,7 +12,7 @@ public class DexDouble extends DexPrimitiveType {
 	DexDouble() { }
 
     @Override
-	public RegisterWidth getTypeSize() {
+	public RegisterWidth getTypeWidth() {
     	return RegisterWidth.WIDE;
 	}
 

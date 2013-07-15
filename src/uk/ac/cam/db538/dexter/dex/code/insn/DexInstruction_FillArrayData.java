@@ -1,7 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -19,6 +18,7 @@ import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.utils.Utils;
 
 import com.google.common.collect.Sets;
 
@@ -31,10 +31,7 @@ public class DexInstruction_FillArrayData extends DexInstruction {
     super(hierarchy);
 
     this.regArray = array;
-    if (elementData == null)
-    	this.elementData = Collections.emptyList();
-    else
-    	this.elementData = Collections.unmodifiableList(new ArrayList<byte[]>(elementData));
+    this.elementData = Utils.finalList(elementData);
   }
 
   public static DexInstruction_FillArrayData parse(Instruction insn, CodeParserState parsingState) {

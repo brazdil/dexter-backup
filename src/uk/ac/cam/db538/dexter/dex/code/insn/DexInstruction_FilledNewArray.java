@@ -1,7 +1,5 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +21,7 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexArrayType;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class DexInstruction_FilledNewArray extends DexInstruction {
 
@@ -36,10 +35,7 @@ public class DexInstruction_FilledNewArray extends DexInstruction {
     if (this.arrayType.getElementType().isWide())
       throw new InstructionParseError("FilledNewArray doesn't support wide types");
 
-    if (arrayElems == null)
-    	this.argumentRegisters = Collections.emptyList();
-    else
-    	this.argumentRegisters = Collections.unmodifiableList(new ArrayList<DexSingleRegister>(arrayElems));
+    this.argumentRegisters = Utils.finalList(arrayElems);
   }
 
   public static DexInstruction_FilledNewArray parse(Instruction insn, CodeParserState parsingState) {

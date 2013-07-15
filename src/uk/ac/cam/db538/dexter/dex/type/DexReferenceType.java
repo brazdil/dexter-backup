@@ -30,7 +30,7 @@ public abstract class DexReferenceType extends DexRegisterType {
 	}
 
 	@Override
-	public RegisterWidth getTypeSize() {
+	public RegisterWidth getTypeWidth() {
 		return TypeSize;
 	}
   

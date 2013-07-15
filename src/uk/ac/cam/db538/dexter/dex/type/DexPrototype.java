@@ -13,22 +13,20 @@ import org.jf.dexlib.ProtoIdItem;
 
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.utils.Cache;
+import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class DexPrototype implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
 	@Getter private final DexType returnType;
-	@Getter private final List<DexRegisterType> parameterTypes;
+	private final List<DexRegisterType> parameterTypes;
   
 	private final int hashcode;
 
 	public DexPrototype(DexType returnType, List<DexRegisterType> argTypes) {
 		this.returnType = returnType;
-		if (argTypes == null)
-			this.parameterTypes = Collections.emptyList();
-		else
-			this.parameterTypes = Collections.unmodifiableList(new ArrayList<DexRegisterType>(argTypes));
+		this.parameterTypes = Utils.finalList(argTypes);
     
 		// precompute hashcode
 		int result = 31 + parameterTypes.hashCode();
@@ -78,27 +76,6 @@ public class DexPrototype implements Serializable {
 		return parameterTypes.size() + (isStatic ? 0 : 1);
 	}
 
-	public int getParameterRegisterId(int paramId, int registerCount, boolean isStatic) {
-		return getFirstParameterRegisterIndex(paramId, isStatic) + registerCount - countParamWords(isStatic);
-	}
-
-	public int getFirstParameterRegisterIndex(int paramId, boolean isStatic) {
-		if (paramId == 0)
-			return 0;
-
-		int regId = 0;
-
-		if (!isStatic) {
-			regId += DexClassType.TypeSize.getRegisterCount();
-			paramId--;
-		}
-
-		for (int i = 0; i < paramId; ++i)
-			regId += parameterTypes.get(i).getRegisters();
-
-		return regId;
-	}
-
 	public DexRegisterType getParameterType(int paramId, boolean isStatic, DexReferenceType clazz) {
 		if (!isStatic) {
 			if (paramId == 0)
@@ -108,7 +85,7 @@ public class DexPrototype implements Serializable {
 		}
 		return parameterTypes.get(paramId);
 	}
-
+	
 	public boolean hasPrimitiveArgument() {
 		for (val paramType : parameterTypes)
 			if (paramType instanceof DexPrimitiveType)
@@ -157,8 +134,8 @@ public class DexPrototype implements Serializable {
 			protected ProtoIdItem createNewEntry(DexPrototype prototype) {
 				return ProtoIdItem.internProtoIdItem(
 						outFile,
-						cache.getType(prototype.getReturnType()),
-						cache.getTypeList(prototype.getParameterTypes()));
+						cache.getType(prototype.returnType),
+						cache.getTypeList(prototype.parameterTypes));
 			}
 		};
 	}	

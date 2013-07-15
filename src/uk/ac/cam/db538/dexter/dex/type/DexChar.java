@@ -13,7 +13,7 @@ public class DexChar extends DexPrimitiveType {
 	DexChar() { }
 
     @Override
-	public RegisterWidth getTypeSize() {
+	public RegisterWidth getTypeWidth() {
     	return RegisterWidth.SINGLE;
 	}
 

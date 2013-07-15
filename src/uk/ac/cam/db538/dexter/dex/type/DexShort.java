@@ -13,7 +13,7 @@ public class DexShort extends DexPrimitiveType {
 	DexShort() { }
 
     @Override
-	public RegisterWidth getTypeSize() {
+	public RegisterWidth getTypeWidth() {
     	return RegisterWidth.SINGLE;
 	}
 

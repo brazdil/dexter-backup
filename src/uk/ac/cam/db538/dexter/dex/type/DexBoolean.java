@@ -13,7 +13,7 @@ public class DexBoolean extends DexPrimitiveType {
 	DexBoolean() { }
 
     @Override
-	public RegisterWidth getTypeSize() {
+	public RegisterWidth getTypeWidth() {
     	return RegisterWidth.SINGLE;
 	}
 

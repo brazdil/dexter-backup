@@ -12,7 +12,7 @@ public class DexFloat extends DexPrimitiveType {
 	DexFloat() { }
 
     @Override
-	public RegisterWidth getTypeSize() {
+	public RegisterWidth getTypeWidth() {
     	return RegisterWidth.SINGLE;
 	}
 
