@@ -42,7 +42,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Throw;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_UnaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Unknown;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.invoke.DexPseudoinstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_FilledNewArray;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalClassAnnotation;
@@ -57,21 +56,26 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintString;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
+import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.dex.type.DexLong;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
 import com.rx201.dx.translator.TypeSolver.CascadeType;
-import com.rx201.dx.translator.util.DexRegisterHelper;
 
 public class DexInstructionAnalyzer implements DexInstructionVisitor{
 
 	private AnalyzedDexInstruction analyzedInst;
 	private DexTypeCache typeCache;
+	private DexType methodReturnType;
 
-	public DexInstructionAnalyzer(DexTypeCache typeCache) {
-		this.typeCache = typeCache;
+	public DexInstructionAnalyzer(DexMethod method) {
+		this.typeCache = method.getParentFile().getTypeCache();
+		this.methodReturnType = method.getMethodDef().getMethodId().getPrototype().getReturnType();
 	}
 
 	public void setAnalyzedInstruction(AnalyzedDexInstruction i) {
@@ -95,23 +99,22 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		analyzedInst.defineRegister(regTo, registerType, false);
 		analyzedInst.addRegisterConstraint(regTo, regFrom, CascadeType.Equivalent);
 	}
-	    
     
 	@Override
-	public void visit(DexInstruction_Nop instruction) {}
-	
-	@Override
 	public void visit(DexInstruction_Move instruction) {
-		moveRegister(instruction.getRegFrom(), instruction.getRegTo(), instruction.isObjectMoving()? RopType.WildcardReference : RopType.Primitive);
-	}
-	@Override
-	public void visit(DexInstruction_MoveWide instruction) {
-		assert DexRegisterHelper.isPair(instruction.getRegFrom1(),  instruction.getRegFrom2());
-		assert DexRegisterHelper.isPair(instruction.getRegTo1(),  instruction.getRegTo2());
-
-		moveRegister(instruction.getRegFrom1(), instruction.getRegTo1(), RopType.Wide);
-		moveRegister(instruction.getRegFrom2(), instruction.getRegTo2(), RopType.Wide);
-
+		RegisterType regType = instruction.getType();
+		RopType type;
+		
+		if (regType == RegisterType.SINGLE_PRIMITIVE)
+			type = RopType.Primitive;
+		else if (regType == RegisterType.WIDE_PRIMITIVE)
+			type = RopType.Wide;
+		else if (regType == RegisterType.REFERENCE)
+			type = RopType.WildcardReference;
+		else 
+			throw new ValidationException("Bad type");
+		
+		moveRegister(instruction.getRegFrom(), instruction.getRegTo(), type);
 	}
 	
 	private RopType analyzeMoveResult(DexRegister srcReg) {
@@ -126,12 +129,12 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
         RopType resultRopType;
         if (prevAnalyzedInst.instruction instanceof DexInstruction_Invoke) {
         	DexInstruction_Invoke i = (DexInstruction_Invoke) prevAnalyzedInst.instruction;
-        	resultRopType = RopType.getRopType((DexRegisterType)i.getMethodPrototype().getReturnType());
+        	resultRopType = RopType.getRopType((DexRegisterType)i.getMethodId().getPrototype().getReturnType());
         } else if (prevAnalyzedInst.instruction instanceof DexInstruction_FilledNewArray) {
         	DexInstruction_FilledNewArray i = (DexInstruction_FilledNewArray)prevAnalyzedInst.instruction;
         	resultRopType = RopType.getRopType(i.getArrayType());
         } else {
-            throw new ValidationException(analyzedInst.instruction.getOriginalAssembly() + " must occur after an " +
+            throw new ValidationException(analyzedInst.instruction.toString() + " must occur after an " +
                     "invoke-*/fill-new-array instruction");
         }
         
@@ -139,16 +142,9 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	}
 	@Override
 	public void visit(DexInstruction_MoveResult instruction) {
-		defineFreezedRegister(instruction.getRegTo(), 
-				analyzeMoveResult(instruction.getRegTo()));
+		defineFreezedRegister(instruction.getRegTo(), analyzeMoveResult(instruction.getRegTo()));
 	}
-	@Override
-	public void visit(DexInstruction_MoveResultWide instruction) {
-		assert DexRegisterHelper.isPair(instruction.getRegTo1(),  instruction.getRegTo2());
-		RopType type = analyzeMoveResult(instruction.getRegTo1());
-		defineFreezedRegister(instruction.getRegTo1(), type);
-		defineFreezedRegister(instruction.getRegTo2(), type.lowToHigh());
-	}
+
 	@Override
 	public void visit(DexInstruction_MoveException instruction) {
 		assert analyzedInst.getPredecessorCount() == 1;
@@ -167,42 +163,28 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	
 	@Override
 	public void visit(DexInstruction_Return instruction) {
-		DexRegisterType returnType = (DexRegisterType) instruction.getParentMethod().getMethodDef().getMethodId().getPrototype().getReturnType();
-		useFreezedRegister(instruction.getRegFrom(), RopType.getRopType(returnType));
-	}
-	
-	@Override
-	public void visit(DexInstruction_ReturnWide instruction) {
-		if (instruction.getParentMethod().getMethodDef().getMethodId().getPrototype().getReturnType() instanceof DexLong) {
-			useFreezedRegister(instruction.getRegFrom1(), RopType.LongLo);
-			useFreezedRegister(instruction.getRegFrom2(), RopType.LongHi);
-		} else {
-			useFreezedRegister(instruction.getRegFrom1(), RopType.DoubleLo);
-			useFreezedRegister(instruction.getRegFrom2(), RopType.DoubleHi);
-		}
+		useFreezedRegister(instruction.getRegFrom(), RopType.getRopType((DexRegisterType)methodReturnType));
 	}
 	
 	@Override
 	public void visit(DexInstruction_Const instruction) {
-		long value = instruction.getValue();
 		RopType type;
-		if (value == 0)
-			type = RopType.Zero;
-		else if (value == 1)
-			type = RopType.One;
-		else
-			type = RopType.Integer;
-		//??
+
+		if (instruction.getRegTo().getWidth() == RegisterWidth.SINGLE) {
+			long value = instruction.getValue();
+			if (value == 0)
+				type = RopType.Zero;
+			else if (value == 1)
+				type = RopType.One;
+			else
+				type = RopType.Integer;
+		} else {
+			type = RopType.Wide;
+		} 
+
 		defineRegister(instruction.getRegTo(), type);
 	}
 
-	@Override
-	public void visit(DexInstruction_ConstWide instruction) {
-		//??
-		defineRegister(instruction.getRegTo1(), RopType.Wide);
-		defineRegister(instruction.getRegTo2(), RopType.Wide);
-	}
-	
 	@Override
 	public void visit(DexInstruction_ConstString instruction) {
 		RopType type = RopType.getRopType(DexClassType.parse("Ljava/lang/String;", typeCache));
@@ -261,9 +243,6 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	}
 	
 	@Override
-	public void visit(DexInstruction_FillArrayData instruction) {}
-	
-	@Override
 	public void visit(DexInstruction_Throw instruction) {
 		useRegister(instruction.getRegFrom(), RopType.WildcardReference);
 	}
@@ -277,39 +256,30 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	}
 	
 	@Override
-	public void visit(DexInstruction_PackedSwitchData instruction) {}
-	
-	@Override
-	public void visit(DexInstruction_SparseSwitchData instruction) {}
-	
-	@Override
 	public void visit(DexInstruction_Compare instruction) {
-		useFreezedRegister(instruction.getRegSourceA(), RopType.Float);
-		useFreezedRegister(instruction.getRegSourceB(), RopType.Float);
-		defineFreezedRegister(instruction.getRegTo(), RopType.Byte);
-	}
-	@Override
-	public void visit(DexInstruction_CompareWide instruction) {
-		switch(instruction.getInsnOpcode()) {
-		case CmpLong:
-			useFreezedRegister(instruction.getRegSourceA1(), RopType.LongLo);
-			useFreezedRegister(instruction.getRegSourceA2(), RopType.LongHi);
-			useFreezedRegister(instruction.getRegSourceB1(), RopType.LongLo);
-			useFreezedRegister(instruction.getRegSourceB2(), RopType.LongHi);
+		switch(instruction.getOpcode()) {
+		case CmpgFloat:
+		case CmplFloat:
+			useFreezedRegister(instruction.getRegSourceA(), RopType.Float);
+			useFreezedRegister(instruction.getRegSourceB(), RopType.Float);
 			break;
-		case CmpgDouble:
+		case CmpLong:
+			useFreezedRegister(instruction.getRegSourceA(), RopType.LongLo);
+			useFreezedRegister(instruction.getRegSourceB(), RopType.LongLo);
+			break;
 		case CmplDouble:
-			useFreezedRegister(instruction.getRegSourceA1(), RopType.DoubleLo);
-			useFreezedRegister(instruction.getRegSourceA2(), RopType.DoubleHi);
-			useFreezedRegister(instruction.getRegSourceB1(), RopType.DoubleLo);
-			useFreezedRegister(instruction.getRegSourceB2(), RopType.DoubleHi);
+		case CmpgDouble:
+			useFreezedRegister(instruction.getRegSourceA(), RopType.DoubleLo);
+			useFreezedRegister(instruction.getRegSourceB(), RopType.DoubleLo);
 			break;
 		default:
 			assert false;
 			break;
+		
 		}
 		defineFreezedRegister(instruction.getRegTo(), RopType.Byte);
 	}
+
 	@Override
 	public void visit(DexInstruction_IfTest instruction) {
 		useRegister(instruction.getRegA(), RopType.Unknown);
@@ -328,41 +298,33 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		useRegister(inst.getRegArray(), RopType.Array);
 		analyzedInst.addRegisterConstraint(inst.getRegTo(), inst.getRegArray(), CascadeType.ArrayToElement);
 		
-    	if (inst.getOpcode() == Opcode_GetPut.Object) {
+    	switch (inst.getOpcode()) {
+		case Boolean:
+	    	defineFreezedRegister(inst.getRegTo(), RopType.Boolean);
+			break;
+		case Byte:
+	    	defineFreezedRegister(inst.getRegTo(), RopType.Byte);
+			break;
+		case Char:
+	    	defineFreezedRegister(inst.getRegTo(), RopType.Char);
+			break;
+		case IntFloat:
+	    	defineRegister(inst.getRegTo(), RopType.IntFloat);
+	    	break;
+		case Short:
+	    	defineFreezedRegister(inst.getRegTo(), RopType.Short);
+			break;
+		case Object:
     		defineRegister(inst.getRegTo(), RopType.WildcardReference);
-    	} else {
-	    	switch (inst.getOpcode()) {
-			case Boolean:
-		    	defineFreezedRegister(inst.getRegTo(), RopType.Boolean);
-				break;
-			case Byte:
-		    	defineFreezedRegister(inst.getRegTo(), RopType.Byte);
-				break;
-			case Char:
-		    	defineFreezedRegister(inst.getRegTo(), RopType.Char);
-				break;
-			case IntFloat:
-				//??
-		    	defineRegister(inst.getRegTo(), RopType.IntFloat);
-		    	break;
-			case Short:
-		    	defineFreezedRegister(inst.getRegTo(), RopType.Short);
-				break;
-			default:
-				throw new ValidationException("wrong type AGET");
-	    	}
+			break;
+		case Wide:
+			defineRegister(inst.getRegTo(), RopType.Wide);
+			break;
+		default:
+			throw new ValidationException("wrong type AGET");
     	}
 	}		
-	@Override
-	public void visit(DexInstruction_ArrayGetWide instruction) {
-		useRegister(instruction.getRegArray(), RopType.Array);
-		useFreezedRegister(instruction.getRegIndex(), RopType.Integer);
-		analyzedInst.addRegisterConstraint(instruction.getRegTo1(), instruction.getRegArray(), CascadeType.ArrayToElement);
-		analyzedInst.addRegisterConstraint(instruction.getRegTo2(), instruction.getRegArray(), CascadeType.ArrayToElement);
 
-		defineRegister(instruction.getRegTo1(), RopType.Wide);
-		defineRegister(instruction.getRegTo2(), RopType.Wide);
-	}
 	@Override
 	public void visit(DexInstruction_ArrayPut instruction) {
 		useRegister(instruction.getRegArray(), RopType.Array);
@@ -388,6 +350,8 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		case Short:
 			useFreezedRegister(instruction.getRegFrom(), RopType.Short);
 			break;
+		case Wide:
+			useRegister(instruction.getRegFrom(), RopType.Wide);
 		default:
 			assert false;
 			break;
@@ -395,75 +359,40 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	}
 	
 	@Override
-	public void visit(DexInstruction_ArrayPutWide instruction) {
-		useRegister(instruction.getRegArray(), RopType.Array);
-		useFreezedRegister(instruction.getRegIndex(), RopType.Integer);
-		analyzedInst.addRegisterConstraint(instruction.getRegFrom1(), instruction.getRegArray(), CascadeType.ArrayToElement);
-		analyzedInst.addRegisterConstraint(instruction.getRegFrom2(), instruction.getRegArray(), CascadeType.ArrayToElement);
-		useRegister(instruction.getRegFrom1(), RopType.Wide);
-		useRegister(instruction.getRegFrom2(), RopType.Wide);
+	public void visit(DexInstruction_InstanceGet instruction) {
+		useFreezedRegister(instruction.getRegObject(), RopType.getRopType(
+				instruction.getFieldDef().getParentClass().getType()));
+		defineFreezedRegister(instruction.getRegTo(), RopType.getRopType(
+				instruction.getFieldDef().getFieldId().getType()));
 	}
 	
-	@Override
-	public void visit(DexInstruction_InstanceGet instruction) {
-		useFreezedRegister(instruction.getRegObject(), RopType.getRopType(instruction.getFieldClass()));
-		defineFreezedRegister(instruction.getRegTo(), RopType.getRopType(instruction.getFieldType()));
-	}
-	@Override
-	public void visit(DexInstruction_InstanceGetWide instruction) {
-		useFreezedRegister(instruction.getRegObject(), RopType.getRopType(instruction.getFieldClass()));
-		RopType type = RopType.getRopType(instruction.getFieldType());
-		defineFreezedRegister(instruction.getRegTo1(), type);
-		defineFreezedRegister(instruction.getRegTo2(), type.lowToHigh());
-		
-	}
 	@Override
 	public void visit(DexInstruction_InstancePut instruction) {
-		useFreezedRegister(instruction.getRegObject(), RopType.getRopType(instruction.getFieldClass()));
-		useFreezedRegister(instruction.getRegFrom(), RopType.getRopType(instruction.getFieldType()));
-	}
-	
-	@Override
-	public void visit(DexInstruction_InstancePutWide instruction) {
-		useFreezedRegister(instruction.getRegObject(), RopType.getRopType(instruction.getFieldClass()));
-		RopType type = RopType.getRopType(instruction.getFieldType());
-		useFreezedRegister(instruction.getRegFrom1(), type);
-		useFreezedRegister(instruction.getRegFrom2(), type.lowToHigh());
+		useFreezedRegister(instruction.getRegObject(), RopType.getRopType(
+				instruction.getFieldDef().getParentClass().getType()));
+		useFreezedRegister(instruction.getRegFrom(), RopType.getRopType(
+				instruction.getFieldDef().getFieldId().getType()));
 	}
 	
 	@Override
 	public void visit(DexInstruction_StaticGet instruction) {
-		RopType type = RopType.getRopType(instruction.getFieldType());
+		RopType type = RopType.getRopType(instruction.getFieldDef().getFieldId().getType());
 		defineFreezedRegister(instruction.getRegTo(), type);
 	}
-	@Override
-	public void visit(DexInstruction_StaticGetWide instruction) {
-		RopType type = RopType.getRopType(instruction.getFieldType());
-		defineFreezedRegister(instruction.getRegTo1(), type);
-		defineFreezedRegister(instruction.getRegTo2(), type.lowToHigh());
-
-	}
+	
 	@Override
 	public void visit(DexInstruction_StaticPut instruction) {
-		useFreezedRegister(instruction.getRegFrom(), RopType.getRopType(instruction.getFieldType()));
+		RopType type = RopType.getRopType(instruction.getFieldDef().getFieldId().getType());
+		useFreezedRegister(instruction.getRegFrom(), type);
 	}
-	
-	@Override
-	public void visit(DexInstruction_StaticPutWide instruction) {
-		RopType type = RopType.getRopType(instruction.getFieldType());
-		
-		useFreezedRegister(instruction.getRegFrom1(), type);
-		useFreezedRegister(instruction.getRegFrom2(), type.lowToHigh());
-	}
-	
 	
 	@Override
 	public void visit(DexInstruction_Invoke instruction) {
-		List<DexRegister> arguments = instruction.getArgumentRegisters();
-		List<DexRegisterType> parameterTypes = instruction.getMethodPrototype().getParameterTypes();
+		List<DexStandardRegister> arguments = instruction.getArgumentRegisters();
+		List<DexRegisterType> parameterTypes = instruction.getMethodId().getPrototype().getParameterTypes();
 		
 		int regIndex = 0;
-		if (!instruction.isStaticCall()) {
+		if (!instruction.getCallType().isStatic()) {
 			useFreezedRegister(arguments.get(regIndex++), RopType.getRopType(instruction.getClassType()));
 		}
 		
@@ -485,144 +414,96 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 			case NotInt:
 				type = RopType.Integer;
 				break;
+			case NegDouble:
+				type = RopType.DoubleLo;
+		    	break;
+			case NegLong:
+			case NotLong:
+				type = RopType.LongLo;
+		    	break;
 		    default:
 		    	throw new ValidationException("Unknown opcode for DexInstruction_UnaryOp");
 		}
 		useFreezedRegister(instruction.getRegFrom(), type);
 		defineFreezedRegister(instruction.getRegTo(), type);
 	}
-	@Override
-	public void visit(DexInstruction_UnaryOpWide instruction) {
-		assert DexRegisterHelper.isPair(instruction.getRegFrom1(), instruction.getRegFrom2());
-		assert DexRegisterHelper.isPair(instruction.getRegTo1(), instruction.getRegTo2());
 
-		switch (instruction.getInsnOpcode()) {
-	    case NegDouble:
-			useFreezedRegister(instruction.getRegFrom1(), RopType.DoubleLo);
-			useFreezedRegister(instruction.getRegFrom2(), RopType.DoubleHi);
-			defineFreezedRegister(instruction.getRegTo1(), RopType.DoubleLo);
-			defineFreezedRegister(instruction.getRegTo2(), RopType.DoubleHi);
-	    	break;
-	    case NegLong:
-	    case NotLong:
-			useFreezedRegister(instruction.getRegFrom1(), RopType.LongLo);
-			useFreezedRegister(instruction.getRegFrom2(), RopType.LongHi);
-			defineFreezedRegister(instruction.getRegTo1(), RopType.LongLo);
-			defineFreezedRegister(instruction.getRegTo2(), RopType.LongHi);
-	    	break;
-	    default:
-	    	throw new ValidationException("Unknown opcode for DexInstruction_UnaryOpWide");
-	    }
-	}
 	@Override
 	public void visit(DexInstruction_Convert instruction) {
+		RopType fromType, toType;
 	    switch (instruction.getInsnOpcode()) {
 		case FloatToInt:
-			useFreezedRegister(instruction.getRegFrom(), RopType.Float);
-			defineFreezedRegister(instruction.getRegTo(), RopType.Integer);
+			fromType = RopType.Float;
+			toType = RopType.Integer;
 			break;
 		case IntToByte:
-			useFreezedRegister(instruction.getRegFrom(), RopType.Integer);
-			defineFreezedRegister(instruction.getRegTo(), RopType.Byte);
+			fromType = RopType.Integer;
+			toType = RopType.Byte;
 			break;
 		case IntToChar:
-			useFreezedRegister(instruction.getRegFrom(), RopType.Integer);
-			defineFreezedRegister(instruction.getRegTo(), RopType.Char);
+			fromType = RopType.Integer;
+			toType = RopType.Char;
 			break;
 		case IntToFloat:
-			useFreezedRegister(instruction.getRegFrom(), RopType.Integer);
-			defineFreezedRegister(instruction.getRegTo(), RopType.Float);
+			fromType = RopType.Integer;
+			toType = RopType.Float;
 			break;
 		case IntToShort:
-			useFreezedRegister(instruction.getRegFrom(), RopType.Integer);
-			defineFreezedRegister(instruction.getRegTo(), RopType.Short);
+			fromType = RopType.Integer;
+			toType = RopType.Short;
+			break;
+		case DoubleToFloat:
+			fromType = RopType.DoubleLo;
+			toType = RopType.Float;
+			break;
+		case DoubleToInt:
+			fromType = RopType.DoubleLo;
+			toType = RopType.Integer;
+			break;
+		case DoubleToLong:
+			fromType = RopType.DoubleLo;
+			toType = RopType.LongLo;
+			break;
+		case FloatToDouble:
+			fromType = RopType.Float;
+			toType = RopType.DoubleLo;
+			break;
+		case FloatToLong:
+			fromType = RopType.Float;
+			toType = RopType.LongLo;
+			break;
+		case IntToDouble:
+			fromType = RopType.Integer;
+			toType = RopType.DoubleLo;
+			break;
+		case IntToLong:
+			fromType = RopType.Integer;
+			toType = RopType.LongLo;
+			break;
+		case LongToDouble:
+			fromType = RopType.LongLo;
+			toType = RopType.DoubleLo;
+			break;
+		case LongToFloat:
+			fromType = RopType.LongLo;
+			toType = RopType.Float;
+			break;
+		case LongToInt:
+			fromType = RopType.LongLo;
+			toType = RopType.Integer;
 			break;
 		default:
 			throw new ValidationException("Unknown opcode for DexInstruction_Convert");
-	    
 	    }
+		useFreezedRegister(instruction.getRegFrom(), fromType);
+		defineFreezedRegister(instruction.getRegTo(), toType);
 	}
-	@Override
-	public void visit(DexInstruction_ConvertWide instruction) {
-		assert DexRegisterHelper.isPair(instruction.getRegFrom1(), instruction.getRegFrom2());
-		assert DexRegisterHelper.isPair(instruction.getRegTo1(), instruction.getRegTo2());
 
-		if (instruction.getInsnOpcode() == Opcode_ConvertWide.DoubleToLong) {
-			useFreezedRegister(instruction.getRegFrom1(), RopType.DoubleLo);
-			useFreezedRegister(instruction.getRegFrom2(), RopType.DoubleHi);
-			defineFreezedRegister(instruction.getRegTo1(), RopType.LongLo);
-			defineFreezedRegister(instruction.getRegTo2(), RopType.LongHi);
-	    } else {
-			useFreezedRegister(instruction.getRegFrom1(), RopType.LongLo);
-			useFreezedRegister(instruction.getRegFrom2(), RopType.LongHi);
-			defineFreezedRegister(instruction.getRegTo1(), RopType.DoubleLo);
-			defineFreezedRegister(instruction.getRegTo2(), RopType.DoubleHi);
-	    }
-	}
-	@Override
-	public void visit(DexInstruction_ConvertFromWide instruction) {
-		assert DexRegisterHelper.isPair(instruction.getRegFrom1(), instruction.getRegFrom2());
-
-		RopType srcType, dstType;
-		
-		switch (instruction.getInsnOpcode()) {
-		case DoubleToFloat:
-			srcType = RopType.DoubleLo;
-			dstType = RopType.Float;
-			break;
-		case LongToFloat:
-			srcType = RopType.LongLo;
-			dstType = RopType.Float;
-			break;
-		case DoubleToInt:
-			srcType = RopType.DoubleLo;
-			dstType = RopType.Integer;
-			break;
-		case LongToInt:
-			srcType = RopType.LongLo;
-			dstType = RopType.Integer;
-			break;
-		default:
-			throw new ValidationException("Unknown opcode for DexInstruction_ConvertFromWide");
-	    }
-		useFreezedRegister(instruction.getRegFrom1(), srcType);
-		useFreezedRegister(instruction.getRegFrom2(), srcType.lowToHigh());
-		defineFreezedRegister(instruction.getRegTo(), dstType);
-	}
-	@Override
-	public void visit(DexInstruction_ConvertToWide instruction) {
-		assert DexRegisterHelper.isPair(instruction.getRegTo1(), instruction.getRegTo2());
-
-		RopType srcType, dstType;
-	    switch (instruction.getInsnOpcode()) {
-	    case FloatToDouble:
-			srcType = RopType.Float;
-			dstType = RopType.DoubleLo;
-			break;
-		case IntToDouble:
-			srcType = RopType.Integer;
-			dstType = RopType.DoubleLo;
-			break;
-		case FloatToLong:
-			srcType = RopType.Float;
-			dstType = RopType.LongLo;
-			break;
-		case IntToLong:
-			srcType = RopType.Integer;
-			dstType = RopType.LongLo;
-			break;
-		default:
-	    	throw new ValidationException("Unknown opcode for DexInstruction_UnaryOpWide");
-	    }
-		useFreezedRegister(instruction.getRegFrom(), srcType);
-		defineFreezedRegister(instruction.getRegTo1(), dstType);
-		defineFreezedRegister(instruction.getRegTo2(), dstType.lowToHigh());
-	}
-    
 	@Override
 	public void visit(DexInstruction_BinaryOp instruction) {
 		RopType type;
 		boolean freezed = false; 
+		boolean isShiftOperator = false;
 		switch(instruction.getInsnOpcode()) {
 		case AddFloat:
 		case SubFloat:
@@ -649,43 +530,13 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 			type = RopType.Integer;
 			freezed = false;
 			break;
-		default:
-			throw new ValidationException("Unknown opcode for DexInstruction_BinaryOp");
-		}
-		if (freezed) {
-			useFreezedRegister(instruction.getRegSourceA(), type);
-			useFreezedRegister(instruction.getRegSourceB(), type);
-			defineFreezedRegister(instruction.getRegTarget(), type);
-		} else {
-			useRegister(instruction.getRegSourceA(), type);
-			useRegister(instruction.getRegSourceB(), type);
-			defineRegister(instruction.getRegTarget(), type);
-		}
-	}
-    		
-	@Override
-	public void visit(DexInstruction_BinaryOpLiteral instruction) {
-		useRegister(instruction.getRegSource(), RopType.Integer);
-		defineRegister(instruction.getRegTarget(), RopType.Integer);
-	}
-	@Override
-	public void visit(DexInstruction_BinaryOpWide instruction) {
-		assert DexRegisterHelper.isPair(instruction.getRegSourceA1(), instruction.getRegSourceA2());
-		assert DexRegisterHelper.isPair(instruction.getRegSourceB1(), instruction.getRegSourceB2());
-		assert DexRegisterHelper.isPair(instruction.getRegTarget1(), instruction.getRegTarget2());
-		
-		switch(instruction.getInsnOpcode()){
 		case AddDouble:
 		case SubDouble:
 		case MulDouble:
 		case DivDouble:
 		case RemDouble:
-			useFreezedRegister(instruction.getRegSourceA1(), RopType.DoubleLo);
-			useFreezedRegister(instruction.getRegSourceA2(), RopType.DoubleHi);
-			useFreezedRegister(instruction.getRegSourceB1(), RopType.DoubleLo);
-			useFreezedRegister(instruction.getRegSourceB2(), RopType.DoubleHi);
-			defineFreezedRegister(instruction.getRegTarget1(), RopType.DoubleLo);
-			defineFreezedRegister(instruction.getRegTarget2(), RopType.DoubleHi);
+			type = RopType.DoubleLo;
+			freezed = true;
 			break;
 		case AddLong:
 		case AndLong:
@@ -695,26 +546,46 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 		case RemLong:
 		case SubLong:
 		case XorLong:
-			useFreezedRegister(instruction.getRegSourceA1(), RopType.LongLo);
-			useFreezedRegister(instruction.getRegSourceA2(), RopType.LongHi);
-			useFreezedRegister(instruction.getRegSourceB1(), RopType.LongLo);
-			useFreezedRegister(instruction.getRegSourceB2(), RopType.LongHi);
-			defineFreezedRegister(instruction.getRegTarget1(), RopType.LongLo);
-			defineFreezedRegister(instruction.getRegTarget2(), RopType.LongHi);
+			type = RopType.LongLo;
+			freezed = true;
 			break;
 		case ShlLong:
 		case ShrLong:
 		case UshrLong:
-			useFreezedRegister(instruction.getRegSourceA1(), RopType.LongLo);
-			useFreezedRegister(instruction.getRegSourceA2(), RopType.LongHi);
-			useFreezedRegister(instruction.getRegSourceB1(), RopType.Integer);
-			defineFreezedRegister(instruction.getRegTarget1(), RopType.LongLo);
-			defineFreezedRegister(instruction.getRegTarget2(), RopType.LongHi);
+			type = RopType.LongLo;
+			freezed = true;
+			isShiftOperator = true;
 			break;
 		default:
-			throw new ValidationException("Unknown opcode for DexInstruction_BinaryOpWide");
+			throw new ValidationException("Unknown opcode for DexInstruction_BinaryOp");
+		}
+		if (freezed) {
+			useFreezedRegister(instruction.getRegSourceA(), type);
+			
+			if (!isShiftOperator)
+				useFreezedRegister(instruction.getRegSourceB(), type);
+			else
+				useFreezedRegister(instruction.getRegSourceB(), RopType.Integer);
+			
+			defineFreezedRegister(instruction.getRegTarget(), type);
+		} else {
+			useRegister(instruction.getRegSourceA(), type);
+			
+			if (!isShiftOperator)
+				useRegister(instruction.getRegSourceB(), type);
+			else
+				useRegister(instruction.getRegSourceB(), RopType.Integer);
+			
+			defineRegister(instruction.getRegTarget(), type);
 		}
 	}
+    		
+	@Override
+	public void visit(DexInstruction_BinaryOpLiteral instruction) {
+		useRegister(instruction.getRegSource(), RopType.Integer);
+		defineRegister(instruction.getRegTarget(), RopType.Integer);
+	}
+
 	@Override
 	public void visit(DexInstruction_Unknown instruction) {
 		assert false;

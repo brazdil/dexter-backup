@@ -25,15 +25,13 @@ import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
-import uk.ac.cam.db538.dexter.dex.method.DexMethodWithBody;
+import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
@@ -67,7 +65,7 @@ public class DexCodeGeneration {
 
 	private DexOptions dexOptions;
 	
-	private DexMethodWithBody method;
+	private DexMethod method;
 	private int inWords;
 	private int outWords;
 	private boolean isStatic;
@@ -80,7 +78,7 @@ public class DexCodeGeneration {
 	public static long totalAnalysisTime = 0;
 	public static long totalCGTime = 0;
 	public static long totalDxTime = 0;
-	public DexCodeGeneration(DexMethodWithBody method) {
+	public DexCodeGeneration(DexMethod method) {
 		MethodDefinition methodDef = method.getMethodDef();
 		DexMethodId methodId = methodDef.getMethodId();
 		
@@ -95,15 +93,11 @@ public class DexCodeGeneration {
 	    
 	    this.method = method;
 		inWords = methodId.getPrototype().countParamWords(methodDef.isStatic());
-		outWords = method.getCode().getOutWords();
+		outWords = method.getMethodBody().getOutWords();
 		isStatic = methodDef.isStatic();
 		
-        DexRegisterHelper.reset(method.getRegisterCount());
-        
-		stripMoveParameters();
-		
 		long analysisTime = System.currentTimeMillis();
-	    this.analyzer = new DexCodeAnalyzer(method.getCode());
+	    this.analyzer = new DexCodeAnalyzer(method.getMethodBody());
 	    this.analyzer.analyze();
 	    analysisTime = System.currentTimeMillis() - analysisTime;
 	    
@@ -116,46 +110,6 @@ public class DexCodeGeneration {
 		    		+ ", Code Size:" + analyzer.getMaxInstructionIndex()
 		    		+ ", Memory:" + usedMemory);
 	    }
-	}
-
-	private DexRegister getMappedParamReg(List<DexRegister> parameterMapping, DexParameterRegister reg) {
-		return parameterMapping.get(reg.getParameterIndex());
-	}
-	
-	private void stripMoveParameters() {
-		// Replace 'move v??, DexParameterRegister' with the real instructions
-		// effectively rendering them dummy. This is necessary because DexParameterRegister will mess up
-		// analysis and code translation.
-		DexCode code = method.getCode();
-		List<DexCodeElement> instructions = code.getInstructionList();
-		List<DexRegister> parameterMapping = method.getParameterMappedRegisters();
-		for(int index = 0; index < instructions.size(); index++) {
-			DexCodeElement instruction = instructions.get(index);
-			if (instruction instanceof DexInstruction_Move) {
-				
-				DexInstruction_Move i = (DexInstruction_Move)instruction;
-				if (i.getRegFrom() instanceof DexParameterRegister) {
-					DexInstruction_Move replacement = new DexInstruction_Move(code,
-							i.getRegTo(),
-							getMappedParamReg(parameterMapping, (DexParameterRegister)i.getRegFrom()),
-							i.isObjectMoving());
-					code.replace(i, new DexCodeElement[]{replacement});
-				}
-					
-			} else if  (instruction instanceof DexInstruction_MoveWide) {
-				
-				DexInstruction_MoveWide i = (DexInstruction_MoveWide)instruction;
-				if (i.getRegFrom1() instanceof DexParameterRegister) {
-					DexInstruction_MoveWide replacement = new DexInstruction_MoveWide(code, 
-							i.getRegTo1(),
-							i.getRegTo2(),
-							getMappedParamReg(parameterMapping, (DexParameterRegister)i.getRegFrom1()),
-							getMappedParamReg(parameterMapping, (DexParameterRegister)i.getRegFrom2()));
-					code.replace(i, new DexCodeElement[]{replacement});
-				}
-				
-			} 
-		}
 	}
 
 	private Item internReferencedItem(DexFile dexFile, Item referencedItem) {
@@ -172,10 +126,11 @@ public class DexCodeGeneration {
 		}
 		
 	}
+	
 	public CodeItem generateCodeItem(DexFile dexFile) {
 		long time = System.currentTimeMillis();
 		
-		DalvCodeBridge translatedCode = new DalvCodeBridge(processMethod(method.getCode()), method);
+		DalvCodeBridge translatedCode = new DalvCodeBridge(processMethod(method.getMethodBody()), method);
 		
 		// Need to intern instructions to the new dexFile, as they are from a different dex file
 		Instruction[] tmpInstructions = translatedCode.getInstructions();
@@ -306,7 +261,7 @@ public class DexCodeGeneration {
         	for(int i = 0; i < basicBlock.size(); i++) {
         		AnalyzedDexInstruction inst = basicBlock.get(i);
         		if (DEBUG && inst.getInstruction() != null) {
-					System.out.println(inst.getInstruction().getOriginalAssembly());
+					System.out.println(inst.getInstruction());
         		}
         		lastInsn = translator.translate(inst);
         		insnBlock.addAll(lastInsn.insns);
@@ -453,28 +408,29 @@ public class DexCodeGeneration {
         			break;
         	}
         	
+        	//TODO: To be deleted??
         	// Tweak Switch instruction's successors, collapsing the SwitchData that follows it
-        	if (current.getInstruction() instanceof DexInstruction_Switch) {
-        		DexLabel switchLabel = ((DexInstruction_Switch)current.instruction).getSwitchTable();
-        		assert current.getSuccessorCount() == 2;
-        		for (AnalyzedDexInstruction successor : current.getSuccesors()) {
-        			if (successor.auxillaryElement != switchLabel) { // This is the default case successor
-        				leads.push(successor);
-        			} else { // This is a DexLabel, which is followed by SwitchData
-        				for (AnalyzedDexInstruction switchSuccessor : successor.getOnlySuccesor().getSuccesors())
-        					leads.push(switchSuccessor);
-        			}
-        		}
-        	} else if (current.getInstruction() instanceof DexInstruction_FillArrayData) {
-        		// Collapse the following DexLabel and DexInstruction_FilledArrayData
-        		AnalyzedDexInstruction next = current.getOnlySuccesor(); // This a DexLabel
-        		leads.push(next.getOnlySuccesor().getOnlySuccesor()); // Whatever follows FilledArrayData
-        	} else {
+//        	if (current.getInstruction() instanceof DexInstruction_Switch) {
+//        		DexLabel switchLabel = ((DexInstruction_Switch)current.instruction).getSwitchTable();
+//        		assert current.getSuccessorCount() == 2;
+//        		for (AnalyzedDexInstruction successor : current.getSuccesors()) {
+//        			if (successor.auxillaryElement != switchLabel) { // This is the default case successor
+//        				leads.push(successor);
+//        			} else { // This is a DexLabel, which is followed by SwitchData
+//        				for (AnalyzedDexInstruction switchSuccessor : successor.getOnlySuccesor().getSuccesors())
+//        					leads.push(switchSuccessor);
+//        			}
+//        		}
+//        	} else if (current.getInstruction() instanceof DexInstruction_FillArrayData) {
+//        		// Collapse the following DexLabel and DexInstruction_FilledArrayData
+//        		AnalyzedDexInstruction next = current.getOnlySuccesor(); // This a DexLabel
+//        		leads.push(next.getOnlySuccesor().getOnlySuccesor()); // Whatever follows FilledArrayData
+//        	} else {
 	        	// Add successors of current to the to-be-visit stack
 	        	for(AnalyzedDexInstruction i : current.getSuccesors())
 	        		leads.push(i);
 	        	
-        	}
+//        	}
         	basicBlocks.add(block);
        }
         

@@ -13,6 +13,7 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.utils.Pair;
@@ -21,6 +22,7 @@ import com.rx201.dx.translator.util.DexRegisterHelper;
 
 public class DexCodeAnalyzer {
 	private DexCode code;
+	private DexMethod method;
 
     private HashMap<DexCodeElement, AnalyzedDexInstruction> instructionMap;
     private ArrayList<AnalyzedDexInstruction> instructions;
@@ -42,9 +44,10 @@ public class DexCodeAnalyzer {
     private AnalyzedBasicBlock startBasicBlock;
    
     public long time;
+
     
-    public DexCodeAnalyzer(DexCode code) {
-        this.code = code;
+    public DexCodeAnalyzer(DexMethod method) {
+        this.method = method;
         basicBlocks = new ArrayList<AnalyzedBasicBlock>();
         maxInstructionIndex = 0;
         buildInstructionList();
@@ -56,9 +59,9 @@ public class DexCodeAnalyzer {
     }
 
     private void analyzeParameters() {
-    	boolean isStatic = code.getParentMethod().getMethodDef().isStatic();
-    	DexPrototype prototype = code.getParentMethod().getMethodDef().getMethodId().getPrototype();
-    	List<DexRegister> parameterMapping = code.getParentMethod().getParameterMappedRegisters();
+    	boolean isStatic = method.getMethodDef().isStatic();
+    	DexPrototype prototype = method.getMethodDef().getMethodId().getPrototype();
+    	List<DexRegister> parameterMapping = method.getParameterMappedRegisters();
     	
     	for(int i=0; i<prototype.getParameterCount(isStatic); i++) {
     		DexRegisterType dexRegType = prototype.getParameterType(i, isStatic, code.getParentClass());
@@ -81,9 +84,7 @@ public class DexCodeAnalyzer {
     
     // Perform type propagation.
     public void analyze() {
-        assert code.getParentMethod() != null;
-
-        if (analyzerState >= ANALYZED) {
+        if (analyzerState == ANALYZED) {
             //the instructions have already been analyzed, so there is nothing to do
             return;
         }
@@ -107,7 +108,7 @@ public class DexCodeAnalyzer {
 
 
 	private void buildUseDefSets() {
-		DexInstructionAnalyzer analyzer = new DexInstructionAnalyzer(code.getParentFile().getTypeCache());
+		DexInstructionAnalyzer analyzer = new DexInstructionAnalyzer(method);
 		
 		// First collect use/def information
 		for (AnalyzedDexInstruction inst : instructions) {
@@ -124,7 +125,7 @@ public class DexCodeAnalyzer {
 		}
 		
 		for (AnalyzedBasicBlock basicBlock : basicBlocks) {
-			for(Integer usedReg : basicBlock.getUsedRegisters()) {
+			for(DexRegister usedReg : basicBlock.getUsedRegisters()) {
 				Set<TypeSolver> definers = getDefinedSites(basicBlock, usedReg);
 				TypeSolver master = null;
 				for(TypeSolver definer : definers) {
@@ -144,7 +145,7 @@ public class DexCodeAnalyzer {
 		}
 	}
 	
-	private Set<TypeSolver> getDefinedSites(AnalyzedBasicBlock basicBlock, Integer usedReg) {
+	private Set<TypeSolver> getDefinedSites(AnalyzedBasicBlock basicBlock, DexRegister usedReg) {
 		HashSet<TypeSolver> result = new HashSet<TypeSolver>();
 		
 		HashSet<AnalyzedBasicBlock> visitedNormal = new HashSet<AnalyzedBasicBlock>();
@@ -218,7 +219,7 @@ public class DexCodeAnalyzer {
     	
     	for(CfgBasicBlock bb : cfg.getBasicBlocks()) {
         	AnalyzedDexInstruction prevA = null;
-        	Set<DexCodeElement> prevExceptionSuccessors = null;
+        	Set<? extends DexCodeElement> prevExceptionSuccessors = null;
         	AnalyzedBasicBlock analyzedBB = new AnalyzedBasicBlock();
         	
         	// Connect predecessor/successor within a basic block
@@ -232,7 +233,7 @@ public class DexCodeAnalyzer {
     				assert !prevExceptionSuccessors.contains(curA.getCodeElement());
     			}
     			prevA = curA;
-    			prevExceptionSuccessors = prevA.getCodeElement().cfgGetExceptionSuccessors(null);
+    			prevExceptionSuccessors = prevA.getCodeElement().cfgGetExceptionSuccessors(code.getInstructionList());
     		}
     		
     		basicBlockMap.put(analyzedBB.first, analyzedBB);
@@ -283,6 +284,7 @@ public class DexCodeAnalyzer {
 
 
     public AnalyzedDexInstruction reverseLookup(DexCodeElement element) {
+    	//TODO: Can be deleted??
     	assert element != null;
     	return instructionMap.get(element);
     }
