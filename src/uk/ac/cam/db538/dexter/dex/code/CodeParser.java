@@ -195,9 +195,23 @@ public abstract class CodeParser {
 			// Check that markers don't have a lower offset than the current instruction
 			// If they do, the file is inconsistent (markers can only be placed at
 			// positions with instructions, not between).
-			for (val fragList : nonInstructionFragments)
-				if (!fragList.isEmpty() && fragList.peek().getAbsoluteOffset() < offset)
-					throw new InstructionParseError("A " + fragList.peek().getClass().getSimpleName() + " marker is defined between instructions");
+			for (val fragList : nonInstructionFragments) {
+				if (!fragList.isEmpty() && fragList.peek().getAbsoluteOffset() < offset) {
+					System.err.println("INSTRUCTIONS");
+					instructions.dump();
+					System.err.println("TRY STARTS");
+					tryStarts.dump();
+					System.err.println("TRY ENDS");
+					tryEnds.dump();
+					System.err.println("LABELS");
+					labels.dump();
+					System.err.println("CATCHES");
+					catches.dump();
+					System.err.println("CATCH ALLS");
+					catchAlls.dump();
+					throw new InstructionParseError("A " + fragList.peek().getValB().getClass().getSimpleName() + " marker is defined between instructions");
+				}
+			}
 			
 			// Place them in the final instruction list. Order of combining is given by the definition of the nonInstructionFragments array
 			for (val fragList : nonInstructionFragments) {
@@ -524,6 +538,11 @@ public abstract class CodeParser {
 			public int compareTo(Fragment<T> other) {
 				return Long.compare(this.getAbsoluteOffset(), other.getAbsoluteOffset()); 
 			}
+			
+			@Override
+			public String toString() {
+				return getValA().toString() + ": " + getValB().toString();
+			}
 		}
 		
 		static class FragmentList<T extends DexCodeElement> extends LinkedList<Fragment<T>> { 
@@ -531,6 +550,11 @@ public abstract class CodeParser {
 
 			public void sortFragments() {
 				Collections.sort(this);
+			}
+			
+			public void dump() {
+				for (val fragment : this)
+					System.err.println(fragment.toString());
 			}
 		}
 }

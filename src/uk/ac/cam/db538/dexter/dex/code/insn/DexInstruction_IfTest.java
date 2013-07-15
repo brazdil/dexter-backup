@@ -41,7 +41,7 @@ public class DexInstruction_IfTest extends DexInstruction {
       return new DexInstruction_IfTest(
     		  parsingState.getSingleRegister(insnIfTest.getRegisterA()),
     		  parsingState.getSingleRegister(insnIfTest.getRegisterB()),
-    		  parsingState.getLabel(insnIfTest.getTargetAddressOffset()),
+    		  parsingState.getLabel(insnIfTest.getTargetAddressOffset(), insn),
     		  Opcode_IfTest.convert(insn.opcode),
     		  parsingState.getHierarchy());
 
