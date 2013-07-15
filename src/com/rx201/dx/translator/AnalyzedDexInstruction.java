@@ -14,7 +14,6 @@ import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
-import com.rx201.dx.translator.util.DexRegisterHelper;
 
 public class AnalyzedDexInstruction {
 
@@ -37,41 +36,36 @@ public class AnalyzedDexInstruction {
 	    /**
 	     * This contains the register types *before* the instruction has executed
 	     */
-	    protected final HashSet<DexRegister> usedRegisters;
-	    protected final HashMap<Integer, TypeSolver> usedRegisterMap;
+	    protected final HashMap<DexRegister, TypeSolver> usedRegisterMap;
 
 	    /**
 	     * This contains the register types *after* the instruction has executed
 	     */
-	    protected final HashSet<DexRegister> definedRegisters;
-	    protected final HashMap<Integer, TypeSolver> definedRegisterMap;
+	    protected final HashMap<DexRegister, TypeSolver> definedRegisterMap;
 
 
-	    protected final HashMap<Integer, Pair<Integer, TypeSolver.CascadeType>> constrainedRegisters;
+	    protected final HashMap<DexRegister, Pair<DexRegister, TypeSolver.CascadeType>> constrainedRegisters;
 	    
 	    public final int instructionIndex;
 	    
-		protected HashMap<Integer, Pair<RopType, Boolean>> useSet;
-		protected HashMap<Integer, Pair<RopType, Boolean>> defSet;
+		protected HashMap<DexRegister, Pair<RopType, Boolean>> useSet;
+		protected HashMap<DexRegister, Pair<RopType, Boolean>> defSet;
 		// <regSource, regDestination>
-		protected HashMap<Integer, Integer> moveSet;
+		protected HashMap<DexRegister, DexRegister> moveSet;
 		public static RuntimeHierarchy hierarchy;
 	    
 	    
 	    public AnalyzedDexInstruction(int index, DexInstruction instruction) {
 	        this.instruction = instruction;
-	        this.usedRegisterMap = new HashMap<Integer, TypeSolver>();
-	        this.definedRegisterMap = new HashMap<Integer, TypeSolver>();
-	        this.constrainedRegisters = new HashMap<Integer, Pair<Integer, TypeSolver.CascadeType>>();
+	        this.usedRegisterMap = new HashMap<DexRegister, TypeSolver>();
+	        this.definedRegisterMap = new HashMap<DexRegister, TypeSolver>();
+	        this.constrainedRegisters = new HashMap<DexRegister, Pair<DexRegister, TypeSolver.CascadeType>>();
 	        this.instructionIndex = index;
 	        this.auxillaryElement = null;
 	        
-			useSet = new HashMap<Integer, Pair<RopType, Boolean>>();
-			defSet = new HashMap<Integer, Pair<RopType, Boolean>>();
-			moveSet = new HashMap<Integer, Integer>();
-			usedRegisters = new HashSet<DexRegister>();
-			definedRegisters = new HashSet<DexRegister>();
-	        
+			useSet = new HashMap<DexRegister, Pair<RopType, Boolean>>();
+			defSet = new HashMap<DexRegister, Pair<RopType, Boolean>>();
+			moveSet = new HashMap<DexRegister, DexRegister>();
 	    }
 
 	    public AnalyzedDexInstruction(int index, DexInstruction instruction, DexCodeElement element) {
@@ -126,49 +120,31 @@ public class AnalyzedDexInstruction {
 	    	}
 	    }
 		public Set<DexRegister> getUsedRegisters() {
-			return usedRegisters;
+			return usedRegisterMap.keySet();
 		}
 		
-	    public RopType getUsedRegisterType(int reg) {
+	    public RopType getUsedRegisterType(DexRegister reg) {
 	    	return usedRegisterMap.get(reg).getType();
 	    }
 	    
-	    public RopType getUsedRegisterType(DexRegister dexRegister) {
-	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
-	    	return getUsedRegisterType(registerNumber);
-	    }
-
 	    public void associateDefinitionSite(DexRegister usedReg, TypeSolver definition) {
-	    	int registerNumber = DexRegisterHelper.normalize(usedReg);
-	    	assert useSet.containsKey(registerNumber);
-	    	usedRegisterMap.put(registerNumber, definition);
+	    	usedRegisterMap.put(usedReg, definition);
 	    }
 
 	    public TypeSolver getUsedRegisterTypeSolver(DexRegister usedReg) {
-	    	int registerNumber = DexRegisterHelper.normalize(usedReg);
-	    	return usedRegisterMap.get(registerNumber);
+	    	return usedRegisterMap.get(usedReg);
 	    }
 
 		public Set<DexRegister> getDefinedRegisters() {
-			return definedRegisters;
+			return definedRegisterMap.keySet();
 		}
 
-		public RopType getDefinedRegisterType(int reg) {
+		public RopType getDefinedRegisterType(DexRegister reg) {
 	    	return definedRegisterMap.get(reg).getType();
 	    }
 
-	    public RopType getDefinedRegisterType(DexRegister dexRegister) {
-	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
-	    	return getDefinedRegisterType(registerNumber);
-	    }
-	    
 	    public TypeSolver getDefinedRegisterSolver(DexRegister dexRegister) {
-	    	int registerNumber = DexRegisterHelper.normalize(dexRegister);
-	    	if (definedRegisterMap.containsKey(registerNumber))
-	    		return definedRegisterMap.get(registerNumber);
-	    	else
-	    		return null;
-	    	
+    		return definedRegisterMap.get(dexRegister);
 	    }
 
 	    public int getInstructionIndex() {
@@ -176,24 +152,21 @@ public class AnalyzedDexInstruction {
 	    }
 	    
 		public void defineRegister(DexRegister regTo, RopType registerType, boolean freezed) {
-			int registerNumber = DexRegisterHelper.normalize(regTo);
-			definedRegisters.add(regTo);
-			definedRegisterMap.put(registerNumber, new TypeSolver(this));
-			defSet.put(registerNumber, new Pair<RopType, Boolean>(registerType, freezed));
+			definedRegisterMap.put(regTo, new TypeSolver(this));
+			defSet.put(regTo, new Pair<RopType, Boolean>(registerType, freezed));
 		}
 		
 		public void useRegister(DexRegister regFrom, RopType registerType, boolean freezed) {
-			usedRegisters.add(regFrom);
-			useSet.put(DexRegisterHelper.normalize(regFrom), new Pair<RopType, Boolean>(registerType, freezed));
+			useSet.put(regFrom, new Pair<RopType, Boolean>(registerType, freezed));
 		}
 		
 		public void addRegisterConstraint(DexRegister regTo, DexRegister regFrom, TypeSolver.CascadeType type) {
-			constrainedRegisters.put(DexRegisterHelper.normalize(regTo), 
-					new Pair<Integer, TypeSolver.CascadeType>(DexRegisterHelper.normalize(regFrom), type));
+			constrainedRegisters.put(regTo, 
+					new Pair<DexRegister, TypeSolver.CascadeType>(regFrom, type));
 		}
 
 		public void createConstraintEdges() {
-			for(Entry<Integer, Pair<Integer, TypeSolver.CascadeType>> constraint : constrainedRegisters.entrySet()) {
+			for(Entry<DexRegister, Pair<DexRegister, TypeSolver.CascadeType>> constraint : constrainedRegisters.entrySet()) {
 				TypeSolver target = definedRegisterMap.get(constraint.getKey());
 				//TODO: Hack for now, should add another addRegisterConstraint() interface
 				if (target == null)
@@ -204,7 +177,7 @@ public class AnalyzedDexInstruction {
 		}
 		
 		public void initDefinitionConstraints() {
-			for(Entry<Integer, Pair<RopType, Boolean>> constraint : defSet.entrySet()) {
+			for(Entry<DexRegister, Pair<RopType, Boolean>> constraint : defSet.entrySet()) {
 				TypeSolver target = definedRegisterMap.get(constraint.getKey());
 				RopType type = constraint.getValue().getValA();
 				boolean freezed = constraint.getValue().getValB();
@@ -213,7 +186,7 @@ public class AnalyzedDexInstruction {
 		}
 
 		public void propagateUsageConstraints() {
-			for(Entry<Integer, Pair<RopType, Boolean>> constraint : useSet.entrySet()) {
+			for(Entry<DexRegister, Pair<RopType, Boolean>> constraint : useSet.entrySet()) {
 				TypeSolver target = usedRegisterMap.get(constraint.getKey());
 				RopType type = constraint.getValue().getValA();
 				boolean freezed = constraint.getValue().getValB();

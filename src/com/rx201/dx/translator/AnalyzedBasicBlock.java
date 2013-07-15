@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
-import com.rx201.dx.translator.util.DexRegisterHelper;
 
 class AnalyzedBasicBlock {
 	class RegUsage {
@@ -25,22 +23,17 @@ class AnalyzedBasicBlock {
 	public AnalyzedDexInstruction first;
 	public AnalyzedDexInstruction last;
 	
-    protected final HashSet<Integer> usedRegisters;
-    protected final HashMap<Integer, RegUsage> usedRegisterMap;
+    protected final HashMap<DexRegister, RegUsage> usedRegisterMap;
 
-    protected final HashSet<Integer> definedRegisters;
-    protected final HashMap<Integer, TypeSolver> definedRegisterMap;
+    protected final HashMap<DexRegister, TypeSolver> definedRegisterMap;
     
     public AnalyzedBasicBlock(AnalyzedDexInstruction instruction) {
     	predecessors = new ArrayList<AnalyzedBasicBlock>();
     	successors = new ArrayList<AnalyzedBasicBlock>();
     	exceptionPredecessors = new HashSet<AnalyzedBasicBlock>();
     	
-    	usedRegisters = new HashSet<Integer>();
-    	usedRegisterMap = new HashMap<Integer, RegUsage>();
-    	
-    	definedRegisters = new HashSet<Integer>();
-    	definedRegisterMap = new HashMap<Integer, TypeSolver>();
+    	usedRegisterMap = new HashMap<DexRegister, RegUsage>();
+    	definedRegisterMap = new HashMap<DexRegister, TypeSolver>();
     	
     	first = last = instruction;
     }
@@ -71,9 +64,7 @@ class AnalyzedBasicBlock {
     		
     	AnalyzedDexInstruction current = first;
     	
-    	usedRegisters.clear();
     	usedRegisterMap.clear();
-    	definedRegisters.clear();
     	definedRegisterMap.clear();
     	while (true) {
     		if (current != first) 
@@ -83,15 +74,13 @@ class AnalyzedBasicBlock {
     			
     		Set<DexRegister> curUseSet = current.getUsedRegisters();
     		for(DexRegister useReg : curUseSet) {
-    			int regNum = DexRegisterHelper.normalize(useReg);
-    			if (definedRegisters.contains(regNum)) {
-    				TypeSolver defSite = definedRegisterMap.get(regNum);
+    			if (definedRegisterMap.containsKey(useReg)) {
+    				TypeSolver defSite = definedRegisterMap.get(useReg);
     				current.associateDefinitionSite(useReg, defSite);
     			} else {
-    				usedRegisters.add(regNum);
-    				if (!usedRegisterMap.containsKey(regNum))
-    					usedRegisterMap.put(regNum, new RegUsage());
-    				RegUsage usageList = usedRegisterMap.get(regNum);
+    				if (!usedRegisterMap.containsKey(useReg))
+    					usedRegisterMap.put(useReg, new RegUsage());
+    				RegUsage usageList = usedRegisterMap.get(useReg);
     				usageList.sites.add(current);
     				usageList.regs.add(useReg);
     			}
@@ -99,9 +88,7 @@ class AnalyzedBasicBlock {
     		
     		Set<DexRegister> curDefSet = current.getDefinedRegisters();
     		for(DexRegister defReg : curDefSet) {
-    			int regNum = DexRegisterHelper.normalize(defReg);
-    			definedRegisters.add(regNum);
-    			definedRegisterMap.put(regNum, current.getDefinedRegisterSolver(defReg));
+    			definedRegisterMap.put(defReg, current.getDefinedRegisterSolver(defReg));
     		}
     		if (current != last)
     			current = current.getOnlySuccesor();
@@ -110,11 +97,11 @@ class AnalyzedBasicBlock {
     	}
     }
 
-	public Set<Integer> getUsedRegisters() {
-		return usedRegisters;
+	public Set<DexRegister> getUsedRegisters() {
+		return usedRegisterMap.keySet();
 	}
 
-	public void associateDefinitionSite(Integer usedReg, TypeSolver master) {
+	public void associateDefinitionSite(DexRegister usedReg, TypeSolver master) {
 		RegUsage usageList = usedRegisterMap.get(usedReg);
 		for(int i=0; i<usageList.sites.size(); i++) {
 			usageList.sites.get(i).associateDefinitionSite(usageList.regs.get(i), master);
@@ -125,7 +112,7 @@ class AnalyzedBasicBlock {
 		return exceptionPredecessors.contains(pred);
 	}
 
-	public TypeSolver getDefinedRegisterSolver(Integer usedReg) {
+	public TypeSolver getDefinedRegisterSolver(DexRegister usedReg) {
 		if (!definedRegisterMap.containsKey(usedReg))
 			return null;
 		return definedRegisterMap.get(usedReg);
