@@ -2,7 +2,6 @@ package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -70,8 +69,8 @@ public abstract class DexInstruction extends DexCodeElement {
   }
   
   @Override
-  public final Set<? extends DexCodeElement> cfgGetExceptionSuccessors(InstructionList code) {
-	  val set = new HashSet<DexCodeElement>();
+  public final List<? extends DexCodeElement> cfgGetExceptionSuccessors(InstructionList code) {
+	  val list = new ArrayList<DexCodeElement>();
 	  
 	  DexClassType[] exceptions = throwsExceptions();
 	  if (exceptions != null) {
@@ -91,12 +90,12 @@ public abstract class DexInstruction extends DexCodeElement {
 		  //    // Dead code if we analyze it precisely 
 		  // }
 		  
-		  set.addAll(
+		  list.addAll(
 			getTryBlockCatchHandlers(
 				getSurroundingTryBlock(code)));
 	  }
 	  
-	  return set;
+	  return list;
   }
   
   private DexTryStart getSurroundingTryBlock(InstructionList code) {

@@ -2,6 +2,7 @@ package uk.ac.cam.db538.dexter.dex.code.elem;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import lombok.val;
@@ -40,8 +41,8 @@ public abstract class DexCodeElement {
     return set;
   }
   
-  public Set<? extends DexCodeElement> cfgGetExceptionSuccessors(InstructionList code) {
-	  return Collections.emptySet();
+  public List<? extends DexCodeElement> cfgGetExceptionSuccessors(InstructionList code) {
+	  return Collections.emptyList();
   }
 
   // LIVE VARIABLE ANALYSIS
