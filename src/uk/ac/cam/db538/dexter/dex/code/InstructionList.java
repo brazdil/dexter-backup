@@ -2,10 +2,12 @@ package uk.ac.cam.db538.dexter.dex.code;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 
 public class InstructionList implements Collection<DexCodeElement> {
@@ -13,6 +15,17 @@ public class InstructionList implements Collection<DexCodeElement> {
   private final List<DexCodeElement> instructionList;
 
   public InstructionList(List<? extends DexCodeElement> insns) {
+	  // check instruction list for duplicates
+	  // (often need to find the index of an instruction,
+	  //  so having duplicates could result in finding
+	  //  the wrong occurence)
+	  val visited = new HashSet<DexCodeElement>();
+	  for (val insn : insns)
+		  if (visited.contains(insn))
+			  throw new IllegalArgumentException("Duplicates are not allowed in the instruction list");
+		  else
+			  visited.add(insn);
+	  
 	  this.instructionList = Collections.unmodifiableList(insns); 
   }
 
@@ -107,11 +120,14 @@ public class InstructionList implements Collection<DexCodeElement> {
 		return instructionList.get(getIndexOrFail(elem) + 1);
 	}
 
-	public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, DexCodeElement elemSought) {
+	public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, int indexSought) {
 		int indexStart = getIndexOrFail(elemStart);
 		int indexEnd = getIndexOrFail(elemEnd);
-		int indexSougth = getIndexOrFail(elemSought);
 		
-		return (indexStart <= indexSougth) && (indexSougth <= indexEnd);
+		return (indexStart <= indexSought) && (indexSought <= indexEnd);
+	}
+
+	public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, DexCodeElement elemSought) {
+		return isBetween(elemStart, elemEnd, getIndexOrFail(elemSought));
 	}
 }
