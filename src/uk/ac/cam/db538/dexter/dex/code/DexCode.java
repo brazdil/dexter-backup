@@ -1,57 +1,60 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.val;
-
-import org.jf.dexlib.CodeItem;
-
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
+import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class DexCode {
 
   @Getter private final RuntimeHierarchy hierarchy;
   @Getter private final InstructionList instructionList;
-
-  public DexCode(CodeItem codeItem, RuntimeHierarchy hierarchy) {
-	  this.hierarchy = hierarchy;
-	  this.instructionList = CodeParser.parse(codeItem, hierarchy); 
-  }
+  @Getter private final List<Parameter> parameters;
   
+  public DexCode(InstructionList instructionList, List<Parameter> parameters, RuntimeHierarchy hierarchy) {
+	  this.instructionList = instructionList;
+	  this.parameters = Utils.finalList(parameters);
+	  this.hierarchy = hierarchy;
+  }
+
   public Set<DexRegister> getUsedRegisters() {
-    val set = new HashSet<DexRegister>();
-    for (val elem : instructionList)
-      set.addAll(elem.lvaUsedRegisters());
-    return set;
-  }
-
-  public Set<DexTryStart> getTryBlocks() {
-    val set = new HashSet<DexTryStart>();
-    for (val elem : instructionList)
-      if (elem instanceof DexTryEnd)
-        set.add((DexTryStart) elem);
-    return set;
-  }
-
-  public int getOutWords() {
-	  // outWords is the max of all inWords of methods in the code
-	  int maxWords = 0;
-	
-	  for (val insn : this.instructionList) {
-		  if (insn instanceof DexInstruction_Invoke) {
-			  val insnInvoke = (DexInstruction_Invoke) insn;
-			  int insnOutWords = insnInvoke.getMethodId().getPrototype().countParamWords(insnInvoke.getCallType().isStatic());
-			  if (insnOutWords > maxWords)
-				  maxWords = insnOutWords;
-		  }
+	    val set = new HashSet<DexRegister>();
+	    for (val elem : instructionList)
+	      set.addAll(elem.lvaUsedRegisters());
+	    for (val param : parameters)
+	      set.add(param.getRegister());
+	    return set;
 	  }
 
-	  return maxWords;
-  }
+	public int getOutWords() {
+		  // outWords is the max of all inWords of methods in the code
+		  int maxWords = 0;
+		
+		  for (val insn : this.instructionList) {
+			  if (insn instanceof DexInstruction_Invoke) {
+				  val insnInvoke = (DexInstruction_Invoke) insn;
+				  int insnOutWords = insnInvoke.getMethodId().getPrototype().countParamWords(insnInvoke.getCallType().isStatic());
+				  if (insnOutWords > maxWords)
+					  maxWords = insnOutWords;
+			  }
+		  }
+	
+		  return maxWords;
+	}
+
+	  @AllArgsConstructor
+	  @Getter
+	  public static class Parameter {
+		  private final DexRegisterType type;
+		  private final DexStandardRegister register;
+	  }
 }

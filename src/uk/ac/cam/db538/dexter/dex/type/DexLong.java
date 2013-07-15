@@ -13,7 +13,7 @@ public class DexLong extends DexPrimitiveType {
 	DexLong() { }
 
     @Override
-	public RegisterWidth getTypeSize() {
+	public RegisterWidth getTypeWidth() {
     	return RegisterWidth.WIDE;
 	}
 

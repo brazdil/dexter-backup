@@ -24,6 +24,7 @@ import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
 import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
+import uk.ac.cam.db538.dexter.dex.code.CodeParser;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.utils.Cache;
@@ -47,10 +48,19 @@ public abstract class DexMethod {
 	}
 
 	public DexMethod(DexClass parent, MethodDefinition methodDef, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {
-		this(parent, methodDef, null);
+		this(parent, 
+		     methodDef,
+		     init_ParseMethodBody(parent, methodDef, methodInfo));
 		
 		this.annotations.addAll(init_ParseAnnotations(getParentFile(), methodInfo, annoDir));
 		this.paramAnnotations.addAll(init_ParseParamAnnotations(getParentFile(), methodInfo, annoDir));
+	}
+	
+	private static DexCode init_ParseMethodBody(DexClass parent, MethodDefinition methodDef, EncodedMethod methodInfo) {
+		if (methodInfo.codeItem == null)
+			return null;
+		else
+			return CodeParser.parse(methodDef, methodInfo.codeItem, parent.getParentFile().getHierarchy());
 	}
 	
 	private static List<DexAnnotation> init_ParseAnnotations(Dex dex, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {

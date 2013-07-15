@@ -49,7 +49,7 @@ public class ControlFlowGraph {
     List<DexCodeElement> currentBlock = new ArrayList<DexCodeElement>();
     for (val insn : insns) {
       if (insn.cfgStartsBasicBlock() && !currentBlock.isEmpty()) {
-        val block = new CfgBasicBlock(code, new InstructionList(currentBlock));
+        val block = new CfgBasicBlock(new InstructionList(currentBlock));
         basicBlocks.add(block);
         insnBlockMap.put(block.getFirstInstruction(), block);
         currentBlock = new ArrayList<DexCodeElement>();
@@ -58,14 +58,14 @@ public class ControlFlowGraph {
       currentBlock.add(insn);
 
       if ((insn.cfgEndsBasicBlock() || insn.cfgExitsMethod() || insn.cfgGetSuccessors().size() > 1) && !currentBlock.isEmpty()) {
-        val block = new CfgBasicBlock(code, new InstructionList(currentBlock));
+        val block = new CfgBasicBlock(new InstructionList(currentBlock));
         basicBlocks.add(block);
         insnBlockMap.put(block.getFirstInstruction(), block);
         currentBlock = new ArrayList<DexCodeElement>();
       }
     }
     if (!currentBlock.isEmpty()) {
-      val block = new CfgBasicBlock(code, new InstructionList(currentBlock));
+      val block = new CfgBasicBlock(new InstructionList(currentBlock));
       basicBlocks.add(block);
       insnBlockMap.put(block.getFirstInstruction(), block);
     }

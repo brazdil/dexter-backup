@@ -13,7 +13,7 @@ public class DexByte extends DexPrimitiveType {
 	DexByte() { }
     
     @Override
-	public RegisterWidth getTypeSize() {
+	public RegisterWidth getTypeWidth() {
     	return RegisterWidth.SINGLE;
 	}
 

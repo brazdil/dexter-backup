@@ -13,7 +13,7 @@ public class DexInteger extends DexPrimitiveType {
 	public DexInteger() { }
 
     @Override
-	public RegisterWidth getTypeSize() {
+	public RegisterWidth getTypeWidth() {
     	return RegisterWidth.SINGLE;
 	}
 

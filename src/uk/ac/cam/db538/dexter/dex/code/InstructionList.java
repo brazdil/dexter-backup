@@ -2,21 +2,23 @@ package uk.ac.cam.db538.dexter.dex.code;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
+import uk.ac.cam.db538.dexter.utils.Utils;
 
 public class InstructionList implements Collection<DexCodeElement> {
 
   private final List<DexCodeElement> instructionList;
 
-  public InstructionList(List<? extends DexCodeElement> insns) {
+  public InstructionList(List<DexCodeElement> insns) {
 	  // check instruction list for duplicates
 	  // (often need to find the index of an instruction,
 	  //  so having duplicates could result in finding
@@ -28,7 +30,7 @@ public class InstructionList implements Collection<DexCodeElement> {
 		  else
 			  visited.add(insn);
 	  
-	  this.instructionList = Collections.unmodifiableList(insns); 
+	  this.instructionList = Utils.finalList(insns); 
   }
 
   public DexCodeElement peekFirst() {
@@ -140,4 +142,12 @@ public class InstructionList implements Collection<DexCodeElement> {
 				list.add((DexTryStart) insn);
 		return list;
 	}
+
+  public Set<DexTryStart> getTryBlocks() {
+    val set = new HashSet<DexTryStart>();
+    for (val elem : instructionList)
+      if (elem instanceof DexTryEnd)
+        set.add((DexTryStart) elem);
+    return set;
+  }
 }

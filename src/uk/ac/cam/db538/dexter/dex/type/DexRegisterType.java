@@ -24,13 +24,13 @@ public abstract class DexRegisterType extends DexType {
 		return DexReferenceType.jvm2dalvik(jvmName);
 	}
 
-	public abstract RegisterWidth getTypeSize();
+	public abstract RegisterWidth getTypeWidth();
 
 	public boolean isWide() {
-		return getTypeSize() == RegisterWidth.WIDE;
+		return getTypeWidth() == RegisterWidth.WIDE;
 	}
 
 	public int getRegisters() {
-		return getTypeSize().getRegisterCount();
+		return getTypeWidth().getRegisterCount();
 	}
 }
