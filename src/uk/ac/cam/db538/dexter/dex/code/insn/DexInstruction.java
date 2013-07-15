@@ -1,36 +1,33 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import lombok.val;
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public abstract class DexInstruction extends DexCodeElement {
 
-  public DexInstruction(DexCode methodCode) {
-    super(methodCode);
-  }
-
+	protected final RuntimeHierarchy hierarchy; 
+	
+	protected DexInstruction(RuntimeHierarchy hierarchy) {
+		this.hierarchy = hierarchy;
+	}
+	
   // PARSING
 
-  protected static final InstructionParsingException FORMAT_EXCEPTION = new InstructionParsingException("Unknown instruction format or opcode");
+  protected static final InstructionParseError FORMAT_EXCEPTION = new InstructionParseError("Unknown instruction format or opcode");
 
   // INSTRUCTION INSTRUMENTATION
 
-  public void instrument(DexCode_InstrumentationState state) {
+  public void instrument() {
     throw new UnsupportedOperationException("Instruction " + this.getClass().getSimpleName() + " doesn't have instrumentation implemented");
   }
   
@@ -38,128 +35,13 @@ public abstract class DexInstruction extends DexCodeElement {
 
   @Override
   public final boolean cfgExitsMethod() {
-	val jumpTargets = this.cfgJumpTargets();
+	val jumpTargets = this.cfgJumpTargets(null);
 	if (jumpTargets.isEmpty())
 		return true;
     val exceptions = this.throwsExceptions();
-    if (exceptions != null)
-    	for (val exception : exceptions)
-    		if (throwingInsn_CanExitMethod(exception))
-    			return true;
+    if (exceptions != null && exceptions.length > 0) // assume every exception can jump out (doesn't really matter)
+    	return true;
     return false;
-  }
-  
-//  protected final boolean throwingInsn_CanExitMethod() {
-//    return throwingInsn_CanExitMethod(
-//             DexClassType.parse("Ljava/lang/Throwable;",
-//                                getParentFile().getParsingCache()));
-//  }
-
-  protected final boolean throwingInsn_CanExitMethod(DexClassType thrownExceptionType) {
-    val code = getMethodCode();
-    val classHierarchy = getParentFile().getHierarchy();
-    
-    val thrownExceptionClass = classHierarchy.getClassDefinition(thrownExceptionType);
-
-    for (val tryBlockEnd : code.getTryBlocks()) {
-      val tryBlockStart = tryBlockEnd.getBlockStart();
-
-      // check that the instruction is in this try block
-      if (code.isBetween(tryBlockStart, tryBlockEnd, this)) {
-
-        // if the block has CatchAll handler, it can't exit the method
-        if (tryBlockStart.getCatchAllHandler() != null)
-          return false;
-
-        // if there is a catch block catching the exception or its ancestor,
-        // it can't exit the method either
-        for (val catchBlock : tryBlockStart.getCatchHandlers()) {
-          val caughtExceptionClass = classHierarchy.getClassDefinition(catchBlock.getExceptionType());
-          if (caughtExceptionClass.isChildOf(thrownExceptionClass) || thrownExceptionClass.isChildOf(caughtExceptionClass))
-            return false;
-        }
-      }
-    }
-
-    return true;
-  }
-
-  protected final Set<DexCodeElement> throwingInsn_CatchHandlers(DexClassType thrownExceptionType) {
-    val set = new HashSet<DexCodeElement>();
-
-    val code = getMethodCode();
-    val classHierarchy = getParentFile().getHierarchy();
-
-    BaseClassDefinition thrownExceptionClass = null; 
-    if (thrownExceptionType != null) 
-    	thrownExceptionClass = classHierarchy.getClassDefinition(thrownExceptionType);
-
-    for (val tryBlockEnd : code.getTryBlocks()) {
-      val tryBlockStart = tryBlockEnd.getBlockStart();
-
-      // check that the instruction is in this try block
-      if (code.isBetween(tryBlockStart, tryBlockEnd, this)) {
-
-        // if the block has CatchAll handler, it can jump to it
-        val catchAllHandler = tryBlockStart.getCatchAllHandler();
-        if (catchAllHandler != null)
-          set.add(catchAllHandler);
-
-        // similarly, add all catch blocks as possible successors
-        // if either they catch the given exception type or its ancestor (a guaranteed catch)
-        // or if the catch is the subclass of the thrown exception (a potential catch)
-        for (val catchBlock : tryBlockStart.getCatchHandlers()) {
-          val caughtExceptionClass = classHierarchy.getClassDefinition(catchBlock.getExceptionType());
-          if (thrownExceptionClass == null || 
-              caughtExceptionClass.isChildOf(thrownExceptionClass) || 
-              thrownExceptionClass.isChildOf(caughtExceptionClass))
-            set.add(catchBlock);
-        }
-      }
-    }
-
-    return set;
-  }
-
-  protected final Set<DexCodeElement> throwingInsn_CatchHandlers() {
-    return throwingInsn_CatchHandlers(null);
-  }
-
-  protected final DexTryBlockEnd getSurroundingTryBlock() {
-    val code = getMethodCode();
-    for (val tryBlockEnd : code.getTryBlocks())
-      // check that the instruction is in this try block
-      if (code.isBetween(tryBlockEnd.getBlockStart(), tryBlockEnd, this))
-        return tryBlockEnd;
-    return null;
-  }
-
-  protected final List<DexCodeElement> throwingInsn_GenerateSurroundingCatchBlock(DexCodeElement[] tryBlockCode, DexCodeElement[] catchBlockCode, DexRegister regException) {
-    val code = getMethodCode();
-
-    val catchAll = new DexCatchAll(code);
-    val tryStart = new DexTryBlockStart(code);
-    tryStart.setCatchAllHandler(catchAll);
-    val tryEnd = new DexTryBlockEnd(code, tryStart);
-
-    val labelSucc = new DexLabel(code);
-    val gotoSucc = new DexInstruction_Goto(code, labelSucc);
-
-    val moveException = new DexInstruction_MoveException(code, regException);
-    val throwException = new DexInstruction_Throw(code, regException);
-
-    val instrumentedCode = new ArrayList<DexCodeElement>();
-    instrumentedCode.add(tryStart);
-    instrumentedCode.addAll(Arrays.asList(tryBlockCode));
-    instrumentedCode.add(gotoSucc);
-    instrumentedCode.add(tryEnd);
-    instrumentedCode.add(catchAll);
-    instrumentedCode.add(moveException);
-    instrumentedCode.addAll(Arrays.asList(catchBlockCode));
-    instrumentedCode.add(throwException);
-    instrumentedCode.add(labelSucc);
-
-    return instrumentedCode;
   }
   
   abstract public void accept(DexInstructionVisitor visitor);
@@ -172,7 +54,7 @@ public abstract class DexInstruction extends DexCodeElement {
   @Override
   public boolean cfgEndsBasicBlock() {
 	DexClassType[] exceptions = throwsExceptions();
-	return  exceptions != null && exceptions.length > 0;
+	return exceptions != null && exceptions.length > 0;
   }
 
   @Override
@@ -182,13 +64,13 @@ public abstract class DexInstruction extends DexCodeElement {
 	  // are thrown
 	  
 	  val set = super.cfgGetSuccessors();
-	  set.addAll(cfgGetExceptionSuccessors());
+	  set.addAll(cfgGetExceptionSuccessors(null));
 	  
 	  return set;
   }
   
   @Override
-  public final Set<DexCodeElement> cfgGetExceptionSuccessors() {
+  public final Set<? extends DexCodeElement> cfgGetExceptionSuccessors(InstructionList code) {
 	  val set = new HashSet<DexCodeElement>();
 	  
 	  DexClassType[] exceptions = throwsExceptions();
@@ -208,10 +90,41 @@ public abstract class DexInstruction extends DexCodeElement {
 		  // } catch (java.lang.Exception) {
 		  //    // Dead code if we analyze it precisely 
 		  // }
-		  set.addAll(throwingInsn_CatchHandlers(null));
+		  
+		  set.addAll(
+			getTryBlockCatchHandlers(
+				getSurroundingTryBlock(code)));
 	  }
 	  
 	  return set;
   }
+  
+  private DexTryStart getSurroundingTryBlock(InstructionList code) {
+	  val index = code.getIndex(this);
+	  val tryStarts = code.getAllTryBlocks();
+	  for (val tryStart : tryStarts)
+		  if (code.isBetween(tryStart, tryStart.getEndMarker(), index))
+			  return tryStart;
+	  return null;
+  }
+  
+  private List<? extends DexCodeElement> getTryBlockCatchHandlers(DexTryStart tryBlock) {
+	  if (tryBlock == null)
+		  return Collections.emptyList();
+	  
+	  val list = new ArrayList<DexCodeElement>();
+	  list.addAll(tryBlock.getCatchHandlers());
+	  val catchAll = tryBlock.getCatchAllHandler();
+	  if (catchAll != null)
+		  list.add(catchAll);
+	  return list;
+  }
 
+  static boolean fitsIntoBits_Signed(long value, int bits) {
+	  assert bits > 0;
+	  assert bits <= 64;
+
+	  long upperBound = 1L << bits - 1;
+	  return (value < upperBound) && (value >= -upperBound);
+  }
 }

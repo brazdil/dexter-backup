@@ -13,7 +13,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstructionVisitor;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
-import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
 
 public class DexMacro_SetObjectTaint extends DexMacro {
 
@@ -32,8 +31,7 @@ public class DexMacro_SetObjectTaint extends DexMacro {
     val code = getMethodCode();
     val dex = getParentFile();
 
-    val classStorage = dex.getObjectTaintStorage_Type();
-    val methodSetTaint = dex.getObjectTaintStorage_Set();
+    val methodSetTaint = dex.getAuxiliaryDex().getMethod_TaintSet();
     
     val labelAfter = new DexLabel(code);
 
@@ -41,11 +39,8 @@ public class DexMacro_SetObjectTaint extends DexMacro {
     		new DexInstruction_IfTestZero(code, regTaint, labelAfter, Opcode_IfTestZero.eqz), 
             new DexInstruction_Invoke(
                code,
-               classStorage,
-               methodSetTaint.getName(),
-               methodSetTaint.getPrototype(),
-               Arrays.asList(new DexRegister[] { regObject, regTaint }),
-               Opcode_Invoke.Static),
+               methodSetTaint,
+               Arrays.asList(new DexRegister[] { regObject, regTaint })),
             labelAfter);
   }
 

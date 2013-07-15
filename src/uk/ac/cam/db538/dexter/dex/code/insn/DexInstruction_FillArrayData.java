@@ -10,70 +10,74 @@ import lombok.Getter;
 import lombok.val;
 
 import org.jf.dexlib.Code.Instruction;
+import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction;
 import org.jf.dexlib.Code.Format.ArrayDataPseudoInstruction.ArrayElement;
+import org.jf.dexlib.Code.Format.Instruction31t;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+
+import com.google.common.collect.Sets;
 
 public class DexInstruction_FillArrayData extends DexInstruction {
 
-  @Getter private final DexInstruction_FillArray parentInstruction;
+  @Getter private final DexSingleRegister regArray;
   @Getter private final List<byte[]> elementData;
 
-  public DexInstruction_FillArrayData(DexCode methodCode, DexInstruction_FillArray parentInsn, List<byte[]> elementData) {
-    super(methodCode);
+  public DexInstruction_FillArrayData(DexSingleRegister array, List<byte[]> elementData, RuntimeHierarchy hierarchy) {
+    super(hierarchy);
 
-    this.parentInstruction = parentInsn;
-    this.elementData = elementData;
+    this.regArray = array;
+    if (elementData == null)
+    	this.elementData = Collections.emptyList();
+    else
+    	this.elementData = Collections.unmodifiableList(new ArrayList<byte[]>(elementData));
   }
 
-  public DexInstruction_FillArrayData(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
-    super(methodCode);
+  public static DexInstruction_FillArrayData parse(Instruction insn, CodeParserState parsingState) {
+    if (insn instanceof Instruction31t && insn.opcode == Opcode.FILL_ARRAY_DATA) {
 
-    if (insn instanceof ArrayDataPseudoInstruction) {
+      val insnFillArrayData = (Instruction31t) insn;
 
-      val insnFillArrayData = (ArrayDataPseudoInstruction) insn;
-
-      val parentInsn = parsingState.getCurrentOffsetParent();
-      if (parentInsn == null || !(parentInsn instanceof DexInstruction_FillArray))
-        throw new InstructionParsingException("Cannot find FillArrayData's parent instruction");
-      this.parentInstruction = (DexInstruction_FillArray) parentInsn;
-
-      this.elementData = new ArrayList<byte[]>(insnFillArrayData.getElementCount());
-      for (Iterator<ArrayElement> arrayIter = insnFillArrayData.getElements(); arrayIter.hasNext();) {
+      // find the target pseudo instruction containing the data
+      val insnTarget = parsingState.getDexlibInstructionAt(insnFillArrayData.getTargetAddressOffset(), insnFillArrayData);
+      if (!(insnTarget instanceof ArrayDataPseudoInstruction))
+    	  throw FORMAT_EXCEPTION;
+      val insnDataTable = (ArrayDataPseudoInstruction) insnTarget;
+      
+      // parse array register
+      val regArray = parsingState.getSingleRegister(insnFillArrayData.getRegisterA());
+      
+      // parse the data table 
+      val elementData = new ArrayList<byte[]>(insnDataTable.getElementCount());
+      for (Iterator<ArrayElement> arrayIter = insnDataTable.getElements(); arrayIter.hasNext();) {
         val current = arrayIter.next();
         val currentData = new byte[current.elementWidth];
         System.arraycopy(current.buffer, current.bufferIndex, currentData, 0, current.elementWidth);
-        this.elementData.add(currentData);
+        elementData.add(currentData);
       }
-
+      
+      // return
+      return new DexInstruction_FillArrayData(regArray, elementData, parsingState.getHierarchy());
+    		  
     } else
       throw FORMAT_EXCEPTION;
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return "fill-array-data";
+  public String toString() {
+    return "fill-array-data " + regArray.toString() + ", <data>";
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) { }
+  public void instrument() { }
 
   @Override
-  public boolean cfgEndsBasicBlock() {
-    return true;
-  }
-
-  @Override
-  public Set<DexCodeElement> cfgJumpTargets() {
-	val next = parentInstruction.getNextCodeElement();
-	if (next != null)
-		return createSet(next);
-	else
-		return Collections.emptySet();
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(regArray);
   }
 
   @Override

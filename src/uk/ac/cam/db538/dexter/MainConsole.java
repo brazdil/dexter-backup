@@ -6,9 +6,10 @@ import java.io.IOException;
 import lombok.val;
 
 import org.jf.dexlib.DexFile;
+import org.jf.dexlib.DexFileFromMemory;
 
+import uk.ac.cam.db538.dexter.dex.AuxiliaryDex;
 import uk.ac.cam.db538.dexter.dex.Dex;
-import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 
 public class MainConsole {
@@ -24,36 +25,33 @@ public class MainConsole {
       System.err.println("<apk-file> is not a file");
       System.exit(1);
     }
+    
     val frameworkDir = new File(args[0]);
     if (!frameworkDir.isDirectory()) {
       System.err.println("<framework-dir> is not a directory");
       System.exit(1);
     }
     
-    // build runtime class hierarchy
     val hierarchyBuilder = new HierarchyBuilder();
     
     System.out.println("Scanning framework");
     hierarchyBuilder.importFrameworkFolder(frameworkDir);
     
-//    System.out.println("Storing hierarchy");
-//    hierarchyBuilder.serialize(new File("hierarchy.dump"));
-    
-//    System.out.println("Loading framework from dump");
-//    HierarchyBuilder hierarchyBuilder = HierarchyBuilder.deserialize(new File("hierarchy.dump"));
-    
     System.out.println("Scanning application");
-    val dexFile = new DexFile(apkFile);
+    val fileApp = new DexFile(apkFile);
+    val fileAux = new DexFileFromMemory(ClassLoader.getSystemResourceAsStream("merge-classes.dex"));
     
     System.out.println("Building hierarchy");
-    RuntimeHierarchy hierarchy = hierarchyBuilder.buildAgainstApp(dexFile);
+    val buildData = hierarchyBuilder.buildAgainstApp(fileApp, fileAux);
+    val hierarchy = buildData.getValA();
+    val renamerAux = buildData.getValB();
     
     System.out.println("Parsing application");
-    val dexAux = ClassLoader.getSystemResourceAsStream("merge-classes.dex");
-    Dex dex = new Dex(dexFile, hierarchy, dexAux);
+    AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux); 
+    Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
     
     System.out.println("Instrumenting application");
-    dex.instrument(false);
+    dexApp.instrument(false);
     
     System.out.println("DONE");
   }

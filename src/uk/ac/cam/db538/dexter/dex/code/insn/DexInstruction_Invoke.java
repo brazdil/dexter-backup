@@ -1,8 +1,8 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -14,136 +14,203 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
+import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class DexInstruction_Invoke extends DexInstruction {
 
   @Getter private final DexReferenceType classType;
-  @Getter private final String methodName;
-  @Getter private final DexPrototype methodPrototype;
-  private final List<DexRegister> argumentRegisters;
+  @Getter private final DexMethodId methodId;
+  @Getter private final List<DexStandardRegister> argumentRegisters;
   @Getter private final Opcode_Invoke callType;
 
-  public DexInstruction_Invoke(DexCode methodCode, DexReferenceType classType, String methodName, DexPrototype prototype, List<DexRegister> argumentRegisters, Opcode_Invoke callType) {
-    super(methodCode);
+  public DexInstruction_Invoke(DexReferenceType classType, DexMethodId methodId, List<DexStandardRegister> argumentRegisters, Opcode_Invoke callType, RuntimeHierarchy hierarchy) {
+    super(hierarchy);
 
     this.classType = classType;
-    this.methodName = methodName;
-    this.methodPrototype = prototype;
-    this.argumentRegisters = argumentRegisters == null ? new LinkedList<DexRegister>() : argumentRegisters;
+    this.methodId = methodId;
+    if (argumentRegisters == null)
+    	this.argumentRegisters = Collections.emptyList();
+    else
+    	this.argumentRegisters = Collections.unmodifiableList(new ArrayList<DexStandardRegister>(argumentRegisters));
     this.callType = callType;
 
     checkArguments();
   }
 
-  public DexInstruction_Invoke(DexCode methodCode, DexDirectMethod method, List<DexRegister> argumentRegisters) {
-    this(methodCode,
-         method.getParentClass().getType(),
-         method.getName(),
-         method.getPrototype(),
+  private void checkArguments() {
+	val isStatic = this.callType.isStatic();
+	val argCount = argumentRegisters.size();
+	val prototype = this.methodId.getPrototype();
+	
+	if (prototype.countParamWords(isStatic) > 255)
+		throw new Error("Too many argument registers given to a method call");
+
+	
+	if (prototype.getParameterCount(isStatic) != argCount)
+		throw new Error("Number of argument registers does not match the prototype of the invoked method");
+
+	for (int i = 0; i < argCount; ++i) {
+		val argType = prototype.getParameterType(i, isStatic, classType);
+		val argReg = argumentRegisters.get(i);
+		if (!argReg.canStoreType(argType))
+			throw new Error("Type of an argument does not match the corresponding register");
+	}
+  }
+  
+  public DexInstruction_Invoke(DexMethod method, List<DexStandardRegister> argumentRegisters, RuntimeHierarchy hierarchy) {
+    this(method.getParentClass().getClassDef().getType(),
+         method.getMethodDef().getMethodId(),
          argumentRegisters,
-         method.getCallType());
+         getCallType(method),
+         hierarchy);
+  }
+  
+  public DexInstruction_Invoke(DexInstruction_Invoke toClone) {
+    this(toClone.classType,
+         toClone.methodId,
+         toClone.argumentRegisters,
+         toClone.callType,
+         toClone.hierarchy);
   }
 
-  public DexInstruction_Invoke(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) {
-    super(methodCode);
+  private static Opcode_Invoke getCallType(DexMethod method) {
+	  /*
+	   * IGNORES SUPER CALLS
+	   */
+	  if (method.getMethodDef().isStatic())
+		  return Opcode_Invoke.Static;
+	  else if (method.getMethodDef().isDirect())
+		  return Opcode_Invoke.Direct;
+	  else if (method.getParentClass().getClassDef().isInterface())
+		  return Opcode_Invoke.Interface;
+	  else
+		  return Opcode_Invoke.Virtual;
+  }
 
-    val cache = parsingState.getCache();
+  public static DexInstruction_Invoke parse(Instruction insn, CodeParserState parsingState) {
+	val hierarchy = parsingState.getHierarchy();
+    val cache = hierarchy.getTypeCache();
 
-    MethodIdItem methodInfo;
-    argumentRegisters = new LinkedList<DexRegister>();
-
-    if (insn instanceof Instruction35c && Opcode_Invoke.convert(insn.opcode) != null) {
+    MethodIdItem methodItem;
+    int insnRegCount;
+    val opcode = Opcode_Invoke.convert(insn.opcode);
+    
+    // acquire necessary data
+    
+    if (insn instanceof Instruction35c && opcode != null) {
 
       val insnInvoke = (Instruction35c) insn;
-      methodInfo = (MethodIdItem) insnInvoke.getReferencedItem();
-
-      switch (insnInvoke.getRegCount()) {
-      case 5:
-        argumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterA()));
-      case 4:
-        argumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterG()));
-      case 3:
-        argumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterF()));
-      case 2:
-        argumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterE()));
-      case 1:
-        argumentRegisters.add(0, parsingState.getRegister(insnInvoke.getRegisterD()));
-      case 0:
-        break;
-      default:
-        throw new InstructionParsingException("Unexpected number of method argument registers");
-      }
-
-    } else if (insn instanceof Instruction3rc && Opcode_Invoke.convert(insn.opcode) != null) {
+      methodItem = (MethodIdItem) insnInvoke.getReferencedItem();
+      insnRegCount = insnInvoke.getRegCount();
+      
+    } else if (insn instanceof Instruction3rc && opcode != null) {
 
       val insnInvokeRange = (Instruction3rc) insn;
-      methodInfo = (MethodIdItem) insnInvokeRange.getReferencedItem();
-
-      val startRegister = insnInvokeRange.getStartRegister();
-      for (int i = 0; i < insnInvokeRange.getRegCount(); ++i)
-        argumentRegisters.add(parsingState.getRegister(startRegister + i));
-
+      methodItem = (MethodIdItem) insnInvokeRange.getReferencedItem();
+      insnRegCount = insnInvokeRange.getRegCount();
+      
     } else
       throw FORMAT_EXCEPTION;
 
-    classType = DexReferenceType.parse(methodInfo.getContainingClass().getTypeDescriptor(), parsingState.getCache());
+    val isStatic = opcode.isStatic();
+    
+    // parse referenced class and the method id
+    
+    val classType = DexReferenceType.parse(methodItem.getContainingClass().getTypeDescriptor(), cache);
+    val methodId = DexMethodId.parseMethodId(
+		    methodItem.getMethodName().getStringValue(),
+		    DexPrototype.parse(methodItem.getPrototype(), cache),
+		    cache);
+    
+    // check number of registers for arguments matches the prototype
+  
+    val prototype = methodId.getPrototype();
+    val argRegCount = prototype.countParamWords(isStatic);
+    if (argRegCount != insnRegCount)
+    	throw new InstructionParseError("Number of registers in parsed Invoke instruction does not match the prototype");
+  
+    // generate a register for each parameter
+    
+    val argCount = prototype.getParameterCount(isStatic); 
+    val argRegs = new ArrayList<DexStandardRegister>(argCount);
 
-    methodName = methodInfo.getMethodName().getStringValue();
-    methodPrototype = DexPrototype.parse(methodInfo.getPrototype(), cache);
+    for (int i = 0, j = 0; i < argCount; i++) {
+    	val argType = prototype.getParameterType(i, isStatic, classType);
+    	if (argType.isWide()) {
+    		val reg1 = getRegId(insn, j);
+    		val reg2 = getRegId(insn, j + 1);
+    		
+    		if (reg1 + 1 != reg2)
+    			throw new InstructionParseError("Inconsistency in method argument registers: wide register not formed of two consecutive registers");
+    		
+    		argRegs.add(parsingState.getWideRegister(reg1));
+    	} else
+    		argRegs.add(parsingState.getSingleRegister(getRegId(insn, j)));
+    	
+    	j += argType.getRegisters();
+    }
 
-    callType = Opcode_Invoke.convert(insn.opcode);
-
-    checkArguments();
+    // constructor should check everything once over
+    
+    return new DexInstruction_Invoke(classType, methodId, argRegs, opcode, hierarchy);
   }
-
-  public DexInstruction_Invoke(DexInstruction_Invoke toClone) {
-    this(toClone.getMethodCode(),
-         toClone.classType,
-         toClone.methodName,
-         toClone.methodPrototype,
-         toClone.argumentRegisters,
-         toClone.callType);
-
-    this.setOriginalElement(toClone.isOriginalElement());
-  }
-
-  private void checkArguments() {
-    // check that the number of registers is correct
-    int expectedRegisterCount = (callType == Opcode_Invoke.Static) ? 0 : 1;
-    for (val argType : methodPrototype.getParameterTypes())
-      expectedRegisterCount += argType.getRegisters();
-    if (expectedRegisterCount != argumentRegisters.size())
-      throw new InstructionArgumentException("Wrong number of arguments given to a method call");
-
-    if (argumentRegisters.size() > 255)
-      throw new InstructionArgumentException("Too many argument registers given to a method call");
-  }
-
-  public List<DexRegister> getArgumentRegisters() {
-    return Collections.unmodifiableList(argumentRegisters);
-  }
-
-  public boolean isStaticCall() {
-    return this.callType == Opcode_Invoke.Static;
+  
+  /*
+   * Returns the identifier of a register referenced in an invoke instruction.
+   */
+  private static int getRegId(Instruction insn, int index) {
+	  if (insn instanceof Instruction35c) {
+		  
+		  val insn35c = (Instruction35c) insn;
+		  if (index < 0 || index >= insn35c.getRegCount())
+			  throw new IndexOutOfBoundsException();
+		  
+		  switch(index) {
+		  case 0:
+			  return insn35c.getRegisterD();
+		  case 1:
+			  return insn35c.getRegisterE();
+		  case 2:
+			  return insn35c.getRegisterF();
+		  case 3:
+			  return insn35c.getRegisterG();
+		  case 4:
+			  return insn35c.getRegisterA();
+		  default:
+			  throw new Error();
+		  }
+		  
+	  } else if (insn instanceof Instruction3rc) {
+		  
+		  val insn3rc = (Instruction3rc) insn;
+		  if (index < 0 || index >= insn3rc.getRegCount())
+			  throw new IndexOutOfBoundsException();
+		  return insn3rc.getStartRegister() + index;
+		  
+	  } else
+		  throw new Error();
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     val str = new StringBuilder();
     str.append("invoke-");
     str.append(callType.name().toLowerCase());
     str.append(" ");
     str.append(classType.getPrettyName());
-    str.append(".");
-    str.append(methodName);
-
+    str.append("->");
+    str.append(methodId.getName());
+    str.append(methodId.getPrototype().toString());
+    str.append(" ");
+    
     if (callType == Opcode_Invoke.Static) {
 
       str.append("(");
@@ -151,7 +218,7 @@ public class DexInstruction_Invoke extends DexInstruction {
       for (val reg : argumentRegisters) {
         if (first) first = false;
         else str.append(", ");
-        str.append(reg.getOriginalIndexString());
+        str.append(reg.toString());
       }
       str.append(")");
 
@@ -164,7 +231,7 @@ public class DexInstruction_Invoke extends DexInstruction {
         if (second) second = false;
         else if (!first) str.append(", ");
 
-        str.append(reg.getOriginalIndexString());
+        str.append(reg.toString());
 
         if (first) {
           first = false;
@@ -180,7 +247,7 @@ public class DexInstruction_Invoke extends DexInstruction {
   }
 
   @Override
-  public Set<DexRegister> lvaReferencedRegisters() {
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
     return new HashSet<DexRegister>(argumentRegisters);
   }
 
@@ -196,6 +263,6 @@ public class DexInstruction_Invoke extends DexInstruction {
   
   @Override
   protected DexClassType[] throwsExceptions() {
-	return getParentFile().getTypeCache().LIST_Throwable;
+	return this.hierarchy.getTypeCache().LIST_Throwable;
   }
 }

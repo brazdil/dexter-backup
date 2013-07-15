@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lombok.Getter;
+import lombok.Setter;
 
 public class DexTypeCache implements Serializable {
 
@@ -29,7 +30,7 @@ public class DexTypeCache implements Serializable {
   @Getter private final DexShort cachedType_Short = new DexShort();
   
   // class renamer
-  @Getter private final ClassRenamer classRenamer;
+  @Getter @Setter private ClassRenamer classRenamer;
   
   // From com.android.dx.rop.code.Exceptions
   public final DexClassType TYPE_Throwable;
@@ -54,23 +55,23 @@ public class DexTypeCache implements Serializable {
 
   public DexTypeCache() {
 	// reasonable initial values, determined experimentally
-    cachedTypes_Class = new HashMap<String, DexClassType>(20000);
-    cachedTypes_Array = new HashMap<String, DexArrayType>(1024);
-    cachedPrototypes = new HashMap<DexPrototype, DexPrototype>(32384);
-    cachedMethodIds = new HashMap<DexMethodId, DexMethodId>(100000);
-    cachedFieldIds = new HashMap<DexFieldId, DexFieldId>();
-    
-    classRenamer = new ClassRenamer();
-    
-    TYPE_ArithmeticException = DexClassType.parse("Ljava/lang/ArithmeticException;", this);
-    TYPE_ArrayIndexOutOfBoundsException = DexClassType.parse("Ljava/lang/ArrayIndexOutOfBoundsException;", this);
-    TYPE_ArrayStoreException = DexClassType.parse("Ljava/lang/ArrayStoreException;", this);
-    TYPE_ClassCastException = DexClassType.parse("Ljava/lang/ClassCastException;", this);
-    TYPE_IllegalMonitorStateException = DexClassType.parse("Ljava/lang/IllegalMonitorStateException;", this);
-    TYPE_NegativeArraySizeException = DexClassType.parse("Ljava/lang/NegativeArraySizeException;", this);
-    TYPE_NullPointerException = DexClassType.parse("Ljava/lang/NullPointerException;", this);
-    TYPE_Error = DexClassType.parse("Ljava/lang/Error;", this);
-    TYPE_Throwable = DexClassType.parse("Ljava/lang/Throwable;", this);
+cachedTypes_Class = new HashMap<String, DexClassType>(20000);
+cachedTypes_Array = new HashMap<String, DexArrayType>(1024);
+cachedPrototypes = new HashMap<DexPrototype, DexPrototype>(32384);
+cachedMethodIds = new HashMap<DexMethodId, DexMethodId>(100000);
+cachedFieldIds = new HashMap<DexFieldId, DexFieldId>();
+
+classRenamer = null;
+
+TYPE_ArithmeticException = DexClassType.parse("Ljava/lang/ArithmeticException;", this);
+TYPE_ArrayIndexOutOfBoundsException = DexClassType.parse("Ljava/lang/ArrayIndexOutOfBoundsException;", this);
+TYPE_ArrayStoreException = DexClassType.parse("Ljava/lang/ArrayStoreException;", this);
+TYPE_ClassCastException = DexClassType.parse("Ljava/lang/ClassCastException;", this);
+TYPE_IllegalMonitorStateException = DexClassType.parse("Ljava/lang/IllegalMonitorStateException;", this);
+TYPE_NegativeArraySizeException = DexClassType.parse("Ljava/lang/NegativeArraySizeException;", this);
+TYPE_NullPointerException = DexClassType.parse("Ljava/lang/NullPointerException;", this);
+TYPE_Error = DexClassType.parse("Ljava/lang/Error;", this);
+TYPE_Throwable = DexClassType.parse("Ljava/lang/Throwable;", this);
     
     LIST_Error_ArithmeticException = new DexClassType[] {TYPE_Error, TYPE_ArithmeticException};
     LIST_Error_ClassCastException = new DexClassType[] {TYPE_Error, TYPE_ClassCastException};
@@ -131,9 +132,5 @@ public class DexTypeCache implements Serializable {
 		  return fid;
 	  } else
 		  return cached;
-  }
-  
-  public boolean encounteredClassType(String desc) {
-	  return (cachedTypes_Class.get(desc) != null);
   }
 }

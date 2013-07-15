@@ -1,25 +1,11 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
 
 public abstract class DexRegisterType extends DexType {
 
 	private static final long serialVersionUID = 1L;
 
-	public static enum DexRegisterTypeSize {
-		SINGLE,
-		WIDE;
-
-		public int getRegisterCount() {
-			switch (this) {
-			case SINGLE:
-				return 1;
-			case WIDE:
-				return 2;
-			}
-			throw new RuntimeException("Unknown register size");
-		}
-	}
-  
 	protected DexRegisterType() { }
 
 	public static DexRegisterType parse(String typeDescriptor, DexTypeCache cache) throws UnknownTypeException {
@@ -38,10 +24,10 @@ public abstract class DexRegisterType extends DexType {
 		return DexReferenceType.jvm2dalvik(jvmName);
 	}
 
-	public abstract DexRegisterTypeSize getTypeSize();
+	public abstract RegisterWidth getTypeSize();
 
 	public boolean isWide() {
-		return getTypeSize() == DexRegisterTypeSize.WIDE;
+		return getTypeSize() == RegisterWidth.WIDE;
 	}
 
 	public int getRegisters() {

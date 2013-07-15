@@ -4,21 +4,19 @@ import lombok.Getter;
 
 import org.jf.dexlib.Code.Instruction;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
 
 public class DexInstruction_Unknown extends DexInstruction {
 
   @Getter private final String opcode;
-
-  public DexInstruction_Unknown(DexCode methodCode, Instruction insn) {
-    super(methodCode);
+  
+  public DexInstruction_Unknown(Instruction insn, CodeParserState parsingState) {
+    super(parsingState.getHierarchy());
     opcode = insn.opcode.name();
-    System.out.println("Unknown instruction in " + getParentClass().getType().getPrettyName() +
-                       "..." + getParentMethod().getName());
   }
 
   @Override
-  public String getOriginalAssembly() {
+  public String toString() {
     return "??? " + opcode;
   }
 

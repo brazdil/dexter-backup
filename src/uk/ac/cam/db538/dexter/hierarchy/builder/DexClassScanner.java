@@ -14,7 +14,7 @@ import org.jf.dexlib.Util.AccessFlags;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
-public class DexClassScanner implements IClassScanner {
+public class DexClassScanner {
 
 	private final DexTypeCache typeCache;
 	
@@ -27,29 +27,25 @@ public class DexClassScanner implements IClassScanner {
 		this.typeCache = typeCache;
 	}
 
-	@Override
 	public String getClassDescriptor() {
 		return classDefItem.getClassType().getTypeDescriptor(); 
 	}
 
-	@Override
 	public boolean isInterface() {
 		val flagsList = Arrays.asList(
 			AccessFlags.getAccessFlagsForClass(getAccessFlags()));
 		return flagsList.contains(AccessFlags.INTERFACE);
 	}
 
-	@Override
 	public int getAccessFlags() {
 		return classDefItem.getAccessFlags();
 	}
 
-	@Override
-	public Collection<IMethodScanner> getMethodScanners() {
+	public Collection<DexMethodScanner> getMethodScanners() {
 		if (classDataItem == null)
 			return Collections.emptyList();
 		
-		val allMethods = new ArrayList<IMethodScanner>(classDataItem.getDirectMethodCount() + classDataItem.getVirtualMethodCount());
+		val allMethods = new ArrayList<DexMethodScanner>(classDataItem.getDirectMethodCount() + classDataItem.getVirtualMethodCount());
 		for (val method : classDataItem.getDirectMethods())
 			allMethods.add(new DexMethodScanner(method, typeCache));
 		for (val method : classDataItem.getVirtualMethods())
@@ -58,7 +54,6 @@ public class DexClassScanner implements IClassScanner {
 		return allMethods;
 	}
 
-	@Override
 	public String getSuperclassDescriptor() {
 		val typeItem = classDefItem.getSuperclass();
 		if (typeItem == null)
@@ -67,7 +62,6 @@ public class DexClassScanner implements IClassScanner {
 			return typeItem.getTypeDescriptor();
 	}
 
-	@Override
 	public Collection<DexClassType> getInterfaces() {
 		val interfaceDefs = classDefItem.getInterfaces();
 		if (interfaceDefs == null)
@@ -81,24 +75,22 @@ public class DexClassScanner implements IClassScanner {
 		return allInterfaces;
 	}
 
-	@Override
-	public Collection<IFieldScanner> getStaticFieldScanners() {
+	public Collection<DexFieldScanner> getStaticFieldScanners() {
 		if (classDataItem == null)
 			return Collections.emptyList();
 		
-		val allStaticFields = new ArrayList<IFieldScanner>(classDataItem.getStaticFieldCount());
+		val allStaticFields = new ArrayList<DexFieldScanner>(classDataItem.getStaticFieldCount());
 		for (val fieldItem : classDataItem.getStaticFields())
 			allStaticFields.add(new DexFieldScanner(fieldItem, typeCache));
 		
 		return allStaticFields;
 	}
 
-	@Override
-	public Collection<IFieldScanner> getInstanceFieldScanners() {
+	public Collection<DexFieldScanner> getInstanceFieldScanners() {
 		if (classDataItem == null)
 			return Collections.emptyList();
 		
-		val allInstanceFields = new ArrayList<IFieldScanner>(classDataItem.getInstanceFieldCount());
+		val allInstanceFields = new ArrayList<DexFieldScanner>(classDataItem.getInstanceFieldCount());
 		for (val fieldItem : classDataItem.getInstanceFields())
 			allInstanceFields.add(new DexFieldScanner(fieldItem, typeCache));
 		

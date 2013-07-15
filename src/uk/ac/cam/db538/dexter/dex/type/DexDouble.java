@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexDouble extends DexPrimitiveType {
@@ -11,8 +12,8 @@ public class DexDouble extends DexPrimitiveType {
 	DexDouble() { }
 
     @Override
-	public DexRegisterTypeSize getTypeSize() {
-    	return DexRegisterTypeSize.WIDE;
+	public RegisterWidth getTypeSize() {
+    	return RegisterWidth.WIDE;
 	}
 
 	@Override

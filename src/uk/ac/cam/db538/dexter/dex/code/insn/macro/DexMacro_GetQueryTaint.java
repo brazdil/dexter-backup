@@ -33,7 +33,7 @@ public class DexMacro_GetQueryTaint extends DexMacro {
     val parsingCache = dex.getTypeCache();
 
     val typeString = DexClassType.parse("Ljava/lang/String;", parsingCache);
-    val methodQueryTaint = dex.getTaintConstants_QueryTaint();
+    val methodQueryTaint = dex.getAuxiliaryDex().getMethod_QueryTaint();
 
     val regStrQuery = new DexRegister();
 

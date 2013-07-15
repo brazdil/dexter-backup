@@ -8,64 +8,76 @@ import lombok.val;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Format.Instruction12x;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+
+import com.google.common.collect.Sets;
 
 public class DexInstruction_Convert extends DexInstruction {
 
-  @Getter private final DexRegister regTo;
-  @Getter private final DexRegister regFrom;
+  @Getter private final DexStandardRegister regTo;
+  @Getter private final DexStandardRegister regFrom;
   @Getter private final Opcode_Convert insnOpcode;
 
-  public DexInstruction_Convert(DexCode methodCode, DexRegister to, DexRegister from, Opcode_Convert opcode) {
-    super(methodCode);
+  public DexInstruction_Convert(DexStandardRegister to, DexStandardRegister from, Opcode_Convert opcode, RuntimeHierarchy hierarchy) {
+    super(hierarchy);
 
     regTo = to;
     regFrom = from;
     insnOpcode = opcode;
   }
 
-  public DexInstruction_Convert(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-    super(methodCode);
-
-    if (insn instanceof Instruction12x && Opcode_Convert.convert(insn.opcode) != null) {
+  public static DexInstruction_Convert parse(Instruction insn, CodeParserState parsingState) {
+	val opcode = Opcode_Convert.convert(insn.opcode);
+    if (insn instanceof Instruction12x && opcode != null) {
 
       val insnConvert = (Instruction12x) insn;
-      regTo = parsingState.getRegister(insnConvert.getRegisterA());
-      regFrom = parsingState.getRegister(insnConvert.getRegisterB());
-      insnOpcode = Opcode_Convert.convert(insn.opcode);
+      
+      DexStandardRegister regTo, regFrom;
+      
+      if (opcode.getWidthTo() == RegisterWidth.SINGLE)
+    	  regTo = parsingState.getSingleRegister(insnConvert.getRegisterA());
+      else
+    	  regTo = parsingState.getWideRegister(insnConvert.getRegisterA());
+      
+      if (opcode.getWidthFrom() == RegisterWidth.SINGLE)
+    	  regFrom = parsingState.getSingleRegister(insnConvert.getRegisterB());
+      else
+    	  regFrom = parsingState.getWideRegister(insnConvert.getRegisterB());
+      
+      return new DexInstruction_Convert(regTo, regFrom, opcode, parsingState.getHierarchy()); 
 
     } else
       throw FORMAT_EXCEPTION;
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return insnOpcode.getAssemblyName() + " " + regTo.getOriginalIndexString() + ", " + regFrom.getOriginalIndexString();
+  public String toString() {
+    return insnOpcode.getAssemblyName() + " " + regTo.toString() + ", " + regFrom.toString();
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) {
-    // need to copy to taint across
-    val code = getMethodCode();
-    code.replace(this,
-                 new DexCodeElement[] {
-                   this,
-                   new DexInstruction_Move(code, state.getTaintRegister(regTo), state.getTaintRegister(regFrom), false)
-                 });
+  public void instrument() {
+//    // need to copy to taint across
+//    val code = getMethodCode();
+//    code.replace(this,
+//                 new DexCodeElement[] {
+//                   this,
+//                   new DexInstruction_Move(code, state.getTaintRegister(regTo), state.getTaintRegister(regFrom), false)
+//                 });
   }
 
   @Override
-  public Set<DexRegister> lvaDefinedRegisters() {
-    return createSet(regTo);
+  public Set<? extends DexRegister> lvaDefinedRegisters() {
+    return Sets.newHashSet(regTo);
   }
 
   @Override
-  public Set<DexRegister> lvaReferencedRegisters() {
-    return createSet(regFrom);
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(regFrom);
   }
 
   @Override

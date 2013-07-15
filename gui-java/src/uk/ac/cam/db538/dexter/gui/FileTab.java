@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.apk.Apk;
 import uk.ac.cam.db538.dexter.dex.DexClass;
-import uk.ac.cam.db538.dexter.dex.DexField;
+import uk.ac.cam.db538.dexter.dex.field.DexField;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 
 import com.alee.laf.scroll.WebScrollPane;

@@ -10,7 +10,7 @@ import uk.ac.cam.db538.dexter.dex.code.Utils;
 public class DexInstruction_InstanceGetWide_Test {
 
   @Test
-  public void testParse_InstanceGetWide() throws InstructionParsingException {
+  public void testParse_InstanceGetWide() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction22c(Opcode.IGET_WIDE, (byte) 0, (byte) 1, Utils.getFieldItem("Lcom/example/MyClass5;", "J", "TestField5")),
@@ -21,8 +21,8 @@ public class DexInstruction_InstanceGetWide_Test {
       });
   }
 
-  @Test(expected=InstructionArgumentException.class)
-  public void testParse_InstanceGetWide_WrongType() throws InstructionParsingException {
+  @Test(expected=Error.class)
+  public void testParse_InstanceGetWide_WrongType() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IGET_WIDE, (byte) 0, (byte) 1, Utils.getFieldItem("Lcom/example/MyClass1;", "I", "TestField1")),
       "");

@@ -10,7 +10,7 @@ import uk.ac.cam.db538.dexter.dex.code.Utils;
 public class DexInstruction_ConstString_Test {
 
   @Test
-  public void testParse() throws InstructionParsingException {
+  public void testParse() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction21c(Opcode.CONST_STRING, (short) 236, Utils.getStringItem("Hello, world!")),

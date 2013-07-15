@@ -6,14 +6,15 @@ import java.util.List;
 
 import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.CodeItem.TryItem;
-import org.jf.dexlib.DexFromMemory;
+import org.jf.dexlib.DexFileFromMemory;
 import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Util.AccessFlags;
 
 import uk.ac.cam.db538.dexter.dex.DexClass;
-import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
+import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
+import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 
 import com.android.dx.dex.DexOptions;
 import com.android.dx.dex.code.DalvCode;
@@ -33,7 +34,7 @@ class DalvCodeBridge {
 	private DalvCode dvCode;
 	private CodeItem codeItem;
 
-	public DalvCodeBridge(DalvCode dvCode, DexMethodWithCode dxMethod) {
+	public DalvCodeBridge(DalvCode dvCode, DexMethod dxMethod) {
 		this.dvCode = dvCode;
 		process(dxMethod);
 	}
@@ -48,50 +49,46 @@ class DalvCodeBridge {
 				);
 	}
 	
-	private void process(DexMethodWithCode dxMethod) {
-		String methodName = dxMethod.getName();
-		DexPrototype dexPrototype = dxMethod.getPrototype();
+	private void process(DexMethod dxMethod) {
+		MethodDefinition methodDef = dxMethod.getMethodDef();
+		
+		String methodName = methodDef.getMethodId().getName();
+		DexPrototype dexPrototype = methodDef.getMethodId().getPrototype();
 		DexClass dexClass = dxMethod.getParentClass();
 		
-		CstType thisClass = toCstType(dexClass.getType().getDescriptor());
-		CstType superClass = toCstType(dexClass.getSuperclassType().getDescriptor());
+		CstType thisClass = toCstType(dexClass.getClassDef().getType().getDescriptor());
+		CstType superClass = toCstType(dexClass.getClassDef().getSuperclass().getType().getDescriptor());
 		
 		StdTypeList interfaces = StdTypeList.EMPTY;
-		for(DexClassType intf : dexClass.getInterfaces()) {
+		for(DexClassType intf : dexClass.getInterfaceTypes())
 			interfaces.withAddedType(Type.intern(intf.getDescriptor()));
-		}
 
 		int classAccessFlags = 0;
-		for (AccessFlags flag : dexClass.getAccessFlagSet())
+		for (AccessFlags flag : dexClass.getClassDef().getAccessFlags())
 			classAccessFlags |= flag.getValue();
 		
 		DexFile outputDex = new DexFile(new DexOptions());
 		ClassDefItem outClass = new ClassDefItem(thisClass, classAccessFlags,
 				superClass, interfaces, null);
 
-
 		try {
 			CstMethodRef meth = new CstMethodRef(thisClass, toNat(methodName, dexPrototype));
 			int methodAccessFlags = 0;
-			for(AccessFlags flag : dxMethod.getAccessFlagSet()) 
+			for(AccessFlags flag : dxMethod.getMethodDef().getAccessFlags()) 
 				methodAccessFlags |= flag.getValue();
 					
-			boolean isStatic = dxMethod.isStatic();
-			boolean isPrivate = dxMethod.isPrivate();
-			boolean isNative = dxMethod.isNative();
-			boolean isAbstract = dxMethod.isAbstract();
-			boolean isConstructor = dxMethod.isConstructor();
+			boolean isStatic = methodDef.isStatic();
+			boolean isPrivate = methodDef.isPrivate();
+			boolean isNative = methodDef.isNative();
+			boolean isConstructor = methodDef.isConstructor();
 
-			if (isNative || isAbstract) {
-				// should not happen
-				assert false;
-			}
+			assert methodDef.hasBytecode();
 			
 			// Preserve the synchronized flag as its "declared" variant...
 			// It ought to use com.android.dx.rop.code.AccessFlags, not
 			// org.jf.dexlib.Util.AccessFlags, but their value should be the same
-			if (dxMethod.getAccessFlagSet().contains(AccessFlags.SYNCHRONIZED) ||
-				dxMethod.getAccessFlagSet().contains(AccessFlags.DECLARED_SYNCHRONIZED)) {
+			if (dxMethod.getMethodDef().getAccessFlags().contains(AccessFlags.SYNCHRONIZED) ||
+					dxMethod.getMethodDef().getAccessFlags().contains(AccessFlags.DECLARED_SYNCHRONIZED)) {
 				methodAccessFlags |= AccessFlags.DECLARED_SYNCHRONIZED.getValue(); 
 
 				/*
@@ -141,7 +138,7 @@ class DalvCodeBridge {
 		OutputStreamWriter humanOut = null; //new OutputStreamWriter(System.out);
 		try {
 			byte[] outArray = outputDex.toDex(humanOut, true);
-			DexFromMemory tmpDexFile = new DexFromMemory(outArray);
+			DexFileFromMemory tmpDexFile = new DexFileFromMemory(outArray);
 		
 			List<CodeItem> codeItems = tmpDexFile.CodeItemsSection.getItems();
 			assert codeItems.size() == 1;

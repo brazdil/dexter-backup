@@ -23,7 +23,7 @@ public abstract class BaseClassDefinition implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	@Getter private final DexClassType classType;
+	@Getter private final DexClassType type;
 	private final int accessFlags;
 	@Getter private final boolean internal;
 
@@ -37,8 +37,8 @@ public abstract class BaseClassDefinition implements Serializable {
 	private final Set<StaticFieldDefinition> _staticFields;
 	@Getter private final Set<StaticFieldDefinition> staticFields;
 
-	BaseClassDefinition(DexClassType classType, int accessFlags, boolean isInternal) {
-		this.classType = classType;
+	BaseClassDefinition(DexClassType type, int accessFlags, boolean isInternal) {
+		this.type = type;
 		this.accessFlags = accessFlags;
 		this.internal = isInternal;
 		
@@ -82,6 +82,10 @@ public abstract class BaseClassDefinition implements Serializable {
 	
 	public boolean isAbstract() {
 		return getAccessFlags().contains(AccessFlags.ABSTRACT);
+	}
+	
+	public boolean isInterface() {
+		return getAccessFlags().contains(AccessFlags.INTERFACE);
 	}
 
 	public boolean isRoot() {

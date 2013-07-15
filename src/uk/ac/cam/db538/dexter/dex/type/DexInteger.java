@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.type;
 
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class DexInteger extends DexPrimitiveType {
@@ -9,11 +10,11 @@ public class DexInteger extends DexPrimitiveType {
 	private static String DESCRIPTOR = "I";
 	private static String NAME = "int";
 	
-	DexInteger() { }
+	public DexInteger() { }
 
     @Override
-	public DexRegisterTypeSize getTypeSize() {
-    	return DexRegisterTypeSize.SINGLE;
+	public RegisterWidth getTypeSize() {
+    	return RegisterWidth.SINGLE;
 	}
 
 	@Override

@@ -11,7 +11,7 @@ import uk.ac.cam.db538.dexter.dex.code.Utils;
 public class DexInstruction_BinaryOpLiteral_Test {
 
   @Test
-  public void testParse_BinaryOp() throws InstructionParsingException {
+  public void testParse_BinaryOp() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction22s(Opcode.ADD_INT_LIT16, (byte) 10, (byte) 15, (short) -32000),

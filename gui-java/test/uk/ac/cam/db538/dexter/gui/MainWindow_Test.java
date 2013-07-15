@@ -19,8 +19,8 @@ import org.junit.Test;
 
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexClass;
-import uk.ac.cam.db538.dexter.dex.DexField;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.field.DexField;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
@@ -54,7 +54,7 @@ public class MainWindow_Test {
     val root = new DefaultMutableTreeNode("root");
     val classes = new LinkedList<DexClass>();
     val cache = new DexTypeCache();
-    val dexFile = new Dex();
+    val dexFile = new Dex(null);
 
     val cls11 = new DexClass(dexFile, DexClassType.parse("Lcom.example1.a;", cache), null, null, null, null, null, null);
     val cls12 = new DexClass(dexFile, DexClassType.parse("Lcom.example1.b;", cache), null, null, null, null, null, null);

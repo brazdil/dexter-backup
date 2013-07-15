@@ -234,7 +234,7 @@ public class RopType {
     	if (type0 instanceof DexClassType || type1 instanceof DexClassType) {
     		BaseClassDefinition def0 = hierarchy.getBaseClassDefinition(type0);
     		BaseClassDefinition def1 = hierarchy.getBaseClassDefinition(type1);
-    		return def0.getCommonParent(def1).getClassType();
+    		return def0.getCommonParent(def1).getType();
     	}
 		return DexClassType.parse("Ljava/lang/Object;", hierarchy.getTypeCache());
 	}

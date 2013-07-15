@@ -2,8 +2,7 @@ package com.rx201.dx.translator.util;
 
 import java.util.HashMap;
 
-import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 
 public class DexRegisterHelper {
 	

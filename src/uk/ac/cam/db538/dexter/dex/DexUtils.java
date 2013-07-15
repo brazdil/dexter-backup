@@ -1,29 +1,33 @@
 package uk.ac.cam.db538.dexter.dex;
 
-import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.Set;
 
 import lombok.val;
 
+import org.jf.dexlib.StringIdItem;
+import org.jf.dexlib.EncodedValue.AnnotationEncodedValue;
+import org.jf.dexlib.EncodedValue.ArrayEncodedSubValue;
+import org.jf.dexlib.EncodedValue.ArrayEncodedValue;
+import org.jf.dexlib.EncodedValue.EncodedValue;
+import org.jf.dexlib.EncodedValue.EnumEncodedValue;
+import org.jf.dexlib.EncodedValue.FieldEncodedValue;
+import org.jf.dexlib.EncodedValue.MethodEncodedValue;
+import org.jf.dexlib.EncodedValue.StringEncodedValue;
+import org.jf.dexlib.EncodedValue.TypeEncodedValue;
 import org.jf.dexlib.Util.AccessFlags;
 
+import uk.ac.cam.db538.dexter.dex.field.DexField;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexFieldId;
+import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.dex.type.DexType;
+import uk.ac.cam.db538.dexter.hierarchy.FieldDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public class DexUtils {
-
-  public static Set<AccessFlags> getNonNullAccessFlagSet(Set<AccessFlags> accessFlags) {
-    return (accessFlags == null) ? EnumSet.noneOf(AccessFlags.class) : accessFlags;
-  }
-
-  public static Set<AccessFlags> getAccessFlagSet(AccessFlags[] flags) {
-    val list = Arrays.asList(flags);
-    if (list.isEmpty())
-      return EnumSet.noneOf(AccessFlags.class);
-    else
-      return EnumSet.copyOf(list);
-  }
 
   public static int assembleAccessFlags(Set<AccessFlags> accessFlags) {
     int result = 0;
@@ -32,14 +36,130 @@ public class DexUtils {
     return result;
   }
 
-  public static DexField getField(Dex dex, DexClassType fieldClass, String fieldName, DexRegisterType fieldType) {
+  public static DexField getInstanceField(Dex dex, DexClassType fieldClass, String fieldName, DexRegisterType fieldType) {
     for (val clazz : dex.getClasses())
-      if (clazz.getType().equals(fieldClass)) {
-        for (val field : clazz.getFields())
-          if (field.getName().equals(fieldName) && field.getType().equals(fieldType))
+      if (clazz.getClassDef().getType().equals(fieldClass)) {
+        for (val field : clazz.getInstanceFields())
+          if (field.getFieldDef().getFieldId().getName().equals(fieldName) && field.getFieldDef().getFieldId().getType().equals(fieldType))
             return field;
         return null;
       }
     return null;
   }
+
+  public static DexField getStaticField(Dex dex, DexClassType fieldClass, String fieldName, DexRegisterType fieldType) {
+	    for (val clazz : dex.getClasses())
+	      if (clazz.getClassDef().getType().equals(fieldClass)) {
+	        for (val field : clazz.getStaticFields())
+	          if (field.getFieldDef().getFieldId().getName().equals(fieldName) && field.getFieldDef().getFieldId().getType().equals(fieldType))
+	            return field;
+	        return null;
+	      }
+	    return null;
+	  }
+
+  public static String parseString(StringIdItem stringItem) {
+		if (stringItem == null)
+			return null;
+		else
+			return stringItem.getStringValue();
+	}
+  
+  private static FieldDefinition findStaticField(DexClassType clsType, DexRegisterType fieldType, String name, RuntimeHierarchy hierarchy) {
+	  val fieldId = DexFieldId.parseFieldId(name, fieldType, hierarchy.getTypeCache());
+	  val classDef = hierarchy.getBaseClassDefinition(clsType);
+	  return classDef.getStaticField(fieldId);
+  }
+
+  private static MethodDefinition findStaticMethod(DexClassType clsType, DexPrototype prototype, String name, RuntimeHierarchy hierarchy) {
+	  val methodId = DexMethodId.parseMethodId(name, prototype, hierarchy.getTypeCache());
+	  val classDef = hierarchy.getBaseClassDefinition(clsType);
+	  return classDef.getMethod(methodId);
+  }
+  
+	public static EncodedValue cloneEncodedValue(EncodedValue value, DexAssemblingCache asmCache) {
+	    val hierarchy = asmCache.getHierarchy();
+	    val typeCache = hierarchy.getTypeCache();
+	
+	    switch (value.getValueType()) {
+	    case VALUE_ARRAY:
+	      val arrayValue = (ArrayEncodedSubValue) value;
+	      val isSubValue = !(value instanceof ArrayEncodedValue);
+	
+	      int innerValuesCount = arrayValue.values.length;
+	      val innerValues = new EncodedValue[innerValuesCount];
+	      for (int i = 0; i < innerValuesCount; ++i)
+	        innerValues[i] = cloneEncodedValue(arrayValue.values[i], asmCache);
+	
+	      if (isSubValue)
+	        return new ArrayEncodedSubValue(innerValues);
+	      else
+	        return new ArrayEncodedValue(innerValues);
+	
+	    case VALUE_BOOLEAN:
+	    case VALUE_BYTE:
+	    case VALUE_CHAR:
+	    case VALUE_DOUBLE:
+	    case VALUE_FLOAT:
+	    case VALUE_INT:
+	    case VALUE_LONG:
+	    case VALUE_NULL:
+	    case VALUE_SHORT:
+	      return value;
+	
+	    case VALUE_ENUM:
+	      val enumValue = (EnumEncodedValue) value;
+	      return new EnumEncodedValue(
+	               asmCache.getField(findStaticField(
+	                 DexClassType.parse(enumValue.value.getContainingClass().getTypeDescriptor(), typeCache),
+	                 DexRegisterType.parse(enumValue.value.getFieldType().getTypeDescriptor(), typeCache),
+	                 enumValue.value.getFieldName().getStringValue(),
+	                 hierarchy)));
+	
+	    case VALUE_FIELD:
+	      val fieldValue = (FieldEncodedValue) value;
+	      return new FieldEncodedValue(
+	               asmCache.getField(findStaticField(
+	                 DexClassType.parse(fieldValue.value.getContainingClass().getTypeDescriptor(), typeCache),
+	                 DexRegisterType.parse(fieldValue.value.getFieldType().getTypeDescriptor(), typeCache),
+	                 fieldValue.value.getFieldName().getStringValue(),
+	                 hierarchy)));
+	
+	    case VALUE_METHOD:
+	      val methodValue = (MethodEncodedValue) value;
+	      return new MethodEncodedValue(
+	               asmCache.getMethod(findStaticMethod(
+	                 DexClassType.parse(methodValue.value.getContainingClass().getTypeDescriptor(), typeCache),
+	                 DexPrototype.parse(methodValue.value.getPrototype(), typeCache),
+	                 methodValue.value.getMethodName().getStringValue(),
+	                 hierarchy)));
+	
+	    case VALUE_STRING:
+	      val stringValue = (StringEncodedValue) value;
+	      return new StringEncodedValue(asmCache.getStringConstant(stringValue.value.getStringValue()));
+	
+	    case VALUE_TYPE:
+	      val typeValue = (TypeEncodedValue) value;
+	      return new TypeEncodedValue(asmCache.getType(DexType.parse(typeValue.value.getTypeDescriptor(), typeCache)));
+	
+	    case VALUE_ANNOTATION:
+	      val annotationValue = (AnnotationEncodedValue) value;
+	
+	      val newNames = new StringIdItem[annotationValue.names.length];
+	      for (int i = 0; i < annotationValue.names.length; ++i)
+	        newNames[i] = asmCache.getStringConstant(annotationValue.names[i].getStringValue());
+	
+	      val newEncodedValues = new EncodedValue[annotationValue.values.length];
+	      for (int i = 0; i < annotationValue.values.length; ++i)
+	        newEncodedValues[i] = cloneEncodedValue(annotationValue.values[i], asmCache);
+	
+	      return new AnnotationEncodedValue(
+	               asmCache.getType(DexType.parse(annotationValue.annotationType.getTypeDescriptor(), typeCache)),
+	               newNames,
+	               newEncodedValues);
+	
+	    default:
+	      throw new RuntimeException("Unexpected EncodedValue type: " + value.getValueType().name());
+	    }
+	  }
 }

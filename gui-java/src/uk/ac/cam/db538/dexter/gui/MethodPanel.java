@@ -11,7 +11,7 @@ import org.jf.dexlib.Util.AccessFlags;
 
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_ConstString;
@@ -21,7 +21,7 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Invoke;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_PackedSwitchData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_SparseSwitchData;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
-import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithBody;
 
 import com.alee.extended.label.WebHotkeyLabel;
 import com.alee.extended.panel.GroupPanel;
@@ -115,12 +115,12 @@ public class MethodPanel extends InfoPanel {
 
     // put instructions
     panelInstructions.removeAll();
-    if (method instanceof DexMethodWithCode) {
+    if (method instanceof DexMethodWithBody) {
 //    	val allInstructions = new NoDuplicatesList<DexCodeElement>();
 //    	allInstructions.addAll(((DexMethodWithCode) method).getParameterMoveInstructions().getInstructionList());
 //    	allInstructions.addAll(((DexMethodWithCode) method).getCode().getInstructionList());
 
-      for (val insn : ((DexMethodWithCode) method).getCode().getInstructionList()) {
+      for (val insn : ((DexMethodWithBody) method).getCode().getInstructionList()) {
         String asm = "ERROR " + insn.getClass().getSimpleName();
         try {
           asm = insn.getOriginalAssembly();
@@ -149,8 +149,8 @@ public class MethodPanel extends InfoPanel {
           TooltipManager.setTooltip(label, ((DexInstruction_ConstString) insn).getStringConstant(), TooltipWay.up, 0);
         else if (insn instanceof DexCatch)
           TooltipManager.setTooltip(label, ((DexCatch) insn).getExceptionType().getPrettyName(), TooltipWay.trailing, 0);
-        else if (insn instanceof DexTryBlockStart) {
-          val tryBlockStart = (DexTryBlockStart) insn;
+        else if (insn instanceof DexTryStart) {
+          val tryBlockStart = (DexTryStart) insn;
           val str = new StringBuilder();
           str.append("<html>");
 

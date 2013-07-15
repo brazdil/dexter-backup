@@ -3,11 +3,13 @@ package uk.ac.cam.db538.dexter.dex.type;
 import java.util.Arrays;
 import java.util.List;
 
+import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
+
 public abstract class DexReferenceType extends DexRegisterType {
 
 	private static final long serialVersionUID = 1L;
 	
-	public static final DexRegisterTypeSize TypeSize = DexRegisterTypeSize.SINGLE;
+	public static final RegisterWidth TypeSize = RegisterWidth.SINGLE;
 	
 	protected DexReferenceType() { }
 
@@ -28,7 +30,7 @@ public abstract class DexReferenceType extends DexRegisterType {
 	}
 
 	@Override
-	public DexRegisterTypeSize getTypeSize() {
+	public RegisterWidth getTypeSize() {
 		return TypeSize;
 	}
   

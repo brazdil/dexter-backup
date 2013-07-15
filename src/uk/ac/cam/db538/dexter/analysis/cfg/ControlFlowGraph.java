@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.analysis.cfg;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -8,8 +9,8 @@ import java.util.List;
 import lombok.Getter;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.utils.InstructionList;
 
 public class ControlFlowGraph {
 
@@ -45,26 +46,26 @@ public class ControlFlowGraph {
     val insnBlockMap = new HashMap<DexCodeElement, CfgBasicBlock>();
 
     // split instruction list into basic blocks
-    InstructionList currentBlock = new InstructionList();
+    List<DexCodeElement> currentBlock = new ArrayList<DexCodeElement>();
     for (val insn : insns) {
       if (insn.cfgStartsBasicBlock() && !currentBlock.isEmpty()) {
-        val block = new CfgBasicBlock(code, currentBlock);
+        val block = new CfgBasicBlock(code, new InstructionList(currentBlock));
         basicBlocks.add(block);
         insnBlockMap.put(block.getFirstInstruction(), block);
-        currentBlock = new InstructionList();
+        currentBlock = new ArrayList<DexCodeElement>();
       }
 
       currentBlock.add(insn);
 
       if ((insn.cfgEndsBasicBlock() || insn.cfgExitsMethod() || insn.cfgGetSuccessors().size() > 1) && !currentBlock.isEmpty()) {
-        val block = new CfgBasicBlock(code, currentBlock);
+        val block = new CfgBasicBlock(code, new InstructionList(currentBlock));
         basicBlocks.add(block);
         insnBlockMap.put(block.getFirstInstruction(), block);
-        currentBlock = new InstructionList();
+        currentBlock = new ArrayList<DexCodeElement>();
       }
     }
     if (!currentBlock.isEmpty()) {
-      val block = new CfgBasicBlock(code, currentBlock);
+      val block = new CfgBasicBlock(code, new InstructionList(currentBlock));
       basicBlocks.add(block);
       insnBlockMap.put(block.getFirstInstruction(), block);
     }
@@ -90,20 +91,6 @@ public class ControlFlowGraph {
         // if a block ends with a returning instruction connect it to EXIT
         if (lastInsn.cfgExitsMethod() || lastInsnSuccs.isEmpty())
           CfgBlock.createEdge(block, exitBlock);
-
-        // REMOVED: every instruction should provide its own list of successors
-//        // if one of the instructions (pick any) is inside a try block,
-//        // connect the whole block to the catch blocks
-//        // (depends on the fact that try block starts and ends a basic block)
-//        for (val tryEnd : code.getTryBlocks()) {
-//          val tryStart = tryEnd.getBlockStart();
-//          if (code.isBetween(tryStart, tryEnd, lastInsn)) {
-//            if (tryStart.getCatchAllHandler() != null)
-//              CfgBlock.createEdge(block, getBlockByFirstInsn(tryStart.getCatchAllHandler(), insnBlockMap));
-//            for (val catchBlock : tryStart.getCatchHandlers())
-//              CfgBlock.createEdge(block, getBlockByFirstInsn(catchBlock, insnBlockMap));
-//          }
-//        }
       }
     }
   }

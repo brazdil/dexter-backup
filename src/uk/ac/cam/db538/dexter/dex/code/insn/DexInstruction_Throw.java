@@ -10,37 +10,40 @@ import org.jf.dexlib.Code.Instruction;
 import org.jf.dexlib.Code.Opcode;
 import org.jf.dexlib.Code.Format.Instruction11x;
 
-import uk.ac.cam.db538.dexter.dex.code.DexCode;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
-import uk.ac.cam.db538.dexter.dex.code.DexCode_ParsingState;
-import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
+
+import com.google.common.collect.Sets;
 
 public class DexInstruction_Throw extends DexInstruction {
 
-  @Getter private final DexRegister regFrom;
+  @Getter private final DexSingleRegister regFrom;
 
-  public DexInstruction_Throw(DexCode methodCode, DexRegister from) {
-    super(methodCode);
-    regFrom = from;
+  public DexInstruction_Throw(DexSingleRegister from, RuntimeHierarchy hierarchy) {
+    super(hierarchy);
+    this.regFrom = from;
   }
 
-  public DexInstruction_Throw(DexCode methodCode, Instruction insn, DexCode_ParsingState parsingState) throws InstructionParsingException {
-    super(methodCode);
-
+  public static DexInstruction_Throw parse(Instruction insn, CodeParserState parsingState) {
     if (insn instanceof Instruction11x && insn.opcode == Opcode.THROW) {
 
       val insnThrow = (Instruction11x) insn;
-      regFrom = parsingState.getRegister(insnThrow.getRegisterA());
+      return new DexInstruction_Throw(
+    		  parsingState.getSingleRegister(insnThrow.getRegisterA()),
+    		  parsingState.getHierarchy());
 
     } else
       throw FORMAT_EXCEPTION;
   }
 
   @Override
-  public String getOriginalAssembly() {
-    return "throw " + regFrom.getOriginalIndexString();
+  public String toString() {
+    return "throw " + regFrom.toString();
   }
 
   @Override
@@ -49,12 +52,12 @@ public class DexInstruction_Throw extends DexInstruction {
   }
   
   @Override
-  public Set<DexRegister> lvaReferencedRegisters() {
-    return createSet(regFrom);
+  public Set<? extends DexRegister> lvaReferencedRegisters() {
+    return Sets.newHashSet(regFrom);
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) { }
+  public void instrument() { }
 
   @Override
   public void accept(DexInstructionVisitor visitor) {
@@ -63,11 +66,11 @@ public class DexInstruction_Throw extends DexInstruction {
 
   @Override
   protected DexClassType[] throwsExceptions() {
-    return new DexClassType[] { DexClassType.parse("Ljava/lang/Throwable;", getParentFile().getTypeCache()) };
+    return new DexClassType[] { DexClassType.parse("Ljava/lang/Throwable;", this.hierarchy.getTypeCache()) };
   }
 
   @Override
-  protected Set<DexCodeElement> cfgJumpTargets() {
+  protected Set<? extends DexCodeElement> cfgJumpTargets(InstructionList code) {
 	  return Collections.emptySet();
   }
 }

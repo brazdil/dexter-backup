@@ -29,13 +29,15 @@ import uk.ac.cam.db538.dexter.dex.code.DexParameterRegister;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArray;
+import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_FillArrayData;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Move;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_MoveWide;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Switch;
-import uk.ac.cam.db538.dexter.dex.method.DexMethodWithCode;
+import uk.ac.cam.db538.dexter.dex.method.DexMethodWithBody;
+import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
+import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 
 import com.android.dx.dex.DexOptions;
 import com.android.dx.dex.code.DalvCode;
@@ -65,7 +67,7 @@ public class DexCodeGeneration {
 
 	private DexOptions dexOptions;
 	
-	private DexMethodWithCode method;
+	private DexMethodWithBody method;
 	private int inWords;
 	private int outWords;
 	private boolean isStatic;
@@ -78,10 +80,13 @@ public class DexCodeGeneration {
 	public static long totalAnalysisTime = 0;
 	public static long totalCGTime = 0;
 	public static long totalDxTime = 0;
-	public DexCodeGeneration(DexMethodWithCode method) {
+	public DexCodeGeneration(DexMethodWithBody method) {
+		MethodDefinition methodDef = method.getMethodDef();
+		DexMethodId methodId = methodDef.getMethodId();
+		
 		if (INFO) {
 			System.out.println("==================================================================================");
-			System.out.println(String.format("%s param reg: %d", method.getName()  + method.getPrototype().toString(), 
+			System.out.println(String.format("%s param reg: %d", methodId.getName()  + methodId.getPrototype().toString(), 
 				inWords));
 		}
     	
@@ -89,9 +94,9 @@ public class DexCodeGeneration {
 	    dexOptions.targetApiLevel = 10;
 	    
 	    this.method = method;
-		inWords = method.getPrototype().countParamWords(method.isStatic());
+		inWords = methodId.getPrototype().countParamWords(methodDef.isStatic());
 		outWords = method.getCode().getOutWords();
-		isStatic = method.isStatic();
+		isStatic = methodDef.isStatic();
 		
         DexRegisterHelper.reset(method.getRegisterCount());
         
@@ -342,7 +347,7 @@ public class DexCodeGeneration {
         	
             // Add move-params to the beginning of the first block
         	if (bi == 0) {
-        		DexPrototype prototype = method.getPrototype();
+        		DexPrototype prototype = method.getMethodDef().getMethodId().getPrototype();
         		List<DexRegister> parameterMapping = method.getParameterMappedRegisters();
         		int regOffset = 0;
         		for(int i = 0; i < prototype.getParameterCount(isStatic); i++) {
@@ -460,7 +465,7 @@ public class DexCodeGeneration {
         					leads.push(switchSuccessor);
         			}
         		}
-        	} else if (current.getInstruction() instanceof DexInstruction_FillArray) {
+        	} else if (current.getInstruction() instanceof DexInstruction_FillArrayData) {
         		// Collapse the following DexLabel and DexInstruction_FilledArrayData
         		AnalyzedDexInstruction next = current.getOnlySuccesor(); // This a DexLabel
         		leads.push(next.getOnlySuccesor().getOnlySuccesor()); // Whatever follows FilledArrayData

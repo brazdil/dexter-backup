@@ -36,7 +36,7 @@ public class DexMacro_GetInternalClassAnnotation extends DexMacro {
     val dex = getParentFile();
     val parsingCache = dex.getTypeCache();
 
-    val typeInternalClassAnnotation = dex.getInternalClassAnnotation_Type();
+    val typeInternalClassAnnotation = dex.getAuxiliaryDex().getAnno_InternalClass().getType();
     val typeClass = DexClassType.parse("Ljava/lang/Class;", parsingCache);
     val typeString = DexClassType.parse("Ljava/lang/String;", parsingCache);
     val typeAnnotation = DexClassType.parse("Ljava/lang/annotation/Annotation;", parsingCache);

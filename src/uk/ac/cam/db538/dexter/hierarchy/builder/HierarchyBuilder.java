@@ -22,6 +22,7 @@ import lombok.val;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.DexFile.NoClassesDexException;
 
+import uk.ac.cam.db538.dexter.dex.type.ClassRenamer;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
@@ -32,6 +33,7 @@ import uk.ac.cam.db538.dexter.hierarchy.InterfaceDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 import uk.ac.cam.db538.dexter.hierarchy.StaticFieldDefinition;
+import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class HierarchyBuilder implements Serializable {
 
@@ -44,6 +46,10 @@ public class HierarchyBuilder implements Serializable {
 		root = null;
 		typeCache = new DexTypeCache();
 		definedClasses = new HashMap<DexClassType, ClassVariants>();
+	}
+	
+	public boolean hasClass(DexClassType clsType) {
+		return definedClasses.containsKey(clsType);
 	}
 
 	public void importDex(File file, boolean isInternal) throws IOException {
@@ -69,52 +75,7 @@ public class HierarchyBuilder implements Serializable {
 			scanClass(new DexClassScanner(cls, typeCache), isInternal);
 	}
 	
-	private void importDependencies() {
-		boolean somethingChanged;
-		do {
-			somethingChanged = false;
-			
-			// need to make a copy of the class list
-			// because we will modify it inside the loop
-			val currentClassSet = new ArrayList<ClassVariants>(definedClasses.values());
-			
-			for (val clsPair : currentClassSet) {
-				val clsData = clsPair.getClassData();
-				
-				// check superclass presence
-				val supercls = clsData.superclass;
-				if (supercls != null && !definedClasses.containsKey(supercls)) {
-					needVMClass(supercls);
-					somethingChanged = true;
-				}
-				
-				// check presence of all interfaces
-				val interfaces = clsData.interfaces;
-				if (interfaces != null)
-					for (val ifacecls : interfaces)
-						if (!definedClasses.containsKey(ifacecls)) {
-							needVMClass(ifacecls);
-							somethingChanged = true;
-						}
-			}
-		} while (somethingChanged);
-	}
-	
-	@SuppressWarnings("rawtypes")
-	private void needVMClass(DexClassType clsType) {
-		// try to find it in the running VM
-		Class vmClass;
-		try {
-			vmClass = Class.forName(clsType.getJavaDescriptor());
-		} catch (ClassNotFoundException e) {
-			throw new HierarchyException("Class " + clsType.getPrettyName() + " not present in VM");
-		}
-		
-		// import it
-		scanClass(new VmClassScanner(vmClass, typeCache), false);
-	}
-	
-	private void scanClass(IClassScanner clsScanner, boolean isInternal) {
+	private void scanClass(DexClassScanner clsScanner, boolean isInternal) {
 		val clsType = DexClassType.parse(clsScanner.getClassDescriptor(), typeCache);
 		
 		val baseclsData = new ClassData();
@@ -146,14 +107,14 @@ public class HierarchyBuilder implements Serializable {
 	private void foundRoot(ClassDefinition clsInfo, boolean isInternal) {
 		// check only one root exists
 		if (root != null)
-			throw new HierarchyException("More than one hierarchy root found (" + root.getClassType().getPrettyName() + " vs. " + clsInfo.getClassType().getPrettyName() + ")");
+			throw new HierarchyException("More than one hierarchy root found (" + root.getType().getPrettyName() + " vs. " + clsInfo.getType().getPrettyName() + ")");
 		else if (isInternal)
 			throw new HierarchyException("Hierarchy root cannot be internal");
 		else
 			root = clsInfo;
 	}
 	
-	private void scanMethods(IClassScanner clsScanner, BaseClassDefinition baseclsDef) {
+	private void scanMethods(DexClassScanner clsScanner, BaseClassDefinition baseclsDef) {
 		for (val methodScanner : clsScanner.getMethodScanners()) {
 			baseclsDef.addDeclaredMethod(
 				new MethodDefinition(
@@ -163,7 +124,7 @@ public class HierarchyBuilder implements Serializable {
 		}
 	}
 	
-	private void scanStaticFields(IClassScanner clsScanner, BaseClassDefinition baseclsDef) {
+	private void scanStaticFields(DexClassScanner clsScanner, BaseClassDefinition baseclsDef) {
 		for (val fieldScanner : clsScanner.getStaticFieldScanners())
 			baseclsDef.addDeclaredStaticField(
 				new StaticFieldDefinition(
@@ -172,7 +133,7 @@ public class HierarchyBuilder implements Serializable {
 					fieldScanner.getAccessFlags()));
 	}
 	
-	private void scanInstanceFields(IClassScanner clsScanner, ClassDefinition clsDef) {
+	private void scanInstanceFields(DexClassScanner clsScanner, ClassDefinition clsDef) {
 		for (val fieldScanner : clsScanner.getInstanceFieldScanners())
 			clsDef.addDeclaredInstanceField(
 				new InstanceFieldDefinition(
@@ -181,7 +142,7 @@ public class HierarchyBuilder implements Serializable {
 					fieldScanner.getAccessFlags()));
 	}
 	
-	private void scanSuperclass(IClassScanner clsScanner, ClassDefinition clsDef, ClassData baseclsData, boolean isInternal) {
+	private void scanSuperclass(DexClassScanner clsScanner, ClassDefinition clsDef, ClassData baseclsData, boolean isInternal) {
 		// acquire superclass info
 		val typeDescriptor = clsScanner.getSuperclassDescriptor();
 		if (typeDescriptor != null)
@@ -197,11 +158,11 @@ public class HierarchyBuilder implements Serializable {
 			val baseCls = clsData.classDef;
 			
 			// connect to parent and vice versa
-			val sclsType = (baseCls instanceof ClassDefinition) ? clsData.superclass : root.getClassType();
+			val sclsType = (baseCls instanceof ClassDefinition) ? clsData.superclass : root.getType();
 			if (sclsType != null) {
 				val sclsVariants = definedClasses.get(sclsType);
 				if (sclsVariants == null)
-					throw new HierarchyException("Class " + baseCls.getClassType().getPrettyName() + " is missing its parent " + sclsType.getPrettyName());
+					throw new HierarchyException("Class " + baseCls.getType().getPrettyName() + " is missing its parent " + sclsType.getPrettyName());
 				else
 					baseCls.setSuperclassLink(sclsVariants.getClassData().classDef);
 			}
@@ -216,14 +177,14 @@ public class HierarchyBuilder implements Serializable {
 					for (val ifaceType : ifaces) {
 						val ifaceInfo_Pair = definedClasses.get(ifaceType);
 						if (ifaceInfo_Pair == null || !(ifaceInfo_Pair.getClassData().classDef instanceof InterfaceDefinition))
-							throw new HierarchyException("Class " + baseCls.getClassType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
+							throw new HierarchyException("Class " + baseCls.getType().getPrettyName() + " is missing its interface " + ifaceType.getPrettyName());
 						else
 							properCls.addImplementedInterface((InterfaceDefinition) ifaceInfo_Pair.getClassData().classDef);
 					}
 				}
 			}
 			
-			classList.put(baseCls.getClassType(), baseCls);
+			classList.put(baseCls.getType(), baseCls);
 		}
 		
 		if (root == null)
@@ -273,12 +234,12 @@ public class HierarchyBuilder implements Serializable {
 		public void setVariant(ClassData cls, boolean isInternal) {
 			if (isInternal) {
 				if (this.internal != null)
-					throw new HierarchyException("Multiple definitions of internal class " + this.internal.classDef.getClassType().getPrettyName());
+					throw new HierarchyException("Multiple definitions of internal class " + this.internal.classDef.getType().getPrettyName());
 				
 				this.internal = cls;
 			} else {
 				if (this.external != null)
-					throw new HierarchyException("Multiple definitions of external class " + this.external.classDef.getClassType().getPrettyName());
+					throw new HierarchyException("Multiple definitions of external class " + this.external.classDef.getType().getPrettyName());
 				
 				this.external = cls;
 			}
@@ -352,11 +313,23 @@ public class HierarchyBuilder implements Serializable {
 		for (String filename : files)
 			importDex(new File(dir, filename), false);
 	}
+	
+	public ClassRenamer importAuxiliaryDex(DexFile dexAux) {
+		val classRenamer = new ClassRenamer(dexAux, this);
+		
+		typeCache.setClassRenamer(classRenamer);
+		importDex(dexAux, true); 
+		typeCache.setClassRenamer(null);
+		
+		return classRenamer;
+	}
 
-	public RuntimeHierarchy buildAgainstApp(DexFile dex) {
+	public Pair<RuntimeHierarchy, ClassRenamer> buildAgainstApp(DexFile dexApp, DexFile dexAux) {
 		try {
-			importDex(dex, true);
-			return build();
+			importDex(dexApp, true);
+			val classRenamer = importAuxiliaryDex(dexAux);
+			val runtimeHierarchy = build();
+			return Pair.create(runtimeHierarchy, classRenamer);
 		} finally {
 			removeInternalClasses();
 		}

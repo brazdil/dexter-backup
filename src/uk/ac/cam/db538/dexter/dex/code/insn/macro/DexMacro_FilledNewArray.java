@@ -37,7 +37,7 @@ public class DexMacro_FilledNewArray extends DexMacro {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) {
+  public void instrument() {
     val code = getMethodCode();
     if (instructionFilledNewArray.getArgumentRegisters().isEmpty())
       return;

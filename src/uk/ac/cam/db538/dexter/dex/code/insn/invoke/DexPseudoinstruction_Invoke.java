@@ -5,10 +5,10 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.val;
-import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache.InstrumentationWarning;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
@@ -24,19 +24,18 @@ import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_StaticGet;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_GetPut;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_IfTestZero;
 import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_Invoke;
-import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetInternalMethodAnnotation;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_GetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintInteger;
+import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
+import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
-import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
 import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition.CallDestinationType;
-import uk.ac.cam.db538.dexter.utils.InstructionList;
 
 public class DexPseudoinstruction_Invoke extends DexMacro {
 
@@ -106,7 +105,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
     if (printDebug) {
       codePreInternalCall.add(new DexMacro_PrintStringConst(
                                 methodCode,
-                                "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                "$ " + methodCode.getParentClass().getClassDef().getType().getShortName() + "->" + methodCode.getParentMethod().getMethodDef().getMethodId().getName() + ": " +
                                 "internal call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName(),
                                 true));
     }
@@ -115,7 +114,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
       codePreInternalCall.add(new DexInstruction_StaticGet(
                                 methodCode,
                                 regArgSemaphore,
-                                dex.getMethodCallHelper_SArg()));
+                                dex.getAuxiliaryDex().getField_CallParamSemaphore()));
       codePreInternalCall.add(new DexInstruction_Invoke(
                                 methodCode,
                                 semaphoreClass,
@@ -124,7 +123,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
                                 Arrays.asList(new DexRegister[] { regArgSemaphore }),
                                 Opcode_Invoke.Virtual));
 
-      codePreInternalCall.add(new DexInstruction_StaticGet(methodCode, regArray, dex.getMethodCallHelper_Arg()));
+      codePreInternalCall.add(new DexInstruction_StaticGet(methodCode, regArray, dex.getAuxiliaryDex().getField_CallParamTaint()));
       int arrayIndex = 0;
       int paramIndex = instructionInvoke.isStaticCall() ? 0 : 1;
       for (val paramType : callPrototype.getParameterTypes()) {
@@ -161,7 +160,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
         if (printDebug) {
           codePostInternalCall.add(new DexMacro_PrintStringConst(
                                      methodCode,
-                                     "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                     "$ " + methodCode.getParentMethod().getMethodDef().toString() + ": " +
                                      "internal result from " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
                                      " => ",
                                      false));
@@ -172,17 +171,17 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
           regToTaint = state.getTaintRegister(((DexInstruction_MoveResult) instructionMoveResult).getRegTo());
         else if (instructionMoveResult instanceof DexInstruction_MoveResultWide)
           regToTaint = state.getTaintRegister(((DexInstruction_MoveResultWide) instructionMoveResult).getRegTo1());
-        codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regToTaint, dex.getMethodCallHelper_Res()));
+        codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regToTaint, dex.getAuxiliaryDex().getField_CallResultTaint()));
 
         if (printDebug) {
           codePostInternalCall.add(new DexMacro_PrintInteger(methodCode, regToTaint, true));
         }
       }
 
-      codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regResSemaphore, dex.getMethodCallHelper_SRes()));
+      codePostInternalCall.add(new DexInstruction_StaticGet(methodCode, regResSemaphore, dex.getAuxiliaryDex().getField_CallResultSemaphore()));
       codePostInternalCall.add(new DexInstruction_Invoke(
                                  methodCode,
-                                 (DexClassType) dex.getMethodCallHelper_SRes().getType(),
+                                 (DexClassType) dex.getAuxiliaryDex().getField_CallResultSemaphore().getFieldDef().getFieldId().getType(),
                                  "release",
                                  new DexPrototype(DexVoid.parse("V", null), null),
                                  Arrays.asList(regResSemaphore),
@@ -196,7 +195,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
         if (printDebug) {
           codePostInternalCall.add(new DexMacro_PrintStringConst(
                                      methodCode,
-                                     "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                     "$ " + methodCode.getParentMethod().getMethodDef().toString() + ": " +
                                      "internal result from " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
                                      " => ",
                                      false));
@@ -277,10 +276,10 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
     boolean canBeNeitherCall = !canBeInternalCall && !canBeExternalCall;
 
     if (canBeNeitherCall) {
-      val callType = instructionInvoke.getCallType();
-      val callClass = instructionInvoke.getClassType();
-      val methodName = instructionInvoke.getMethodName();
-      state.getCache().getWarnings().add(new InstrumentationWarning("Invoke destination not found: calling " + callType.name().toLowerCase() + " " + callClass.getPrettyName() + "." + methodName));
+//      val callType = instructionInvoke.getCallType();
+//      val callClass = instructionInvoke.getClassType();
+//      val methodName = instructionInvoke.getMethodName();
+//      state.getCache().getWarnings().add(new InstrumentationWarning("Invoke destination not found: calling " + callType.name().toLowerCase() + " " + callClass.getPrettyName() + "." + methodName));
 
       canBeExternalCall = true;
     }
@@ -331,7 +330,7 @@ public class DexPseudoinstruction_Invoke extends DexMacro {
   }
 
   @Override
-  public void instrument(DexCode_InstrumentationState state) {
+  public void instrument() {
     switch (instructionInvoke.getCallType()) {
     case Direct:
     case Static:

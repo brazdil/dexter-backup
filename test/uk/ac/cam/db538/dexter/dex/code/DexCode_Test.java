@@ -23,10 +23,10 @@ import org.junit.Test;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Nop;
-import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParsingException;
+import uk.ac.cam.db538.dexter.dex.code.insn.InstructionParseError;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 
 public class DexCode_Test {
@@ -127,8 +127,8 @@ public class DexCode_Test {
     code.insertAfter(elem1, elem2);
   }
 
-  @Test(expected=InstructionParsingException.class)
-  public void testLabels_InvalidOffset_Positive() throws InstructionParsingException {
+  @Test(expected=InstructionParseError.class)
+  public void testLabels_InvalidOffset_Positive() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction10t(Opcode.GOTO, 2),
@@ -136,8 +136,8 @@ public class DexCode_Test {
       }, null);
   }
 
-  @Test(expected=InstructionParsingException.class)
-  public void testLabels_InvalidOffset_Negative() throws InstructionParsingException {
+  @Test(expected=InstructionParseError.class)
+  public void testLabels_InvalidOffset_Negative() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction10x(Opcode.NOP),
@@ -157,9 +157,9 @@ public class DexCode_Test {
     val codeItem = CodeItem.internCodeItem(new DexFile(), 1, 0, 0, null, insns, tries, handlers);
     val dexCode = new DexCode(codeItem, new DexTypeCache());
 
-    assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryBlockStart);
+    assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryStart);
     assertTrue(dexCode.getInstructionList().get(2) instanceof DexInstruction_Nop);
-    assertTrue(dexCode.getInstructionList().get(3) instanceof DexTryBlockEnd);
+    assertTrue(dexCode.getInstructionList().get(3) instanceof DexTryEnd);
     assertTrue(dexCode.getInstructionList().get(4) instanceof DexInstruction_Nop);
   }
 
@@ -176,12 +176,12 @@ public class DexCode_Test {
     val dexCode = new DexCode(codeItem, new DexTypeCache());
 
     assertTrue(dexCode.getInstructionList().get(1) instanceof DexInstruction_Nop);
-    assertTrue(dexCode.getInstructionList().get(2) instanceof DexTryBlockStart);
+    assertTrue(dexCode.getInstructionList().get(2) instanceof DexTryStart);
     assertTrue(dexCode.getInstructionList().get(3) instanceof DexInstruction_Nop);
-    assertTrue(dexCode.getInstructionList().get(4) instanceof DexTryBlockEnd);
+    assertTrue(dexCode.getInstructionList().get(4) instanceof DexTryEnd);
   }
 
-  @Test(expected=InstructionParsingException.class)
+  @Test(expected=InstructionParseError.class)
   public void testParse_TryBlock_StartOffsetError() {
     val handler1 = new EncodedCatchHandler(null, -1);
     val try1 = new TryItem(2, 1, handler1);
@@ -194,7 +194,7 @@ public class DexCode_Test {
     new DexCode(codeItem, new DexTypeCache());
   }
 
-  @Test(expected=InstructionParsingException.class)
+  @Test(expected=InstructionParseError.class)
   public void testParse_TryBlock_EndOffsetError() {
     val handler1 = new EncodedCatchHandler(null, -1);
     val try1 = new TryItem(0, 3, handler1);
@@ -223,9 +223,9 @@ public class DexCode_Test {
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
     val dexCode = new DexCode(codeItem, new DexTypeCache());
 
-    assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryBlockStart);
+    assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryStart);
     assertTrue(dexCode.getInstructionList().get(2) instanceof DexInstruction_Nop);
-    assertTrue(dexCode.getInstructionList().get(3) instanceof DexTryBlockEnd);
+    assertTrue(dexCode.getInstructionList().get(3) instanceof DexTryEnd);
     assertTrue(dexCode.getInstructionList().get(4) instanceof DexCatch);
     assertTrue(dexCode.getInstructionList().get(5) instanceof DexInstruction_Nop);
     assertTrue(dexCode.getInstructionList().get(6) instanceof DexInstruction_Nop);
@@ -233,7 +233,7 @@ public class DexCode_Test {
     val catchElem = (DexCatch) dexCode.getInstructionList().get(4);
     assertEquals("Lcom/example/MyException;", catchElem.getExceptionType().getDescriptor());
 
-    val tryStartElem = (DexTryBlockStart) dexCode.getInstructionList().get(1);
+    val tryStartElem = (DexTryStart) dexCode.getInstructionList().get(1);
     assertEquals(null, tryStartElem.getCatchAllHandler());
     assertEquals(1, tryStartElem.getCatchHandlers().size());
     assertTrue(tryStartElem.getCatchHandlers().contains(catchElem));
@@ -256,15 +256,15 @@ public class DexCode_Test {
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
     val dexCode = new DexCode(codeItem, new DexTypeCache());
 
-    assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryBlockStart);
+    assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryStart);
     assertTrue(dexCode.getInstructionList().get(2) instanceof DexInstruction_Nop);
-    assertTrue(dexCode.getInstructionList().get(3) instanceof DexTryBlockEnd);
+    assertTrue(dexCode.getInstructionList().get(3) instanceof DexTryEnd);
     assertTrue(dexCode.getInstructionList().get(4) instanceof DexCatch);
     assertTrue(dexCode.getInstructionList().get(5) instanceof DexInstruction_Nop);
     assertTrue(dexCode.getInstructionList().get(6) instanceof DexInstruction_Nop);
   }
 
-  @Test(expected=InstructionParsingException.class)
+  @Test(expected=InstructionParseError.class)
   public void testParse_CatchBlock_WrongOffset() {
     val dexFile = new DexFile();
 
@@ -281,7 +281,7 @@ public class DexCode_Test {
     new DexCode(codeItem, new DexTypeCache());
   }
 
-  @Test(expected=InstructionParsingException.class)
+  @Test(expected=InstructionParseError.class)
   public void testParse_CatchBlockNotMentionedInCodeItem() {
     val dexFile = new DexFile();
 
@@ -312,15 +312,15 @@ public class DexCode_Test {
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
     val dexCode = new DexCode(codeItem, new DexTypeCache());
 
-    assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryBlockStart);
+    assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryStart);
     assertTrue(dexCode.getInstructionList().get(2) instanceof DexInstruction_Nop);
-    assertTrue(dexCode.getInstructionList().get(3) instanceof DexTryBlockEnd);
+    assertTrue(dexCode.getInstructionList().get(3) instanceof DexTryEnd);
     assertTrue(dexCode.getInstructionList().get(4) instanceof DexCatchAll);
     assertTrue(dexCode.getInstructionList().get(5) instanceof DexInstruction_Nop);
     assertTrue(dexCode.getInstructionList().get(6) instanceof DexInstruction_Nop);
 
     val catchElem = (DexCatchAll) dexCode.getInstructionList().get(4);
-    val tryStartElem = (DexTryBlockStart) dexCode.getInstructionList().get(1);
+    val tryStartElem = (DexTryStart) dexCode.getInstructionList().get(1);
     assertEquals(catchElem, tryStartElem.getCatchAllHandler());
     assertEquals(0, tryStartElem.getCatchHandlers().size());
   }
@@ -340,15 +340,15 @@ public class DexCode_Test {
     val codeItem = CodeItem.internCodeItem(dexFile, 1, 0, 0, null, insns, tries, handlers);
     val dexCode = new DexCode(codeItem, new DexTypeCache());
 
-    assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryBlockStart);
+    assertTrue(dexCode.getInstructionList().get(1) instanceof DexTryStart);
     assertTrue(dexCode.getInstructionList().get(2) instanceof DexInstruction_Nop);
-    assertTrue(dexCode.getInstructionList().get(3) instanceof DexTryBlockEnd);
+    assertTrue(dexCode.getInstructionList().get(3) instanceof DexTryEnd);
     assertTrue(dexCode.getInstructionList().get(4) instanceof DexCatchAll);
     assertTrue(dexCode.getInstructionList().get(5) instanceof DexInstruction_Nop);
     assertTrue(dexCode.getInstructionList().get(6) instanceof DexInstruction_Nop);
   }
 
-  @Test(expected=InstructionParsingException.class)
+  @Test(expected=InstructionParseError.class)
   public void testParse_CatchAllBlock_WrongOffset() {
     val dexFile = new DexFile();
 
@@ -363,7 +363,7 @@ public class DexCode_Test {
     new DexCode(codeItem, new DexTypeCache());
   }
 
-  @Test(expected=InstructionParsingException.class)
+  @Test(expected=InstructionParseError.class)
   public void testParse_CatchAllBlockNotMentionedInCodeItem() {
     val dexFile = new DexFile();
 

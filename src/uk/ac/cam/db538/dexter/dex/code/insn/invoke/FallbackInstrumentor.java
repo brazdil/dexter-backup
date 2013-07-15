@@ -6,10 +6,11 @@ import java.util.Collections;
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode_InstrumentationState;
 import uk.ac.cam.db538.dexter.dex.code.DexRegister;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_BinaryOp;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Const;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction_Goto;
@@ -26,7 +27,6 @@ import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_PrintStringConst;
 import uk.ac.cam.db538.dexter.dex.code.insn.macro.DexMacro_SetObjectTaint;
 import uk.ac.cam.db538.dexter.dex.type.DexPrimitiveType;
 import uk.ac.cam.db538.dexter.dex.type.DexReferenceType;
-import uk.ac.cam.db538.dexter.utils.InstructionList;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
 public class FallbackInstrumentor extends ExternalCallInstrumentor {
@@ -99,20 +99,20 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     if (printDebug) {
       codePreExternalCall.add(new DexMacro_PrintStringConst(
                                 methodCode,
-                                "$ " + methodCode.getParentClass().getType().getShortName() + "->" + methodCode.getParentMethod().getName() + ": " +
+                                "$ " + methodCode.getParentClass().getClassDef().getType().getShortName() + "->" + methodCode.getParentMethod().getMethodDef().getMethodId().getName() + ": " +
                                 "external call to " + instructionInvoke.getClassType().getPrettyName() + "->" + instructionInvoke.getMethodName() +
                                 " => T=",
                                 false));
       codePreExternalCall.add(new DexMacro_PrintInteger(methodCode, regCombinedTaint, true));
     }
 
-    codePreExternalCall.add(new DexTryBlockStart(methodCode));
+    codePreExternalCall.add(new DexTryStart(methodCode));
 
     return codePreExternalCall;
   }
 
   private InstructionList generatePostExternalCallCode(DexPseudoinstruction_Invoke insn, DexRegister regCombinedTaint, DexCode_InstrumentationState state,
-      Collection<Integer> excludeFromTaintAssignment, boolean excludeResultFromTaintAssignment, DexTryBlockStart tryBlockStart) {
+      Collection<Integer> excludeFromTaintAssignment, boolean excludeResultFromTaintAssignment, DexTryStart tryBlockStart) {
     val codePostExternalCall = new InstructionList();
     val methodCode = insn.getMethodCode();
     val instructionInvoke = insn.getInstructionInvoke();
@@ -124,7 +124,7 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
     val catchAll = new DexCatchAll(methodCode);
 
     tryBlockStart.setCatchAllHandler(catchAll);
-    codePostExternalCall.add(new DexTryBlockEnd(methodCode, tryBlockStart));
+    codePostExternalCall.add(new DexTryEnd(methodCode, tryBlockStart));
 
     if (insn.movesResult()) {
       if (methodPrototype.getReturnType() instanceof DexPrimitiveType) {
@@ -165,7 +165,7 @@ public class FallbackInstrumentor extends ExternalCallInstrumentor {
       boolean excludeResultFromTaintAssignment) {
     regCombinedTaint = new DexRegister();
     val preCode = generatePreExternalCallCode(insn, regCombinedTaint, state, excludeFromTaintAcquirement, excludeFromTaintAssignment);
-    val postCode = generatePostExternalCallCode(insn, regCombinedTaint, state, excludeFromTaintAssignment, excludeResultFromTaintAssignment, (DexTryBlockStart) preCode.get(preCode.size() - 1));
+    val postCode = generatePostExternalCallCode(insn, regCombinedTaint, state, excludeFromTaintAssignment, excludeResultFromTaintAssignment, (DexTryStart) preCode.get(preCode.size() - 1));
     return new Pair<InstructionList, InstructionList>(preCode, postCode);
   }
 

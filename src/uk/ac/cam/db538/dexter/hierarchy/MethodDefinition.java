@@ -55,7 +55,20 @@ public class MethodDefinition implements Serializable {
 		return getAccessFlags().contains(AccessFlags.CONSTRUCTOR);
 	}
 
+	public boolean isDirect() {
+		return isPrivate() || isConstructor();
+	}
+	
+	public boolean isVirtual() {
+		return !isStatic() && !isDirect();
+	}
+
 	public boolean hasBytecode() {
 		return !isAbstract() && !isNative();
+	}
+
+	@Override
+	public String toString() {
+		return parentClass.getType().getDescriptor() + "->" + methodId.getName() + methodId.getPrototype().getDescriptor();
 	}
 }

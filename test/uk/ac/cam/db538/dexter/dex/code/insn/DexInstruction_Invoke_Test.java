@@ -30,7 +30,7 @@ import uk.ac.cam.db538.dexter.dex.type.DexType;
 public class DexInstruction_Invoke_Test {
 
   @Test
-  public void testParse_Invoke_Standard_RegisterParsing_Static() throws InstructionParsingException {
+  public void testParse_Invoke_Standard_RegisterParsing_Static() throws InstructionParseError {
     val file = new DexFile();
     val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
     val returnType = TypeIdItem.internTypeIdItem(file, "V");
@@ -58,7 +58,7 @@ public class DexInstruction_Invoke_Test {
   }
 
   @Test
-  public void testParse_Invoke_Standard_RegisterParsing_NonStatic() throws InstructionParsingException {
+  public void testParse_Invoke_Standard_RegisterParsing_NonStatic() throws InstructionParseError {
     val file = new DexFile();
     val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
     val returnType = TypeIdItem.internTypeIdItem(file, "V");
@@ -85,7 +85,7 @@ public class DexInstruction_Invoke_Test {
   }
 
   @Test
-  public void testParse_Invoke_Standard_CallTypes() throws InstructionParsingException {
+  public void testParse_Invoke_Standard_CallTypes() throws InstructionParseError {
     val file = new DexFile();
     val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
     val returnType = TypeIdItem.internTypeIdItem(file, "V");
@@ -116,7 +116,7 @@ public class DexInstruction_Invoke_Test {
   }
 
   @Test
-  public void testParse_Invoke_Range() throws InstructionParsingException {
+  public void testParse_Invoke_Range() throws InstructionParseError {
     val file = new DexFile();
     val classType = TypeIdItem.internTypeIdItem(file, "Lcom.test;");
     val returnType = TypeIdItem.internTypeIdItem(file, "V");
@@ -167,7 +167,7 @@ public class DexInstruction_Invoke_Test {
                               Opcode_Invoke.Static);
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testCheckArguments_Static_Incorrect() {
     val cache = new DexTypeCache();
     val params = Arrays.asList(new DexRegisterType[] {
@@ -206,7 +206,7 @@ public class DexInstruction_Invoke_Test {
                               Opcode_Invoke.Direct);
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testCheckArguments_Direct_Incorrect() {
     val cache = new DexTypeCache();
     val params = Arrays.asList(new DexRegisterType[] {
@@ -226,7 +226,7 @@ public class DexInstruction_Invoke_Test {
                               Opcode_Invoke.Direct);
   }
 
-  @Test(expected=InstructionArgumentException.class)
+  @Test(expected=Error.class)
   public void testCheckArguments_TooManyArgRegs() {
     val cache = new DexTypeCache();
 

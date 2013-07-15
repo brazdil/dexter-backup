@@ -14,7 +14,6 @@ import org.jf.dexlib.StringIdItem;
 import org.jf.dexlib.TypeIdItem;
 import org.jf.dexlib.Code.Instruction;
 
-import uk.ac.cam.db538.dexter.dex.DexInstrumentationCache;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.UnknownTypeException;
@@ -66,7 +65,7 @@ public class Utils {
   }
 
   public static void instrumentAndCompare(DexCode code, String[] output) {
-    code.instrument(new DexInstrumentationCache(null));
+    code.instrument();
     val insnList = code.getInstructionList();
     assertEquals(output.length, insnList.size());
     for (int i = 0; i < output.length; ++i)

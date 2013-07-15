@@ -18,13 +18,14 @@ import uk.ac.cam.db538.dexter.dex.code.DexCode;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockEnd;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryBlockStart;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.method.DexDirectMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
 import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
 import uk.ac.cam.db538.dexter.dex.type.DexVoid;
+import uk.ac.cam.db538.dexter.hierarchy.builder.HierarchyBuilder;
 
 public class DexInstruction_Test {
 
@@ -41,17 +42,16 @@ public class DexInstruction_Test {
   }
 
   private static DexCode createDexCode() {
-    val dex = new Dex();
-    val clazz = new DexClass(dex,
-                             DexClassType.parse("Lcom/example/Clazz;", dex.getTypeCache()),
-                             DexClassType.parse("Ljava/lang/Object;", dex.getTypeCache()),
-                             null, null, null, null, null);
+	val hierarchy = (new HierarchyBuilder()).build();
+	
+    val dex = new Dex(null, null);
+    val clazz = new DexClass(dex, null, null);
 
     val code = new DexCode();
 
     // method will automatically assign itself to DexCode
     new DexDirectMethod(clazz, "m", null,
-                        new DexPrototype(DexVoid.parse("V", null), null),
+                        new DexPrototype(DexVoid.parse("V", hierarchy.getTypeCache()), null),
                         code, null, null);
 
     return code;
@@ -75,8 +75,8 @@ public class DexInstruction_Test {
 
     val code = createDexCode();
     val nop = new DexInstruction_Nop(code);
-    val tryStart = new DexTryBlockStart(code);
-    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val tryStart = new DexTryStart(code);
+    val tryEnd = new DexTryEnd(code, tryStart);
 
     code.add(nop);
     code.add(tryStart);
@@ -91,8 +91,8 @@ public class DexInstruction_Test {
 
     val code = createDexCode();
     val nop = new DexInstruction_Nop(code);
-    val tryStart = new DexTryBlockStart(code);
-    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val tryStart = new DexTryStart(code);
+    val tryEnd = new DexTryEnd(code, tryStart);
 
     code.add(tryStart);
     code.add(nop);
@@ -107,8 +107,8 @@ public class DexInstruction_Test {
 
     val code = createDexCode();
     val nop = new DexInstruction_Nop(code);
-    val tryStart = new DexTryBlockStart(code);
-    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val tryStart = new DexTryStart(code);
+    val tryEnd = new DexTryEnd(code, tryStart);
     val catchAll = new DexCatchAll(code);
 
     tryStart.setCatchAllHandler(catchAll);
@@ -130,8 +130,8 @@ public class DexInstruction_Test {
     val cache = code.getParentFile().getTypeCache();
 
     val nop = new DexInstruction_Nop(code);
-    val tryStart = new DexTryBlockStart(code);
-    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val tryStart = new DexTryStart(code);
+    val tryEnd = new DexTryEnd(code, tryStart);
     val catchThrowable = new DexCatch(code, DexClassType.parse("Ljava/lang/Throwable;", cache));
 
     tryStart.addCatchHandler(catchThrowable);
@@ -189,8 +189,8 @@ public class DexInstruction_Test {
 
     val code = createDexCode();
     val nop = new DexInstruction_Nop(code);
-    val tryStart = new DexTryBlockStart(code);
-    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val tryStart = new DexTryStart(code);
+    val tryEnd = new DexTryEnd(code, tryStart);
 
     code.add(nop);
     code.add(tryStart);
@@ -205,8 +205,8 @@ public class DexInstruction_Test {
 
     val code = createDexCode();
     val nop = new DexInstruction_Nop(code);
-    val tryStart = new DexTryBlockStart(code);
-    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val tryStart = new DexTryStart(code);
+    val tryEnd = new DexTryEnd(code, tryStart);
 
     code.add(tryStart);
     code.add(nop);
@@ -221,8 +221,8 @@ public class DexInstruction_Test {
 
     val code = createDexCode();
     val nop = new DexInstruction_Nop(code);
-    val tryStart = new DexTryBlockStart(code);
-    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val tryStart = new DexTryStart(code);
+    val tryEnd = new DexTryEnd(code, tryStart);
     val catchAll = new DexCatchAll(code);
 
     tryStart.setCatchAllHandler(catchAll);
@@ -244,8 +244,8 @@ public class DexInstruction_Test {
 
     val code = createDexCode();
     val nop = new DexInstruction_Nop(code);
-    val tryStart = new DexTryBlockStart(code);
-    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val tryStart = new DexTryStart(code);
+    val tryEnd = new DexTryEnd(code, tryStart);
     val catchThrowable = new DexCatch(code, DexClassType.parse("Ljava/lang/Throwable;", new DexTypeCache()));
 
     tryStart.addCatchHandler(catchThrowable);
@@ -270,8 +270,8 @@ public class DexInstruction_Test {
 
     val code = createDexCode();
     val nop = new DexInstruction_Nop(code);
-    val tryStart = new DexTryBlockStart(code);
-    val tryEnd = new DexTryBlockEnd(code, tryStart);
+    val tryStart = new DexTryStart(code);
+    val tryEnd = new DexTryEnd(code, tryStart);
     val catchAll = new DexCatchAll(code);
     val catchThrowable = new DexCatch(code, DexClassType.parse("Ljava/lang/Throwable;", parseCache));
     val catchRuntimeException = new DexCatch(code, DexClassType.parse("Ljava/lang/RuntimeException;", parseCache));

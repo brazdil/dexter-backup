@@ -10,7 +10,7 @@ import uk.ac.cam.db538.dexter.dex.code.Utils;
 public class DexInstruction_InstancePut_Test {
 
   @Test
-  public void testParse_InstancePut() throws InstructionParsingException {
+  public void testParse_InstancePut() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction[] {
         new Instruction22c(Opcode.IPUT_OBJECT, (byte) 0, (byte) 1, Utils.getFieldItem("Lcom/example/MyClass1;", "Ljava/lang/Object;", "TestField1")),
@@ -31,43 +31,43 @@ public class DexInstruction_InstancePut_Test {
       });
   }
 
-  @Test(expected=InstructionArgumentException.class)
-  public void testParse_InstancePut_WrongType_Object() throws InstructionParsingException {
+  @Test(expected=Error.class)
+  public void testParse_InstancePut_WrongType_Object() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IPUT_OBJECT, (byte) 0, (byte) 1, Utils.getFieldItem("Lcom/example/MyClass1;", "I", "TestField1")),
       "");
   }
 
-  @Test(expected=InstructionArgumentException.class)
-  public void testParse_InstancePut_WrongType_Integer() throws InstructionParsingException {
+  @Test(expected=Error.class)
+  public void testParse_InstancePut_WrongType_Integer() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IPUT, (byte) 0, (byte) 1, Utils.getFieldItem("Lcom/example/MyClass1;", "Z", "TestField1")),
       "");
   }
 
-  @Test(expected=InstructionArgumentException.class)
-  public void testParse_InstancePut_WrongType_Boolean() throws InstructionParsingException {
+  @Test(expected=Error.class)
+  public void testParse_InstancePut_WrongType_Boolean() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IPUT_BOOLEAN, (byte) 0, (byte) 1, Utils.getFieldItem("Lcom/example/MyClass1;", "B", "TestField1")),
       "");
   }
 
-  @Test(expected=InstructionArgumentException.class)
-  public void testParse_InstancePut_WrongType_Byte() throws InstructionParsingException {
+  @Test(expected=Error.class)
+  public void testParse_InstancePut_WrongType_Byte() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IPUT_BYTE, (byte) 0, (byte) 1, Utils.getFieldItem("Lcom/example/MyClass1;", "C", "TestField1")),
       "");
   }
 
-  @Test(expected=InstructionArgumentException.class)
-  public void testParse_InstancePut_WrongType_Char() throws InstructionParsingException {
+  @Test(expected=Error.class)
+  public void testParse_InstancePut_WrongType_Char() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IPUT_CHAR, (byte) 0, (byte) 1, Utils.getFieldItem("Lcom/example/MyClass1;", "S", "TestField1")),
       "");
   }
 
-  @Test(expected=InstructionArgumentException.class)
-  public void testParse_InstancePut_WrongType_Short() throws InstructionParsingException {
+  @Test(expected=Error.class)
+  public void testParse_InstancePut_WrongType_Short() throws InstructionParseError {
     Utils.parseAndCompare(
       new Instruction22c(Opcode.IPUT_SHORT, (byte) 0, (byte) 1, Utils.getFieldItem("Lcom/example/MyClass1;", "I", "TestField1")),
       "");
