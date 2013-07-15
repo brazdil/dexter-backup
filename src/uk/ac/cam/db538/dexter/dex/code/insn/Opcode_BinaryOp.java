@@ -32,9 +32,9 @@ public enum Opcode_BinaryOp {
   AndLong("and-long", RegisterWidth.WIDE),
   OrLong("or-long", RegisterWidth.WIDE),
   XorLong("xor-long", RegisterWidth.WIDE),
-  ShlLong("shl-long", RegisterWidth.WIDE),
-  ShrLong("shr-long", RegisterWidth.WIDE),
-  UshrLong("ushr-long", RegisterWidth.WIDE),
+  ShlLong("shl-long", RegisterWidth.WIDE, RegisterWidth.WIDE, RegisterWidth.SINGLE),
+  ShrLong("shr-long", RegisterWidth.WIDE, RegisterWidth.WIDE, RegisterWidth.SINGLE),
+  UshrLong("ushr-long", RegisterWidth.WIDE, RegisterWidth.WIDE, RegisterWidth.SINGLE),
   AddDouble("add-double", RegisterWidth.WIDE),
   SubDouble("sub-double", RegisterWidth.WIDE),
   MulDouble("mul-double", RegisterWidth.WIDE),
@@ -42,7 +42,13 @@ public enum Opcode_BinaryOp {
   RemDouble("rem-double", RegisterWidth.WIDE);
 
   @Getter private final String AssemblyName;
-  @Getter private final RegisterWidth width;
+  @Getter private final RegisterWidth widthResult;
+  @Getter private final RegisterWidth widthArgA;
+  @Getter private final RegisterWidth widthArgB;
+  
+  private Opcode_BinaryOp(String asmName, RegisterWidth allArgWidth) {
+	  this(asmName, allArgWidth, allArgWidth, allArgWidth);
+  }
   
   public static Opcode_BinaryOp convert(org.jf.dexlib.Code.Opcode opcode) {
     switch (opcode) {
@@ -147,8 +153,27 @@ public enum Opcode_BinaryOp {
     }
   }
   
-  public void checkRegisterType(DexRegister reg) {
-	  if (this.getWidth() != reg.getWidth())
+  public static enum Arg {
+	  RESULT,
+	  SOURCE_1,
+	  SOURCE_2
+  }
+  
+  public void checkRegisterType(DexRegister reg, Arg arg) {
+	  RegisterWidth desiredWidth = null;
+	  switch(arg) {
+	  case RESULT:
+		  desiredWidth = getWidthResult();
+		  break;
+	  case SOURCE_1:
+		  desiredWidth = getWidthArgA();
+		  break;
+	  case SOURCE_2:
+		  desiredWidth = getWidthArgB();
+		  break;
+	  }
+	  
+	  if (reg.getWidth() != desiredWidth)
 		  throw new Error("Register width does not match instruction opcode");
 	  else if (reg instanceof DexTaintRegister && this != OrInt)
 		  throw new Error("Only OR operation is allowed on taint registers");

@@ -72,11 +72,11 @@ public class DexAnnotation {
 
   public static List<List<DexAnnotation>> parseAll(AnnotationSetRefList annotations, DexTypeCache cache) {
     if (annotations == null)
-      return null;
+      return Collections.emptyList();
 
     val annotationLists = annotations.getAnnotationSets();
     if (annotationLists.length == 0)
-    	return null;
+    	return Collections.emptyList();
     
     List<List<DexAnnotation>> list = new ArrayList<List<DexAnnotation>>(annotationLists.length);
     
