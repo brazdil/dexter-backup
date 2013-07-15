@@ -232,7 +232,7 @@ public class DexCodeAnalyzer {
     				assert !prevExceptionSuccessors.contains(curA.getCodeElement());
     			}
     			prevA = curA;
-    			prevExceptionSuccessors = prevA.getCodeElement().cfgGetExceptionSuccessors();
+    			prevExceptionSuccessors = prevA.getCodeElement().cfgGetExceptionSuccessors(null);
     		}
     		
     		basicBlockMap.put(analyzedBB.first, analyzedBB);

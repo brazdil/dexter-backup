@@ -40,7 +40,7 @@ public abstract class DexCodeElement {
     return set;
   }
   
-  public Set<DexCodeElement> cfgGetExceptionSuccessors() {
+  public Set<? extends DexCodeElement> cfgGetExceptionSuccessors(InstructionList code) {
 	  return Collections.emptySet();
   }
 

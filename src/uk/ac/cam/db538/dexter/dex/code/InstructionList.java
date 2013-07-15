@@ -1,5 +1,6 @@
 package uk.ac.cam.db538.dexter.dex.code;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -9,6 +10,7 @@ import java.util.NoSuchElementException;
 
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 
 public class InstructionList implements Collection<DexCodeElement> {
 
@@ -108,7 +110,7 @@ public class InstructionList implements Collection<DexCodeElement> {
 		instructionList.clear();
 	}
 	
-	private int getIndexOrFail(DexCodeElement elem) {
+	public int getIndex(DexCodeElement elem) {
 		int index = instructionList.indexOf(elem);
 		if (index < 0)
 			throw new NoSuchElementException("Element of InstructionList not found");
@@ -117,17 +119,25 @@ public class InstructionList implements Collection<DexCodeElement> {
 	}
 
 	public DexCodeElement getFollower(DexCodeElement elem) {
-		return instructionList.get(getIndexOrFail(elem) + 1);
+		return instructionList.get(getIndex(elem) + 1);
 	}
 
 	public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, int indexSought) {
-		int indexStart = getIndexOrFail(elemStart);
-		int indexEnd = getIndexOrFail(elemEnd);
+		int indexStart = getIndex(elemStart);
+		int indexEnd = getIndex(elemEnd);
 		
 		return (indexStart <= indexSought) && (indexSought <= indexEnd);
 	}
 
 	public boolean isBetween(DexCodeElement elemStart, DexCodeElement elemEnd, DexCodeElement elemSought) {
-		return isBetween(elemStart, elemEnd, getIndexOrFail(elemSought));
+		return isBetween(elemStart, elemEnd, getIndex(elemSought));
+	}
+	
+	public List<DexTryStart> getAllTryBlocks() {
+		val list = new ArrayList<DexTryStart>();
+		for (val insn : instructionList)
+			if (insn instanceof DexTryStart)
+				list.add((DexTryStart) insn);
+		return list;
 	}
 }

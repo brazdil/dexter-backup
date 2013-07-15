@@ -1,13 +1,16 @@
 package uk.ac.cam.db538.dexter.dex.code.insn;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import lombok.val;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
-import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
-import uk.ac.cam.db538.dexter.hierarchy.BaseClassDefinition;
 import uk.ac.cam.db538.dexter.hierarchy.RuntimeHierarchy;
 
 public abstract class DexInstruction extends DexCodeElement {
@@ -36,10 +39,8 @@ public abstract class DexInstruction extends DexCodeElement {
 	if (jumpTargets.isEmpty())
 		return true;
     val exceptions = this.throwsExceptions();
-    if (exceptions != null)
-    	for (val exception : exceptions)
-    		if (throwingInsn_CanExitMethod(exception))
-    			return true;
+    if (exceptions != null && exceptions.length > 0) // assume every exception can jump out (doesn't really matter)
+    	return true;
     return false;
   }
   
@@ -53,7 +54,7 @@ public abstract class DexInstruction extends DexCodeElement {
   @Override
   public boolean cfgEndsBasicBlock() {
 	DexClassType[] exceptions = throwsExceptions();
-	return  exceptions != null && exceptions.length > 0;
+	return exceptions != null && exceptions.length > 0;
   }
 
   @Override
@@ -63,13 +64,13 @@ public abstract class DexInstruction extends DexCodeElement {
 	  // are thrown
 	  
 	  val set = super.cfgGetSuccessors();
-	  set.addAll(cfgGetExceptionSuccessors());
+	  set.addAll(cfgGetExceptionSuccessors(null));
 	  
 	  return set;
   }
   
   @Override
-  public final Set<DexCodeElement> cfgGetExceptionSuccessors() {
+  public final Set<? extends DexCodeElement> cfgGetExceptionSuccessors(InstructionList code) {
 	  val set = new HashSet<DexCodeElement>();
 	  
 	  DexClassType[] exceptions = throwsExceptions();
@@ -89,10 +90,34 @@ public abstract class DexInstruction extends DexCodeElement {
 		  // } catch (java.lang.Exception) {
 		  //    // Dead code if we analyze it precisely 
 		  // }
-		  set.addAll(throwingInsn_CatchHandlers(null));
+		  
+		  set.addAll(
+			getTryBlockCatchHandlers(
+				getSurroundingTryBlock(code)));
 	  }
 	  
 	  return set;
+  }
+  
+  private DexTryStart getSurroundingTryBlock(InstructionList code) {
+	  val index = code.getIndex(this);
+	  val tryStarts = code.getAllTryBlocks();
+	  for (val tryStart : tryStarts)
+		  if (code.isBetween(tryStart, tryStart.getEndMarker(), index))
+			  return tryStart;
+	  return null;
+  }
+  
+  private List<? extends DexCodeElement> getTryBlockCatchHandlers(DexTryStart tryBlock) {
+	  if (tryBlock == null)
+		  return Collections.emptyList();
+	  
+	  val list = new ArrayList<DexCodeElement>();
+	  list.addAll(tryBlock.getCatchHandlers());
+	  val catchAll = tryBlock.getCatchAllHandler();
+	  if (catchAll != null)
+		  list.add(catchAll);
+	  return list;
   }
 
   static boolean fitsIntoBits_Signed(long value, int bits) {

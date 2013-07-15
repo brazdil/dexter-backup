@@ -14,7 +14,6 @@ import org.jf.dexlib.AnnotationDirectoryItem.MethodAnnotation;
 import org.jf.dexlib.AnnotationDirectoryItem.ParameterAnnotation;
 import org.jf.dexlib.AnnotationItem;
 import org.jf.dexlib.AnnotationSetItem;
-import org.jf.dexlib.AnnotationVisibility;
 import org.jf.dexlib.ClassDataItem;
 import org.jf.dexlib.ClassDataItem.EncodedField;
 import org.jf.dexlib.ClassDataItem.EncodedMethod;
