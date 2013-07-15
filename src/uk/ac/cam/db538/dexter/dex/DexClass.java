@@ -85,6 +85,10 @@ public class DexClass {
 			// instance fields
 			for (val ifieldItem : clsData.getInstanceFields())
 				this._instanceFields.add(new DexInstanceField(this, ifieldItem, annotationDirectory));
+			
+			// methods
+			for (val methodItem : clsData.getDirectMethods())
+				this._methods.add(new DexMethod(this, methodItem, annotationDirectory));
 		}
 	}
 	

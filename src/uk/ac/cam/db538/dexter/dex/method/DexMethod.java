@@ -26,10 +26,12 @@ import uk.ac.cam.db538.dexter.dex.DexClass;
 import uk.ac.cam.db538.dexter.dex.DexUtils;
 import uk.ac.cam.db538.dexter.dex.code.CodeParser;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.type.DexMethodId;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.hierarchy.MethodDefinition;
 import uk.ac.cam.db538.dexter.utils.Cache;
 
-public abstract class DexMethod {
+public class DexMethod {
 
 	@Getter private final DexClass parentClass;
 	@Getter private final MethodDefinition methodDef;
@@ -47,13 +49,24 @@ public abstract class DexMethod {
 		this.paramAnnotations = new ArrayList<List<DexAnnotation>>();
 	}
 
-	public DexMethod(DexClass parent, MethodDefinition methodDef, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {
-		this(parent, 
-		     methodDef,
-		     init_ParseMethodBody(parent, methodDef, methodInfo));
+	public DexMethod(DexClass parentClass, EncodedMethod methodInfo, AnnotationDirectoryItem annoDir) {
+		this.parentClass = parentClass;
+		this.methodDef = init_FindMethodDefinition(parentClass, methodInfo);
+		this.methodBody = init_ParseMethodBody(parentClass, this.methodDef, methodInfo);
 		
-		this.annotations.addAll(init_ParseAnnotations(getParentFile(), methodInfo, annoDir));
-		this.paramAnnotations.addAll(init_ParseParamAnnotations(getParentFile(), methodInfo, annoDir));
+		this.annotations = new ArrayList<DexAnnotation>(init_ParseAnnotations(getParentFile(), methodInfo, annoDir));
+		this.paramAnnotations = init_ParseParamAnnotations(getParentFile(), methodInfo, annoDir);
+	}
+	
+	private static MethodDefinition init_FindMethodDefinition(DexClass parentClass, EncodedMethod methodItem) {
+		val hierarchy = parentClass.getParentFile().getHierarchy();
+		val classDef = parentClass.getClassDef();
+		
+		val name = methodItem.method.getMethodName().getStringValue();
+		val prototype = DexPrototype.parse(methodItem.method.getPrototype(), hierarchy.getTypeCache()); 
+		
+		val methodId = DexMethodId.parseMethodId(name, prototype, hierarchy.getTypeCache());
+		return classDef.getMethod(methodId);
 	}
 	
 	private static DexCode init_ParseMethodBody(DexClass parent, MethodDefinition methodDef, EncodedMethod methodInfo) {
