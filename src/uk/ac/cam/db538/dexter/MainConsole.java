@@ -50,8 +50,8 @@ public class MainConsole {
     AuxiliaryDex dexAux = new AuxiliaryDex(fileAux, hierarchy, renamerAux); 
     Dex dexApp = new Dex(fileApp, hierarchy, dexAux);
     
-    System.out.println("Instrumenting application");
-    dexApp.instrument(false);
+//    System.out.println("Instrumenting application");
+//    dexApp.instrument(false);
     
     System.out.println("DONE");
   }

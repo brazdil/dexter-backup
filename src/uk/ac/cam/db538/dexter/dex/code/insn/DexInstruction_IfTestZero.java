@@ -38,7 +38,7 @@ public class DexInstruction_IfTestZero extends DexInstruction {
       val insnIfTestZero = (Instruction21t) insn;
       return new DexInstruction_IfTestZero(
     		  parsingState.getSingleRegister(insnIfTestZero.getRegisterA()),
-    		  parsingState.getLabel(insnIfTestZero.getTargetAddressOffset()),
+    		  parsingState.getLabel(insnIfTestZero.getTargetAddressOffset(), insn),
     		  Opcode_IfTestZero.convert(insn.opcode),
     		  parsingState.getHierarchy());
 

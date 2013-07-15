@@ -40,7 +40,7 @@ public class DexInstruction_Goto extends DexInstruction {
       throw FORMAT_EXCEPTION;
 
     return new DexInstruction_Goto(
-    		parsingState.getLabel(targetOffset),
+    		parsingState.getLabel(targetOffset, insn),
     		parsingState.getHierarchy());
   }
 

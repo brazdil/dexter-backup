@@ -75,9 +75,23 @@ public class DexClass {
 		val annotationDirectory = clsItem.getAnnotations();
 		this._annotations.addAll(init_ParseAnnotations(parent, annotationDirectory));
 		
-		// TODO: create methods, fields
+		val clsData = clsItem.getClassData();
+		if (clsData != null) {
+			
+			// static fields
+			for (val sfieldItem : clsData.getStaticFields())
+				this._staticFields.add(new DexStaticField(this, clsItem, sfieldItem, annotationDirectory));
+
+			// instance fields
+			for (val ifieldItem : clsData.getInstanceFields())
+				this._instanceFields.add(new DexInstanceField(this, ifieldItem, annotationDirectory));
+			
+			// methods
+			for (val methodItem : clsData.getDirectMethods())
+				this._methods.add(new DexMethod(this, methodItem, annotationDirectory));
+		}
 	}
-  
+	
 	private static BaseClassDefinition init_FindClassDefinition(Dex parent, ClassDefItem clsItem) {
 		val hierarchy = parent.getHierarchy();
 		val clsType = DexClassType.parse(clsItem.getClassType().getTypeDescriptor(), 
