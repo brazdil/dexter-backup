@@ -11,6 +11,7 @@ import java.util.List;
 
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.InstructionList;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatch;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCatchAll;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
@@ -110,7 +111,6 @@ import com.android.dx.rop.type.Type;
 import com.android.dx.rop.type.TypeBearer;
 import com.android.dx.rop.type.TypeList;
 import com.android.dx.util.IntList;
-import com.rx201.dx.translator.util.DexRegisterHelper;
 
 
 class DexConvertedResult {
@@ -153,9 +153,11 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 	private DexCodeAnalyzer analyzer;
 	private DexConvertedResult result;
 	private AnalyzedDexInstruction curInst;
+	private InstructionList instructionList;
 	
-	public DexInstructionTranslator(DexCodeAnalyzer analyzer) {
+	public DexInstructionTranslator(DexCodeAnalyzer analyzer, InstructionList instructionList) {
 		this.analyzer = analyzer;
+		this.instructionList = instructionList;
 	}
 	
 	
@@ -226,7 +228,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
     }
     
 	private RegisterSpec toRegSpec(DexRegister reg, RopType registerType) {
-		return RegisterSpec.make(DexRegisterHelper.normalize(reg), toType(registerType));
+		return RegisterSpec.make(analyzer.normalizeRegister(reg), toType(registerType));
 	}
 
 	private RegisterSpec getSourceRegSpec(DexRegister reg) {
@@ -239,30 +241,15 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 
 	private List<AnalyzedDexInstruction> getCatchers(Rop opcode) {
 		ArrayList<AnalyzedDexInstruction> result = new ArrayList<AnalyzedDexInstruction>();
-		DexCode code = curInst.getInstruction().getMethodCode();
 		
 		boolean canThrow = opcode.getExceptions().size() > 0;
 		
-		// Order of catch matters, so we need to preserve that, which means
-		// we cannot just iterate through the successors ( which is unordered)
-	    for (val tryBlockEnd : code.getTryBlocks()) {
-	        val tryBlockStart = tryBlockEnd.getBlockStart();
-
-	        // check that the instruction is in this try block
-	        if (code.isBetween(tryBlockStart, tryBlockEnd, curInst.getInstruction())) {
-
-	            for (val catchBlock : tryBlockStart.getCatchHandlers()) {
-	            	
-	            	// Assume all catchers may catch every throwing instruction
-					if (canThrow)
-						result.add(analyzer.reverseLookup(catchBlock));
-	            }
-				// if the block has CatchAll handler, it can jump to it
-				val catchAllHandler = tryBlockStart.getCatchAllHandler();
-				if (catchAllHandler != null)
-					result.add(analyzer.reverseLookup(catchAllHandler));
-	        }
+		if (canThrow) {
+			for(DexCodeElement successor : curInst.getInstruction().cfgGetExceptionSuccessors(instructionList)) {
+				result.add(analyzer.reverseLookup(successor));
+			}
 		}
+
 		return result;
 	}
 	
@@ -432,7 +419,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		if (instruction instanceof DexInstruction_Throw) {
 			primarySuccessor = null;
 		} else {
-			primarySuccessor = analyzer.reverseLookup(instruction.getNextCodeElement());
+			primarySuccessor = analyzer.reverseLookup(instructionList.getFollower(instruction));
 		}
 		result.setPrimarySuccessor(primarySuccessor);
 		
@@ -550,7 +537,7 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 			default:
 				throw new RuntimeException("Unknown constant type.");
 		}
-		RegisterSpec dst = RegisterSpec.make(DexRegisterHelper.normalize(to), constant.getType());
+		RegisterSpec dst = RegisterSpec.make(analyzer.normalizeRegister(to), constant.getType());
 		doPlainCstInsn(Rops.opConst(dst), dst, constant);
 	}
 	
@@ -959,15 +946,16 @@ public class DexInstructionTranslator implements DexInstructionVisitor {
 		ArrayList<DexRegister> operands_list = new ArrayList<DexRegister>();
 		
 		List<DexStandardRegister> arguments = instruction.getArgumentRegisters();
-		List<DexRegisterType> parameterTypes = instruction.getMethodId().getPrototype().getParameterTypes();
+		DexPrototype prototype = instruction.getMethodId().getPrototype();
 		
 		int regIndex = 0;
 		if (!instruction.getCallType().isStatic()) {
 			operands_list.add(arguments.get(regIndex++));
 		}
 		// Filter out high reg for long/double type
-		for(int i=0 ;i<parameterTypes.size(); i++) {
-			DexRegisterType paramType = parameterTypes.get(i);
+		// We are not in interested in 'this' parameter
+		for(int i=0 ;i<prototype.getParameterCount(false); i++) {
+			DexRegisterType paramType = prototype.getParameterType(i, false, null);
 			operands_list.add(arguments.get(regIndex));
 			regIndex += paramType.getRegisters();
 		}

@@ -25,6 +25,7 @@ import org.jf.dexlib.Code.Format.Instruction35c;
 import org.jf.dexlib.Code.Format.Instruction3rc;
 
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexLabel;
@@ -59,7 +60,6 @@ import com.android.dx.rop.type.Type;
 import com.android.dx.ssa.Optimizer;
 import com.android.dx.util.Hex;
 import com.android.dx.util.IntList;
-import com.rx201.dx.translator.util.DexRegisterHelper;
 
 public class DexCodeGeneration {
 
@@ -97,7 +97,7 @@ public class DexCodeGeneration {
 		isStatic = methodDef.isStatic();
 		
 		long analysisTime = System.currentTimeMillis();
-	    this.analyzer = new DexCodeAnalyzer(method.getMethodBody());
+	    this.analyzer = new DexCodeAnalyzer(method);
 	    this.analyzer.analyze();
 	    analysisTime = System.currentTimeMillis() - analysisTime;
 	    
@@ -242,7 +242,7 @@ public class DexCodeGeneration {
 			HashMap<AnalyzedDexInstruction, ArrayList<Insn>> translatedBasicBlocks,
 			HashMap<AnalyzedDexInstruction, DexConvertedResult> translatedBasicBlocksInfo) {
 		
-        DexInstructionTranslator translator = new DexInstructionTranslator(analyzer);
+        DexInstructionTranslator translator = new DexInstructionTranslator(analyzer, method.getMethodBody().getInstructionList());
         
         for(int bi=0; bi< basicBlocks.size(); bi++) 
     		translatedBasicBlocks.put(basicBlocks.get(bi).get(0), new ArrayList<Insn>());
@@ -302,19 +302,20 @@ public class DexCodeGeneration {
         	
             // Add move-params to the beginning of the first block
         	if (bi == 0) {
-        		DexPrototype prototype = method.getMethodDef().getMethodId().getPrototype();
-        		List<DexRegister> parameterMapping = method.getParameterMappedRegisters();
-        		int regOffset = 0;
-        		for(int i = 0; i < prototype.getParameterCount(isStatic); i++) {
-        			DexRegisterType param = prototype.getParameterType(i, isStatic, method.getParentClass());
-        			int paramRegId = DexRegisterHelper.normalize(parameterMapping.get(regOffset));
-	                Type one = Type.intern(param.getDescriptor());
-	                Insn insn = new PlainCstInsn(Rops.opMoveParam(one), SourcePosition.NO_INFO, RegisterSpec.make(paramRegId, one),
-	                                             RegisterSpecList.EMPTY,
-	                                             CstInteger.make(regOffset));
-	                insnBlock.add(i, insn);
-	                regOffset += param.getRegisters();
-                }
+        		int paramOffset = 0;
+        		int insnIndex = 0;
+        		for(Parameter param : method.getMethodBody().getParameters()) {
+        			int regIndex = analyzer.normalizeRegister(param.getRegister());
+        			Type paramType = Type.intern(param.getType().getDescriptor());
+        			
+	                Insn insn = new PlainCstInsn(Rops.opMoveParam(paramType), SourcePosition.NO_INFO, 
+	                		RegisterSpec.make(regIndex, paramType),
+                            RegisterSpecList.EMPTY,
+                            CstInteger.make(paramOffset));
+	                
+	                insnBlock.add(insnIndex++, insn);
+	                paramOffset += param.getType().getRegisters();
+        		}
         	}
         	
         	translatedBasicBlocksInfo.put(bbIndex, lastInsn);

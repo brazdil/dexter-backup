@@ -10,6 +10,7 @@ import uk.ac.cam.db538.dexter.analysis.cfg.CfgBasicBlock;
 import uk.ac.cam.db538.dexter.analysis.cfg.CfgBlock;
 import uk.ac.cam.db538.dexter.analysis.cfg.ControlFlowGraph;
 import uk.ac.cam.db538.dexter.dex.code.DexCode;
+import uk.ac.cam.db538.dexter.dex.code.DexCode.Parameter;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
 import uk.ac.cam.db538.dexter.dex.code.insn.DexInstruction;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
@@ -18,7 +19,6 @@ import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.utils.Pair;
 
-import com.rx201.dx.translator.util.DexRegisterHelper;
 
 public class DexCodeAnalyzer {
 	private DexCode code;
@@ -44,6 +44,9 @@ public class DexCodeAnalyzer {
     private AnalyzedBasicBlock startBasicBlock;
    
     public long time;
+    
+    private int usedIndexSlots;
+	private final HashMap<DexRegister, Integer> registerIndexer;
 
     
     public DexCodeAnalyzer(DexMethod method) {
@@ -52,6 +55,9 @@ public class DexCodeAnalyzer {
         maxInstructionIndex = 0;
         buildInstructionList();
         AnalyzedDexInstruction.hierarchy = code.getHierarchy();
+        
+        registerIndexer = new HashMap<DexRegister, Integer>();
+        usedIndexSlots = 0;
     }
 
     public boolean isAnalyzed() {
@@ -59,26 +65,9 @@ public class DexCodeAnalyzer {
     }
 
     private void analyzeParameters() {
-    	boolean isStatic = method.getMethodDef().isStatic();
-    	DexPrototype prototype = method.getMethodDef().getMethodId().getPrototype();
-    	List<DexRegister> parameterMapping = method.getParameterMappedRegisters();
-    	
-    	for(int i=0; i<prototype.getParameterCount(isStatic); i++) {
-    		DexRegisterType dexRegType = prototype.getParameterType(i, isStatic, code.getParentClass());
-    		RopType regType = RopType.getRopType(dexRegType);
-			int paramRegIndex = prototype.getFirstParameterRegisterIndex(i, isStatic);
-			DexRegister paramReg = parameterMapping.get(paramRegIndex);
-			
-			switch (dexRegType.getTypeWidth()) {
-	        case SINGLE:
-	        	startOfMethod.defineRegister(paramReg, regType, true);
-	        	break;
-	        case WIDE:
-	        	startOfMethod.defineRegister(paramReg, regType, true);
-	        	startOfMethod.defineRegister(DexRegisterHelper.next(paramReg), regType.lowToHigh(), true);
-	        	break;
-			}
-	        	
+    	for(Parameter param : method.getMethodBody().getParameters()) {
+    		RopType regType = RopType.getRopType(param.getType());
+    		startOfMethod.defineRegister(param.getRegister(), regType, true);
     	}
     }
     
@@ -219,7 +208,7 @@ public class DexCodeAnalyzer {
     	
     	for(CfgBasicBlock bb : cfg.getBasicBlocks()) {
         	AnalyzedDexInstruction prevA = null;
-        	Set<? extends DexCodeElement> prevExceptionSuccessors = null;
+        	List<? extends DexCodeElement> prevExceptionSuccessors = null;
         	AnalyzedBasicBlock analyzedBB = new AnalyzedBasicBlock();
         	
         	// Connect predecessor/successor within a basic block
@@ -293,4 +282,13 @@ public class DexCodeAnalyzer {
     	return maxInstructionIndex;
     }
     
+    public int normalizeRegister(DexRegister reg) {
+    	if (registerIndexer.containsKey(reg))
+    		return registerIndexer.get(reg);
+    	
+    	int index = usedIndexSlots;
+    	registerIndexer.put(reg, index);
+    	usedIndexSlots += reg.getWidth().getRegisterCount();
+    	return index;
+    }
 }

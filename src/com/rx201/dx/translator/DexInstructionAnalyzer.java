@@ -61,6 +61,7 @@ import uk.ac.cam.db538.dexter.dex.code.reg.RegisterType;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
 import uk.ac.cam.db538.dexter.dex.method.DexMethod;
 import uk.ac.cam.db538.dexter.dex.type.DexClassType;
+import uk.ac.cam.db538.dexter.dex.type.DexPrototype;
 import uk.ac.cam.db538.dexter.dex.type.DexRegisterType;
 import uk.ac.cam.db538.dexter.dex.type.DexType;
 import uk.ac.cam.db538.dexter.dex.type.DexTypeCache;
@@ -389,15 +390,16 @@ public class DexInstructionAnalyzer implements DexInstructionVisitor{
 	@Override
 	public void visit(DexInstruction_Invoke instruction) {
 		List<DexStandardRegister> arguments = instruction.getArgumentRegisters();
-		List<DexRegisterType> parameterTypes = instruction.getMethodId().getPrototype().getParameterTypes();
+		DexPrototype prototype = instruction.getMethodId().getPrototype();
 		
 		int regIndex = 0;
 		if (!instruction.getCallType().isStatic()) {
 			useFreezedRegister(arguments.get(regIndex++), RopType.getRopType(instruction.getClassType()));
 		}
 		
-		for(int i=0 ;i<parameterTypes.size(); i++) {
-			DexRegisterType paramType = parameterTypes.get(i);
+		// We don't want to see 'this' parameter here.
+		for(int i=0 ;i<prototype.getParameterCount(false); i++) {
+			DexRegisterType paramType = prototype.getParameterType(i, false, null);
 			useFreezedRegister(arguments.get(regIndex), RopType.getRopType(paramType));
 			regIndex += paramType.getRegisters();
 		}
