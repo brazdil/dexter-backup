@@ -7,9 +7,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import lombok.val;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexCodeElement;
+import uk.ac.cam.db538.dexter.dex.code.elem.DexTryEnd;
 import uk.ac.cam.db538.dexter.dex.code.elem.DexTryStart;
 
 public class InstructionList implements Collection<DexCodeElement> {
@@ -140,4 +142,12 @@ public class InstructionList implements Collection<DexCodeElement> {
 				list.add((DexTryStart) insn);
 		return list;
 	}
+
+  public Set<DexTryStart> getTryBlocks() {
+    val set = new HashSet<DexTryStart>();
+    for (val elem : instructionList)
+      if (elem instanceof DexTryEnd)
+        set.add((DexTryStart) elem);
+    return set;
+  }
 }
