@@ -114,7 +114,8 @@ class DalvCodeBridge {
 				outClass.addVirtualMethod(mi);
 			}
 
-			/*TODO
+			/* Not necessary to add annotation here because we are only
+			 * interested in the bytecode produced.
 			Annotations annotations = AttributeTranslator
 					.getMethodAnnotations(one);
 			if (annotations.size() != 0) {
@@ -144,7 +145,6 @@ class DalvCodeBridge {
 			assert codeItems.size() == 1;
 			codeItem = codeItems.get(0);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			codeItem = null;
 		}
