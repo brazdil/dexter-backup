@@ -10,8 +10,10 @@ import org.jf.dexlib.Code.Format.Instruction12x;
 import org.jf.dexlib.Code.Format.Instruction23x;
 
 import uk.ac.cam.db538.dexter.dex.code.CodeParserState;
+import uk.ac.cam.db538.dexter.dex.code.insn.Opcode_BinaryOp.Arg;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexSingleRegister;
+import uk.ac.cam.db538.dexter.dex.code.reg.DexStandardRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexTaintRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.DexWideRegister;
 import uk.ac.cam.db538.dexter.dex.code.reg.RegisterWidth;
@@ -31,44 +33,30 @@ public class DexInstruction_BinaryOp extends DexInstruction {
   @Getter private final DexRegister regSourceB;
   @Getter private final Opcode_BinaryOp insnOpcode;
   
-  public DexInstruction_BinaryOp(DexSingleRegister target, DexSingleRegister sourceA, DexSingleRegister sourceB, Opcode_BinaryOp opcode, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
-
-    regTarget = target;
-    regSourceA = sourceA;
-    regSourceB = sourceB;
-    insnOpcode = opcode;
-    
-    insnOpcode.checkRegisterType(target);
-    insnOpcode.checkRegisterType(sourceA);
-    insnOpcode.checkRegisterType(sourceB);
-  }
-
-  public DexInstruction_BinaryOp(DexWideRegister target, DexWideRegister sourceA, DexWideRegister sourceB, Opcode_BinaryOp opcode, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
-
-    regTarget = target;
-    regSourceA = sourceA;
-    regSourceB = sourceB;
-    insnOpcode = opcode;
-    
-    insnOpcode.checkRegisterType(target);
-    insnOpcode.checkRegisterType(sourceA);
-    insnOpcode.checkRegisterType(sourceB);
-  }
-
-  public DexInstruction_BinaryOp(DexTaintRegister target, DexTaintRegister sourceA, DexTaintRegister sourceB, Opcode_BinaryOp opcode, RuntimeHierarchy hierarchy) {
-    super(hierarchy);
-
+  private DexInstruction_BinaryOp(DexRegister target, DexRegister sourceA, DexRegister sourceB, Opcode_BinaryOp opcode, RuntimeHierarchy hierarchy) {
+	super(hierarchy);
+	
     regTarget = target;
     regSourceA = sourceA;
     regSourceB = sourceB;
     insnOpcode = opcode;
     
     // checks that the opcode is allowed as well
-    insnOpcode.checkRegisterType(target);
-    insnOpcode.checkRegisterType(sourceA);
-    insnOpcode.checkRegisterType(sourceB);
+    insnOpcode.checkRegisterType(target, Arg.RESULT);
+    insnOpcode.checkRegisterType(sourceA, Arg.SOURCE_1);
+    insnOpcode.checkRegisterType(sourceB, Arg.SOURCE_2);
+  }
+  
+  public DexInstruction_BinaryOp(DexSingleRegister target, DexSingleRegister sourceA, DexSingleRegister sourceB, Opcode_BinaryOp opcode, RuntimeHierarchy hierarchy) {
+    this((DexRegister) target, sourceA, sourceB, opcode, hierarchy);
+  }
+
+  public DexInstruction_BinaryOp(DexWideRegister target, DexWideRegister sourceA, DexWideRegister sourceB, Opcode_BinaryOp opcode, RuntimeHierarchy hierarchy) {
+    this((DexRegister) target, sourceA, sourceB, opcode, hierarchy);
+  }
+
+  public DexInstruction_BinaryOp(DexTaintRegister target, DexTaintRegister sourceA, DexTaintRegister sourceB, Opcode_BinaryOp opcode, RuntimeHierarchy hierarchy) {
+    this((DexRegister) target, sourceA, sourceB, opcode, hierarchy);
   }
 
   public static DexInstruction_BinaryOp parse(Instruction insn, CodeParserState parsingState) {
@@ -91,18 +79,25 @@ public class DexInstruction_BinaryOp extends DexInstruction {
     } else
       throw FORMAT_EXCEPTION;
 
-    if (opcode.getWidth() == RegisterWidth.SINGLE)
-    	return new DexInstruction_BinaryOp(
-    			parsingState.getSingleRegister(regA),
-    			parsingState.getSingleRegister(regB),
-    			parsingState.getSingleRegister(regC),
-    			opcode,
-    			parsingState.getHierarchy());
+    DexStandardRegister sregA, sregB, sregC;
+    
+    if (opcode.getWidthResult() == RegisterWidth.SINGLE)
+    	sregA = parsingState.getSingleRegister(regA);
     else
+    	sregA = parsingState.getWideRegister(regA);
+    
+    if (opcode.getWidthArgA() == RegisterWidth.SINGLE)
+    	sregB = parsingState.getSingleRegister(regB);
+    else
+    	sregB = parsingState.getWideRegister(regB);
+    
+    if (opcode.getWidthArgB() == RegisterWidth.SINGLE)
+    	sregC = parsingState.getSingleRegister(regC);
+    else
+    	sregC = parsingState.getWideRegister(regC);
+    
     	return new DexInstruction_BinaryOp(
-    			parsingState.getWideRegister(regA),
-    			parsingState.getWideRegister(regB),
-    			parsingState.getWideRegister(regC),
+    			sregA, sregB, sregC,
     			opcode,
     			parsingState.getHierarchy());
   }
