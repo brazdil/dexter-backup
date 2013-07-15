@@ -30,6 +30,8 @@ public class DexCode {
 	    val set = new HashSet<DexRegister>();
 	    for (val elem : instructionList)
 	      set.addAll(elem.lvaUsedRegisters());
+	    for (val param : parameters)
+	      set.add(param.getRegister());
 	    return set;
 	  }
 
