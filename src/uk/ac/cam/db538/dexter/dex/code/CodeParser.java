@@ -123,6 +123,11 @@ public abstract class CodeParser {
 	}
 	
 	private static Pair<FragmentList<DexTryStart>, FragmentList<DexTryEnd>> parseTryBlocks(TryItem[] tryItems, CodeParserState parserCache) {
+		if (tryItems == null)
+			return Pair.create(
+					new FragmentList<DexTryStart>(),
+					new FragmentList<DexTryEnd>());
+		
 		val parsedTryStarts = new FragmentList<DexTryStart>();
 		val parsedTryEnds = new FragmentList<DexTryEnd>();
 		int counter = 1;
