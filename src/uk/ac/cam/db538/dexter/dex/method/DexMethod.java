@@ -19,6 +19,8 @@ import org.jf.dexlib.CodeItem;
 import org.jf.dexlib.DexFile;
 import org.jf.dexlib.MethodIdItem;
 
+import com.rx201.dx.translator.DexCodeGeneration;
+
 import uk.ac.cam.db538.dexter.dex.Dex;
 import uk.ac.cam.db538.dexter.dex.DexAnnotation;
 import uk.ac.cam.db538.dexter.dex.DexAssemblingCache;
@@ -101,11 +103,13 @@ public class DexMethod {
 
 		val methodItem = MethodIdItem.internMethodIdItem(outFile, classType, methodPrototype, methodName);
 		CodeItem codeItem;
-		if (methodBody != null)
-			codeItem = null; // TODO: link to DexCode
-		else
+		if (methodBody != null) {
+			DexCodeGeneration codeGenerator = new DexCodeGeneration(this);
+			codeItem = codeGenerator.generateCodeItem(outFile);
+		} else {
 			codeItem = null; 
-
+		}
+		
 		return new EncodedMethod(methodItem, DexUtils.assembleAccessFlags(methodDef.getAccessFlags()), codeItem);
 	}
 
